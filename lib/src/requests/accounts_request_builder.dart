@@ -58,7 +58,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   AccountsRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["accounts"]);
+    : super(httpClient, serverURI, ["accounts"]);
 
   /// Requests specific [uri] and returns AccountResponse.
   /// This method is helpful for getting the links.
@@ -113,7 +113,9 @@ class AccountsRequestBuilder extends RequestBuilder {
   Future<AccountDataResponse> accountData(String accountId, String key) async {
     this.setSegments(["accounts", accountId, "data", key]);
     return RequestBuilder.requestExecute<AccountDataResponse>(
-        httpClient, this.buildUri());
+      httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Filters accounts by signer.
@@ -227,9 +229,13 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// Requests specific uri and returns Page of AccountResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<AccountResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<AccountResponse>>(
-        httpClient, uri);
+      httpClient,
+      uri,
+    );
   }
 
   /// Opens a stream to listen for account updates in real-time.
@@ -263,7 +269,8 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// - [Stellar developer docs](https://developers.stellar.org)
   Stream<AccountResponse> stream() {
     return streamEvents<AccountResponse>(
-        (json) => AccountResponse.fromJson(json));
+      (json) => AccountResponse.fromJson(json),
+    );
   }
 
   /// Builds and executes the request.
@@ -283,7 +290,9 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// ```
   Future<Page<AccountResponse>> execute() {
     return AccountsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Sets the cursor for pagination.

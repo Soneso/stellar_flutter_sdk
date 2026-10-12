@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -35,7 +34,9 @@ void main() {
     // Snippet from getting-started.md "Assets"
     Asset xlm = Asset.NATIVE;
     Asset usdc = Asset.createNonNativeAsset(
-        "USDC", "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN");
+      "USDC",
+      "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+    );
 
     expect(xlm, isNotNull);
     expect(usdc, isA<AssetTypeCreditAlphaNum4>());
@@ -57,7 +58,8 @@ void main() {
   test('getting-started: Import from Secret Seed', () {
     // Snippet from getting-started.md "Import from Secret Seed"
     KeyPair keyPair = KeyPair.fromSecretSeed(
-        "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE");
+      "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE",
+    );
 
     expect(keyPair.accountId, startsWith('G'));
     expect(keyPair.secretSeed, startsWith('S'));
@@ -66,10 +68,13 @@ void main() {
   test('getting-started: Import from Account ID', () {
     // Snippet from getting-started.md "Import from Account ID"
     KeyPair keyPair = KeyPair.fromAccountId(
-        "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D");
+      "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
+    );
 
-    expect(keyPair.accountId,
-        "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D");
+    expect(
+      keyPair.accountId,
+      "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D",
+    );
   });
 
   test('getting-started: Mnemonic Phrases (SEP-5)', () async {
@@ -101,36 +106,41 @@ void main() {
     expect(funded, true);
   });
 
-  test('getting-started: Create Account on Public Network (testnet variant)',
-      () async {
-    // Snippet from getting-started.md "Create Account on Public Network"
-    // Using testnet instead of public for testing
-    KeyPair sourceKeyPair = account1;
-    KeyPair newKeyPair = KeyPair.random();
+  test(
+    'getting-started: Create Account on Public Network (testnet variant)',
+    () async {
+      // Snippet from getting-started.md "Create Account on Public Network"
+      // Using testnet instead of public for testing
+      KeyPair sourceKeyPair = account1;
+      KeyPair newKeyPair = KeyPair.random();
 
-    AccountResponse sourceAccount =
-        await sdk.accounts.account(sourceKeyPair.accountId);
+      AccountResponse sourceAccount = await sdk.accounts.account(
+        sourceKeyPair.accountId,
+      );
 
-    CreateAccountOperation createOp = CreateAccountOperationBuilder(
-      newKeyPair.accountId,
-      "10",
-    ).build();
+      CreateAccountOperation createOp = CreateAccountOperationBuilder(
+        newKeyPair.accountId,
+        "10",
+      ).build();
 
-    Transaction transaction = TransactionBuilder(sourceAccount)
-        .addOperation(createOp)
-        .build();
+      Transaction transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(createOp).build();
 
-    transaction.sign(sourceKeyPair, Network.TESTNET);
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+      transaction.sign(sourceKeyPair, Network.TESTNET);
+      SubmitTransactionResponse response = await sdk.submitTransaction(
+        transaction,
+      );
 
-    expect(response.success, true);
+      expect(response.success, true);
 
-    // Verify new account exists
-    AccountResponse newAccount =
-        await sdk.accounts.account(newKeyPair.accountId);
-    expect(newAccount.accountId, newKeyPair.accountId);
-  });
+      // Verify new account exists
+      AccountResponse newAccount = await sdk.accounts.account(
+        newKeyPair.accountId,
+      );
+      expect(newAccount.accountId, newKeyPair.accountId);
+    },
+  );
 
   test('getting-started: Query Account Data', () async {
     // Snippet from getting-started.md "Query Account Data"
@@ -170,8 +180,9 @@ void main() {
 
   test('getting-started: Builder Pattern', () async {
     // Snippet from getting-started.md "Builder Pattern"
-    AccountResponse sourceAccount =
-        await sdk.accounts.account(account1.accountId);
+    AccountResponse sourceAccount = await sdk.accounts.account(
+      account1.accountId,
+    );
 
     PaymentOperation operation1 = PaymentOperationBuilder(
       account2.accountId,
@@ -198,8 +209,9 @@ void main() {
 
   test('getting-started: Building Operations', () async {
     // Snippet from getting-started.md "Building Operations"
-    AccountResponse sourceAccount =
-        await sdk.accounts.account(account2.accountId);
+    AccountResponse sourceAccount = await sdk.accounts.account(
+      account2.accountId,
+    );
 
     PaymentOperation paymentOp = PaymentOperationBuilder(
       account3.accountId,
@@ -210,9 +222,9 @@ void main() {
     expect(paymentOp, isNotNull);
 
     // Build a transaction with the payment operation
-    Transaction transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+    Transaction transaction = TransactionBuilder(
+      sourceAccount,
+    ).addOperation(paymentOp).build();
 
     expect(transaction.operations.length, 1);
   });
@@ -221,8 +233,9 @@ void main() {
     // Snippet from getting-started.md "Signing and Submitting"
     KeyPair sourceKeyPair = account2;
 
-    AccountResponse sourceAccount =
-        await sdk.accounts.account(sourceKeyPair.accountId);
+    AccountResponse sourceAccount = await sdk.accounts.account(
+      sourceKeyPair.accountId,
+    );
 
     PaymentOperation paymentOp = PaymentOperationBuilder(
       account3.accountId,
@@ -230,14 +243,15 @@ void main() {
       "1",
     ).build();
 
-    Transaction transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+    Transaction transaction = TransactionBuilder(
+      sourceAccount,
+    ).addOperation(paymentOp).build();
 
     transaction.sign(sourceKeyPair, Network.TESTNET);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
 
     expect(response.success, true);
     expect(response.hash, isNotNull);
@@ -248,20 +262,24 @@ void main() {
     KeyPair senderKeyPair = account3;
     String destination = account1.accountId;
 
-    AccountResponse senderAccount =
-        await sdk.accounts.account(senderKeyPair.accountId);
+    AccountResponse senderAccount = await sdk.accounts.account(
+      senderKeyPair.accountId,
+    );
 
-    PaymentOperation paymentOp =
-        PaymentOperationBuilder(destination, Asset.NATIVE, "100").build();
+    PaymentOperation paymentOp = PaymentOperationBuilder(
+      destination,
+      Asset.NATIVE,
+      "100",
+    ).build();
 
-    Transaction transaction = TransactionBuilder(senderAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.text("Coffee payment"))
-        .build();
+    Transaction transaction = TransactionBuilder(
+      senderAccount,
+    ).addOperation(paymentOp).addMemo(Memo.text("Coffee payment")).build();
 
     transaction.sign(senderKeyPair, Network.TESTNET);
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
 
     expect(response.success, true);
     expect(response.hash, isNotNull);
@@ -280,15 +298,13 @@ void main() {
 
   test('getting-started: Connecting to Soroban RPC', () {
     // Snippet from getting-started.md "Connecting to Soroban RPC"
-    SorobanServer server =
-        SorobanServer("https://soroban-testnet.stellar.org");
+    SorobanServer server = SorobanServer("https://soroban-testnet.stellar.org");
     expect(server, isNotNull);
   });
 
   test('getting-started: Health Check', () async {
     // Snippet from getting-started.md "Health Check"
-    SorobanServer server =
-        SorobanServer("https://soroban-testnet.stellar.org");
+    SorobanServer server = SorobanServer("https://soroban-testnet.stellar.org");
 
     GetHealthResponse health = await server.getHealth();
 
@@ -299,8 +315,7 @@ void main() {
 
   test('getting-started: Latest Ledger Info', () async {
     // Snippet from getting-started.md "Latest Ledger Info"
-    SorobanServer server =
-        SorobanServer("https://soroban-testnet.stellar.org");
+    SorobanServer server = SorobanServer("https://soroban-testnet.stellar.org");
 
     GetLatestLedgerResponse ledger = await server.getLatestLedger();
 
@@ -324,8 +339,9 @@ void main() {
     // Snippet from getting-started.md "Transaction Failures"
     // Intentionally create a failing transaction (bad destination)
     KeyPair senderKeyPair = account1;
-    AccountResponse senderAccount =
-        await sdk.accounts.account(senderKeyPair.accountId);
+    AccountResponse senderAccount = await sdk.accounts.account(
+      senderKeyPair.accountId,
+    );
 
     // Send to a non-existent account to trigger op_no_destination
     KeyPair nonExistent = KeyPair.random();
@@ -335,13 +351,14 @@ void main() {
       "1",
     ).build();
 
-    Transaction transaction = TransactionBuilder(senderAccount)
-        .addOperation(paymentOp)
-        .build();
+    Transaction transaction = TransactionBuilder(
+      senderAccount,
+    ).addOperation(paymentOp).build();
 
     transaction.sign(senderKeyPair, Network.TESTNET);
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
 
     expect(response.success, false);
 

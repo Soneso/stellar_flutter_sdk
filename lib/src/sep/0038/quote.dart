@@ -73,23 +73,36 @@ class SEP38QuoteService {
   /// Creates a SEP38QuoteService with explicit quote server address.
   ///
   /// Initializes the service with HTTP client for making SEP-38 API requests.
-  SEP38QuoteService(this._serviceAddress,
-      {http.Client? httpClient, this.httpRequestHeaders}) {
+  SEP38QuoteService(
+    this._serviceAddress, {
+    http.Client? httpClient,
+    this.httpRequestHeaders,
+  }) {
     this.httpClient = httpClient ?? http.Client();
   }
 
   /// Creates an instance of this class by loading the anchor quote server sep 38 url from the given [domain] stellar toml file (ANCHOR_QUOTE_SERVER).
   /// It also accepts an optional [httpClient] to be used for all requests. If not provided, this service will use its own http client.
-  static Future<SEP38QuoteService> fromDomain(String domain,
-      {http.Client? httpClient,
-      Map<String, String>? httpRequestHeaders}) async {
-    StellarToml toml = await StellarToml.fromDomain(domain,
-        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
+  static Future<SEP38QuoteService> fromDomain(
+    String domain, {
+    http.Client? httpClient,
+    Map<String, String>? httpRequestHeaders,
+  }) async {
+    StellarToml toml = await StellarToml.fromDomain(
+      domain,
+      httpClient: httpClient,
+      httpRequestHeaders: httpRequestHeaders,
+    );
     String? addr = toml.generalInformation.anchorQuoteServer;
     checkNotNull(
-        addr, "Anchor quote server SEP 38 not available for domain " + domain);
-    return SEP38QuoteService(addr!,
-        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
+      addr,
+      "Anchor quote server SEP 38 not available for domain " + domain,
+    );
+    return SEP38QuoteService(
+      addr!,
+      httpClient: httpClient,
+      httpRequestHeaders: httpRequestHeaders,
+    );
   }
 
   /// Returns supported assets and delivery methods available for trading.
@@ -115,19 +128,24 @@ class SEP38QuoteService {
     }
     headers.putIfAbsent("Content-Type", () => "application/json");
 
-    SEP38InfoResponse result =
-        await httpClient.get(requestURI, headers: headers).then((response) {
-      switch (response.statusCode) {
-        case 200:
-          return SEP38InfoResponse.fromJson(json.decode(response.body));
-        case 400:
-          throw SEP38BadRequest(errorFromResponseBody(response.body));
-        default:
-          throw new SEP38UnknownResponse(response.statusCode, response.body);
-      }
-    }).catchError((onError) {
-      throw onError;
-    });
+    SEP38InfoResponse result = await httpClient
+        .get(requestURI, headers: headers)
+        .then((response) {
+          switch (response.statusCode) {
+            case 200:
+              return SEP38InfoResponse.fromJson(json.decode(response.body));
+            case 400:
+              throw SEP38BadRequest(errorFromResponseBody(response.body));
+            default:
+              throw new SEP38UnknownResponse(
+                response.statusCode,
+                response.body,
+              );
+          }
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -152,17 +170,18 @@ class SEP38QuoteService {
   /// - [SEP38UnknownResponse] for unexpected HTTP status codes
   ///
   /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-prices
-  Future<SEP38PricesResponse> prices(
-      {required String sellAsset,
-      required String sellAmount,
-      String? sellDeliveryMethod,
-      String? buyDeliveryMethod,
-      String? countryCode,
-      String? jwtToken}) async {
+  Future<SEP38PricesResponse> prices({
+    required String sellAsset,
+    required String sellAmount,
+    String? sellDeliveryMethod,
+    String? buyDeliveryMethod,
+    String? countryCode,
+    String? jwtToken,
+  }) async {
     Uri requestURI = Util.appendEndpointToUrl(_serviceAddress, 'prices');
     Map<String, String> queryParameters = {
       'sell_asset': sellAsset,
-      'sell_amount': sellAmount
+      'sell_amount': sellAmount,
     };
     if (sellDeliveryMethod != null) {
       queryParameters['sell_delivery_method'] = sellDeliveryMethod;
@@ -181,19 +200,24 @@ class SEP38QuoteService {
     }
     headers.putIfAbsent("Content-Type", () => "application/json");
 
-    SEP38PricesResponse result =
-        await httpClient.get(requestURI, headers: headers).then((response) {
-      switch (response.statusCode) {
-        case 200:
-          return SEP38PricesResponse.fromJson(json.decode(response.body));
-        case 400:
-          throw SEP38BadRequest(errorFromResponseBody(response.body));
-        default:
-          throw new SEP38UnknownResponse(response.statusCode, response.body);
-      }
-    }).catchError((onError) {
-      throw onError;
-    });
+    SEP38PricesResponse result = await httpClient
+        .get(requestURI, headers: headers)
+        .then((response) {
+          switch (response.statusCode) {
+            case 200:
+              return SEP38PricesResponse.fromJson(json.decode(response.body));
+            case 400:
+              throw SEP38BadRequest(errorFromResponseBody(response.body));
+            default:
+              throw new SEP38UnknownResponse(
+                response.statusCode,
+                response.body,
+              );
+          }
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -222,16 +246,17 @@ class SEP38QuoteService {
   /// - [SEP38UnknownResponse] for unexpected HTTP status codes
   ///
   /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-price
-  Future<SEP38PriceResponse> price(
-      {required String context,
-      required String sellAsset,
-      required String buyAsset,
-      String? sellAmount,
-      String? buyAmount,
-      String? sellDeliveryMethod,
-      String? buyDeliveryMethod,
-      String? countryCode,
-      String? jwtToken}) async {
+  Future<SEP38PriceResponse> price({
+    required String context,
+    required String sellAsset,
+    required String buyAsset,
+    String? sellAmount,
+    String? buyAmount,
+    String? sellDeliveryMethod,
+    String? buyDeliveryMethod,
+    String? countryCode,
+    String? jwtToken,
+  }) async {
     Uri requestURI = Util.appendEndpointToUrl(_serviceAddress, 'price');
     Map<String, String> queryParameters = {
       'sell_asset': sellAsset,
@@ -242,7 +267,8 @@ class SEP38QuoteService {
     if ((sellAmount != null && buyAmount != null) ||
         (sellAmount == null && buyAmount == null)) {
       throw ArgumentError(
-          'The caller must provide either [sellAmount] or [buyAmount], but not both.');
+        'The caller must provide either [sellAmount] or [buyAmount], but not both.',
+      );
     }
     if (sellAmount != null) {
       queryParameters['sell_amount'] = sellAmount;
@@ -268,19 +294,24 @@ class SEP38QuoteService {
     }
     headers.putIfAbsent("Content-Type", () => "application/json");
 
-    SEP38PriceResponse result =
-        await httpClient.get(requestURI, headers: headers).then((response) {
-      switch (response.statusCode) {
-        case 200:
-          return SEP38PriceResponse.fromJson(json.decode(response.body));
-        case 400:
-          throw SEP38BadRequest(errorFromResponseBody(response.body));
-        default:
-          throw new SEP38UnknownResponse(response.statusCode, response.body);
-      }
-    }).catchError((onError) {
-      throw onError;
-    });
+    SEP38PriceResponse result = await httpClient
+        .get(requestURI, headers: headers)
+        .then((response) {
+          switch (response.statusCode) {
+            case 200:
+              return SEP38PriceResponse.fromJson(json.decode(response.body));
+            case 400:
+              throw SEP38BadRequest(errorFromResponseBody(response.body));
+            default:
+              throw new SEP38UnknownResponse(
+                response.statusCode,
+                response.body,
+              );
+          }
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -304,7 +335,9 @@ class SEP38QuoteService {
   ///
   /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#post-quote
   Future<SEP38QuoteResponse> postQuote(
-      SEP38PostQuoteRequest request, String jwtToken) async {
+    SEP38PostQuoteRequest request,
+    String jwtToken,
+  ) async {
     Uri requestURI = Util.appendEndpointToUrl(_serviceAddress, 'quote');
     Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwtToken;
@@ -313,26 +346,31 @@ class SEP38QuoteService {
     if ((request.sellAmount != null && request.buyAmount != null) ||
         (request.sellAmount == null && request.buyAmount == null)) {
       throw ArgumentError(
-          'The caller must provide either [sellAmount] or [buyAmount], but not both.');
+        'The caller must provide either [sellAmount] or [buyAmount], but not both.',
+      );
     }
 
     SEP38QuoteResponse result = await httpClient
         .post(requestURI, body: json.encode(request.toJson()), headers: headers)
         .then((response) {
-      switch (response.statusCode) {
-        case 201:
-        case 200:
-          return SEP38QuoteResponse.fromJson(json.decode(response.body));
-        case 400:
-          throw SEP38BadRequest(errorFromResponseBody(response.body));
-        case 403:
-          throw SEP38PermissionDenied(errorFromResponseBody(response.body));
-        default:
-          throw new SEP38UnknownResponse(response.statusCode, response.body);
-      }
-    }).catchError((onError) {
-      throw onError;
-    });
+          switch (response.statusCode) {
+            case 201:
+            case 200:
+              return SEP38QuoteResponse.fromJson(json.decode(response.body));
+            case 400:
+              throw SEP38BadRequest(errorFromResponseBody(response.body));
+            case 403:
+              throw SEP38PermissionDenied(errorFromResponseBody(response.body));
+            default:
+              throw new SEP38UnknownResponse(
+                response.statusCode,
+                response.body,
+              );
+          }
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -361,23 +399,28 @@ class SEP38QuoteService {
     headers["Authorization"] = "Bearer " + jwtToken;
     headers.putIfAbsent("Content-Type", () => "application/json");
 
-    SEP38QuoteResponse result =
-        await httpClient.get(requestURI, headers: headers).then((response) {
-      switch (response.statusCode) {
-        case 200:
-          return SEP38QuoteResponse.fromJson(json.decode(response.body));
-        case 400:
-          throw SEP38BadRequest(errorFromResponseBody(response.body));
-        case 403:
-          throw SEP38PermissionDenied(errorFromResponseBody(response.body));
-        case 404:
-          throw SEP38NotFound(errorFromResponseBody(response.body));
-        default:
-          throw new SEP38UnknownResponse(response.statusCode, response.body);
-      }
-    }).catchError((onError) {
-      throw onError;
-    });
+    SEP38QuoteResponse result = await httpClient
+        .get(requestURI, headers: headers)
+        .then((response) {
+          switch (response.statusCode) {
+            case 200:
+              return SEP38QuoteResponse.fromJson(json.decode(response.body));
+            case 400:
+              throw SEP38BadRequest(errorFromResponseBody(response.body));
+            case 403:
+              throw SEP38PermissionDenied(errorFromResponseBody(response.body));
+            case 404:
+              throw SEP38NotFound(errorFromResponseBody(response.body));
+            default:
+              throw new SEP38UnknownResponse(
+                response.statusCode,
+                response.body,
+              );
+          }
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -438,23 +481,24 @@ class SEP38PostQuoteRequest {
   /// Creates a SEP38PostQuoteRequest for firm quote creation.
   ///
   /// Specifies parameters for requesting a binding quote from the anchor.
-  SEP38PostQuoteRequest(
-      {required this.context,
-      required this.sellAsset,
-      required this.buyAsset,
-      this.sellAmount,
-      this.buyAmount,
-      this.expireAfter,
-      this.sellDeliveryMethod,
-      this.buyDeliveryMethod,
-      this.countryCode});
+  SEP38PostQuoteRequest({
+    required this.context,
+    required this.sellAsset,
+    required this.buyAsset,
+    this.sellAmount,
+    this.buyAmount,
+    this.expireAfter,
+    this.sellDeliveryMethod,
+    this.buyDeliveryMethod,
+    this.countryCode,
+  });
 
   /// Converts this SEP-38 quote request to a JSON map.
   Map<String, dynamic> toJson() {
     Map<String, String> result = {
       'sell_asset': sellAsset,
       'buy_asset': buyAsset,
-      'context': context
+      'context': context,
     };
 
     if (sellAmount != null) {
@@ -538,21 +582,31 @@ class SEP38QuoteResponse {
   /// - [buyAsset] Asset being bought
   /// - [buyAmount] Amount of buyAsset to receive
   /// - [fee] Fee breakdown for the exchange
-  SEP38QuoteResponse(this.id, this.expiresAt, this.totalPrice, this.price,
-      this.sellAsset, this.sellAmount, this.buyAsset, this.buyAmount, this.fee);
+  SEP38QuoteResponse(
+    this.id,
+    this.expiresAt,
+    this.totalPrice,
+    this.price,
+    this.sellAsset,
+    this.sellAmount,
+    this.buyAsset,
+    this.buyAmount,
+    this.fee,
+  );
 
   /// Creates a SEP38QuoteResponse from JSON response data.
   factory SEP38QuoteResponse.fromJson(Map<String, dynamic> json) =>
       SEP38QuoteResponse(
-          json['id'],
-          DateTime.parse(json['expires_at']),
-          json['total_price'],
-          json['price'],
-          json['sell_asset'],
-          json['sell_amount'],
-          json['buy_asset'],
-          json['buy_amount'],
-          SEP38Fee.fromJson(json['fee']));
+        json['id'],
+        DateTime.parse(json['expires_at']),
+        json['total_price'],
+        json['price'],
+        json['sell_asset'],
+        json['sell_amount'],
+        json['buy_asset'],
+        json['buy_amount'],
+        SEP38Fee.fromJson(json['fee']),
+      );
 }
 
 /// Response containing an indicative price quote.
@@ -600,16 +654,22 @@ class SEP38PriceResponse {
   /// - [buyAmount] Amount of asset being bought
   /// - [fee] Fee breakdown for the exchange
   SEP38PriceResponse(
-      this.totalPrice, this.price, this.sellAmount, this.buyAmount, this.fee);
+    this.totalPrice,
+    this.price,
+    this.sellAmount,
+    this.buyAmount,
+    this.fee,
+  );
 
   /// Creates a SEP38PriceResponse from JSON response data.
   factory SEP38PriceResponse.fromJson(Map<String, dynamic> json) =>
       SEP38PriceResponse(
-          json['total_price'],
-          json['price'],
-          json['sell_amount'],
-          json['buy_amount'],
-          SEP38Fee.fromJson(json['fee']));
+        json['total_price'],
+        json['price'],
+        json['sell_amount'],
+        json['buy_amount'],
+        SEP38Fee.fromJson(json['fee']),
+      );
 }
 
 /// Fee structure for an exchange operation.
@@ -647,12 +707,15 @@ class SEP38Fee {
   SEP38Fee(this.total, this.asset, {this.details});
 
   /// Creates a SEP38Fee from JSON response data.
-  factory SEP38Fee.fromJson(Map<String, dynamic> json) =>
-      SEP38Fee(json['total'], json['asset'],
-          details: json['details'] == null
-              ? null
-              : List<SEP38FeeDetails>.from(
-                  json['details'].map((e) => SEP38FeeDetails.fromJson(e))));
+  factory SEP38Fee.fromJson(Map<String, dynamic> json) => SEP38Fee(
+    json['total'],
+    json['asset'],
+    details: json['details'] == null
+        ? null
+        : List<SEP38FeeDetails>.from(
+            json['details'].map((e) => SEP38FeeDetails.fromJson(e)),
+          ),
+  );
 }
 
 /// Detailed breakdown of a single fee component.
@@ -688,9 +751,11 @@ class SEP38FeeDetails {
 
   /// Creates a SEP38FeeDetails from JSON response data.
   factory SEP38FeeDetails.fromJson(Map<String, dynamic> json) =>
-      SEP38FeeDetails(json['name'], json['amount'],
-          description:
-              json['description'] == null ? null : json['description']);
+      SEP38FeeDetails(
+        json['name'],
+        json['amount'],
+        description: json['description'] == null ? null : json['description'],
+      );
 }
 
 /// Response containing indicative prices for multiple buy assets.
@@ -720,8 +785,11 @@ class SEP38PricesResponse extends Response {
 
   /// Creates a SEP38PricesResponse from JSON response data.
   factory SEP38PricesResponse.fromJson(Map<String, dynamic> json) {
-    return SEP38PricesResponse(List<SEP38BuyAsset>.from(
-        json['buy_assets'].map((e) => SEP38BuyAsset.fromJson(e))));
+    return SEP38PricesResponse(
+      List<SEP38BuyAsset>.from(
+        json['buy_assets'].map((e) => SEP38BuyAsset.fromJson(e)),
+      ),
+    );
   }
 }
 
@@ -753,8 +821,9 @@ class SEP38InfoResponse extends Response {
 
   /// Creates a SEP38InfoResponse from JSON response data.
   factory SEP38InfoResponse.fromJson(Map<String, dynamic> json) {
-    return SEP38InfoResponse(List<SEP38Asset>.from(
-        json['assets'].map((e) => SEP38Asset.fromJson(e))));
+    return SEP38InfoResponse(
+      List<SEP38Asset>.from(json['assets'].map((e) => SEP38Asset.fromJson(e))),
+    );
   }
 }
 
@@ -795,23 +864,34 @@ class SEP38Asset {
   /// - [sellDeliveryMethods] Optional delivery methods for selling this asset
   /// - [buyDeliveryMethods] Optional delivery methods for buying this asset
   /// - [countryCodes] Optional country codes where asset is available
-  SEP38Asset(this.asset,
-      {this.sellDeliveryMethods, this.buyDeliveryMethods, this.countryCodes});
+  SEP38Asset(
+    this.asset, {
+    this.sellDeliveryMethods,
+    this.buyDeliveryMethods,
+    this.countryCodes,
+  });
 
   /// Creates a SEP38Asset from JSON response data.
-  factory SEP38Asset.fromJson(Map<String, dynamic> json) =>
-      SEP38Asset(json['asset'],
-          sellDeliveryMethods: json['sell_delivery_methods'] == null
-              ? null
-              : List<Sep38SellDeliveryMethod>.from(json['sell_delivery_methods']
-                  .map((e) => Sep38SellDeliveryMethod.fromJson(e))),
-          buyDeliveryMethods: json['buy_delivery_methods'] == null
-              ? null
-              : List<Sep38BuyDeliveryMethod>.from(json['buy_delivery_methods']
-                  .map((e) => Sep38BuyDeliveryMethod.fromJson(e))),
-          countryCodes: json['country_codes'] == null
-              ? null
-              : List<String>.from(json['country_codes'].map((e) => e)));
+  factory SEP38Asset.fromJson(Map<String, dynamic> json) => SEP38Asset(
+    json['asset'],
+    sellDeliveryMethods: json['sell_delivery_methods'] == null
+        ? null
+        : List<Sep38SellDeliveryMethod>.from(
+            json['sell_delivery_methods'].map(
+              (e) => Sep38SellDeliveryMethod.fromJson(e),
+            ),
+          ),
+    buyDeliveryMethods: json['buy_delivery_methods'] == null
+        ? null
+        : List<Sep38BuyDeliveryMethod>.from(
+            json['buy_delivery_methods'].map(
+              (e) => Sep38BuyDeliveryMethod.fromJson(e),
+            ),
+          ),
+    countryCodes: json['country_codes'] == null
+        ? null
+        : List<String>.from(json['country_codes'].map((e) => e)),
+  );
 }
 
 /// Buy asset information with price and decimal precision.
@@ -843,7 +923,10 @@ class SEP38BuyAsset {
 
   /// Creates a SEP38BuyAsset from JSON response data.
   factory SEP38BuyAsset.fromJson(Map<String, dynamic> json) => SEP38BuyAsset(
-      json['asset'], json['price'], convertInt(json['decimals'])!);
+    json['asset'],
+    json['price'],
+    convertInt(json['decimals'])!,
+  );
 }
 
 /// Delivery method for selling an off-chain asset to the anchor.

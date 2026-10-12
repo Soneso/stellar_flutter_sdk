@@ -40,7 +40,7 @@ void main() {
           'latestLedgerCloseTime': '1783951566',
           'oldestLedger': 106176,
           'oldestLedgerCloseTime': '1783345758',
-        }
+        },
       };
 
       final response = GetHealthResponse.fromJson(json);
@@ -62,7 +62,7 @@ void main() {
           'ledgerRetentionWindow': 17280,
           'latestLedger': 123456,
           'oldestLedger': 106176,
-        }
+        },
       };
 
       final response = GetHealthResponse.fromJson(json);
@@ -74,7 +74,7 @@ void main() {
 
     test('fromJson handles partial response', () {
       final json = {
-        'result': {'status': 'healthy'}
+        'result': {'status': 'healthy'},
       };
 
       final response = GetHealthResponse.fromJson(json);
@@ -87,10 +87,7 @@ void main() {
 
     test('fromJson handles error response', () {
       final json = {
-        'error': {
-          'code': '-32600',
-          'message': 'Invalid request',
-        }
+        'error': {'code': '-32600', 'message': 'Invalid request'},
       };
 
       final response = GetHealthResponse.fromJson(json);
@@ -115,7 +112,7 @@ void main() {
           'buildTimestamp': '2024-01-15T10:30:00Z',
           'captiveCoreVersion': '19.5.0',
           'protocolVersion': 22,
-        }
+        },
       };
 
       final response = GetVersionInfoResponse.fromJson(json);
@@ -135,7 +132,7 @@ void main() {
           'build_time_stamp': '2023-12-01T08:00:00Z',
           'captive_core_version': '19.3.0',
           'protocol_version': 21,
-        }
+        },
       };
 
       final response = GetVersionInfoResponse.fromJson(json);
@@ -149,10 +146,7 @@ void main() {
 
     test('fromJson handles error response', () {
       final json = {
-        'error': {
-          'code': '-32601',
-          'message': 'Method not found',
-        }
+        'error': {'code': '-32601', 'message': 'Method not found'},
       };
 
       final response = GetVersionInfoResponse.fromJson(json);
@@ -242,7 +236,7 @@ void main() {
             'ledgerCount': 15,
           },
           'latestLedger': 654321,
-        }
+        },
       };
 
       final response = GetFeeStatsResponse.fromJson(json);
@@ -277,7 +271,7 @@ void main() {
             'ledgerCount': 15,
           },
           'latestLedger': 100000,
-        }
+        },
       };
 
       final response = GetFeeStatsResponse.fromJson(json);
@@ -298,7 +292,7 @@ void main() {
           'closeTime': 1705305600,
           'headerXdr': 'base64header',
           'metadataXdr': 'base64metadata',
-        }
+        },
       };
 
       final response = GetLatestLedgerResponse.fromJson(json);
@@ -318,7 +312,7 @@ void main() {
           'protocolVersion': 20,
           'sequence': 500000,
           'closeTime': '1705305600',
-        }
+        },
       };
 
       final response = GetLatestLedgerResponse.fromJson(json);
@@ -328,11 +322,7 @@ void main() {
 
     test('fromJson handles missing optional fields', () {
       final json = {
-        'result': {
-          'id': 'hash456',
-          'protocolVersion': 21,
-          'sequence': 600000,
-        }
+        'result': {'id': 'hash456', 'protocolVersion': 21, 'sequence': 600000},
       };
 
       final response = GetLatestLedgerResponse.fromJson(json);
@@ -351,7 +341,7 @@ void main() {
           'code': -32700,
           'message': 'Parse error',
           'data': {'details': 'Invalid JSON format'},
-        }
+        },
       };
 
       final response = SorobanRpcErrorResponse.fromJson(json);
@@ -364,10 +354,7 @@ void main() {
 
     test('fromJson handles string code', () {
       final json = {
-        'error': {
-          'code': '-32600',
-          'message': 'Invalid Request',
-        }
+        'error': {'code': '-32600', 'message': 'Invalid Request'},
       };
 
       final response = SorobanRpcErrorResponse.fromJson(json);
@@ -377,10 +364,7 @@ void main() {
 
     test('fromJson handles numeric code', () {
       final json = {
-        'error': {
-          'code': -32601,
-          'message': 'Method not found',
-        }
+        'error': {'code': -32601, 'message': 'Method not found'},
       };
 
       final response = SorobanRpcErrorResponse.fromJson(json);
@@ -390,10 +374,7 @@ void main() {
 
     test('fromJson handles missing data field', () {
       final json = {
-        'error': {
-          'code': -32602,
-          'message': 'Invalid params',
-        }
+        'error': {'code': -32602, 'message': 'Invalid params'},
       };
 
       final response = SorobanRpcErrorResponse.fromJson(json);
@@ -405,10 +386,7 @@ void main() {
   group('GetLedgerEntriesResponse', () {
     test('fromJson handles empty entries', () {
       final json = {
-        'result': {
-          'entries': [],
-          'latestLedger': 123456,
-        }
+        'result': {'entries': [], 'latestLedger': 123456},
       };
 
       final response = GetLedgerEntriesResponse.fromJson(json);
@@ -420,10 +398,7 @@ void main() {
 
     test('fromJson handles error response', () {
       final json = {
-        'error': {
-          'code': '-32600',
-          'message': 'Invalid request',
-        }
+        'error': {'code': '-32600', 'message': 'Invalid request'},
       };
 
       final response = GetLedgerEntriesResponse.fromJson(json);
@@ -440,7 +415,7 @@ void main() {
           'friendbotUrl': 'https://friendbot.stellar.org',
           'passphrase': 'Test SDF Network ; September 2015',
           'protocolVersion': 21,
-        }
+        },
       };
 
       final response = GetNetworkResponse.fromJson(json);
@@ -455,14 +430,16 @@ void main() {
         'result': {
           'passphrase': 'Public Global Stellar Network ; September 2015',
           'protocolVersion': 21,
-        }
+        },
       };
 
       final response = GetNetworkResponse.fromJson(json);
 
       expect(response.friendbotUrl, isNull);
-      expect(response.passphrase,
-          equals('Public Global Stellar Network ; September 2015'));
+      expect(
+        response.passphrase,
+        equals('Public Global Stellar Network ; September 2015'),
+      );
     });
   });
 
@@ -470,8 +447,10 @@ void main() {
     test('constants are correct', () {
       expect(SendTransactionResponse.STATUS_PENDING, equals('PENDING'));
       expect(SendTransactionResponse.STATUS_DUPLICATE, equals('DUPLICATE'));
-      expect(SendTransactionResponse.STATUS_TRY_AGAIN_LATER,
-          equals('TRY_AGAIN_LATER'));
+      expect(
+        SendTransactionResponse.STATUS_TRY_AGAIN_LATER,
+        equals('TRY_AGAIN_LATER'),
+      );
       expect(SendTransactionResponse.STATUS_ERROR, equals('ERROR'));
     });
 
@@ -482,7 +461,7 @@ void main() {
           'hash': 'abc123def456',
           'latestLedger': 100000,
           'latestLedgerCloseTime': '1705305600',
-        }
+        },
       };
 
       final response = SendTransactionResponse.fromJson(json);
@@ -501,7 +480,7 @@ void main() {
           'errorResultXdr': 'base64errorxdr',
           'latestLedger': 100001,
           'latestLedgerCloseTime': '1705305601',
-        }
+        },
       };
 
       final response = SendTransactionResponse.fromJson(json);
@@ -534,7 +513,7 @@ void main() {
           'resultMetaXdr': 'base64meta',
           'ledger': 199999,
           'createdAt': '1705305699',
-        }
+        },
       };
 
       final response = GetTransactionResponse.fromJson(json);
@@ -561,7 +540,7 @@ void main() {
           'latestLedgerCloseTime': '1705305700',
           'oldestLedger': 180000,
           'oldestLedgerCloseTime': '1705295700',
-        }
+        },
       };
 
       final response = GetTransactionResponse.fromJson(json);
@@ -586,7 +565,7 @@ void main() {
           'resultMetaXdr': 'base64failedmeta',
           'ledger': 200000,
           'createdAt': '1705305700',
-        }
+        },
       };
 
       final response = GetTransactionResponse.fromJson(json);
@@ -599,9 +578,7 @@ void main() {
   group('SimulateTransactionResponse', () {
     test('fromJson parses response fields', () {
       final json = {
-        'result': {
-          'latestLedger': 300000,
-        }
+        'result': {'latestLedger': 300000},
       };
 
       final response = SimulateTransactionResponse.fromJson(json);
@@ -615,7 +592,7 @@ void main() {
         'result': {
           'error': 'transaction simulation failed',
           'latestLedger': 300001,
-        }
+        },
       };
 
       final response = SimulateTransactionResponse.fromJson(json);
@@ -626,10 +603,7 @@ void main() {
 
     test('fromJson handles numeric minResourceFee', () {
       final json = {
-        'result': {
-          'minResourceFee': 12345,
-          'latestLedger': 300002,
-        }
+        'result': {'minResourceFee': 12345, 'latestLedger': 300002},
       };
 
       final response = SimulateTransactionResponse.fromJson(json);
@@ -639,10 +613,7 @@ void main() {
 
     test('fromJson handles string minResourceFee', () {
       final json = {
-        'result': {
-          'minResourceFee': '67890',
-          'latestLedger': 300003,
-        }
+        'result': {'minResourceFee': '67890', 'latestLedger': 300003},
       };
 
       final response = SimulateTransactionResponse.fromJson(json);
@@ -918,17 +889,19 @@ void main() {
                 'ledgerRetentionWindow': 17280,
                 'latestLedger': 100000,
                 'oldestLedger': 82720,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final response = await server.getHealth();
 
@@ -953,17 +926,19 @@ void main() {
                 'ledgerRetentionWindow': 0,
                 'latestLedger': 0,
                 'oldestLedger': 0,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final response = await server.getHealth();
 
@@ -986,17 +961,19 @@ void main() {
                 'friendbotUrl': 'https://friendbot.stellar.org',
                 'passphrase': 'Test SDF Network ; September 2015',
                 'protocolVersion': 20,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final response = await server.getNetwork();
 
@@ -1018,23 +995,27 @@ void main() {
               'result': {
                 'passphrase': 'Public Global Stellar Network ; September 2015',
                 'protocolVersion': 20,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-mainnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-mainnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final response = await server.getNetwork();
 
         expect(response.friendbotUrl, isNull);
-        expect(response.passphrase,
-            'Public Global Stellar Network ; September 2015');
+        expect(
+          response.passphrase,
+          'Public Global Stellar Network ; September 2015',
+        );
         expect(response.protocolVersion, 20);
       });
     });
@@ -1055,22 +1036,26 @@ void main() {
                     'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2',
                 'protocolVersion': 20,
                 'sequence': 100000,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final response = await server.getLatestLedger();
 
-        expect(response.id,
-            'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2');
+        expect(
+          response.id,
+          'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2',
+        );
         expect(response.protocolVersion, 20);
         expect(response.sequence, 100000);
       });
@@ -1116,20 +1101,22 @@ void main() {
                     'key': (requestBody['params']['keys'] as List)[0],
                     'xdr': ledgerEntryData.toBase64EncodedXdrString(),
                     'lastModifiedLedgerSeq': 99999,
-                  }
+                  },
                 ],
                 'latestLedger': 100000,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final account = await server.getAccount(accountId);
 
@@ -1151,20 +1138,19 @@ void main() {
             jsonEncode({
               'jsonrpc': '2.0',
               'id': requestBody['id'],
-              'result': {
-                'entries': [],
-                'latestLedger': 100000,
-              }
+              'result': {'entries': [], 'latestLedger': 100000},
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final account = await server.getAccount(accountId);
 
@@ -1179,8 +1165,9 @@ void main() {
         final keyPair = KeyPair.fromAccountId(accountId);
 
         var ledgerKey = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
-        ledgerKey.account =
-            XdrLedgerKeyAccount(XdrAccountID(keyPair.xdrPublicKey));
+        ledgerKey.account = XdrLedgerKeyAccount(
+          XdrAccountID(keyPair.xdrPublicKey),
+        );
         final base64Key = ledgerKey.toBase64EncodedXdrString();
 
         var mockDio = dio.Dio();
@@ -1215,20 +1202,22 @@ void main() {
                     'key': base64Key,
                     'xdr': ledgerEntryData.toBase64EncodedXdrString(),
                     'lastModifiedLedgerSeq': 99999,
-                  }
+                  },
                 ],
                 'latestLedger': 100000,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final response = await server.getLedgerEntries([base64Key]);
 
@@ -1251,20 +1240,19 @@ void main() {
             jsonEncode({
               'jsonrpc': '2.0',
               'id': requestBody['id'],
-              'result': {
-                'entries': [],
-                'latestLedger': 100000,
-              }
+              'result': {'entries': [], 'latestLedger': 100000},
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final response = await server.getLedgerEntries([fakeKey]);
 
@@ -1274,81 +1262,85 @@ void main() {
     });
 
     group('getFeeStats', () {
-      test('returns fee statistics for Soroban and classic transactions',
-          () async {
-        var mockDio = dio.Dio();
-        mockDio.httpClientAdapter = MockDioAdapter((options) {
-          var requestBody = jsonDecode(options.data);
-          expect(requestBody['method'], 'getFeeStats');
+      test(
+        'returns fee statistics for Soroban and classic transactions',
+        () async {
+          var mockDio = dio.Dio();
+          mockDio.httpClientAdapter = MockDioAdapter((options) {
+            var requestBody = jsonDecode(options.data);
+            expect(requestBody['method'], 'getFeeStats');
 
-          return dio.ResponseBody.fromString(
-            jsonEncode({
-              'jsonrpc': '2.0',
-              'id': requestBody['id'],
-              'result': {
-                'sorobanInclusionFee': {
-                  'max': '1000',
-                  'min': '100',
-                  'mode': '150',
-                  'p10': '110',
-                  'p20': '120',
-                  'p30': '130',
-                  'p40': '140',
-                  'p50': '150',
-                  'p60': '160',
-                  'p70': '170',
-                  'p80': '180',
-                  'p90': '200',
-                  'p95': '300',
-                  'p99': '500',
-                  'transactionCount': '500',
-                  'ledgerCount': 10,
+            return dio.ResponseBody.fromString(
+              jsonEncode({
+                'jsonrpc': '2.0',
+                'id': requestBody['id'],
+                'result': {
+                  'sorobanInclusionFee': {
+                    'max': '1000',
+                    'min': '100',
+                    'mode': '150',
+                    'p10': '110',
+                    'p20': '120',
+                    'p30': '130',
+                    'p40': '140',
+                    'p50': '150',
+                    'p60': '160',
+                    'p70': '170',
+                    'p80': '180',
+                    'p90': '200',
+                    'p95': '300',
+                    'p99': '500',
+                    'transactionCount': '500',
+                    'ledgerCount': 10,
+                  },
+                  'inclusionFee': {
+                    'max': '500',
+                    'min': '100',
+                    'mode': '100',
+                    'p10': '100',
+                    'p20': '100',
+                    'p30': '100',
+                    'p40': '100',
+                    'p50': '100',
+                    'p60': '100',
+                    'p70': '100',
+                    'p80': '100',
+                    'p90': '100',
+                    'p95': '200',
+                    'p99': '300',
+                    'transactionCount': '1000',
+                    'ledgerCount': 10,
+                  },
+                  'latestLedger': 100000,
                 },
-                'inclusionFee': {
-                  'max': '500',
-                  'min': '100',
-                  'mode': '100',
-                  'p10': '100',
-                  'p20': '100',
-                  'p30': '100',
-                  'p40': '100',
-                  'p50': '100',
-                  'p60': '100',
-                  'p70': '100',
-                  'p80': '100',
-                  'p90': '100',
-                  'p95': '200',
-                  'p99': '300',
-                  'transactionCount': '1000',
-                  'ledgerCount': 10,
-                },
-                'latestLedger': 100000,
-              }
-            }),
-            200,
-            headers: {
-              'content-type': [dio.Headers.jsonContentType]
-            },
+              }),
+              200,
+              headers: {
+                'content-type': [dio.Headers.jsonContentType],
+              },
+            );
+          });
+
+          var server = SorobanServer(
+            'https://soroban-testnet.stellar.org',
+            httpClient: mockDio,
           );
-        });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+          final response = await server.getFeeStats();
 
-        final response = await server.getFeeStats();
+          expect(response.sorobanInclusionFee, isNotNull);
+          expect(response.sorobanInclusionFee!.max, '1000');
+          expect(response.sorobanInclusionFee!.min, '100');
+          expect(response.sorobanInclusionFee!.p50, '150');
+          expect(response.sorobanInclusionFee!.transactionCount, '500');
 
-        expect(response.sorobanInclusionFee, isNotNull);
-        expect(response.sorobanInclusionFee!.max, '1000');
-        expect(response.sorobanInclusionFee!.min, '100');
-        expect(response.sorobanInclusionFee!.p50, '150');
-        expect(response.sorobanInclusionFee!.transactionCount, '500');
+          expect(response.inclusionFee, isNotNull);
+          expect(response.inclusionFee!.max, '500');
+          expect(response.inclusionFee!.p50, '100');
 
-        expect(response.inclusionFee, isNotNull);
-        expect(response.inclusionFee!.max, '500');
-        expect(response.inclusionFee!.p50, '100');
-
-        expect(response.latestLedger, 100000);
-      });
+          expect(response.latestLedger, 100000);
+        },
+      );
     });
 
     group('getVersionInfo', () {
@@ -1369,17 +1361,19 @@ void main() {
                 'build_time_stamp': '2024-01-15T10:30:00Z',
                 'captive_core_version': '19.14.0',
                 'protocol_version': 20,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final response = await server.getVersionInfo();
 
@@ -1392,65 +1386,63 @@ void main() {
     });
 
     group('simulateTransaction', () {
-      test('returns successful simulation with results and resource fee',
-          () async {
-        final sourceAccountId =
-            'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54';
-        final sourceAccount = Account(sourceAccountId, BigInt.from(123456));
+      test(
+        'returns successful simulation with results and resource fee',
+        () async {
+          final sourceAccountId =
+              'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54';
+          final sourceAccount = Account(sourceAccountId, BigInt.from(123456));
 
-        var mockDio = dio.Dio();
-        mockDio.httpClientAdapter = MockDioAdapter((options) {
-          var requestBody = jsonDecode(options.data);
-          expect(requestBody['method'], 'simulateTransaction');
-          expect(requestBody['params']['transaction'], isNotNull);
+          var mockDio = dio.Dio();
+          mockDio.httpClientAdapter = MockDioAdapter((options) {
+            var requestBody = jsonDecode(options.data);
+            expect(requestBody['method'], 'simulateTransaction');
+            expect(requestBody['params']['transaction'], isNotNull);
 
-          // Mock successful simulation response
-          final resultValue = XdrSCVal.forU32(42);
+            // Mock successful simulation response
+            final resultValue = XdrSCVal.forU32(42);
 
-          return dio.ResponseBody.fromString(
-            jsonEncode({
-              'jsonrpc': '2.0',
-              'id': requestBody['id'],
-              'result': {
-                'minResourceFee': '100000',
-                'cost': {
-                  'cpuInsns': '1000',
-                  'memBytes': '100',
+            return dio.ResponseBody.fromString(
+              jsonEncode({
+                'jsonrpc': '2.0',
+                'id': requestBody['id'],
+                'result': {
+                  'minResourceFee': '100000',
+                  'cost': {'cpuInsns': '1000', 'memBytes': '100'},
+                  'results': [
+                    {'auth': [], 'xdr': resultValue.toBase64EncodedXdrString()},
+                  ],
+                  'latestLedger': 100000,
                 },
-                'results': [
-                  {
-                    'auth': [],
-                    'xdr': resultValue.toBase64EncodedXdrString(),
-                  }
-                ],
-                'latestLedger': 100000,
-              }
-            }),
-            200,
-            headers: {
-              'content-type': [dio.Headers.jsonContentType]
-            },
+              }),
+              200,
+              headers: {
+                'content-type': [dio.Headers.jsonContentType],
+              },
+            );
+          });
+
+          var server = SorobanServer(
+            'https://soroban-testnet.stellar.org',
+            httpClient: mockDio,
           );
-        });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+          // Create a simple transaction
+          final tx = TransactionBuilder(sourceAccount)
+              .addOperation(BumpSequenceOperation(BigInt.from(123456 + 10)))
+              .build();
 
-        // Create a simple transaction
-        final tx = TransactionBuilder(sourceAccount)
-            .addOperation(BumpSequenceOperation(BigInt.from(123456 + 10)))
-            .build();
+          final request = SimulateTransactionRequest(tx);
+          final response = await server.simulateTransaction(request);
 
-        final request = SimulateTransactionRequest(tx);
-        final response = await server.simulateTransaction(request);
-
-        expect(response.resultError, isNull);
-        expect(response.minResourceFee, 100000);
-        expect(response.results, isNotNull);
-        expect(response.results!.length, 1);
-        expect(response.latestLedger, 100000);
-        // Note: Not validating transactionData XDR parsing in mock test
-      });
+          expect(response.resultError, isNull);
+          expect(response.minResourceFee, 100000);
+          expect(response.results, isNotNull);
+          expect(response.results!.length, 1);
+          expect(response.latestLedger, 100000);
+          // Note: Not validating transactionData XDR parsing in mock test
+        },
+      );
 
       test('returns error response on simulation failure', () async {
         final sourceAccountId =
@@ -1469,28 +1461,32 @@ void main() {
               'result': {
                 'error': 'Transaction simulation failed: insufficient balance',
                 'latestLedger': 100000,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
-        final tx = TransactionBuilder(sourceAccount)
-            .addOperation(BumpSequenceOperation(BigInt.from(123456 + 10)))
-            .build();
+        final tx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(BumpSequenceOperation(BigInt.from(123456 + 10))).build();
 
         final request = SimulateTransactionRequest(tx);
         final response = await server.simulateTransaction(request);
 
         expect(response.resultError, isNotNull);
-        expect(response.resultError,
-            'Transaction simulation failed: insufficient balance');
+        expect(
+          response.resultError,
+          'Transaction simulation failed: insufficient balance',
+        );
       });
 
       test('returns cost information for simulation', () async {
@@ -1509,26 +1505,25 @@ void main() {
               'id': requestBody['id'],
               'result': {
                 'minResourceFee': '50000',
-                'cost': {
-                  'cpuInsns': '2000',
-                  'memBytes': '200',
-                },
+                'cost': {'cpuInsns': '2000', 'memBytes': '200'},
                 'latestLedger': 100000,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
-        final tx = TransactionBuilder(sourceAccount)
-            .addOperation(BumpSequenceOperation(BigInt.from(123456 + 10)))
-            .build();
+        final tx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(BumpSequenceOperation(BigInt.from(123456 + 10))).build();
 
         final request = SimulateTransactionRequest(tx);
         final response = await server.simulateTransaction(request);
@@ -1560,28 +1555,32 @@ void main() {
                     'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2',
                 'latestLedger': 100000,
                 'latestLedgerCloseTime': '1234567890',
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
-        final tx = TransactionBuilder(sourceAccount)
-            .addOperation(BumpSequenceOperation(BigInt.from(123456 + 10)))
-            .build();
+        final tx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(BumpSequenceOperation(BigInt.from(123456 + 10))).build();
         tx.sign(sourceKeyPair, Network.TESTNET);
 
         final response = await server.sendTransaction(tx);
 
         expect(response.status, SendTransactionResponse.STATUS_PENDING);
-        expect(response.hash,
-            'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2');
+        expect(
+          response.hash,
+          'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2',
+        );
         expect(response.latestLedger, 100000);
       });
 
@@ -1607,21 +1606,23 @@ void main() {
                     'AAAAAAAAAGT/////AAAAAQAAAAAAAAAB////+gAAAAA=',
                 'latestLedger': 100000,
                 'latestLedgerCloseTime': '1234567890',
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
-        final tx = TransactionBuilder(sourceAccount)
-            .addOperation(BumpSequenceOperation(BigInt.from(123456 + 10)))
-            .build();
+        final tx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(BumpSequenceOperation(BigInt.from(123456 + 10))).build();
         tx.sign(sourceKeyPair, Network.TESTNET);
 
         final response = await server.sendTransaction(tx);
@@ -1630,50 +1631,56 @@ void main() {
         expect(response.errorResultXdr, isNotNull);
       });
 
-      test('returns DUPLICATE status when transaction already submitted',
-          () async {
-        final sourceKeyPair = KeyPair.random();
-        final sourceAccountId = sourceKeyPair.accountId;
-        final sourceAccount = Account(sourceAccountId, BigInt.from(123456));
+      test(
+        'returns DUPLICATE status when transaction already submitted',
+        () async {
+          final sourceKeyPair = KeyPair.random();
+          final sourceAccountId = sourceKeyPair.accountId;
+          final sourceAccount = Account(sourceAccountId, BigInt.from(123456));
 
-        var mockDio = dio.Dio();
-        mockDio.httpClientAdapter = MockDioAdapter((options) {
-          var requestBody = jsonDecode(options.data);
-          expect(requestBody['method'], 'sendTransaction');
+          var mockDio = dio.Dio();
+          mockDio.httpClientAdapter = MockDioAdapter((options) {
+            var requestBody = jsonDecode(options.data);
+            expect(requestBody['method'], 'sendTransaction');
 
-          return dio.ResponseBody.fromString(
-            jsonEncode({
-              'jsonrpc': '2.0',
-              'id': requestBody['id'],
-              'result': {
-                'status': 'DUPLICATE',
-                'hash':
-                    'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2',
-                'latestLedger': 100000,
-                'latestLedgerCloseTime': '1234567890',
-              }
-            }),
-            200,
-            headers: {
-              'content-type': [dio.Headers.jsonContentType]
-            },
+            return dio.ResponseBody.fromString(
+              jsonEncode({
+                'jsonrpc': '2.0',
+                'id': requestBody['id'],
+                'result': {
+                  'status': 'DUPLICATE',
+                  'hash':
+                      'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2',
+                  'latestLedger': 100000,
+                  'latestLedgerCloseTime': '1234567890',
+                },
+              }),
+              200,
+              headers: {
+                'content-type': [dio.Headers.jsonContentType],
+              },
+            );
+          });
+
+          var server = SorobanServer(
+            'https://soroban-testnet.stellar.org',
+            httpClient: mockDio,
           );
-        });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+          final tx = TransactionBuilder(sourceAccount)
+              .addOperation(BumpSequenceOperation(BigInt.from(123456 + 10)))
+              .build();
+          tx.sign(sourceKeyPair, Network.TESTNET);
 
-        final tx = TransactionBuilder(sourceAccount)
-            .addOperation(BumpSequenceOperation(BigInt.from(123456 + 10)))
-            .build();
-        tx.sign(sourceKeyPair, Network.TESTNET);
+          final response = await server.sendTransaction(tx);
 
-        final response = await server.sendTransaction(tx);
-
-        expect(response.status, SendTransactionResponse.STATUS_DUPLICATE);
-        expect(response.hash,
-            'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2');
-      });
+          expect(response.status, SendTransactionResponse.STATUS_DUPLICATE);
+          expect(
+            response.hash,
+            'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2',
+          );
+        },
+      );
 
       test('returns TRY_AGAIN_LATER status when server is busy', () async {
         final sourceKeyPair = KeyPair.random();
@@ -1695,21 +1702,23 @@ void main() {
                     'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2',
                 'latestLedger': 100000,
                 'latestLedgerCloseTime': '1234567890',
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
-        final tx = TransactionBuilder(sourceAccount)
-            .addOperation(BumpSequenceOperation(BigInt.from(123456 + 10)))
-            .build();
+        final tx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(BumpSequenceOperation(BigInt.from(123456 + 10))).build();
         tx.sign(sourceKeyPair, Network.TESTNET);
 
         final response = await server.sendTransaction(tx);
@@ -1744,17 +1753,19 @@ void main() {
                 'resultXdr': 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
                 'resultMetaXdr':
                     'AAAAAgAAAAIAAAADAAGGoQAAAAAAAAAAdVGJlbmFtZSI6IkludGVybmFsIFNlcnZlciBFcnJvciJ9',
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final response = await server.getTransaction(txHash);
 
@@ -1785,17 +1796,19 @@ void main() {
                 'latestLedgerCloseTime': '1234567890',
                 'oldestLedger': 82720,
                 'oldestLedgerCloseTime': '1234560000',
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final response = await server.getTransaction(txHash);
 
@@ -1827,17 +1840,19 @@ void main() {
                     'AAAAAgAAAABzdv3ojkzWHMD7KUoXhrPx0GH18vHKV0ZfqpMiEblG1gAAAGQAAAAAAAAAAgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAc3b96I5M1hzA+ylKF4az8dBh9fLxyldGX6qTIhG5RtYAAAABAAAAAHN2/eiOTNYcwPspSheGs/HQYfXy8cpXRl+qkyIRuUbWAAAAAAAAAAAF9eEAAAAAAAAAAAIRuUbWAAAAQHnJ0a5x7tKWBH+QV+HMBx5eGgc+3cDVmqLVTlpHtqJKnXWFDlUqL+tKKk+HqXKHqXKHqXKHqXKHqXKHqXKHqXKHqXo=',
                 'resultXdr': 'AAAAAAAAAGT/////AAAAAQAAAAAAAAAB////+gAAAAA=',
                 'resultMetaXdr': 'AAAAAgAAAAIAAAADAAGGoQAA',
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final response = await server.getTransaction(txHash);
 
@@ -1882,32 +1897,36 @@ void main() {
                         'AAAAAgAAAABzdv3ojkzWHMD7KUoXhrPx0GH18vHKV0ZfqpMiEblG1gAAAGQAAAAAAAAAAwAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAc3b96I5M1hzA+ylKF4az8dBh9fLxyldGX6qTIhG5RtYAAAABAAAAAHN2/eiOTNYcwPspSheGs/HQYfXy8cpXRl+qkyIRuUbWAAAAAAAAAAAF9eEAAAAAAAAAAAIRuUbWAAAAQHnJ0a5x7tKWBH+QV+HMBx5eGgc+3cDVmqLVTlpHtqJKnXWFDlUqL+tKKk+HqXKHqXKHqXKHqXKHqXKHqXKHqXKHqXo=',
                     'resultXdr': 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
                     'resultMetaXdr': 'AAAAAgAAAAIAAAADAAGGoQAA',
-                  }
+                  },
                 ],
                 'latestLedger': 100000,
                 'latestLedgerCloseTimestamp': 1234567900,
                 'oldestLedger': 82720,
                 'oldestLedgerCloseTimestamp': 1234560000,
                 'cursor': '90002-1',
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final request = GetTransactionsRequest(startLedger: 90000);
         final response = await server.getTransactions(request);
 
         expect(response.transactions, isNotNull);
         expect(response.transactions!.length, 2);
-        expect(response.transactions![0].status,
-            GetTransactionResponse.STATUS_SUCCESS);
+        expect(
+          response.transactions![0].status,
+          GetTransactionResponse.STATUS_SUCCESS,
+        );
         expect(response.transactions![0].ledger, 90001);
         expect(response.transactions![1].ledger, 90002);
         expect(response.cursor, '90002-1');
@@ -1915,41 +1934,44 @@ void main() {
       });
 
       test(
-          'returns empty transactions list for ledger range with no transactions',
-          () async {
-        var mockDio = dio.Dio();
-        mockDio.httpClientAdapter = MockDioAdapter((options) {
-          var requestBody = jsonDecode(options.data);
-          expect(requestBody['method'], 'getTransactions');
+        'returns empty transactions list for ledger range with no transactions',
+        () async {
+          var mockDio = dio.Dio();
+          mockDio.httpClientAdapter = MockDioAdapter((options) {
+            var requestBody = jsonDecode(options.data);
+            expect(requestBody['method'], 'getTransactions');
 
-          return dio.ResponseBody.fromString(
-            jsonEncode({
-              'jsonrpc': '2.0',
-              'id': requestBody['id'],
-              'result': {
-                'transactions': [],
-                'latestLedger': 100000,
-                'latestLedgerCloseTimestamp': 1234567900,
-                'oldestLedger': 82720,
-                'oldestLedgerCloseTimestamp': 1234560000,
-              }
-            }),
-            200,
-            headers: {
-              'content-type': [dio.Headers.jsonContentType]
-            },
+            return dio.ResponseBody.fromString(
+              jsonEncode({
+                'jsonrpc': '2.0',
+                'id': requestBody['id'],
+                'result': {
+                  'transactions': [],
+                  'latestLedger': 100000,
+                  'latestLedgerCloseTimestamp': 1234567900,
+                  'oldestLedger': 82720,
+                  'oldestLedgerCloseTimestamp': 1234560000,
+                },
+              }),
+              200,
+              headers: {
+                'content-type': [dio.Headers.jsonContentType],
+              },
+            );
+          });
+
+          var server = SorobanServer(
+            'https://soroban-testnet.stellar.org',
+            httpClient: mockDio,
           );
-        });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+          final request = GetTransactionsRequest(startLedger: 99000);
+          final response = await server.getTransactions(request);
 
-        final request = GetTransactionsRequest(startLedger: 99000);
-        final response = await server.getTransactions(request);
-
-        expect(response.transactions, isNotNull);
-        expect(response.transactions!.length, 0);
-      });
+          expect(response.transactions, isNotNull);
+          expect(response.transactions!.length, 0);
+        },
+      );
     });
 
     group('getEvents', () {
@@ -1986,27 +2008,30 @@ void main() {
                     'inSuccessfulContractCall': true,
                     'txHash':
                         'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2',
-                  }
+                  },
                 ],
                 'latestLedger': 100000,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final filters = [
           EventFilter(
             type: 'contract',
             topics: [
-              TopicFilter(
-                  [XdrSCVal.forSymbol('transfer').toBase64EncodedXdrString()]),
+              TopicFilter([
+                XdrSCVal.forSymbol('transfer').toBase64EncodedXdrString(),
+              ]),
             ],
           ),
         ];
@@ -2018,8 +2043,10 @@ void main() {
         expect(response.events!.length, 1);
         expect(response.events![0].type, 'contract');
         expect(response.events![0].ledger, 90001);
-        expect(response.events![0].contractId,
-            'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK');
+        expect(
+          response.events![0].contractId,
+          'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+        );
         expect(response.latestLedger, 100000);
       });
 
@@ -2053,26 +2080,25 @@ void main() {
                     'inSuccessfulContractCall': true,
                     'txHash':
                         'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2',
-                  }
+                  },
                 ],
                 'latestLedger': 100000,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final filters = [
-          EventFilter(
-            type: 'contract',
-            contractIds: [contractId],
-          ),
+          EventFilter(type: 'contract', contractIds: [contractId]),
         ];
 
         final request = GetEventsRequest(startLedger: 90000, filters: filters);
@@ -2093,20 +2119,19 @@ void main() {
             jsonEncode({
               'jsonrpc': '2.0',
               'id': requestBody['id'],
-              'result': {
-                'events': [],
-                'latestLedger': 100000,
-              }
+              'result': {'events': [], 'latestLedger': 100000},
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final request = GetEventsRequest(startLedger: 90000);
         final response = await server.getEvents(request);
@@ -2129,10 +2154,12 @@ void main() {
           expect(requestBody['params']['keys'], isList);
 
           final value = XdrSCVal.forU64(BigInt.from(42));
-          final contractAddress =
-              XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
-          contractAddress.contractId =
-              XdrHash(Uint8List.fromList(List.filled(32, 0)));
+          final contractAddress = XdrSCAddress(
+            XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT,
+          );
+          contractAddress.contractId = XdrHash(
+            Uint8List.fromList(List.filled(32, 0)),
+          );
           final contractData = XdrContractDataEntry(
             XdrExtensionPoint(0),
             contractAddress,
@@ -2141,8 +2168,9 @@ void main() {
             value,
           );
 
-          final ledgerEntryData =
-              XdrLedgerEntryData(XdrLedgerEntryType.CONTRACT_DATA);
+          final ledgerEntryData = XdrLedgerEntryData(
+            XdrLedgerEntryType.CONTRACT_DATA,
+          );
           ledgerEntryData.contractData = contractData;
 
           return dio.ResponseBody.fromString(
@@ -2156,20 +2184,22 @@ void main() {
                     'xdr': ledgerEntryData.toBase64EncodedXdrString(),
                     'lastModifiedLedgerSeq': 99999,
                     'liveUntilLedgerSeq': 150000,
-                  }
+                  },
                 ],
                 'latestLedger': 100000,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final contractIdHash = StrKey.decodeContractIdHex(contractId);
         final entry = await server.getContractData(
@@ -2198,20 +2228,19 @@ void main() {
             jsonEncode({
               'jsonrpc': '2.0',
               'id': requestBody['id'],
-              'result': {
-                'entries': [],
-                'latestLedger': 100000,
-              }
+              'result': {'entries': [], 'latestLedger': 100000},
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final contractIdHash = StrKey.decodeContractIdHex(contractId);
         final entry = await server.getContractData(
@@ -2235,8 +2264,10 @@ void main() {
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         expect(
           () async => await server.getHealth(),
@@ -2251,13 +2282,15 @@ void main() {
             'Invalid JSON',
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         // Invalid JSON causes DioException wrapping FormatException
         expect(
@@ -2279,17 +2312,19 @@ void main() {
                 'code': -32600,
                 'message': 'Invalid Request',
                 'data': {'additionalInfo': 'Additional error information'},
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         final response = await server.getHealth();
 
@@ -2313,8 +2348,10 @@ void main() {
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         expect(
           () async => await server.getHealth(),
@@ -2332,8 +2369,10 @@ void main() {
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         expect(
           () async => await server.getHealth(),
@@ -2359,17 +2398,19 @@ void main() {
                 'ledgerRetentionWindow': 17280,
                 'latestLedger': 100000,
                 'oldestLedger': 82720,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         await server.getHealth();
 
@@ -2397,17 +2438,19 @@ void main() {
                 'latestLedgerCloseTime': '1234567890',
                 'oldestLedger': 82720,
                 'oldestLedgerCloseTime': '1234560000',
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         await server.getTransaction(txHash);
 
@@ -2431,17 +2474,19 @@ void main() {
                 'ledgerRetentionWindow': 17280,
                 'latestLedger': 100000,
                 'oldestLedger': 82720,
-              }
+              },
             }),
             200,
             headers: {
-              'content-type': [dio.Headers.jsonContentType]
+              'content-type': [dio.Headers.jsonContentType],
             },
           );
         });
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+        var server = SorobanServer(
+          'https://soroban-testnet.stellar.org',
+          httpClient: mockDio,
+        );
 
         await server.getHealth();
 

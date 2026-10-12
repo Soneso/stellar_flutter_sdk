@@ -90,7 +90,9 @@ class ChallengeResponse extends Response {
   factory ChallengeResponse.fromJson(Map<String, dynamic> json) {
     return ChallengeResponse(
       json['transaction'] == null ? null : json['transaction'],
-      networkPassphrase: json['network_passphrase'] == null ? null : json['network_passphrase'],
+      networkPassphrase: json['network_passphrase'] == null
+          ? null
+          : json['network_passphrase'],
     );
   }
 }
@@ -175,7 +177,10 @@ class SubmitCompletedChallengeResponse extends Response {
   /// - [error]: Error message if authentication failed
   SubmitCompletedChallengeResponse(this.jwtToken, this.error);
 
-  factory SubmitCompletedChallengeResponse.fromJson(Map<String, dynamic> json) =>
-      SubmitCompletedChallengeResponse(json['token'] == null ? null : json['token'],
-          json['error'] == null ? null : json['error']);
+  factory SubmitCompletedChallengeResponse.fromJson(
+    Map<String, dynamic> json,
+  ) => SubmitCompletedChallengeResponse(
+    json['token'] == null ? null : json['token'],
+    json['error'] == null ? null : json['error'],
+  );
 }

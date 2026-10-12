@@ -10,14 +10,14 @@ import 'noop_http_adapter.dart';
 /// Recording mock of [OZRelayerClient] used by lifecycle tests to assert close() invocations.
 class MockOZRelayerClient extends OZRelayerClient {
   MockOZRelayerClient()
-      : super.withDio(
-          'https://relayer.test',
-          dio.Dio()
-            ..httpClientAdapter = NoopHttpAdapter(
-              responseBody:
-                  '{"success":true,"hash":"deadbeef","status":"SUCCESS"}',
-            ),
-        );
+    : super.withDio(
+        'https://relayer.test',
+        dio.Dio()
+          ..httpClientAdapter = NoopHttpAdapter(
+            responseBody:
+                '{"success":true,"hash":"deadbeef","status":"SUCCESS"}',
+          ),
+      );
 
   int closeCalls = 0;
 

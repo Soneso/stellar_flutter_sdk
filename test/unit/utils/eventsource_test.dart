@@ -6,11 +6,7 @@ import 'package:stellar_flutter_sdk/src/eventsource/decoder.dart';
 void main() {
   group('Event Tests', () {
     test('should create event with all fields', () {
-      var event = Event(
-        id: "123",
-        event: "message",
-        data: "test data",
-      );
+      var event = Event(id: "123", event: "message", data: "test data");
 
       expect(event.id, equals("123"));
       expect(event.event, equals("message"));
@@ -44,11 +40,7 @@ void main() {
     });
 
     test('should allow sorting events', () {
-      var events = [
-        Event(id: "3"),
-        Event(id: "1"),
-        Event(id: "2"),
-      ];
+      var events = [Event(id: "3"), Event(id: "1"), Event(id: "2")];
 
       events.sort();
 
@@ -65,9 +57,7 @@ void main() {
     });
 
     test('should create decoder with retry indicator', () {
-      var decoder = EventSourceDecoder(
-        retryIndicator: (retry) {},
-      );
+      var decoder = EventSourceDecoder(retryIndicator: (retry) {});
       expect(decoder, isA<EventSourceDecoder>());
       expect(decoder.retryIndicator, isNotNull);
     });

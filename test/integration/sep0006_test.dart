@@ -68,8 +68,7 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
 
-    InfoResponse infoResponse =
-        await transferService.info();
+    InfoResponse infoResponse = await transferService.info();
 
     assert(infoResponse.depositAssets != null);
     assert(infoResponse.depositAssets!.length == 2);
@@ -88,8 +87,10 @@ void main() {
     assert(fields!.length == 4);
     assert(fields!["email_address"] != null);
     AnchorField emailAddress = fields!["email_address"]!;
-    assert(emailAddress.description ==
-        "your email address for transaction status updates");
+    assert(
+      emailAddress.description ==
+          "your email address for transaction status updates",
+    );
     assert(emailAddress.optional!);
     assert(fields["country_code"]!.choices!.contains("USA"));
     assert(fields["type"]!.choices!.contains("SWIFT"));
@@ -104,8 +105,10 @@ void main() {
     assert(fields!.length == 4);
     assert(fields!["email_address"] != null);
     emailAddress = fields!["email_address"]!;
-    assert(emailAddress.description ==
-        "your email address for transaction status updates");
+    assert(
+      emailAddress.description ==
+          "your email address for transaction status updates",
+    );
     assert(emailAddress.optional!);
     assert(fields["country_code"]!.choices!.contains("USA"));
     assert(fields["type"]!.choices!.contains("SWIFT"));
@@ -196,20 +199,28 @@ void main() {
     });
 
     DepositRequest depositRequest = DepositRequest(
-        jwt: jwtToken, assetCode: "USD", account: accountId, amount: "123.123");
+      jwt: jwtToken,
+      assetCode: "USD",
+      account: accountId,
+      amount: "123.123",
+    );
 
-    DepositResponse depositResponse =
-        await transferService.deposit(depositRequest);
+    DepositResponse depositResponse = await transferService.deposit(
+      depositRequest,
+    );
 
-    assert(depositResponse.how ==
-        "Make a payment to Bank: 121122676 Account: 13719713158835300");
+    assert(
+      depositResponse.how ==
+          "Make a payment to Bank: 121122676 Account: 13719713158835300",
+    );
     assert(depositResponse.id == "9421871e-0623-4356-b7b5-5996da122f3e");
     assert(depositResponse.feeFixed == null);
 
     var instructions = depositResponse.instructions;
     assert(instructions != null);
 
-    var bankNumberKey = OrganizationKYCFields.key_prefix +
+    var bankNumberKey =
+        OrganizationKYCFields.key_prefix +
         FinancialAccountKYCFields.bank_number_field_key;
     assert(instructions!.containsKey(bankNumberKey));
     var bankNumberInstruction = instructions![bankNumberKey];
@@ -217,14 +228,16 @@ void main() {
     assert(bankNumberInstruction!.value == '121122676');
     assert(bankNumberInstruction!.description == 'US bank routing number');
 
-    var bankAccountNumberKey = OrganizationKYCFields.key_prefix +
+    var bankAccountNumberKey =
+        OrganizationKYCFields.key_prefix +
         FinancialAccountKYCFields.bank_account_number_field_key;
     assert(instructions.containsKey(bankAccountNumberKey));
     var bankAccountNumberInstruction = instructions[bankAccountNumberKey];
     assert(bankAccountNumberInstruction != null);
     assert(bankAccountNumberInstruction!.value == '13719713158835300');
     assert(
-        bankAccountNumberInstruction!.description == 'US bank account number');
+      bankAccountNumberInstruction!.description == 'US bank account number',
+    );
   });
 
   test('test deposit btc success', () async {
@@ -244,25 +257,34 @@ void main() {
     });
 
     DepositRequest depositRequest = DepositRequest(
-        jwt: jwtToken, assetCode: "BTC", account: accountId, amount: "3.123");
+      jwt: jwtToken,
+      assetCode: "BTC",
+      account: accountId,
+      amount: "3.123",
+    );
 
-    DepositResponse depositResponse =
-        await transferService.deposit(depositRequest);
+    DepositResponse depositResponse = await transferService.deposit(
+      depositRequest,
+    );
 
-    assert(depositResponse.how ==
-        "Make a payment to Bitcoin address 1Nh7uHdvY6fNwtQtM1G5EZAFPLC33B59rB");
+    assert(
+      depositResponse.how ==
+          "Make a payment to Bitcoin address 1Nh7uHdvY6fNwtQtM1G5EZAFPLC33B59rB",
+    );
     assert(depositResponse.id == "9421871e-0623-4356-b7b5-5996da122f3e");
     assert(depositResponse.feeFixed == 0.0002);
 
     var instructions = depositResponse.instructions;
     assert(instructions != null);
-    var cryptoAddressKey = OrganizationKYCFields.key_prefix +
+    var cryptoAddressKey =
+        OrganizationKYCFields.key_prefix +
         FinancialAccountKYCFields.crypto_address_field_key;
     assert(instructions!.containsKey(cryptoAddressKey));
     var cryptoAddressInstruction = instructions![cryptoAddressKey];
     assert(cryptoAddressInstruction != null);
-    assert(cryptoAddressInstruction!.value ==
-        '1Nh7uHdvY6fNwtQtM1G5EZAFPLC33B59rB');
+    assert(
+      cryptoAddressInstruction!.value == '1Nh7uHdvY6fNwtQtM1G5EZAFPLC33B59rB',
+    );
     assert(cryptoAddressInstruction!.description == 'Bitcoin address');
   });
 
@@ -283,32 +305,44 @@ void main() {
     });
 
     DepositRequest depositRequest = DepositRequest(
-        jwt: jwtToken, assetCode: "XRP", account: accountId, amount: "300.0");
+      jwt: jwtToken,
+      assetCode: "XRP",
+      account: accountId,
+      amount: "300.0",
+    );
 
-    DepositResponse depositResponse =
-        await transferService.deposit(depositRequest);
+    DepositResponse depositResponse = await transferService.deposit(
+      depositRequest,
+    );
 
-    assert(depositResponse.how ==
-        "Make a payment to Ripple address rNXEkKCxvfLcM1h4HJkaj2FtmYuAWrHGbf with tag 88");
+    assert(
+      depositResponse.how ==
+          "Make a payment to Ripple address rNXEkKCxvfLcM1h4HJkaj2FtmYuAWrHGbf with tag 88",
+    );
     assert(depositResponse.id == "9421871e-0623-4356-b7b5-5996da122f3e");
     assert(depositResponse.eta == 60);
     assert(depositResponse.feePercent == 0.1);
-    assert(depositResponse.extraInfo!.message ==
-        "You must include the tag. If the amount is more than 1000 XRP, deposit will take 24h to complete.");
+    assert(
+      depositResponse.extraInfo!.message ==
+          "You must include the tag. If the amount is more than 1000 XRP, deposit will take 24h to complete.",
+    );
 
     var instructions = depositResponse.instructions;
     assert(instructions != null);
 
-    var cryptoAddressKey = OrganizationKYCFields.key_prefix +
+    var cryptoAddressKey =
+        OrganizationKYCFields.key_prefix +
         FinancialAccountKYCFields.crypto_address_field_key;
     assert(instructions!.containsKey(cryptoAddressKey));
     var cryptoAddressInstruction = instructions![cryptoAddressKey];
     assert(cryptoAddressInstruction != null);
-    assert(cryptoAddressInstruction!.value ==
-        'rNXEkKCxvfLcM1h4HJkaj2FtmYuAWrHGbf');
+    assert(
+      cryptoAddressInstruction!.value == 'rNXEkKCxvfLcM1h4HJkaj2FtmYuAWrHGbf',
+    );
     assert(cryptoAddressInstruction!.description == 'Ripple address');
 
-    var cryptoMemoKey = OrganizationKYCFields.key_prefix +
+    var cryptoMemoKey =
+        OrganizationKYCFields.key_prefix +
         FinancialAccountKYCFields.crypto_memo_field_key;
     assert(instructions.containsKey(cryptoMemoKey));
     var cryptoMemoInstruction = instructions[cryptoMemoKey];
@@ -340,18 +374,22 @@ void main() {
       amount: "120.0",
     );
 
-    DepositResponse depositResponse =
-        await transferService.deposit(depositRequest);
+    DepositResponse depositResponse = await transferService.deposit(
+      depositRequest,
+    );
 
-    assert(depositResponse.how ==
-        "Make a payment to Bank: STP Account: 646180111803859359");
+    assert(
+      depositResponse.how ==
+          "Make a payment to Bank: STP Account: 646180111803859359",
+    );
     assert(depositResponse.id == "9421871e-0623-4356-b7b5-5996da122f3e");
     assert(depositResponse.eta == 1800);
 
     var instructions = depositResponse.instructions;
     assert(instructions != null);
 
-    var clabeNumberKey = OrganizationKYCFields.key_prefix +
+    var clabeNumberKey =
+        OrganizationKYCFields.key_prefix +
         FinancialAccountKYCFields.clabe_number_field_key;
     assert(instructions!.containsKey(clabeNumberKey));
     var clabeNumberInstruction = instructions![clabeNumberKey];
@@ -385,11 +423,14 @@ void main() {
       jwt: jwtToken,
     );
 
-    WithdrawResponse withdrawResponse =
-        await transferService.withdraw(withdrawRequest);
+    WithdrawResponse withdrawResponse = await transferService.withdraw(
+      withdrawRequest,
+    );
 
-    assert(withdrawResponse.accountId ==
-        "GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ");
+    assert(
+      withdrawResponse.accountId ==
+          "GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ",
+    );
     assert(withdrawResponse.memoType == "id");
     assert(withdrawResponse.memo == "123");
     assert(withdrawResponse.id == "9421871e-0623-4356-b7b5-5996da122f3e");
@@ -405,7 +446,11 @@ void main() {
           authHeader.contains(jwtToken)) {
         var url = request.url.toString();
         //print(url);
-        assert(url.contains("GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ"));
+        assert(
+          url.contains(
+            "GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ",
+          ),
+        );
         assert(url.contains("XYZ"));
         assert(url.contains("iso4217%3AUSD"));
         assert(url.contains("100"));
@@ -420,18 +465,21 @@ void main() {
     });
 
     DepositExchangeRequest request = DepositExchangeRequest(
-        destinationAsset: 'XYZ',
-        sourceAsset: 'iso4217:USD',
-        quoteId: '282837',
-        amount: '100',
-        account: 'GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ',
-        locationId: '999',
-        jwt: jwtToken);
+      destinationAsset: 'XYZ',
+      sourceAsset: 'iso4217:USD',
+      quoteId: '282837',
+      amount: '100',
+      account: 'GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ',
+      locationId: '999',
+      jwt: jwtToken,
+    );
 
     DepositResponse response = await transferService.depositExchange(request);
 
-    assert(response.how ==
-        "Make a payment to Bank: 121122676 Account: 13719713158835300");
+    assert(
+      response.how ==
+          "Make a payment to Bank: 121122676 Account: 13719713158835300",
+    );
     assert(response.id == "9421871e-0623-4356-b7b5-5996da122f3e");
     assert(response.feeFixed == null);
   });
@@ -459,20 +507,21 @@ void main() {
     });
 
     WithdrawExchangeRequest request = WithdrawExchangeRequest(
-        sourceAsset: 'XYZ',
-        destinationAsset: 'iso4217:USD',
-        quoteId: '282837',
-        amount: '700',
-        type: 'bank_account',
-        locationId: '999',
-        jwt: jwtToken,
+      sourceAsset: 'XYZ',
+      destinationAsset: 'iso4217:USD',
+      quoteId: '282837',
+      amount: '700',
+      type: 'bank_account',
+      locationId: '999',
+      jwt: jwtToken,
     );
 
-    WithdrawResponse response =
-    await transferService.withdrawExchange(request);
+    WithdrawResponse response = await transferService.withdrawExchange(request);
 
-    assert(response.accountId ==
-        "GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ");
+    assert(
+      response.accountId ==
+          "GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ",
+    );
     assert(response.memoType == "id");
     assert(response.memo == "123");
     assert(response.id == "9421871e-0623-4356-b7b5-5996da122f3e");
@@ -575,8 +624,10 @@ void main() {
     } on CustomerInformationStatusException catch (e) {
       thrown = true;
       assert(e.response.status == "denied");
-      assert(e.response.moreInfoUrl ==
-          "https://api.example.com/kycstatus?account=GACW7NONV43MZIFHCOKCQJAKSJSISSICFVUJ2C6EZIW5773OU3HD64VI");
+      assert(
+        e.response.moreInfoUrl ==
+            "https://api.example.com/kycstatus?account=GACW7NONV43MZIFHCOKCQJAKSJSISSICFVUJ2C6EZIW5773OU3HD64VI",
+      );
     }
     assert(thrown);
   });
@@ -603,16 +654,19 @@ void main() {
       jwt: jwtToken,
     );
 
-    AnchorTransactionsResponse response =
-        await transferService.transactions(request);
+    AnchorTransactionsResponse response = await transferService.transactions(
+      request,
+    );
 
     assert(response.transactions.length == 6);
     assert(response.transactions.first.id == "82fhs729f63dh0v4");
     assert(response.transactions.first.kind == "deposit");
     assert(response.transactions.first.status == "pending_external");
     assert(response.transactions.first.statusEta == 3600);
-    assert(response.transactions.first.externalTransactionId ==
-        "2dd16cb409513026fbe7defc0c6f826c2d2c65c3da993f747d09bf7dafd31093");
+    assert(
+      response.transactions.first.externalTransactionId ==
+          "2dd16cb409513026fbe7defc0c6f826c2d2c65c3da993f747d09bf7dafd31093",
+    );
     assert(response.transactions.first.amountIn == "18.34");
     assert(response.transactions.first.amountOut == "18.24");
     assert(response.transactions.first.amountFee == "0.1");
@@ -623,12 +677,17 @@ void main() {
     assert(transaction.kind == "deposit-exchange");
     assert(transaction.status == "pending_anchor");
     assert(transaction.statusEta == 3600);
-    assert(transaction.externalTransactionId ==
-        "2dd16cb409513026fbe7defc0c6f826c2d2c65c3da993f747d09bf7dafd31093");
+    assert(
+      transaction.externalTransactionId ==
+          "2dd16cb409513026fbe7defc0c6f826c2d2c65c3da993f747d09bf7dafd31093",
+    );
     assert(transaction.amountIn == "500");
     assert(transaction.amountInAsset == "iso4217:BRL");
     assert(transaction.amountOut == "100");
-    assert(transaction.amountOutAsset == "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN");
+    assert(
+      transaction.amountOutAsset ==
+          "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+    );
     assert(transaction.amountFee == "0.1");
     assert(transaction.amountFeeAsset == "iso4217:BRL");
     assert(transaction.startedAt == "2021-06-11T17:05:32Z");
@@ -646,10 +705,15 @@ void main() {
     assert(transaction.amountFeeAsset == null);
     assert(transaction.startedAt == "2017-03-20T17:00:02Z");
     assert(transaction.completedAt == "2017-03-20T17:09:58Z");
-    assert(transaction.stellarTransactionId ==
-        "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a");
+    assert(
+      transaction.stellarTransactionId ==
+          "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a",
+    );
     assert(transaction.externalTransactionId == "1238234");
-    assert(transaction.withdrawAnchorAccount == "GBANAGOAXH5ONSBI2I6I5LHP2TCRHWMZIAMGUQH2TNKQNCOGJ7GC3ZOL");
+    assert(
+      transaction.withdrawAnchorAccount ==
+          "GBANAGOAXH5ONSBI2I6I5LHP2TCRHWMZIAMGUQH2TNKQNCOGJ7GC3ZOL",
+    );
     assert(transaction.withdrawMemo == "186384");
     assert(transaction.withdrawMemoType == "id");
 
@@ -659,7 +723,10 @@ void main() {
     var payments = refunds.payments;
     assert(payments.length == 1);
     var payment = payments.first;
-    assert(payment.id == "b9d0b2292c4e09e8eb22d036171491e87b8d2086bf8b265874c8d182cb9c9020");
+    assert(
+      payment.id ==
+          "b9d0b2292c4e09e8eb22d036171491e87b8d2086bf8b265874c8d182cb9c9020",
+    );
     assert(payment.idType == "stellar");
     assert(payment.amount == "10");
     assert(payment.fee == "5");
@@ -677,11 +744,16 @@ void main() {
     assert(transaction.amountFeeAsset == null);
     assert(transaction.startedAt == "2017-03-20T17:00:02Z");
     assert(transaction.completedAt == "2017-03-20T17:09:58Z");
-    assert(transaction.stellarTransactionId ==
-        "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a");
+    assert(
+      transaction.stellarTransactionId ==
+          "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a",
+    );
     assert(transaction.externalTransactionId == "1238234");
     assert(transaction.from == "AJ3845SAD");
-    assert(transaction.to == "GBITQ4YAFKD2372TNAMNHQ4JV5VS3BYKRK4QQR6FOLAR7XAHC3RVGVVJ");
+    assert(
+      transaction.to ==
+          "GBITQ4YAFKD2372TNAMNHQ4JV5VS3BYKRK4QQR6FOLAR7XAHC3RVGVVJ",
+    );
 
     refunds = transaction.refunds!;
     assert(refunds.amountRefunded == "10");
@@ -707,8 +779,10 @@ void main() {
     assert(transaction.amountFeeAsset == null);
     assert(transaction.startedAt == "2017-03-20T17:00:02Z");
     assert(transaction.completedAt == null);
-    assert(transaction.requiredInfoMessage ==
-        "We were unable to send funds to the provided bank account. Bank error: 'Account does not exist'. Please provide the correct bank account address.");
+    assert(
+      transaction.requiredInfoMessage ==
+          "We were unable to send funds to the provided bank account. Bank error: 'Account does not exist'. Please provide the correct bank account address.",
+    );
     var requiredInfoUpdates = transaction.requiredInfoUpdates!;
     assert(requiredInfoUpdates.length == 2);
     var dest = requiredInfoUpdates['dest']!;
@@ -722,13 +796,18 @@ void main() {
     assert(transaction.status == "pending_anchor");
     assert(transaction.statusEta == 3600);
     assert(transaction.amountIn == "100");
-    assert(transaction.amountInAsset == "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN");
+    assert(
+      transaction.amountInAsset ==
+          "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+    );
     assert(transaction.amountOut == "500");
     assert(transaction.amountOutAsset == "iso4217:BRL");
     assert(transaction.amountFee == "0.1");
-    assert(transaction.amountFeeAsset == "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN");
+    assert(
+      transaction.amountFeeAsset ==
+          "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+    );
     assert(transaction.startedAt == "2021-06-11T17:05:32Z");
-
   });
 
   test('test get transaction', () async {
@@ -753,15 +832,18 @@ void main() {
         "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a";
     request.jwt = jwtToken;
 
-    AnchorTransactionResponse response =
-        await transferService.transaction(request);
+    AnchorTransactionResponse response = await transferService.transaction(
+      request,
+    );
 
     assert(response.transaction.id == "82fhs729f63dh0v4");
     assert(response.transaction.kind == "deposit");
     assert(response.transaction.status == "pending_external");
     assert(response.transaction.statusEta == 3600);
-    assert(response.transaction.externalTransactionId ==
-        "2dd16cb409513026fbe7defc0c6f826c2d2c65c3da993f747d09bf7dafd31093");
+    assert(
+      response.transaction.externalTransactionId ==
+          "2dd16cb409513026fbe7defc0c6f826c2d2c65c3da993f747d09bf7dafd31093",
+    );
     assert(response.transaction.amountIn == "18.34");
     assert(response.transaction.amountOut == "18.24");
     assert(response.transaction.amountFee == "0.1");
@@ -787,8 +869,9 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
 
-    PatchTransactionRequest request =
-        PatchTransactionRequest("82fhs729f63dh0v4");
+    PatchTransactionRequest request = PatchTransactionRequest(
+      "82fhs729f63dh0v4",
+    );
     request.fields = {};
     request.fields!["dest"] = "12345678901234";
     request.fields!["dest_extra"] = "021000021";

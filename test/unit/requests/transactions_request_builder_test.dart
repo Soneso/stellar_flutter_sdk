@@ -20,21 +20,48 @@ void main() {
     test('execute returns Page<TransactionResponse>', () async {
       final mockResponse = {
         '_links': {
-          'self': {'href': 'https://horizon-testnet.stellar.org/transactions?limit=10'},
-          'next': {'href': 'https://horizon-testnet.stellar.org/transactions?cursor=next'},
-          'prev': {'href': 'https://horizon-testnet.stellar.org/transactions?cursor=prev'}
+          'self': {
+            'href': 'https://horizon-testnet.stellar.org/transactions?limit=10',
+          },
+          'next': {
+            'href':
+                'https://horizon-testnet.stellar.org/transactions?cursor=next',
+          },
+          'prev': {
+            'href':
+                'https://horizon-testnet.stellar.org/transactions?cursor=prev',
+          },
         },
         '_embedded': {
           'records': [
             {
               '_links': {
-                'self': {'href': 'https://horizon-testnet.stellar.org/transactions/abc123'},
-                'account': {'href': 'https://horizon-testnet.stellar.org/accounts/GABC'},
-                'ledger': {'href': 'https://horizon-testnet.stellar.org/ledgers/12345'},
-                'operations': {'href': 'https://horizon-testnet.stellar.org/transactions/abc123/operations'},
-                'effects': {'href': 'https://horizon-testnet.stellar.org/transactions/abc123/effects'},
-                'precedes': {'href': 'https://horizon-testnet.stellar.org/transactions?order=asc&cursor=123'},
-                'succeeds': {'href': 'https://horizon-testnet.stellar.org/transactions?order=desc&cursor=123'}
+                'self': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/transactions/abc123',
+                },
+                'account': {
+                  'href': 'https://horizon-testnet.stellar.org/accounts/GABC',
+                },
+                'ledger': {
+                  'href': 'https://horizon-testnet.stellar.org/ledgers/12345',
+                },
+                'operations': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/transactions/abc123/operations',
+                },
+                'effects': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/transactions/abc123/effects',
+                },
+                'precedes': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/transactions?order=asc&cursor=123',
+                },
+                'succeeds': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/transactions?order=desc&cursor=123',
+                },
               },
               'id': 'abc123def456',
               'paging_token': '12345-123',
@@ -42,8 +69,10 @@ void main() {
               'hash': 'abc123def456',
               'ledger': 12345,
               'created_at': '2024-01-01T00:00:00Z',
-              'source_account': 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
-              'fee_account': 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
+              'source_account':
+                  'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
+              'fee_account':
+                  'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
               'source_account_sequence': '123456789',
               'fee_charged': '100',
               'max_fee': '1000',
@@ -57,14 +86,11 @@ void main() {
               'valid_after': '1970-01-01T00:00:00Z',
               'valid_before': '2030-01-01T00:00:00Z',
               'preconditions': {
-                'timebounds': {
-                  'min_time': '0',
-                  'max_time': '1893456000'
-                }
-              }
-            }
-          ]
-        }
+                'timebounds': {'min_time': '0', 'max_time': '1893456000'},
+              },
+            },
+          ],
+        },
       };
 
       final mockClient = MockClient((request) async {
@@ -85,7 +111,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final accountId = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+      final accountId =
+          'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
       final builder = TransactionsRequestBuilder(mockClient, serverUri);
       builder.forAccount(accountId);
       final uri = builder.buildUri();
@@ -140,9 +167,12 @@ void main() {
 
     test('stream returns Stream<TransactionResponse>', () {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          '_embedded': {'records': []}
-        }), 200);
+        return http.Response(
+          json.encode({
+            '_embedded': {'records': []},
+          }),
+          200,
+        );
       });
 
       final builder = TransactionsRequestBuilder(mockClient, serverUri);
@@ -158,19 +188,22 @@ void main() {
     test('forLiquidityPool converts L strkey id to hex', () {
       final poolHexId =
           '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
-      final strKeyId =
-          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+      final strKeyId = StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
 
-      final builder =
-          TransactionsRequestBuilder(http.Client(), serverUri).forLiquidityPool(strKeyId);
+      final builder = TransactionsRequestBuilder(
+        http.Client(),
+        serverUri,
+      ).forLiquidityPool(strKeyId);
 
       expect(builder.buildUri().path, contains('/liquidity_pools/$poolHexId'));
     });
 
     test('forLiquidityPool throws on invalid L-prefixed id', () {
       expect(
-        () => TransactionsRequestBuilder(http.Client(), serverUri)
-            .forLiquidityPool('LINVALIDPOOLID'),
+        () => TransactionsRequestBuilder(
+          http.Client(),
+          serverUri,
+        ).forLiquidityPool('LINVALIDPOOLID'),
         throwsArgumentError,
       );
     });
@@ -180,8 +213,10 @@ void main() {
           '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final strKeyId = StrKey.encodeClaimableBalanceIdHex(cbHashHex);
 
-      final builder =
-          TransactionsRequestBuilder(http.Client(), serverUri).forClaimableBalance(strKeyId);
+      final builder = TransactionsRequestBuilder(
+        http.Client(),
+        serverUri,
+      ).forClaimableBalance(strKeyId);
 
       expect(
         builder.buildUri().path,
@@ -191,20 +226,25 @@ void main() {
       );
     });
 
-    test('forClaimableBalance normalizes a bare hex id to the Horizon form', () {
-      final cbHashHex =
-          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+    test(
+      'forClaimableBalance normalizes a bare hex id to the Horizon form',
+      () {
+        final cbHashHex =
+            '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
 
-      final builder = TransactionsRequestBuilder(http.Client(), serverUri)
-          .forClaimableBalance(cbHashHex);
+        final builder = TransactionsRequestBuilder(
+          http.Client(),
+          serverUri,
+        ).forClaimableBalance(cbHashHex);
 
-      expect(
-        builder.buildUri().path,
-        matches(
-          RegExp('/claimable_balances/00000000$cbHashHex/transactions\$'),
-        ),
-      );
-    });
+        expect(
+          builder.buildUri().path,
+          matches(
+            RegExp('/claimable_balances/00000000$cbHashHex/transactions\$'),
+          ),
+        );
+      },
+    );
 
     test('forClaimableBalance normalizes a one byte tagged hex id', () {
       // The single discriminant byte is the width the strkey payload carries.
@@ -212,8 +252,10 @@ void main() {
       final cbHashHex =
           '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
 
-      final builder = TransactionsRequestBuilder(http.Client(), serverUri)
-          .forClaimableBalance('00$cbHashHex');
+      final builder = TransactionsRequestBuilder(
+        http.Client(),
+        serverUri,
+      ).forClaimableBalance('00$cbHashHex');
 
       expect(
         builder.buildUri().path,
@@ -225,8 +267,10 @@ void main() {
 
     test('forClaimableBalance throws on invalid B-prefixed id', () {
       expect(
-        () => TransactionsRequestBuilder(http.Client(), serverUri)
-            .forClaimableBalance('BINVALIDBALANCEID'),
+        () => TransactionsRequestBuilder(
+          http.Client(),
+          serverUri,
+        ).forClaimableBalance('BINVALIDBALANCEID'),
         throwsArgumentError,
       );
     });
@@ -255,7 +299,7 @@ void main() {
       'result_meta_xdr': 'AAAAAAA...',
       'fee_meta_xdr': 'AAAAAAA...',
       'memo_type': 'none',
-      'signatures': ['sig1', 'sig2']
+      'signatures': ['sig1', 'sig2'],
     };
 
     test('transaction(id) fetches a single transaction', () async {
@@ -278,10 +322,14 @@ void main() {
       final mockClient = MockClient.streaming((request, bodyStream) async {
         final controller = StreamController<List<int>>();
         controller.add(utf8.encode('event: open\ndata: "hello"\n\n'));
-        controller
-            .add(utf8.encode('data: ${json.encode(transactionRecord)}\n\n'));
-        return http.StreamedResponse(controller.stream, 200,
-            headers: {'content-type': 'text/event-stream'});
+        controller.add(
+          utf8.encode('data: ${json.encode(transactionRecord)}\n\n'),
+        );
+        return http.StreamedResponse(
+          controller.stream,
+          200,
+          headers: {'content-type': 'text/event-stream'},
+        );
       });
 
       final builder = TransactionsRequestBuilder(mockClient, serverUri);
@@ -301,5 +349,4 @@ void main() {
       expect(event.ledger, equals(12345));
     });
   });
-
 }

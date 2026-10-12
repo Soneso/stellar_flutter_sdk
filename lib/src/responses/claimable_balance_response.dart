@@ -107,28 +107,31 @@ class ClaimableBalanceResponse extends Response {
   /// Horizon API responses. Use [StellarSDK.claimableBalances] to query
   /// claimable balance data.
   ClaimableBalanceResponse(
-      this.balanceId,
-      this.asset,
-      this.amount,
-      this.sponsor,
-      this.lastModifiedLedger,
-      this.lastModifiedTime,
-      this.claimants,
-      this.links,
-      this.flags);
+    this.balanceId,
+    this.asset,
+    this.amount,
+    this.sponsor,
+    this.lastModifiedLedger,
+    this.lastModifiedTime,
+    this.claimants,
+    this.links,
+    this.flags,
+  );
 
   factory ClaimableBalanceResponse.fromJson(Map<String, dynamic> json) =>
       ClaimableBalanceResponse(
-          json['id'],
-          Asset.createFromCanonicalForm(json['asset'])!,
-          json['amount'],
-          json['sponsor'],
-          convertInt(json['last_modified_ledger'])!,
-          json['last_modified_time'],
-          List<ClaimantResponse>.from(
-              json['claimants'].map((e) => ClaimantResponse.fromJson(e))),
-          ClaimableBalanceResponseLinks.fromJson(json['_links']),
-          ClaimableBalanceFlags.fromJson(json['flags']));
+        json['id'],
+        Asset.createFromCanonicalForm(json['asset'])!,
+        json['amount'],
+        json['sponsor'],
+        convertInt(json['last_modified_ledger'])!,
+        json['last_modified_time'],
+        List<ClaimantResponse>.from(
+          json['claimants'].map((e) => ClaimantResponse.fromJson(e)),
+        ),
+        ClaimableBalanceResponseLinks.fromJson(json['_links']),
+        ClaimableBalanceFlags.fromJson(json['flags']),
+      );
 }
 
 /// Flags indicating special properties of a claimable balance.
@@ -215,8 +218,10 @@ class ClaimantResponse {
   ClaimantResponse(this.destination, this.predicate);
 
   factory ClaimantResponse.fromJson(Map<String, dynamic> json) =>
-      ClaimantResponse(json['destination'],
-          ClaimantPredicateResponse.fromJson(json['predicate']));
+      ClaimantResponse(
+        json['destination'],
+        ClaimantPredicateResponse.fromJson(json['predicate']),
+      );
 }
 
 /// Defines conditions that must be satisfied for a claimant to claim a balance.
@@ -342,25 +347,34 @@ class ClaimantPredicateResponse {
   /// - [not]: Inverted predicate
   /// - [beforeAbsoluteTime]: Absolute deadline (ISO 8601 timestamp)
   /// - [beforeRelativeTime]: Relative deadline in seconds
-  ClaimantPredicateResponse(this.unconditional, this.and, this.or, this.not,
-      this.beforeAbsoluteTime, this.beforeRelativeTime);
+  ClaimantPredicateResponse(
+    this.unconditional,
+    this.and,
+    this.or,
+    this.not,
+    this.beforeAbsoluteTime,
+    this.beforeRelativeTime,
+  );
 
   factory ClaimantPredicateResponse.fromJson(Map<String, dynamic> json) =>
       ClaimantPredicateResponse(
-          json['unconditional'],
-          json['and'] != null
-              ? List<ClaimantPredicateResponse>.from(
-                  json['and'].map((e) => ClaimantPredicateResponse.fromJson(e)))
-              : null,
-          json['or'] != null
-              ? List<ClaimantPredicateResponse>.from(
-                  json['or'].map((e) => ClaimantPredicateResponse.fromJson(e)))
-              : null,
-          json['not'] == null
-              ? null
-              : ClaimantPredicateResponse.fromJson(json['not']),
-          json['abs_before'],
-          json['rel_before']);
+        json['unconditional'],
+        json['and'] != null
+            ? List<ClaimantPredicateResponse>.from(
+                json['and'].map((e) => ClaimantPredicateResponse.fromJson(e)),
+              )
+            : null,
+        json['or'] != null
+            ? List<ClaimantPredicateResponse>.from(
+                json['or'].map((e) => ClaimantPredicateResponse.fromJson(e)),
+              )
+            : null,
+        json['not'] == null
+            ? null
+            : ClaimantPredicateResponse.fromJson(json['not']),
+        json['abs_before'],
+        json['rel_before'],
+      );
 }
 
 /// Hypermedia links to related resources for a claimable balance.
@@ -395,6 +409,7 @@ class ClaimableBalanceResponseLinks {
 
   factory ClaimableBalanceResponseLinks.fromJson(Map<String, dynamic> json) {
     return ClaimableBalanceResponseLinks(
-        json['self'] == null ? null : Link.fromJson(json['self']));
+      json['self'] == null ? null : Link.fromJson(json['self']),
+    );
   }
 }

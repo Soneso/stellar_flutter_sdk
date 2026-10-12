@@ -101,8 +101,7 @@ abstract class OZSmartAccountBuilders {
   /// whose key data is not longer than 65 bytes).
   static Uint8List? getCredentialIdFromSigner(OZSmartAccountSigner signer) {
     if (signer is! OZExternalSigner) return null;
-    if (signer.keyData.length <=
-        SmartAccountConstants.secp256r1PublicKeySize) {
+    if (signer.keyData.length <= SmartAccountConstants.secp256r1PublicKeySize) {
       return null;
     }
     return Uint8List.fromList(
@@ -122,15 +121,11 @@ abstract class OZSmartAccountBuilders {
   /// bytes).
   static Uint8List? getPublicKeyFromSigner(OZSmartAccountSigner signer) {
     if (signer is! OZExternalSigner) return null;
-    if (signer.keyData.length <=
-        SmartAccountConstants.secp256r1PublicKeySize) {
+    if (signer.keyData.length <= SmartAccountConstants.secp256r1PublicKeySize) {
       return null;
     }
     return Uint8List.fromList(
-      signer.keyData.sublist(
-        0,
-        SmartAccountConstants.secp256r1PublicKeySize,
-      ),
+      signer.keyData.sublist(0, SmartAccountConstants.secp256r1PublicKeySize),
     );
   }
 

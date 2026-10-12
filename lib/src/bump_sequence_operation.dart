@@ -62,9 +62,12 @@ class BumpSequenceOperation extends Operation {
   /// Returns: XDR OperationBody for this bump sequence operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrOperationBody body =
-        new XdrOperationBody(XdrOperationType.BUMP_SEQUENCE);
-    body.bumpSequenceOp = new XdrBumpSequenceOp(XdrSequenceNumber(this._bumpTo));
+    XdrOperationBody body = new XdrOperationBody(
+      XdrOperationType.BUMP_SEQUENCE,
+    );
+    body.bumpSequenceOp = new XdrBumpSequenceOp(
+      XdrSequenceNumber(this._bumpTo),
+    );
 
     return body;
   }

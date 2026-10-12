@@ -11,22 +11,31 @@ void main() {
 
     setUp(() {
       sourceKeyPair = KeyPair.fromSecretSeed(
-          'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+      );
       sourceAccountId = sourceKeyPair.accountId;
       destinationKeyPair = KeyPair.fromSecretSeed(
-          'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
+        'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+      );
       destinationAccountId = destinationKeyPair.accountId;
     });
 
     group('ALLOW_TRUST with AlphaNum12', () {
       test('toTxRep converts ALLOW_TRUST with alphanum12 asset', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final longAssetCode = 'LONGASSET123';
-        final operation = AllowTrustOperationBuilder(destinationAccountId, longAssetCode, 1).build();
+        final operation = AllowTrustOperationBuilder(
+          destinationAccountId,
+          longAssetCode,
+          1,
+        ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -39,7 +48,8 @@ void main() {
 
       test('fromTxRep parses ALLOW_TRUST with alphanum12 asset', () {
         final longAssetCode = 'LONGASSET123';
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -67,36 +77,49 @@ signatures.len: 0
     });
 
     group('PATH_PAYMENT_STRICT_RECEIVE with paths', () {
-      test('toTxRep converts PATH_PAYMENT_STRICT_RECEIVE with 3 path assets', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
-        final issuer = KeyPair.random();
-        final usd = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
-        final eur = AssetTypeCreditAlphaNum4('EUR', issuer.accountId);
-        final gbp = AssetTypeCreditAlphaNum4('GBP', issuer.accountId);
+      test(
+        'toTxRep converts PATH_PAYMENT_STRICT_RECEIVE with 3 path assets',
+        () {
+          final sourceAccount = Account(
+            sourceAccountId,
+            BigInt.from(2908908335136768),
+          );
+          final issuer = KeyPair.random();
+          final usd = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
+          final eur = AssetTypeCreditAlphaNum4('EUR', issuer.accountId);
+          final gbp = AssetTypeCreditAlphaNum4('GBP', issuer.accountId);
 
-        final operation = PathPaymentStrictReceiveOperationBuilder(
-                Asset.NATIVE, '1000', destinationAccountId, usd, '100')
-            .setPath([eur, gbp, Asset.NATIVE])
-            .build();
+          final operation = PathPaymentStrictReceiveOperationBuilder(
+            Asset.NATIVE,
+            '1000',
+            destinationAccountId,
+            usd,
+            '100',
+          ).setPath([eur, gbp, Asset.NATIVE]).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+          final transaction = TransactionBuilder(
+            sourceAccount,
+          ).addOperation(operation).build();
 
-        transaction.sign(sourceKeyPair, Network.TESTNET);
-        final xdr = transaction.toEnvelopeXdrBase64();
-        final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+          transaction.sign(sourceKeyPair, Network.TESTNET);
+          final xdr = transaction.toEnvelopeXdrBase64();
+          final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep, contains('tx.operations[0].body.type: PATH_PAYMENT_STRICT_RECEIVE'));
-        expect(txRep, contains('path.len: 3'));
-        expect(txRep, contains('path[0]:'));
-        expect(txRep, contains('path[1]:'));
-        expect(txRep, contains('path[2]:'));
-      });
+          expect(
+            txRep,
+            contains('tx.operations[0].body.type: PATH_PAYMENT_STRICT_RECEIVE'),
+          );
+          expect(txRep, contains('path.len: 3'));
+          expect(txRep, contains('path[0]:'));
+          expect(txRep, contains('path[1]:'));
+          expect(txRep, contains('path[2]:'));
+        },
+      );
 
       test('fromTxRep parses PATH_PAYMENT_STRICT_RECEIVE with path', () {
         final issuer = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -129,40 +152,61 @@ signatures.len: 0
 
     group('MANAGE_SELL_OFFER edge cases', () {
       test('a MANAGE_SELL_OFFER with zero price is refused at signing', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final usd = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
 
         final operation = ManageSellOfferOperation(
-            Asset.NATIVE, usd, '1000', '0', '0');
+          Asset.NATIVE,
+          usd,
+          '1000',
+          '0',
+          '0',
+        );
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         // The price reaches XDR through Price.fromString, which refuses a
         // price of zero.
-        expect(() => transaction.sign(sourceKeyPair, Network.TESTNET),
-            throwsA(isA<Exception>()));
+        expect(
+          () => transaction.sign(sourceKeyPair, Network.TESTNET),
+          throwsA(isA<Exception>()),
+        );
       });
 
       test('toTxRep converts MANAGE_SELL_OFFER delete with offerID', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final usd = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
 
         final operation = ManageSellOfferOperation(
-            Asset.NATIVE, usd, '0', '1.5', '12345');
+          Asset.NATIVE,
+          usd,
+          '0',
+          '1.5',
+          '12345',
+        );
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep, contains('tx.operations[0].body.type: MANAGE_SELL_OFFER'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: MANAGE_SELL_OFFER'),
+        );
         expect(txRep, contains('amount: 0'));
         expect(txRep, contains('offerID: 12345'));
       });
@@ -170,13 +214,16 @@ signatures.len: 0
 
     group('BUMP_SEQUENCE Operation', () {
       test('toTxRep converts BUMP_SEQUENCE operation', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final bumpTo = BigInt.parse('9999999999999999');
         final operation = BumpSequenceOperation(bumpTo);
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -187,7 +234,8 @@ signatures.len: 0
       });
 
       test('fromTxRep parses BUMP_SEQUENCE operation', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -213,51 +261,70 @@ signatures.len: 0
 
     group('SET_TRUSTLINE_FLAGS all combinations', () {
       test('toTxRep converts SET_TRUSTLINE_FLAGS with both set and clear', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final usd = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
 
         final operation = SetTrustLineFlagsOperationBuilder(
-                destinationAccountId, usd, 1, 2)
-            .build();
+          destinationAccountId,
+          usd,
+          1,
+          2,
+        ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep, contains('tx.operations[0].body.type: SET_TRUST_LINE_FLAGS'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: SET_TRUST_LINE_FLAGS'),
+        );
         expect(txRep, contains('clearFlags: 1'));
         expect(txRep, contains('setFlags: 2'));
       });
 
       test('toTxRep converts SET_TRUSTLINE_FLAGS with all clear flags', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final usd = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
 
         final operation = SetTrustLineFlagsOperationBuilder(
-                destinationAccountId, usd, 7, 0)
-            .build();
+          destinationAccountId,
+          usd,
+          7,
+          0,
+        ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep, contains('tx.operations[0].body.type: SET_TRUST_LINE_FLAGS'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: SET_TRUST_LINE_FLAGS'),
+        );
         expect(txRep, contains('clearFlags: 7'));
       });
 
       test('fromTxRep parses SET_TRUSTLINE_FLAGS with both set and clear', () {
         final issuer = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -287,13 +354,16 @@ signatures.len: 0
 
     group('Transaction with no signatures', () {
       test('toTxRep converts transaction with zero signatures', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final destination = MuxedAccount.fromAccountId(destinationAccountId)!;
         final operation = PaymentOperation(destination, Asset.NATIVE, '100');
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
@@ -305,38 +375,52 @@ signatures.len: 0
 
     group('Operations with muxed source accounts', () {
       test('toTxRep converts operation with muxed source account', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final muxedId = BigInt.from(9876543210);
         final muxedSource = MuxedAccount(destinationAccountId, muxedId);
-        final operation = PaymentOperationBuilder(destinationAccountId, Asset.NATIVE, '100')
-            .setMuxedSourceAccount(muxedSource)
-            .build();
+        final operation = PaymentOperationBuilder(
+          destinationAccountId,
+          Asset.NATIVE,
+          '100',
+        ).setMuxedSourceAccount(muxedSource).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
         expect(txRep, contains('sourceAccount._present: true'));
-        expect(txRep, contains('sourceAccount: MBKHPLNGLNIWZNYM3RTIBUGBJAQD62AAURRYMFJDYK2VCUWHLUMU'));
+        expect(
+          txRep,
+          contains(
+            'sourceAccount: MBKHPLNGLNIWZNYM3RTIBUGBJAQD62AAURRYMFJDYK2VCUWHLUMU',
+          ),
+        );
       });
 
       test('toTxRep converts CREATE_ACCOUNT with muxed source', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final muxedId = BigInt.from(1234567890);
         final muxedSource = MuxedAccount(destinationAccountId, muxedId);
 
         final newAccount = KeyPair.random();
-        final operation = CreateAccountOperationBuilder(newAccount.accountId, '1000')
-            .setMuxedSourceAccount(muxedSource)
-            .build();
+        final operation = CreateAccountOperationBuilder(
+          newAccount.accountId,
+          '1000',
+        ).setMuxedSourceAccount(muxedSource).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -349,14 +433,21 @@ signatures.len: 0
 
     group('Very large amounts', () {
       test('toTxRep converts payment with maximum amount', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final destination = MuxedAccount.fromAccountId(destinationAccountId)!;
         final maxAmount = '922337203685.4775807';
-        final operation = PaymentOperation(destination, Asset.NATIVE, maxAmount);
+        final operation = PaymentOperation(
+          destination,
+          Asset.NATIVE,
+          maxAmount,
+        );
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -367,7 +458,8 @@ signatures.len: 0
       });
 
       test('fromTxRep parses payment with maximum amount', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -394,14 +486,16 @@ signatures.len: 0
 
     group('Empty memo vs no memo', () {
       test('toTxRep converts transaction with empty MEMO_TEXT', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final destination = MuxedAccount.fromAccountId(destinationAccountId)!;
         final operation = PaymentOperation(destination, Asset.NATIVE, '100');
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .addMemo(MemoText(''))
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).addMemo(MemoText('')).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -412,7 +506,8 @@ signatures.len: 0
       });
 
       test('fromTxRep parses transaction with empty MEMO_TEXT', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -440,16 +535,22 @@ signatures.len: 0
 
     group('CLAWBACK operation variants', () {
       test('toTxRep converts CLAWBACK with alphanum12', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
-        final longAsset = AssetTypeCreditAlphaNum12('LONGASSET123', issuer.accountId);
+        final longAsset = AssetTypeCreditAlphaNum12(
+          'LONGASSET123',
+          issuer.accountId,
+        );
         final from = MuxedAccount.fromAccountId(destinationAccountId)!;
 
         final operation = ClawbackOperation(from, longAsset, '500.5');
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -458,23 +559,29 @@ signatures.len: 0
         expect(txRep, contains('tx.operations[0].body.type: CLAWBACK'));
         expect(txRep, contains('LONGASSET123'));
       });
-
     });
 
     group('SET_OPTIONS with signer variations', () {
       test('toTxRep converts SET_OPTIONS with ed25519 public key signer', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final signerKey = KeyPair.random();
-        final xdrSignerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
-        xdrSignerKey.ed25519 = XdrUint256(KeyPair.fromAccountId(signerKey.accountId).publicKey);
+        final xdrSignerKey = XdrSignerKey(
+          XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519,
+        );
+        xdrSignerKey.ed25519 = XdrUint256(
+          KeyPair.fromAccountId(signerKey.accountId).publicKey,
+        );
 
         final operation = SetOptionsOperationBuilder()
             .setSigner(xdrSignerKey, 10)
             .build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -486,21 +593,26 @@ signatures.len: 0
       });
 
       test('toTxRep converts SET_OPTIONS with hashX signer', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final hash = Uint8List(32);
         for (int i = 0; i < 32; i++) {
           hash[i] = i;
         }
-        final xdrSignerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
+        final xdrSignerKey = XdrSignerKey(
+          XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X,
+        );
         xdrSignerKey.hashX = XdrUint256(hash);
 
         final operation = SetOptionsOperationBuilder()
             .setSigner(xdrSignerKey, 5)
             .build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -514,7 +626,10 @@ signatures.len: 0
 
     group('MEMO_RETURN handling', () {
       test('toTxRep converts transaction with MEMO_RETURN', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final destination = MuxedAccount.fromAccountId(destinationAccountId)!;
         final operation = PaymentOperation(destination, Asset.NATIVE, '100');
         final hash = Uint8List(32);
@@ -522,10 +637,9 @@ signatures.len: 0
           hash[i] = 255 - i;
         }
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .addMemo(MemoReturnHash(hash))
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).addMemo(MemoReturnHash(hash)).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -534,33 +648,46 @@ signatures.len: 0
         expect(txRep, contains('tx.memo.type: MEMO_RETURN'));
         expect(txRep, contains('tx.memo.retHash:'));
       });
-
     });
 
     group('CREATE_PASSIVE_SELL_OFFER edge cases', () {
       test('toTxRep converts CREATE_PASSIVE_SELL_OFFER with alphanum12', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
-        final longAsset = AssetTypeCreditAlphaNum12('LONGASSET123', issuer.accountId);
+        final longAsset = AssetTypeCreditAlphaNum12(
+          'LONGASSET123',
+          issuer.accountId,
+        );
 
         final operation = CreatePassiveSellOfferOperation(
-            longAsset, Asset.NATIVE, '1000.5', '1.75');
+          longAsset,
+          Asset.NATIVE,
+          '1000.5',
+          '1.75',
+        );
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep, contains('tx.operations[0].body.type: CREATE_PASSIVE_SELL_OFFER'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: CREATE_PASSIVE_SELL_OFFER'),
+        );
         expect(txRep, contains('LONGASSET123'));
       });
 
       test('fromTxRep parses CREATE_PASSIVE_SELL_OFFER', () {
         final issuer = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -589,13 +716,20 @@ signatures.len: 0
 
     group('Amount formatting edge cases', () {
       test('toTxRep formats small amounts correctly', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final destination = MuxedAccount.fromAccountId(destinationAccountId)!;
-        final operation = PaymentOperation(destination, Asset.NATIVE, '0.0000001');
+        final operation = PaymentOperation(
+          destination,
+          Asset.NATIVE,
+          '0.0000001',
+        );
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -605,13 +739,20 @@ signatures.len: 0
       });
 
       test('toTxRep formats amounts with trailing zeros', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final destination = MuxedAccount.fromAccountId(destinationAccountId)!;
-        final operation = PaymentOperation(destination, Asset.NATIVE, '100.0000000');
+        final operation = PaymentOperation(
+          destination,
+          Asset.NATIVE,
+          '100.0000000',
+        );
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -623,16 +764,24 @@ signatures.len: 0
 
     group('MANAGE_BUY_OFFER edge cases', () {
       test('toTxRep converts MANAGE_BUY_OFFER with complex price', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final usd = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
 
         final operation = ManageBuyOfferOperation(
-            Asset.NATIVE, usd, '1000', '0.123456789', '0');
+          Asset.NATIVE,
+          usd,
+          '1000',
+          '0.123456789',
+          '0',
+        );
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -645,7 +794,8 @@ signatures.len: 0
 
       test('fromTxRep parses MANAGE_BUY_OFFER with zero offerID', () {
         final issuer = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -674,29 +824,33 @@ signatures.len: 0
       });
     });
 
-
     group('Multiple operations with different source accounts', () {
       test('toTxRep converts transaction with mixed source accounts', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final opSource1 = KeyPair.random();
         final opSource2 = KeyPair.random();
         final destination = MuxedAccount.fromAccountId(destinationAccountId)!;
 
-        final op1 = PaymentOperationBuilder(destinationAccountId, Asset.NATIVE, '100')
-            .setSourceAccount(opSource1.accountId)
-            .build();
+        final op1 = PaymentOperationBuilder(
+          destinationAccountId,
+          Asset.NATIVE,
+          '100',
+        ).setSourceAccount(opSource1.accountId).build();
 
-        final op2 = PaymentOperationBuilder(destinationAccountId, Asset.NATIVE, '200')
-            .setSourceAccount(opSource2.accountId)
-            .build();
+        final op2 = PaymentOperationBuilder(
+          destinationAccountId,
+          Asset.NATIVE,
+          '200',
+        ).setSourceAccount(opSource2.accountId).build();
 
         final op3 = PaymentOperation(destination, Asset.NATIVE, '300');
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(op1)
-            .addOperation(op2)
-            .addOperation(op3)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(op1).addOperation(op2).addOperation(op3).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -710,15 +864,18 @@ signatures.len: 0
 
     group('CHANGE_TRUST with limit variations', () {
       test('toTxRep converts CHANGE_TRUST with max limit', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final usd = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
 
         final operation = ChangeTrustOperation(usd, '922337203685.4775807');
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -729,15 +886,18 @@ signatures.len: 0
       });
 
       test('toTxRep converts CHANGE_TRUST delete (limit 0)', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final usd = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
 
         final operation = ChangeTrustOperation(usd, '0');
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -750,16 +910,19 @@ signatures.len: 0
 
     group('Asset code edge cases', () {
       test('toTxRep handles asset code with 4 characters exactly', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final asset = AssetTypeCreditAlphaNum4('ABCD', issuer.accountId);
         final destination = MuxedAccount.fromAccountId(destinationAccountId)!;
 
         final operation = PaymentOperation(destination, asset, '100');
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -769,16 +932,22 @@ signatures.len: 0
       });
 
       test('toTxRep handles asset code with 12 characters exactly', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
-        final asset = AssetTypeCreditAlphaNum12('ABCDEFGHIJKL', issuer.accountId);
+        final asset = AssetTypeCreditAlphaNum12(
+          'ABCDEFGHIJKL',
+          issuer.accountId,
+        );
         final destination = MuxedAccount.fromAccountId(destinationAccountId)!;
 
         final operation = PaymentOperation(destination, asset, '100');
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -788,16 +957,19 @@ signatures.len: 0
       });
 
       test('toTxRep handles asset code with 5 characters (alphanum12)', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final asset = AssetTypeCreditAlphaNum12('ABCDE', issuer.accountId);
         final destination = MuxedAccount.fromAccountId(destinationAccountId)!;
 
         final operation = PaymentOperation(destination, asset, '100');
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();

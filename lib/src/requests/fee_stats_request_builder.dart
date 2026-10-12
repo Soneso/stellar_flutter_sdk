@@ -56,7 +56,7 @@ class FeeStatsRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   FeeStatsRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["fee_stats"]);
+    : super(httpClient, serverURI, ["fee_stats"]);
 
   /// Builds and executes the request.
   ///
@@ -94,6 +94,8 @@ class FeeStatsRequestBuilder extends RequestBuilder {
   /// - [Stellar developer docs](https://developers.stellar.org)
   Future<FeeStatsResponse> execute() async {
     return RequestBuilder.requestExecute<FeeStatsResponse>(
-        httpClient, this.buildUri());
+      httpClient,
+      this.buildUri(),
+    );
   }
 }

@@ -12,9 +12,14 @@ void main() {
       BigInt maxUint64 = BigInt.parse('18446744073709551615');
       XdrDataOutputStream out = XdrDataOutputStream();
       out.writeBigInt64(maxUint64);
-      expect(out.bytes, equals([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]));
+      expect(
+        out.bytes,
+        equals([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      );
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(inp.readBigInt64(), equals(maxUint64));
     });
 
@@ -22,9 +27,14 @@ void main() {
       BigInt negOne = BigInt.from(-1);
       XdrDataOutputStream out = XdrDataOutputStream();
       out.writeBigInt64(negOne);
-      expect(out.bytes, equals([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]));
+      expect(
+        out.bytes,
+        equals([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      );
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(inp.readBigInt64Signed(), equals(negOne));
     });
 
@@ -32,9 +42,14 @@ void main() {
       BigInt minInt64 = BigInt.parse('-9223372036854775808');
       XdrDataOutputStream out = XdrDataOutputStream();
       out.writeBigInt64(minInt64);
-      expect(out.bytes, equals([0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
+      expect(
+        out.bytes,
+        equals([0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+      );
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(inp.readBigInt64Signed(), equals(minInt64));
     });
 
@@ -42,9 +57,14 @@ void main() {
       BigInt maxInt64 = BigInt.parse('9223372036854775807');
       XdrDataOutputStream out = XdrDataOutputStream();
       out.writeBigInt64(maxInt64);
-      expect(out.bytes, equals([0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]));
+      expect(
+        out.bytes,
+        equals([0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      );
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(inp.readBigInt64Signed(), equals(maxInt64));
     });
 
@@ -52,12 +72,19 @@ void main() {
       BigInt zero = BigInt.zero;
       XdrDataOutputStream out = XdrDataOutputStream();
       out.writeBigInt64(zero);
-      expect(out.bytes, equals([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
+      expect(
+        out.bytes,
+        equals([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+      );
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(inp.readBigInt64(), equals(zero));
 
-      XdrDataInputStream inp2 = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp2 = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(inp2.readBigInt64Signed(), equals(zero));
     });
 
@@ -67,7 +94,9 @@ void main() {
       XdrDataOutputStream out = XdrDataOutputStream();
       out.writeBigInt64(twoTo53);
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(inp.readBigInt64(), equals(twoTo53));
     });
 
@@ -77,7 +106,9 @@ void main() {
       XdrDataOutputStream out = XdrDataOutputStream();
       out.writeBigInt64(aboveBoundary);
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(inp.readBigInt64(), equals(aboveBoundary));
     });
 
@@ -86,30 +117,44 @@ void main() {
       XdrDataOutputStream out = XdrDataOutputStream();
       out.writeBigInt64(maxSignedInt64);
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       BigInt readUnsigned = inp.readBigInt64();
       expect(readUnsigned, equals(maxSignedInt64));
 
-      XdrDataInputStream inp2 = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp2 = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       BigInt readSigned = inp2.readBigInt64Signed();
       expect(readSigned, equals(maxSignedInt64));
     });
 
-    test('writeBigInt64/readBigInt64 handles 2^63 (unsigned interpretation)', () {
-      // This is -2^63 when interpreted as signed, but 2^63 as unsigned
-      BigInt twoTo63 = BigInt.parse('9223372036854775808');
-      XdrDataOutputStream out = XdrDataOutputStream();
-      out.writeBigInt64(twoTo63);
-      expect(out.bytes, equals([0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
+    test(
+      'writeBigInt64/readBigInt64 handles 2^63 (unsigned interpretation)',
+      () {
+        // This is -2^63 when interpreted as signed, but 2^63 as unsigned
+        BigInt twoTo63 = BigInt.parse('9223372036854775808');
+        XdrDataOutputStream out = XdrDataOutputStream();
+        out.writeBigInt64(twoTo63);
+        expect(
+          out.bytes,
+          equals([0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+        );
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
-      BigInt readUnsigned = inp.readBigInt64();
-      expect(readUnsigned, equals(twoTo63));
+        XdrDataInputStream inp = XdrDataInputStream(
+          Uint8List.fromList(out.bytes),
+        );
+        BigInt readUnsigned = inp.readBigInt64();
+        expect(readUnsigned, equals(twoTo63));
 
-      XdrDataInputStream inp2 = XdrDataInputStream(Uint8List.fromList(out.bytes));
-      BigInt readSigned = inp2.readBigInt64Signed();
-      expect(readSigned, equals(BigInt.parse('-9223372036854775808')));
-    });
+        XdrDataInputStream inp2 = XdrDataInputStream(
+          Uint8List.fromList(out.bytes),
+        );
+        BigInt readSigned = inp2.readBigInt64Signed();
+        expect(readSigned, equals(BigInt.parse('-9223372036854775808')));
+      },
+    );
 
     test('writeBigInt64 refuses a value with no 64-bit rendering', () {
       // The stream serves both signed and unsigned 64-bit callers, so the
@@ -117,14 +162,20 @@ void main() {
       // it would keep only its low 64 bits and change on the wire.
       BigInt tooLarge = BigInt.parse('18446744073709551616'); // 2^64
       BigInt tooSmall = BigInt.parse('-9223372036854775809'); // -2^63 - 1
-      expect(() => XdrDataOutputStream().writeBigInt64(tooLarge),
-          throwsArgumentError);
-      expect(() => XdrDataOutputStream().writeBigInt64(tooSmall),
-          throwsArgumentError);
       expect(
-          () => XdrDataOutputStream()
-              .writeBigInt64(BigInt.parse('999999999999999999990000000')),
-          throwsArgumentError);
+        () => XdrDataOutputStream().writeBigInt64(tooLarge),
+        throwsArgumentError,
+      );
+      expect(
+        () => XdrDataOutputStream().writeBigInt64(tooSmall),
+        throwsArgumentError,
+      );
+      expect(
+        () => XdrDataOutputStream().writeBigInt64(
+          BigInt.parse('999999999999999999990000000'),
+        ),
+        throwsArgumentError,
+      );
     });
 
     test('writeBigInt64 converts negative to unsigned correctly', () {
@@ -137,11 +188,15 @@ void main() {
       expect(out.bytes, equals(List<int>.filled(8, 0xFF)));
 
       // Reading as unsigned should give max uint64
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(inp.readBigInt64(), equals(BigInt.parse('18446744073709551615')));
 
       // Reading as signed should give -1
-      XdrDataInputStream inp2 = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp2 = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(inp2.readBigInt64Signed(), equals(negOne));
     });
 
@@ -150,9 +205,14 @@ void main() {
       BigInt value = BigInt.parse('72623859790382856'); // decimal of above hex
       XdrDataOutputStream out = XdrDataOutputStream();
       out.writeBigInt64(value);
-      expect(out.bytes, equals([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]));
+      expect(
+        out.bytes,
+        equals([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]),
+      );
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(inp.readBigInt64(), equals(value));
     });
 
@@ -161,9 +221,14 @@ void main() {
       BigInt value = BigInt.parse('12297829382473034410');
       XdrDataOutputStream out = XdrDataOutputStream();
       out.writeBigInt64(value);
-      expect(out.bytes, equals([0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA]));
+      expect(
+        out.bytes,
+        equals([0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA]),
+      );
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(inp.readBigInt64(), equals(value));
     });
 
@@ -177,7 +242,9 @@ void main() {
       out.writeBigInt64(val2);
       out.writeBigInt64(val3);
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(inp.readBigInt64Signed(), equals(val1));
       expect(inp.readBigInt64Signed(), equals(val2));
       expect(inp.readBigInt64Signed(), equals(val3));
@@ -185,11 +252,25 @@ void main() {
 
     test('readBigInt64 reads exactly 8 bytes', () {
       // Create a stream with more than 8 bytes
-      List<int> data = [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A];
+      List<int> data = [
+        0x01,
+        0x02,
+        0x03,
+        0x04,
+        0x05,
+        0x06,
+        0x07,
+        0x08,
+        0x09,
+        0x0A,
+      ];
       XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(data));
 
       BigInt value = inp.readBigInt64();
-      expect(value, equals(BigInt.parse('72623859790382856'))); // 0x0102030405060708
+      expect(
+        value,
+        equals(BigInt.parse('72623859790382856')),
+      ); // 0x0102030405060708
 
       expect(inp.readByte(), equals(0x09));
     });
@@ -211,7 +292,9 @@ void main() {
     });
 
     test('writeByte and readByte with negative value', () {
-      final input = DataInput.fromUint8List(Uint8List.fromList([156])); // -100 as signed byte
+      final input = DataInput.fromUint8List(
+        Uint8List.fromList([156]),
+      ); // -100 as signed byte
       expect(input.readByte(), equals(-100));
     });
 
@@ -221,7 +304,9 @@ void main() {
     });
 
     test('writeByte and readByte at boundary (-128)', () {
-      final input = DataInput.fromUint8List(Uint8List.fromList([128])); // -128 as signed byte
+      final input = DataInput.fromUint8List(
+        Uint8List.fromList([128]),
+      ); // -128 as signed byte
       expect(input.readByte(), equals(-128));
     });
 
@@ -240,17 +325,22 @@ void main() {
     });
 
     test('readUnsignedByte returns unsigned byte value', () {
-      final input = DataInput.fromUint8List(Uint8List.fromList([200])); // > 127, would be negative as signed
+      final input = DataInput.fromUint8List(
+        Uint8List.fromList([200]),
+      ); // > 127, would be negative as signed
       expect(input.readUnsignedByte(), equals(200));
     });
 
-    test('readUnsignedByte throws exception at EOF when eofException is true', () {
-      final output = DataOutput();
-      output.data = [];
+    test(
+      'readUnsignedByte throws exception at EOF when eofException is true',
+      () {
+        final output = DataOutput();
+        output.data = [];
 
-      final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
-      expect(() => input.readUnsignedByte(), throwsRangeError);
-    });
+        final input = DataInput.fromUint8List(Uint8List.fromList(output.bytes));
+        expect(() => input.readUnsignedByte(), throwsRangeError);
+      },
+    );
 
     test('readUnsignedByte returns -129 at EOF when eofException is false', () {
       final output = DataOutput();
@@ -322,7 +412,9 @@ void main() {
       output.write([0x42]);
 
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
-      final bytes = input.readBytes(1); // This should consume byte and validate padding
+      final bytes = input.readBytes(
+        1,
+      ); // This should consume byte and validate padding
       // If we get here without exception, padding validation passed
       expect(bytes, equals([0x42]));
     });
@@ -918,7 +1010,10 @@ void main() {
 
     test('readDoubleArray with very large and small values', () {
       final output = XdrDataOutputStream();
-      output.writeDoubleArray([1.7976931348623157e308, 2.2250738585072014e-308]);
+      output.writeDoubleArray([
+        1.7976931348623157e308,
+        2.2250738585072014e-308,
+      ]);
 
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       final result = input.readDoubleArray();
@@ -1312,7 +1407,10 @@ void main() {
 
     test('should set dontHave', () {
       final msg = XdrStellarMessage(XdrMessageType.DONT_HAVE);
-      final dontHave = XdrDontHave(XdrMessageType.TRANSACTION, XdrUint256(Uint8List(32)));
+      final dontHave = XdrDontHave(
+        XdrMessageType.TRANSACTION,
+        XdrUint256(Uint8List(32)),
+      );
       msg.dontHave = dontHave;
       expect(msg.dontHave, equals(dontHave));
     });
@@ -1336,7 +1434,10 @@ void main() {
     test('should set discriminant', () {
       final asset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
       asset.discriminant = XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4;
-      expect(asset.discriminant, equals(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4));
+      expect(
+        asset.discriminant,
+        equals(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4),
+      );
     });
   });
 
@@ -1376,7 +1477,9 @@ void main() {
       XdrUint32.encode(out, XdrUint32(4294967295));
       expect(out.bytes, equals([0xFF, 0xFF, 0xFF, 0xFF]));
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(XdrUint32.decode(inp).uint32, equals(4294967295));
     });
 
@@ -1385,7 +1488,9 @@ void main() {
       XdrUint32.encode(out, XdrUint32(2147483648));
       expect(out.bytes, equals([0x80, 0x00, 0x00, 0x00]));
 
-      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList(out.bytes),
+      );
       expect(XdrUint32.decode(inp).uint32, equals(2147483648));
     });
 

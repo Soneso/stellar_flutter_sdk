@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -35,8 +34,9 @@ void main() {
     String destinationId = destinationKeyPair.accountId;
 
     // Code from the snippet (with real keys instead of placeholders)
-    AccountResponse senderAccount =
-        await sdk.accounts.account(senderKeyPair.accountId);
+    AccountResponse senderAccount = await sdk.accounts.account(
+      senderKeyPair.accountId,
+    );
 
     PaymentOperation paymentOp = PaymentOperationBuilder(
       destinationId,
@@ -44,14 +44,15 @@ void main() {
       "10",
     ).build();
 
-    Transaction transaction = TransactionBuilder(senderAccount)
-        .addOperation(paymentOp)
-        .build();
+    Transaction transaction = TransactionBuilder(
+      senderAccount,
+    ).addOperation(paymentOp).build();
 
     transaction.sign(senderKeyPair, Network.TESTNET);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
 
     expect(response.success, true);
     expect(response.hash, isNotNull);
@@ -74,8 +75,7 @@ void main() {
     StellarSDK sdk = StellarSDK.TESTNET;
 
     // 4. Load Alice's account
-    AccountResponse aliceAccount =
-        await sdk.accounts.account(alice.accountId);
+    AccountResponse aliceAccount = await sdk.accounts.account(alice.accountId);
 
     // 5. Build payment: Alice sends 100 XLM to Bob
     PaymentOperation paymentOp = PaymentOperationBuilder(
@@ -84,23 +84,23 @@ void main() {
       "100",
     ).build();
 
-    Transaction transaction = TransactionBuilder(aliceAccount)
-        .addOperation(paymentOp)
-        .build();
+    Transaction transaction = TransactionBuilder(
+      aliceAccount,
+    ).addOperation(paymentOp).build();
 
     // 6. Sign with Alice's key
     transaction.sign(alice, Network.TESTNET);
 
     // 7. Submit to network
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
 
     expect(response.success, true);
     expect(response.hash, isNotNull);
 
     // 8. Check Bob's new balance
-    AccountResponse bobAccount =
-        await sdk.accounts.account(bob.accountId);
+    AccountResponse bobAccount = await sdk.accounts.account(bob.accountId);
     bool foundNativeBalance = false;
     for (Balance balance in bobAccount.balances) {
       if (balance.assetType == Asset.TYPE_NATIVE) {

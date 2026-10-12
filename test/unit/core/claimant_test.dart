@@ -3,8 +3,10 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   group('Claimant', () {
-    final testAccountId = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
-    final testAccountId2 = 'GDK6OLPXZSQXJQPPSLQVDKRZYN7HN22W2DKRWVOXIUFM7RJLMB3GVWVA';
+    final testAccountId =
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
+    final testAccountId2 =
+        'GDK6OLPXZSQXJQPPSLQVDKRZYN7HN22W2DKRWVOXIUFM7RJLMB3GVWVA';
 
     group('Claimant creation', () {
       test('creates Claimant with unconditional predicate', () {
@@ -12,7 +14,10 @@ void main() {
         final claimant = Claimant(testAccountId, predicate);
 
         expect(claimant.destination, equals(testAccountId));
-        expect(claimant.predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL));
+        expect(
+          claimant.predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL),
+        );
       });
 
       test('creates Claimant with different destination', () {
@@ -27,7 +32,10 @@ void main() {
       test('predicateUnconditional creates correct predicate type', () {
         final predicate = Claimant.predicateUnconditional();
 
-        expect(predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL));
+        expect(
+          predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL),
+        );
       });
     });
 
@@ -36,14 +44,20 @@ void main() {
         final unixTime = 1735689600;
         final predicate = Claimant.predicateBeforeAbsoluteTime(unixTime);
 
-        expect(predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME));
+        expect(
+          predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME),
+        );
         expect(predicate.absBefore!.int64, equals(BigInt.from(unixTime)));
       });
 
       test('predicateBeforeAbsoluteTime with zero time', () {
         final predicate = Claimant.predicateBeforeAbsoluteTime(0);
 
-        expect(predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME));
+        expect(
+          predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME),
+        );
         expect(predicate.absBefore!.int64, equals(BigInt.zero));
       });
 
@@ -51,7 +65,10 @@ void main() {
         final unixTime = 2147483647;
         final predicate = Claimant.predicateBeforeAbsoluteTime(unixTime);
 
-        expect(predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME));
+        expect(
+          predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME),
+        );
         expect(predicate.absBefore!.int64, equals(BigInt.from(unixTime)));
       });
 
@@ -59,14 +76,20 @@ void main() {
         final seconds = 604800;
         final predicate = Claimant.predicateBeforeRelativeTime(seconds);
 
-        expect(predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME));
+        expect(
+          predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME),
+        );
         expect(predicate.relBefore!.int64, equals(BigInt.from(seconds)));
       });
 
       test('predicateBeforeRelativeTime with zero seconds', () {
         final predicate = Claimant.predicateBeforeRelativeTime(0);
 
-        expect(predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME));
+        expect(
+          predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME),
+        );
         expect(predicate.relBefore!.int64, equals(BigInt.zero));
       });
 
@@ -74,7 +97,10 @@ void main() {
         final oneYear = 31536000;
         final predicate = Claimant.predicateBeforeRelativeTime(oneYear);
 
-        expect(predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME));
+        expect(
+          predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME),
+        );
         expect(predicate.relBefore!.int64, equals(BigInt.from(oneYear)));
       });
     });
@@ -85,7 +111,10 @@ void main() {
         final right = Claimant.predicateBeforeAbsoluteTime(1000000);
         final predicate = Claimant.predicateAnd(left, right);
 
-        expect(predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_AND));
+        expect(
+          predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_AND),
+        );
         expect(predicate.andPredicates, isNotNull);
         expect(predicate.andPredicates!.length, equals(2));
       });
@@ -95,7 +124,10 @@ void main() {
         final right = Claimant.predicateBeforeRelativeTime(604800);
         final predicate = Claimant.predicateOr(left, right);
 
-        expect(predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_OR));
+        expect(
+          predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_OR),
+        );
         expect(predicate.orPredicates, isNotNull);
         expect(predicate.orPredicates!.length, equals(2));
       });
@@ -104,17 +136,29 @@ void main() {
         final inner = Claimant.predicateBeforeAbsoluteTime(1000000);
         final predicate = Claimant.predicateNot(inner);
 
-        expect(predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT));
+        expect(
+          predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT),
+        );
         expect(predicate.notPredicate, isNotNull);
-        expect(predicate.notPredicate!.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME));
+        expect(
+          predicate.notPredicate!.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME),
+        );
       });
 
       test('predicateNot with unconditional predicate', () {
         final inner = Claimant.predicateUnconditional();
         final predicate = Claimant.predicateNot(inner);
 
-        expect(predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT));
-        expect(predicate.notPredicate!.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL));
+        expect(
+          predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT),
+        );
+        expect(
+          predicate.notPredicate!.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL),
+        );
       });
     });
 
@@ -127,9 +171,15 @@ void main() {
         final time3 = Claimant.predicateBeforeAbsoluteTime(2000000);
         final orPredicate = Claimant.predicateOr(andPredicate, time3);
 
-        expect(orPredicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_OR));
+        expect(
+          orPredicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_OR),
+        );
         expect(orPredicate.orPredicates!.length, equals(2));
-        expect(orPredicate.orPredicates![0].discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_AND));
+        expect(
+          orPredicate.orPredicates![0].discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_AND),
+        );
       });
 
       test('nested NOT operations', () {
@@ -137,9 +187,18 @@ void main() {
         final not1 = Claimant.predicateNot(time);
         final not2 = Claimant.predicateNot(not1);
 
-        expect(not2.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT));
-        expect(not2.notPredicate!.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT));
-        expect(not2.notPredicate!.notPredicate!.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME));
+        expect(
+          not2.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT),
+        );
+        expect(
+          not2.notPredicate!.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT),
+        );
+        expect(
+          not2.notPredicate!.notPredicate!.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME),
+        );
       });
 
       test('complex nested predicate structure', () {
@@ -151,8 +210,14 @@ void main() {
         final time3 = Claimant.predicateBeforeAbsoluteTime(2000000);
         final orPredicate = Claimant.predicateOr(notPredicate, time3);
 
-        expect(orPredicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_OR));
-        expect(orPredicate.orPredicates![0].discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT));
+        expect(
+          orPredicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_OR),
+        );
+        expect(
+          orPredicate.orPredicates![0].discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT),
+        );
       });
     });
 
@@ -164,7 +229,10 @@ void main() {
         final restored = Claimant.fromXdr(xdr);
 
         expect(restored.destination, equals(testAccountId));
-        expect(restored.predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL));
+        expect(
+          restored.predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL),
+        );
       });
 
       test('XDR round-trip for time-based claimant', () {
@@ -175,8 +243,14 @@ void main() {
         final restored = Claimant.fromXdr(xdr);
 
         expect(restored.destination, equals(testAccountId));
-        expect(restored.predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME));
-        expect(restored.predicate.absBefore!.int64, equals(BigInt.from(unixTime)));
+        expect(
+          restored.predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME),
+        );
+        expect(
+          restored.predicate.absBefore!.int64,
+          equals(BigInt.from(unixTime)),
+        );
       });
 
       test('XDR round-trip for relative time claimant', () {
@@ -187,8 +261,14 @@ void main() {
         final restored = Claimant.fromXdr(xdr);
 
         expect(restored.destination, equals(testAccountId));
-        expect(restored.predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME));
-        expect(restored.predicate.relBefore!.int64, equals(BigInt.from(seconds)));
+        expect(
+          restored.predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME),
+        );
+        expect(
+          restored.predicate.relBefore!.int64,
+          equals(BigInt.from(seconds)),
+        );
       });
 
       test('XDR round-trip for AND predicate claimant', () {
@@ -200,7 +280,10 @@ void main() {
         final restored = Claimant.fromXdr(xdr);
 
         expect(restored.destination, equals(testAccountId));
-        expect(restored.predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_AND));
+        expect(
+          restored.predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_AND),
+        );
         expect(restored.predicate.andPredicates!.length, equals(2));
       });
 
@@ -213,7 +296,10 @@ void main() {
         final restored = Claimant.fromXdr(xdr);
 
         expect(restored.destination, equals(testAccountId));
-        expect(restored.predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_OR));
+        expect(
+          restored.predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_OR),
+        );
         expect(restored.predicate.orPredicates!.length, equals(2));
       });
 
@@ -225,8 +311,14 @@ void main() {
         final restored = Claimant.fromXdr(xdr);
 
         expect(restored.destination, equals(testAccountId));
-        expect(restored.predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT));
-        expect(restored.predicate.notPredicate!.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME));
+        expect(
+          restored.predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT),
+        );
+        expect(
+          restored.predicate.notPredicate!.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME),
+        );
       });
 
       test('XDR round-trip for nested complex predicate', () {
@@ -240,8 +332,14 @@ void main() {
         final restored = Claimant.fromXdr(xdr);
 
         expect(restored.destination, equals(testAccountId));
-        expect(restored.predicate.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT));
-        expect(restored.predicate.notPredicate!.discriminant, equals(XdrClaimPredicateType.CLAIM_PREDICATE_AND));
+        expect(
+          restored.predicate.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_NOT),
+        );
+        expect(
+          restored.predicate.notPredicate!.discriminant,
+          equals(XdrClaimPredicateType.CLAIM_PREDICATE_AND),
+        );
       });
 
       test('XDR claimant type is CLAIMANT_TYPE_V0', () {

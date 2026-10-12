@@ -59,9 +59,13 @@ void main() {
         ]) {
           expect(
             () => Price.fromString(value),
-            throwsA(predicate((e) =>
-                e is Exception &&
-                e.toString().contains("Not a decimal price"))),
+            throwsA(
+              predicate(
+                (e) =>
+                    e is Exception &&
+                    e.toString().contains("Not a decimal price"),
+              ),
+            ),
             reason: 'expected "$value" to be refused',
           );
         }
@@ -109,9 +113,11 @@ void main() {
 
           expect(price.numerator, greaterThanOrEqualTo(-2147483648));
           expect(price.denominator, lessThanOrEqualTo(2147483647));
-          expect(price.numerator! / price.denominator!,
-              closeTo(double.parse(value), 1e-9),
-              reason: 'expected "$value" to approximate its own value');
+          expect(
+            price.numerator! / price.denominator!,
+            closeTo(double.parse(value), 1e-9),
+            reason: 'expected "$value" to approximate its own value',
+          );
         }
 
         // The floor itself is representable, so it is kept rather than
@@ -119,7 +125,9 @@ void main() {
         expect(Price.fromString("-2147483648").numerator, equals(-2147483648));
         expect(Price.fromString("-2147483648").denominator, equals(1));
         expect(
-            Price.fromString("-2147483647.5").numerator, equals(-2147483648));
+          Price.fromString("-2147483647.5").numerator,
+          equals(-2147483648),
+        );
         expect(Price.fromString("-2147483647.5").denominator, equals(1));
       });
 
@@ -142,8 +150,11 @@ void main() {
           "0.",
           "0.0000000001",
         ]) {
-          expect(() => Price.fromString(value), throwsA(isA<Exception>()),
-              reason: 'expected "$value" to be refused');
+          expect(
+            () => Price.fromString(value),
+            throwsA(isA<Exception>()),
+            reason: 'expected "$value" to be refused',
+          );
         }
 
         // The boundaries themselves are int32 values and are kept.
@@ -160,11 +171,15 @@ void main() {
           final value = "0.${"0" * zeros}1";
           expect(
             () => Price.fromString(value),
-            throwsA(predicate((e) =>
-                e is Exception &&
-                e
-                    .toString()
-                    .contains("Not a price an int32 fraction can carry"))),
+            throwsA(
+              predicate(
+                (e) =>
+                    e is Exception &&
+                    e.toString().contains(
+                      "Not a price an int32 fraction can carry",
+                    ),
+              ),
+            ),
             reason: 'expected the $zeros-zeros value to be refused',
           );
         }
@@ -250,12 +265,18 @@ void main() {
 
       test('cuts a non-terminating fraction after 20 digits', () {
         expect(Price(1, 3).toDecimalString(), equals("0.33333333333333333333"));
-        expect(Price(355, 113).toDecimalString(), equals("3.14159292035398230088"));
+        expect(
+          Price(355, 113).toDecimalString(),
+          equals("3.14159292035398230088"),
+        );
         expect(Price(2, 3).toDecimalString(), equals("0.66666666666666666666"));
       });
 
       test('writes the smallest int32 fraction to 20 digits', () {
-        expect(Price(1, 2147483647).toDecimalString(), equals("0.00000000046566128752"));
+        expect(
+          Price(1, 2147483647).toDecimalString(),
+          equals("0.00000000046566128752"),
+        );
       });
 
       test('removes zeros left at the cut', () {
@@ -292,8 +313,11 @@ void main() {
       void expectRoundTrip(int n, int d, int expectedN, int expectedD) {
         final decimal = Price(n, d).toDecimalString();
         final parsed = Price.fromString(decimal);
-        expect([parsed.n, parsed.d], equals([expectedN, expectedD]),
-            reason: '$n/$d rendered as "$decimal"');
+        expect(
+          [parsed.n, parsed.d],
+          equals([expectedN, expectedD]),
+          reason: '$n/$d rendered as "$decimal"',
+        );
       }
 
       test('recovers fractions with large powers of five', () {
@@ -337,10 +361,14 @@ void main() {
         final value = "-2147483648.${"0" * 323}1";
         expect(
           () => Price.fromString(value),
-          throwsA(predicate((e) =>
-              e is Exception &&
-              e.toString() ==
-                  "Exception: Not a price an int32 fraction can carry: $value")),
+          throwsA(
+            predicate(
+              (e) =>
+                  e is Exception &&
+                  e.toString() ==
+                      "Exception: Not a price an int32 fraction can carry: $value",
+            ),
+          ),
         );
       });
 
@@ -433,19 +461,13 @@ void main() {
       test('throws exception for invalid JSON format', () {
         final json = {'n': 'invalid', 'd': 'invalid'};
 
-        expect(
-          () => Price.fromJson(json),
-          throwsException,
-        );
+        expect(() => Price.fromJson(json), throwsException);
       });
 
       test('throws exception for missing fields', () {
         final json = {'n': 3};
 
-        expect(
-          () => Price.fromJson(json),
-          throwsException,
-        );
+        expect(() => Price.fromJson(json), throwsException);
       });
     });
 

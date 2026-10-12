@@ -40,14 +40,15 @@ class AccountCreatedEffectResponse extends EffectResponse {
   /// Parameters:
   /// - [startingBalance] Initial XLM balance provided to the account
   AccountCreatedEffectResponse(
-      this.startingBalance,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.startingBalance,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory AccountCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       AccountCreatedEffectResponse(
@@ -58,7 +59,8 @@ class AccountCreatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -86,8 +88,15 @@ class AccountCreatedEffectResponse extends EffectResponse {
 /// - [AccountMergeOperation] for merging accounts
 class AccountRemovedEffectResponse extends EffectResponse {
   /// Creates an AccountRemovedEffectResponse from Horizon API data.
-  AccountRemovedEffectResponse(super.id, super.type_i, super.type,
-      super.createdAt, super.pagingToken, super.account, super.links);
+  AccountRemovedEffectResponse(
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory AccountRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
       AccountRemovedEffectResponse(
@@ -97,7 +106,8 @@ class AccountRemovedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -149,17 +159,18 @@ class AccountCreditedEffectResponse extends EffectResponse {
   /// - [assetCode] Asset code (null for native XLM)
   /// - [assetIssuer] Asset issuer (null for native XLM)
   AccountCreditedEffectResponse(
-      this.amount,
-      this.assetType,
-      this.assetCode,
-      this.assetIssuer,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.amount,
+    this.assetType,
+    this.assetCode,
+    this.assetIssuer,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Returns the Asset object representing the credited asset.
   ///
@@ -188,7 +199,8 @@ class AccountCreditedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -240,17 +252,18 @@ class AccountDebitedEffectResponse extends EffectResponse {
   /// - [assetCode] Asset code (null for native XLM)
   /// - [assetIssuer] Asset issuer (null for native XLM)
   AccountDebitedEffectResponse(
-      this.amount,
-      this.assetType,
-      this.assetCode,
-      this.assetIssuer,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.amount,
+    this.assetType,
+    this.assetCode,
+    this.assetIssuer,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Returns the Asset object representing the debited asset.
   ///
@@ -279,7 +292,8 @@ class AccountDebitedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -337,19 +351,21 @@ class AccountThresholdsUpdatedEffectResponse extends EffectResponse {
   /// - [medThreshold] Threshold value for medium security operations
   /// - [highThreshold] Threshold value for high security operations
   AccountThresholdsUpdatedEffectResponse(
-      this.lowThreshold,
-      this.medThreshold,
-      this.highThreshold,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.lowThreshold,
+    this.medThreshold,
+    this.highThreshold,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory AccountThresholdsUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       AccountThresholdsUpdatedEffectResponse(
           convertInt(json['low_threshold'])!,
           convertInt(json['med_threshold'])!,
@@ -360,7 +376,8 @@ class AccountThresholdsUpdatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -405,17 +422,19 @@ class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
   /// Parameters:
   /// - [homeDomain] The new home domain for the account, or null if cleared
   AccountHomeDomainUpdatedEffectResponse(
-      this.homeDomain,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.homeDomain,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory AccountHomeDomainUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       AccountHomeDomainUpdatedEffectResponse(
           json['home_domain'],
           json['id'],
@@ -424,7 +443,8 @@ class AccountHomeDomainUpdatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -476,18 +496,20 @@ class AccountFlagsUpdatedEffectResponse extends EffectResponse {
   /// - [authRequiredFlag] Whether the AUTH_REQUIRED flag is set
   /// - [authRevokableFlag] Whether the AUTH_REVOCABLE flag is set
   AccountFlagsUpdatedEffectResponse(
-      this.authRequiredFlag,
-      this.authRevokableFlag,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.authRequiredFlag,
+    this.authRevokableFlag,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory AccountFlagsUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       AccountFlagsUpdatedEffectResponse(
           json['auth_required_flag'],
           json['auth_revokable_flag'],
@@ -497,7 +519,8 @@ class AccountFlagsUpdatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -534,7 +557,9 @@ class AccountFlagsUpdatedEffectResponse extends EffectResponse {
 /// See also:
 /// - [SetOptionsOperation] for setting account options
 /// - [Stellar developer docs](https://developers.stellar.org)
-@Deprecated('Inflation was removed in Protocol 12. This effect only appears in historical data.')
+@Deprecated(
+  'Inflation was removed in Protocol 12. This effect only appears in historical data.',
+)
 class AccountInflationDestinationUpdatedEffectResponse extends EffectResponse {
   /// Creates an AccountInflationDestinationUpdatedEffectResponse from Horizon API effect data.
   ///
@@ -542,16 +567,18 @@ class AccountInflationDestinationUpdatedEffectResponse extends EffectResponse {
   /// records from Horizon API responses. This effect only appears in historical
   /// data from before Protocol 12.
   AccountInflationDestinationUpdatedEffectResponse(
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory AccountInflationDestinationUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       AccountInflationDestinationUpdatedEffectResponse(
           json['id'],
           json['type_i'],
@@ -559,7 +586,8 @@ class AccountInflationDestinationUpdatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }

@@ -136,11 +136,13 @@ class RegulatedAssetsService {
   ///
   /// Initializes the service with stellar.toml data, network configuration, and optional HTTP settings.
   /// Extracts regulated assets from the toml currencies section and configures Stellar SDK access.
-  RegulatedAssetsService(this.tomlData,
-      {http.Client? httpClient,
-      this.httpRequestHeaders,
-      String? horizonUrl,
-      Network? network}) {
+  RegulatedAssetsService(
+    this.tomlData, {
+    http.Client? httpClient,
+    this.httpRequestHeaders,
+    String? horizonUrl,
+    Network? network,
+  }) {
     this.httpClient = httpClient ?? http.Client();
 
     if (horizonUrl != null) {
@@ -180,8 +182,11 @@ class RegulatedAssetsService {
           element.regulated! == true &&
           element.approvalServer != null) {
         var regulatedAsset = RegulatedAsset(
-            element.code!, element.issuer!, element.approvalServer!,
-            approvalCriteria: element.approvalCriteria);
+          element.code!,
+          element.issuer!,
+          element.approvalServer!,
+          approvalCriteria: element.approvalCriteria,
+        );
         this.regulatedAssets.add(regulatedAsset);
       }
     });
@@ -205,16 +210,25 @@ class RegulatedAssetsService {
   /// Throws:
   /// - [Exception] if stellar.toml cannot be fetched
   /// - [IncompleteInitData] if required network or Horizon information is missing
-  static Future<RegulatedAssetsService> fromDomain(String domain,
-      {http.Client? httpClient,
-      Map<String, String>? httpRequestHeaders,
-      String? horizonUrl,
-      Network? network}) async {
-    StellarToml toml = await StellarToml.fromDomain(domain,
-        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
-    return RegulatedAssetsService(toml,
-        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders,
-        horizonUrl: horizonUrl, network: network);
+  static Future<RegulatedAssetsService> fromDomain(
+    String domain, {
+    http.Client? httpClient,
+    Map<String, String>? httpRequestHeaders,
+    String? horizonUrl,
+    Network? network,
+  }) async {
+    StellarToml toml = await StellarToml.fromDomain(
+      domain,
+      httpClient: httpClient,
+      httpRequestHeaders: httpRequestHeaders,
+    );
+    return RegulatedAssetsService(
+      toml,
+      httpClient: httpClient,
+      httpRequestHeaders: httpRequestHeaders,
+      horizonUrl: horizonUrl,
+      network: network,
+    );
   }
 
   /// Checks if authorization is required for the given asset.
@@ -235,14 +249,17 @@ class RegulatedAssetsService {
           issuerAccount.flags.authRevocable;
     } catch (e) {
       throw IssuerAccountNotFound(
-          'issuer account ' + asset.issuerId + ' not found');
+        'issuer account ' + asset.issuerId + ' not found',
+      );
     }
   }
 
   /// Sends a transaction to be evaluated and signed by the approval server.
   ///
   Future<PostTransactionResponse> postTransaction(
-      String tx, String approvalServer) async {
+    String tx,
+    String approvalServer,
+  ) async {
     Uri requestURI = Uri.parse(approvalServer);
     Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers.putIfAbsent("Content-Type", () => "application/json");
@@ -250,24 +267,33 @@ class RegulatedAssetsService {
     PostTransactionResponse result = await httpClient
         .post(requestURI, body: json.encode({'tx': tx}), headers: headers)
         .then((response) {
-      switch (response.statusCode) {
-        case 200:
-          return PostTransactionResponse.fromJson(json.decode(response.body));
-        case 400:
-          var jsonData = json.decode(response.body);
-          if (jsonData['error'] != null) {
-            return PostTransactionResponse.fromJson(json.decode(response.body));
-          } else {
-            throw new UnknownPostTransactionResponse(
-                response.statusCode, response.body);
+          switch (response.statusCode) {
+            case 200:
+              return PostTransactionResponse.fromJson(
+                json.decode(response.body),
+              );
+            case 400:
+              var jsonData = json.decode(response.body);
+              if (jsonData['error'] != null) {
+                return PostTransactionResponse.fromJson(
+                  json.decode(response.body),
+                );
+              } else {
+                throw new UnknownPostTransactionResponse(
+                  response.statusCode,
+                  response.body,
+                );
+              }
+            default:
+              throw new UnknownPostTransactionResponse(
+                response.statusCode,
+                response.body,
+              );
           }
-        default:
-          throw new UnknownPostTransactionResponse(
-              response.statusCode, response.body);
-      }
-    }).catchError((onError) {
-      throw onError;
-    });
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -303,7 +329,9 @@ class RegulatedAssetsService {
   ///
   /// Throws [UnknownPostActionResponse] if the server returns an unexpected response.
   Future<PostActionResponse> postAction(
-      String url, Map<String, dynamic> actionFields) async {
+    String url,
+    Map<String, dynamic> actionFields,
+  ) async {
     Uri requestURI = Uri.parse(url);
 
     Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
@@ -312,16 +340,19 @@ class RegulatedAssetsService {
     PostActionResponse result = await httpClient
         .post(requestURI, body: json.encode(actionFields), headers: headers)
         .then((response) {
-      switch (response.statusCode) {
-        case 200:
-          return PostActionResponse.fromJson(json.decode(response.body));
-        default:
-          throw new UnknownPostActionResponse(
-              response.statusCode, response.body);
-      }
-    }).catchError((onError) {
-      throw onError;
-    });
+          switch (response.statusCode) {
+            case 200:
+              return PostActionResponse.fromJson(json.decode(response.body));
+            default:
+              throw new UnknownPostActionResponse(
+                response.statusCode,
+                response.body,
+              );
+          }
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -350,9 +381,9 @@ abstract class PostActionResponse {
     } else if ('follow_next_url' == result) {
       return PostActionNextUrl(json['next_url'], message: json['message']);
     } else {
-      throw UnknownPostActionResponseResult("Unknown result '" +
-          result +
-          "' received in the post action response");
+      throw UnknownPostActionResponseResult(
+        "Unknown result '" + result + "' received in the post action response",
+      );
     }
   }
 }
@@ -418,17 +449,22 @@ abstract class PostTransactionResponse {
       String? message = json['message'] == null ? null : json['message'];
       return PostTransactionPending(timeout: timeout, message: message);
     } else if ('action_required' == status) {
-      return PostTransactionActionRequired(json['message'], json['action_url'],
-          actionMethod: json['action_method'],
-          actionFields: json['action_fields'] == null
-              ? null
-              : List<String>.from(json['action_fields'].map((e) => e)));
+      return PostTransactionActionRequired(
+        json['message'],
+        json['action_url'],
+        actionMethod: json['action_method'],
+        actionFields: json['action_fields'] == null
+            ? null
+            : List<String>.from(json['action_fields'].map((e) => e)),
+      );
     } else if ('rejected' == status) {
       return PostTransactionRejected(json['error']);
     } else {
-      throw UnknownPostTransactionResponseStatus("Unknown status '" +
-          status +
-          "' received in the post transaction response");
+      throw UnknownPostTransactionResponseStatus(
+        "Unknown status '" +
+            status +
+            "' received in the post transaction response",
+      );
     }
   }
 }
@@ -502,8 +538,12 @@ class PostTransactionActionRequired extends PostTransactionResponse {
   List<String>? actionFields;
 
   /// Creates an action required response with URL and optional fields for user completion.
-  PostTransactionActionRequired(this.message, this.actionUrl,
-      {String? actionMethod, this.actionFields}) {
+  PostTransactionActionRequired(
+    this.message,
+    this.actionUrl, {
+    String? actionMethod,
+    this.actionFields,
+  }) {
     if (actionMethod != null) {
       this.actionMethod = actionMethod;
     }
@@ -540,9 +580,12 @@ class RegulatedAsset extends AssetTypeCreditAlphaNum {
   String? approvalCriteria;
 
   /// Creates a regulated asset with asset code, issuer ID, and approval server URL.
-  RegulatedAsset(String code, String issuerId, this.approvalServer,
-      {this.approvalCriteria})
-      : super(code, issuerId);
+  RegulatedAsset(
+    String code,
+    String issuerId,
+    this.approvalServer, {
+    this.approvalCriteria,
+  }) : super(code, issuerId);
 
   @override
   XdrAsset toXdr() {

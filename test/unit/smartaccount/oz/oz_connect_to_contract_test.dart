@@ -43,8 +43,7 @@ void main() {
       const a = OZConnectToContractResult(contractId: _contractA);
       const b = OZConnectToContractResult(contractId: _contractA);
       const c = OZConnectToContractResult(
-        contractId:
-            'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM',
+        contractId: 'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM',
       );
 
       expect(a, equals(b));
@@ -58,8 +57,7 @@ void main() {
   // connectToContract: happy path
   // -------------------------------------------------------------------------
   group('connectToContract success', () {
-    test('testConnectToContract_existingContract_setsConnectedState',
-        () async {
+    test('testConnectToContract_existingContract_setsConnectedState', () async {
       final soroban = MockSorobanServer();
       soroban.getContractDataResponses.add(_existingInstanceEntry());
       final kit = FakePipelineKit(sorobanServer: soroban);
@@ -89,7 +87,10 @@ void main() {
       // The single queued instance entry was consumed by the on-chain verify.
       expect(soroban.getContractDataResponses, isEmpty);
       expect(soroban.getContractDataCalls.length, equals(1));
-      expect(soroban.getContractDataCalls.single.contractId, equals(_contractA));
+      expect(
+        soroban.getContractDataCalls.single.contractId,
+        equals(_contractA),
+      );
     });
 
     test('testConnectToContract_emitsHeadlessConnectedEvent_only', () async {
@@ -130,14 +131,14 @@ void main() {
 
       final now = DateTime.now().millisecondsSinceEpoch;
       await kit.getStorage().saveSession(
-            OZStoredSession(
-              credentialId: 'real-passkey-credential',
-              contractId:
-                  'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM',
-              connectedAt: now,
-              expiresAt: now + 60_000,
-            ),
-          );
+        OZStoredSession(
+          credentialId: 'real-passkey-credential',
+          contractId:
+              'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM',
+          connectedAt: now,
+          expiresAt: now + 60_000,
+        ),
+      );
       expect(await kit.getStorage().getSession(), isNotNull);
 
       await ops.connectToContract(_contractA);
@@ -159,14 +160,14 @@ void main() {
       // A stale passkey session is present before the headless connect.
       final now = DateTime.now().millisecondsSinceEpoch;
       await kit.getStorage().saveSession(
-            OZStoredSession(
-              credentialId: 'real-passkey-credential',
-              contractId:
-                  'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM',
-              connectedAt: now,
-              expiresAt: now + 60_000,
-            ),
-          );
+        OZStoredSession(
+          credentialId: 'real-passkey-credential',
+          contractId:
+              'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM',
+          connectedAt: now,
+          expiresAt: now + 60_000,
+        ),
+      );
 
       final headlessEvents = <OZSmartAccountEventHeadlessConnected>[];
       kit.events.on<OZSmartAccountEventHeadlessConnected>(headlessEvents.add);
@@ -265,72 +266,77 @@ void main() {
       );
     });
 
-    test('testConnectToContract_invalidContractId_throwsInvalidAddress',
-        () async {
-      final soroban = MockSorobanServer();
-      final kit = FakePipelineKit(sorobanServer: soroban);
-      final ops = OZWalletOperations(kit);
+    test(
+      'testConnectToContract_invalidContractId_throwsInvalidAddress',
+      () async {
+        final soroban = MockSorobanServer();
+        final kit = FakePipelineKit(sorobanServer: soroban);
+        final ops = OZWalletOperations(kit);
 
-      await expectLater(
-        () => ops.connectToContract('not-a-c-address'),
-        throwsA(isA<SmartAccountInvalidAddress>()),
-      );
+        await expectLater(
+          () => ops.connectToContract('not-a-c-address'),
+          throwsA(isA<SmartAccountInvalidAddress>()),
+        );
 
-      // Validation precedes any network call and leaves the state unset.
-      expect(soroban.getContractDataCalls, isEmpty);
-      expect(kit.contractId, isNull);
-      await expectLater(
-        () => kit.requireConnected(),
-        throwsA(isA<SmartAccountWalletNotConnected>()),
-      );
-    });
+        // Validation precedes any network call and leaves the state unset.
+        expect(soroban.getContractDataCalls, isEmpty);
+        expect(kit.contractId, isNull);
+        await expectLater(
+          () => kit.requireConnected(),
+          throwsA(isA<SmartAccountWalletNotConnected>()),
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
   // connectToContract: cancellation
   // -------------------------------------------------------------------------
   group('connectToContract cancellation', () {
-    test('testConnectToContract_cancelledBeforeAwait_throwsSubmissionFailed',
-        () async {
-      final soroban = MockSorobanServer();
-      // Seed an existing-contract entry that must never be consumed: the
-      // entry-time cancellation check runs before the on-chain verify, so a
-      // pre-cancelled token aborts before getContractData is ever reached.
-      soroban.getContractDataResponses.add(_existingInstanceEntry());
-      final kit = FakePipelineKit(sorobanServer: soroban);
-      final ops = OZWalletOperations(kit);
+    test(
+      'testConnectToContract_cancelledBeforeAwait_throwsSubmissionFailed',
+      () async {
+        final soroban = MockSorobanServer();
+        // Seed an existing-contract entry that must never be consumed: the
+        // entry-time cancellation check runs before the on-chain verify, so a
+        // pre-cancelled token aborts before getContractData is ever reached.
+        soroban.getContractDataResponses.add(_existingInstanceEntry());
+        final kit = FakePipelineKit(sorobanServer: soroban);
+        final ops = OZWalletOperations(kit);
 
-      final token = dio.CancelToken();
-      token.cancel('test');
+        final token = dio.CancelToken();
+        token.cancel('test');
 
-      await expectLater(
-        () => ops.connectToContract(_contractA, cancelToken: token),
-        throwsA(isA<SmartAccountTransactionSubmissionFailed>().having(
-          (e) => e.message,
-          'message',
-          contains('Operation cancelled'),
-        )),
-      );
+        await expectLater(
+          () => ops.connectToContract(_contractA, cancelToken: token),
+          throwsA(
+            isA<SmartAccountTransactionSubmissionFailed>().having(
+              (e) => e.message,
+              'message',
+              contains('Operation cancelled'),
+            ),
+          ),
+        );
 
-      // Cancellation preceded the on-chain verify and the state set: the
-      // queued instance entry is untouched, no getContractData lookup ran,
-      // and the connection state was never established.
-      expect(soroban.getContractDataResponses.length, equals(1));
-      expect(soroban.getContractDataCalls, isEmpty);
-      expect(kit.contractId, isNull);
-      await expectLater(
-        () => kit.requireConnected(),
-        throwsA(isA<SmartAccountWalletNotConnected>()),
-      );
-    });
+        // Cancellation preceded the on-chain verify and the state set: the
+        // queued instance entry is untouched, no getContractData lookup ran,
+        // and the connection state was never established.
+        expect(soroban.getContractDataResponses.length, equals(1));
+        expect(soroban.getContractDataCalls, isEmpty);
+        expect(kit.contractId, isNull);
+        await expectLater(
+          () => kit.requireConnected(),
+          throwsA(isA<SmartAccountWalletNotConnected>()),
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
   // Single-passkey guard after a headless connect
   // -------------------------------------------------------------------------
   group('connectToContract single-passkey guard', () {
-    test('testConnectToContract_thenSinglePasskeySubmit_throwsGuard',
-        () async {
+    test('testConnectToContract_thenSinglePasskeySubmit_throwsGuard', () async {
       final soroban = MockSorobanServer();
       soroban.getContractDataResponses.add(_existingInstanceEntry());
       final kit = FakePipelineKit(sorobanServer: soroban);
@@ -404,54 +410,56 @@ void main() {
   // Multi-signer path composes with a headless connect
   // -------------------------------------------------------------------------
   group('connectToContract multi-signer path', () {
-    test('testConnectToContract_thenMultiSignerRouting_reachesMultiSignerManager',
-        () async {
-      final soroban = MockSorobanServer();
-      soroban.getContractDataResponses.add(_existingInstanceEntry());
-      final kit = FakePipelineKit(sorobanServer: soroban);
-      final multi = MockOZMultiSignerManager(kit);
-      kit.setMultiSignerManager(multi);
+    test(
+      'testConnectToContract_thenMultiSignerRouting_reachesMultiSignerManager',
+      () async {
+        final soroban = MockSorobanServer();
+        soroban.getContractDataResponses.add(_existingInstanceEntry());
+        final kit = FakePipelineKit(sorobanServer: soroban);
+        final multi = MockOZMultiSignerManager(kit);
+        kit.setMultiSignerManager(multi);
 
-      await OZWalletOperations(kit).connectToContract(_contractA);
-      // The connect verify consumed exactly one getContractData lookup.
-      expect(soroban.getContractDataCalls.length, equals(1));
+        await OZWalletOperations(kit).connectToContract(_contractA);
+        // The connect verify consumed exactly one getContractData lookup.
+        expect(soroban.getContractDataCalls.length, equals(1));
 
-      final ed25519Signer = OZSelectedSignerEd25519(
-        verifierAddress: _contractA,
-        publicKey: Uint8List.fromList(
-          List<int>.generate(32, (i) => i & 0xFF),
-        ),
-      );
+        final ed25519Signer = OZSelectedSignerEd25519(
+          verifierAddress: _contractA,
+          publicKey: Uint8List.fromList(
+            List<int>.generate(32, (i) => i & 0xFF),
+          ),
+        );
 
-      // A real manager call carrying a NON-empty selectedSigners list routes
-      // through the production ozRouteSubmission. Its non-empty branch must
-      // reach submitWithMultipleSigners and never enter the guarded submit()
-      // path. removeSigner mirrors the default-empty guard sub-case covered
-      // by testConnectToContract_thenSinglePasskeySubmit_throwsGuard, which
-      // routes the empty list into submit() and throws the headless guard;
-      // here the non-empty list takes the multi-signer branch instead.
-      final result = await OZSignerManager(kit).removeSigner(
-        contextRuleId: 0,
-        signerId: 0,
-        selectedSigners: <OZSelectedSigner>[ed25519Signer],
-      );
+        // A real manager call carrying a NON-empty selectedSigners list routes
+        // through the production ozRouteSubmission. Its non-empty branch must
+        // reach submitWithMultipleSigners and never enter the guarded submit()
+        // path. removeSigner mirrors the default-empty guard sub-case covered
+        // by testConnectToContract_thenSinglePasskeySubmit_throwsGuard, which
+        // routes the empty list into submit() and throws the headless guard;
+        // here the non-empty list takes the multi-signer branch instead.
+        final result = await OZSignerManager(kit).removeSigner(
+          contextRuleId: 0,
+          signerId: 0,
+          selectedSigners: <OZSelectedSigner>[ed25519Signer],
+        );
 
-      expect(result.success, isTrue);
+        expect(result.success, isTrue);
 
-      // Routing reached the multi-signer manager with the supplied signer and
-      // did not divert to multiSignerContractCall or the other entry points.
-      final call = multi.submitWithMultipleSignersCalls.single;
-      expect(call.selectedSigners.single, isA<OZSelectedSignerEd25519>());
-      expect(multi.multiSignerContractCallCalls, isEmpty);
+        // Routing reached the multi-signer manager with the supplied signer and
+        // did not divert to multiSignerContractCall or the other entry points.
+        final call = multi.submitWithMultipleSignersCalls.single;
+        expect(call.selectedSigners.single, isA<OZSelectedSignerEd25519>());
+        expect(multi.multiSignerContractCallCalls, isEmpty);
 
-      // The single-passkey submit() path was not taken: no headless guard
-      // threw (the call above completed), and no submit-side network ran
-      // beyond the connect verify.
-      expect(soroban.getContractDataCalls.length, equals(1));
-      expect(soroban.simulateCalls, isEmpty);
-      expect(soroban.sendCalls, isEmpty);
-      expect(soroban.getAccountCalls, isEmpty);
-    });
+        // The single-passkey submit() path was not taken: no headless guard
+        // threw (the call above completed), and no submit-side network ran
+        // beyond the connect verify.
+        expect(soroban.getContractDataCalls.length, equals(1));
+        expect(soroban.simulateCalls, isEmpty);
+        expect(soroban.sendCalls, isEmpty);
+        expect(soroban.getAccountCalls, isEmpty);
+      },
+    );
   });
 }
 

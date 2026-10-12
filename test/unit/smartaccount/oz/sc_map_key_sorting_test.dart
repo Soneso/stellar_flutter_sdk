@@ -51,9 +51,13 @@ List<XdrSCVal> _signerKeys(XdrSCVal payloadScVal) {
 /// key order.
 void _assertKeysInHostOrder(List<XdrSCVal> keys) {
   for (var i = 1; i < keys.length; i++) {
-    expect(compareScValHostOrder(keys[i - 1], keys[i]) < 0, isTrue,
-        reason: 'key at index ${i - 1} must precede key at index $i '
-            'in host order');
+    expect(
+      compareScValHostOrder(keys[i - 1], keys[i]) < 0,
+      isTrue,
+      reason:
+          'key at index ${i - 1} must precede key at index $i '
+          'in host order',
+    );
   }
 }
 
@@ -72,18 +76,20 @@ void main() {
       // build via the codec and assert the result is in host key order.
       final s1 = OZDelegatedSigner(kValidGAddress);
       final s2 = OZExternalSigner(kValidContractId, _bytes(8, 1));
-      final out = _writePayloadWithSigners(
-        <OZSmartAccountSigner, Uint8List>{s2: _bytes(4, 0), s1: _bytes(4, 0)},
-      );
+      final out = _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{
+        s2: _bytes(4, 0),
+        s1: _bytes(4, 0),
+      });
       _assertKeysInHostOrder(_signerKeys(out));
     });
 
     test('testSortMapByKeyXdrWithAddressKeys', () {
       final s1 = OZDelegatedSigner(kValidGAddress);
       final s2 = OZDelegatedSigner(kValidContractId);
-      final out = _writePayloadWithSigners(
-        <OZSmartAccountSigner, Uint8List>{s1: _bytes(4, 0), s2: _bytes(4, 0)},
-      );
+      final out = _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{
+        s1: _bytes(4, 0),
+        s2: _bytes(4, 0),
+      });
       final keys = _signerKeys(out);
       expect(keys.length, 2);
       _assertKeysInHostOrder(keys);
@@ -93,8 +99,7 @@ void main() {
       // The outer payload struct map has exactly two keys
       // (`context_rule_ids`, `signers`); construct a payload with no
       // policy data and assert the inner signers map has zero entries.
-      final out =
-          _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{});
+      final out = _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{});
       expect(out.map?.length, 2);
       expect(out.map![1].val.map?.length, 0);
     });
@@ -104,9 +109,10 @@ void main() {
       // stable across mixed ScVal Vec shapes.
       final del = OZDelegatedSigner(kValidGAddress);
       final ext = OZExternalSigner(kValidContractId, _bytes(8, 5));
-      final out = _writePayloadWithSigners(
-        <OZSmartAccountSigner, Uint8List>{del: _bytes(4, 0), ext: _bytes(4, 0)},
-      );
+      final out = _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{
+        del: _bytes(4, 0),
+        ext: _bytes(4, 0),
+      });
       _assertKeysInHostOrder(_signerKeys(out));
     });
 
@@ -117,21 +123,23 @@ void main() {
 
     test('testSortSingleEntryMap', () {
       final s = OZDelegatedSigner(kValidGAddress);
-      final out = _writePayloadWithSigners(
-        <OZSmartAccountSigner, Uint8List>{s: _bytes(4, 0)},
-      );
+      final out = _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{
+        s: _bytes(4, 0),
+      });
       expect(out.map![1].val.map?.length, 1);
     });
 
     test('testSortAlreadySortedMap', () {
       final s1 = OZDelegatedSigner(kValidGAddress);
       final s2 = OZDelegatedSigner(kValidContractId);
-      final out1 = _writePayloadWithSigners(
-        <OZSmartAccountSigner, Uint8List>{s1: _bytes(4, 0), s2: _bytes(4, 0)},
-      );
-      final out2 = _writePayloadWithSigners(
-        <OZSmartAccountSigner, Uint8List>{s2: _bytes(4, 0), s1: _bytes(4, 0)},
-      );
+      final out1 = _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{
+        s1: _bytes(4, 0),
+        s2: _bytes(4, 0),
+      });
+      final out2 = _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{
+        s2: _bytes(4, 0),
+        s1: _bytes(4, 0),
+      });
       expect(_signerKeyHexes(out1), _signerKeyHexes(out2));
     });
 
@@ -140,23 +148,22 @@ void main() {
       final s2 = OZDelegatedSigner(kValidContractId);
       final v1 = _bytes(4, 1);
       final v2 = _bytes(4, 2);
-      final out = _writePayloadWithSigners(
-        <OZSmartAccountSigner, Uint8List>{s1: v1, s2: v2},
-      );
+      final out = _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{
+        s1: v1,
+        s2: v2,
+      });
       // Each value retained somewhere in the inner map (regardless of
       // sort outcome).
       final entries = out.map![1].val.map!;
       final allValues = entries
-          .map((e) => Util.bytesToHex(
-              Uint8List.fromList(e.val.bytes!.sCBytes)))
+          .map((e) => Util.bytesToHex(Uint8List.fromList(e.val.bytes!.sCBytes)))
           .toList();
       expect(allValues, contains(Util.bytesToHex(v1)));
       expect(allValues, contains(Util.bytesToHex(v2)));
     });
 
     test('outer struct keys insert alphabetically', () {
-      final out =
-          _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{});
+      final out = _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{});
       expect(out.map![0].key.sym, 'context_rule_ids');
       expect(out.map![1].key.sym, 'signers');
     });
@@ -166,19 +173,21 @@ void main() {
       // which is NOT the same as XDR-byte-sort: under XDR-byte sort
       // `signers` (length 7) would come before `context_rule_ids`
       // (length 16).
-      final out =
-          _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{});
+      final out = _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{});
       final firstHex = _xdrHex(out.map![0].key);
       final secondHex = _xdrHex(out.map![1].key);
-      expect(firstHex.compareTo(secondHex) > 0, isTrue,
-          reason: 'XDR-byte order would put signers before '
-              'context_rule_ids; the codec uses alphabetical struct '
-              'order, so context_rule_ids comes first even though its '
-              'XDR encoding is lexicographically larger.');
+      expect(
+        firstHex.compareTo(secondHex) > 0,
+        isTrue,
+        reason:
+            'XDR-byte order would put signers before '
+            'context_rule_ids; the codec uses alphabetical struct '
+            'order, so context_rule_ids comes first even though its '
+            'XDR encoding is lexicographically larger.',
+      );
     });
 
-    test('ScVal-key sort property: 1000 random key sets match reference',
-        () {
+    test('ScVal-key sort property: 1000 random key sets match reference', () {
       // The production comparator over Bytes keys must agree with a
       // reference implementation of the host's content order (Rust slice
       // `Ord`: element-wise unsigned bytes, shorter first on a prefix tie).
@@ -198,22 +207,33 @@ void main() {
           for (var j = 0; j < keyBytes.length; j++) {
             keyBytes[j] = rng.nextInt(256);
           }
-          entries.add(XdrSCMapEntry(
-            XdrSCVal.forBytes(keyBytes),
-            XdrSCVal.forU32(rng.nextInt(1 << 30)),
-          ));
+          entries.add(
+            XdrSCMapEntry(
+              XdrSCVal.forBytes(keyBytes),
+              XdrSCVal.forU32(rng.nextInt(1 << 30)),
+            ),
+          );
         }
 
         final sorted = OZPolicyManager.sortMapByKeyXdr(entries);
         final sortedHexes = sorted.map((e) => _xdrHex(e.key)).toList();
         final referenceSorted = List<XdrSCMapEntry>.from(entries)
-          ..sort((a, b) => referenceHostCompare(
-              a.key.bytes!.sCBytes, b.key.bytes!.sCBytes));
-        final referenceHexes =
-            referenceSorted.map((e) => _xdrHex(e.key)).toList();
-        expect(sortedHexes, referenceHexes,
-            reason: 'iteration $iter produced an ordering that differs '
-                'from the reference host content order');
+          ..sort(
+            (a, b) => referenceHostCompare(
+              a.key.bytes!.sCBytes,
+              b.key.bytes!.sCBytes,
+            ),
+          );
+        final referenceHexes = referenceSorted
+            .map((e) => _xdrHex(e.key))
+            .toList();
+        expect(
+          sortedHexes,
+          referenceHexes,
+          reason:
+              'iteration $iter produced an ordering that differs '
+              'from the reference host content order',
+        );
       }
     });
 
@@ -226,20 +246,26 @@ void main() {
       expect(compareScValHostOrder(ab, a) > 0, isTrue);
     });
 
-    test('golden case: middle vs zebra host order diverges from length-major',
-        () {
-      final zebra = XdrSCVal.forSymbol('zebra');
-      final middle = XdrSCVal.forSymbol('middle');
-      // Host order compares symbol content byte for byte: "middle" (0x6d)
-      // sorts before "zebra" (0x7a) despite being longer. A length-major
-      // XDR-byte sort would order the 5-char "zebra" before the 6-char
-      // "middle" via the length prefix — the exact divergence the host
-      // rejects. Pin both directions.
-      expect(compareScValHostOrder(middle, zebra) < 0, isTrue);
-      expect(_xdrHex(zebra).compareTo(_xdrHex(middle)) < 0, isTrue,
-          reason: 'the length-major XDR-hex order disagrees with the host '
-              'order for these symbols');
-    });
+    test(
+      'golden case: middle vs zebra host order diverges from length-major',
+      () {
+        final zebra = XdrSCVal.forSymbol('zebra');
+        final middle = XdrSCVal.forSymbol('middle');
+        // Host order compares symbol content byte for byte: "middle" (0x6d)
+        // sorts before "zebra" (0x7a) despite being longer. A length-major
+        // XDR-byte sort would order the 5-char "zebra" before the 6-char
+        // "middle" via the length prefix — the exact divergence the host
+        // rejects. Pin both directions.
+        expect(compareScValHostOrder(middle, zebra) < 0, isTrue);
+        expect(
+          _xdrHex(zebra).compareTo(_xdrHex(middle)) < 0,
+          isTrue,
+          reason:
+              'the length-major XDR-hex order disagrees with the host '
+              'order for these symbols',
+        );
+      },
+    );
 
     test('golden case: U32 keys ordered by numeric value', () {
       // For unsigned fixed-width scalars the host order equals the
@@ -254,10 +280,18 @@ void main() {
     test('golden case: ordering stable across writes', () {
       final s1 = OZDelegatedSigner(kValidGAddress);
       final s2 = OZExternalSigner(kValidContractId, _bytes(8, 1));
-      final h1 = _signerKeyHexes(_writePayloadWithSigners(
-          <OZSmartAccountSigner, Uint8List>{s1: _bytes(4, 0), s2: _bytes(4, 0)}));
-      final h2 = _signerKeyHexes(_writePayloadWithSigners(
-          <OZSmartAccountSigner, Uint8List>{s2: _bytes(4, 0), s1: _bytes(4, 0)}));
+      final h1 = _signerKeyHexes(
+        _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{
+          s1: _bytes(4, 0),
+          s2: _bytes(4, 0),
+        }),
+      );
+      final h2 = _signerKeyHexes(
+        _writePayloadWithSigners(<OZSmartAccountSigner, Uint8List>{
+          s2: _bytes(4, 0),
+          s1: _bytes(4, 0),
+        }),
+      );
       expect(h1, h2);
     });
   });

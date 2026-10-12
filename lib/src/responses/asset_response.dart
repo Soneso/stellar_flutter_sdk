@@ -123,25 +123,27 @@ class AssetResponse extends Response {
     return Asset.create(this.assetType, this.assetCode, this.assetIssuer);
   }
 
-  factory AssetResponse.fromJson(Map<String, dynamic> json) => AssetResponse(
-      json['asset_type'],
-      json['asset_code'],
-      json['asset_issuer'],
-      AssetAccounts.fromJson(json['accounts']),
-      convertInt(json['num_claimable_balances']!)!,
-      AssetBalances.fromJson(json['balances']),
-      json['claimable_balances_amount'],
-      json['paging_token'],
-      convertInt(json['num_liquidity_pools']!)!,
-      json['liquidity_pools_amount'],
-      Flags.fromJson(json['flags']),
-      AssetResponseLinks.fromJson(json['_links']),
-      convertInt(json['num_contracts'])!,
-      json['contracts_amount'],
-      json['contract_id'])
-    ..rateLimitLimit = convertInt(json['rateLimitLimit'])
-    ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
-    ..rateLimitReset = convertInt(json['rateLimitReset']);
+  factory AssetResponse.fromJson(Map<String, dynamic> json) =>
+      AssetResponse(
+          json['asset_type'],
+          json['asset_code'],
+          json['asset_issuer'],
+          AssetAccounts.fromJson(json['accounts']),
+          convertInt(json['num_claimable_balances']!)!,
+          AssetBalances.fromJson(json['balances']),
+          json['claimable_balances_amount'],
+          json['paging_token'],
+          convertInt(json['num_liquidity_pools']!)!,
+          json['liquidity_pools_amount'],
+          Flags.fromJson(json['flags']),
+          AssetResponseLinks.fromJson(json['_links']),
+          convertInt(json['num_contracts'])!,
+          json['contracts_amount'],
+          json['contract_id'],
+        )
+        ..rateLimitLimit = convertInt(json['rateLimitLimit'])
+        ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
+        ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
 /// Hypermedia links connected to an asset response.
@@ -198,12 +200,16 @@ class AssetAccounts {
   /// - [authorizedToMaintainLiabilities]: Number of accounts with limited authorization
   /// - [unauthorized]: Number of unauthorized accounts
   AssetAccounts(
-      this.authorized, this.authorizedToMaintainLiabilities, this.unauthorized);
+    this.authorized,
+    this.authorizedToMaintainLiabilities,
+    this.unauthorized,
+  );
 
   factory AssetAccounts.fromJson(Map<String, dynamic> json) => AssetAccounts(
-      convertInt(json['authorized']!)!,
-      convertInt(json['authorized_to_maintain_liabilities']!)!,
-      convertInt(json['unauthorized']!)!);
+    convertInt(json['authorized']!)!,
+    convertInt(json['authorized_to_maintain_liabilities']!)!,
+    convertInt(json['unauthorized']!)!,
+  );
 }
 
 /// Total amount of an asset in existence, grouped by authorization level.
@@ -237,10 +243,14 @@ class AssetBalances {
   /// - [authorizedToMaintainLiabilities]: Total amount held by limited-auth accounts
   /// - [unauthorized]: Total amount held by unauthorized accounts
   AssetBalances(
-      this.authorized, this.authorizedToMaintainLiabilities, this.unauthorized);
+    this.authorized,
+    this.authorizedToMaintainLiabilities,
+    this.unauthorized,
+  );
 
   factory AssetBalances.fromJson(Map<String, dynamic> json) => AssetBalances(
-      json['authorized'],
-      json['authorized_to_maintain_liabilities'],
-      json['unauthorized']);
+    json['authorized'],
+    json['authorized_to_maintain_liabilities'],
+    json['unauthorized'],
+  );
 }

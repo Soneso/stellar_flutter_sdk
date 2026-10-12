@@ -43,7 +43,10 @@ class WebAuthnAuthenticationResult {
     if (identical(this, other)) return true;
     if (other is! WebAuthnAuthenticationResult) return false;
     final a = Util.constantTimeEquals(credentialId, other.credentialId);
-    final b = Util.constantTimeEquals(authenticatorData, other.authenticatorData);
+    final b = Util.constantTimeEquals(
+      authenticatorData,
+      other.authenticatorData,
+    );
     final c = Util.constantTimeEquals(clientDataJSON, other.clientDataJSON);
     final d = Util.constantTimeEquals(signature, other.signature);
     return a && b && c && d;
@@ -120,7 +123,10 @@ class WebAuthnRegistrationResult {
     if (other is! WebAuthnRegistrationResult) return false;
     final a = Util.constantTimeEquals(credentialId, other.credentialId);
     final b = Util.constantTimeEquals(publicKey, other.publicKey);
-    final c = Util.constantTimeEquals(attestationObject, other.attestationObject);
+    final c = Util.constantTimeEquals(
+      attestationObject,
+      other.attestationObject,
+    );
     final bytesMatch = a && b && c;
     return bytesMatch &&
         _stringListEquals(transports, other.transports) &&
@@ -133,8 +139,11 @@ class WebAuthnRegistrationResult {
     var result = _byteListHash(credentialId);
     result = 31 * result + _byteListHash(publicKey);
     result = 31 * result + _byteListHash(attestationObject);
-    result = 31 * result +
-        (transports == null ? 0 : Object.hashAll(transports as Iterable<Object?>));
+    result =
+        31 * result +
+        (transports == null
+            ? 0
+            : Object.hashAll(transports as Iterable<Object?>));
     result = 31 * result + (deviceType == null ? 0 : deviceType.hashCode);
     result = 31 * result + (backedUp == null ? 0 : backedUp.hashCode);
     return result;

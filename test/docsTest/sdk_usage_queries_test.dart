@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 600))
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -18,14 +17,15 @@ void main() {
     await FriendBot.fundTestAccount(account2.accountId);
 
     // Create a transaction for query tests
-    AccountResponse sender =
-        await sdk.accounts.account(account1.accountId);
+    AccountResponse sender = await sdk.accounts.account(account1.accountId);
     Transaction tx = TransactionBuilder(sender)
-        .addOperation(PaymentOperationBuilder(
-          account2.accountId,
-          Asset.NATIVE,
-          "10",
-        ).build())
+        .addOperation(
+          PaymentOperationBuilder(
+            account2.accountId,
+            Asset.NATIVE,
+            "10",
+          ).build(),
+        )
         .addMemo(Memo.text("test-query"))
         .build();
     tx.sign(account1, Network.TESTNET);
@@ -34,8 +34,7 @@ void main() {
   });
 
   test('sdk-usage: Get Single Account', () async {
-    AccountResponse account =
-        await sdk.accounts.account(account1.accountId);
+    AccountResponse account = await sdk.accounts.account(account1.accountId);
     expect(account.sequenceNumber, isNotNull);
     expect(account.subentryCount, isNotNull);
   });
@@ -77,8 +76,7 @@ void main() {
   });
 
   test('sdk-usage: Get Single Transaction', () async {
-    TransactionResponse tx =
-        await sdk.transactions.transaction(txHash);
+    TransactionResponse tx = await sdk.transactions.transaction(txHash);
     expect(tx.ledger, isNotNull);
     expect(tx.feeCharged, isNotNull);
     expect(tx.operationCount, 1);
@@ -108,8 +106,9 @@ void main() {
 
   test('sdk-usage: Get Single Operation', () async {
     // Get operations from our transaction
-    Page<OperationResponse> opsPage =
-        await sdk.operations.forTransaction(txHash).execute();
+    Page<OperationResponse> opsPage = await sdk.operations
+        .forTransaction(txHash)
+        .execute();
     expect(opsPage.records.isNotEmpty, true);
 
     String opId = opsPage.records.first.id;
@@ -132,8 +131,9 @@ void main() {
   });
 
   test('sdk-usage: Handling Operation Types', () async {
-    Page<OperationResponse> opsPage =
-        await sdk.operations.forAccount(account1.accountId).execute();
+    Page<OperationResponse> opsPage = await sdk.operations
+        .forAccount(account1.accountId)
+        .execute();
 
     bool foundPayment = false;
     for (OperationResponse op in opsPage.records) {
@@ -228,8 +228,7 @@ void main() {
 
   test('sdk-usage: Error Handling - Transaction Submission', () async {
     // Build a transaction that will fail (send to non-existent account)
-    AccountResponse account =
-        await sdk.accounts.account(account1.accountId);
+    AccountResponse account = await sdk.accounts.account(account1.accountId);
 
     // Try to pay more than we have
     PaymentOperation paymentOp = PaymentOperationBuilder(
@@ -238,13 +237,14 @@ void main() {
       "999999999",
     ).build();
 
-    Transaction transaction = TransactionBuilder(account)
-        .addOperation(paymentOp)
-        .build();
+    Transaction transaction = TransactionBuilder(
+      account,
+    ).addOperation(paymentOp).build();
     transaction.sign(account1, Network.TESTNET);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     expect(response.success, false);
     expect(response.extras?.resultCodes?.transactionResultCode, isNotNull);
   });

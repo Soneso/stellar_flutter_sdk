@@ -19,19 +19,18 @@ const String _accountAddress =
     'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7';
 const String _credentialIdB64 = 'aGVsbG8tc21hcnQtYWNjb3VudA';
 
-({
-  FakePipelineKit kit,
-  MockOZTransactionOperations txOps,
-}) _buildHarness() {
+({FakePipelineKit kit, MockOZTransactionOperations txOps}) _buildHarness() {
   final kit = FakePipelineKit();
   final txOps = MockOZTransactionOperations(kit);
   kit.setTransactionOperations(txOps);
-  kit.setConnected(credentialId: _credentialIdB64, contractId: _validContractId);
+  kit.setConnected(
+    credentialId: _credentialIdB64,
+    contractId: _validContractId,
+  );
   return (kit: kit, txOps: txOps);
 }
 
-OZSmartAccountSigner _delegated(String address) =>
-    OZDelegatedSigner(address);
+OZSmartAccountSigner _delegated(String address) => OZDelegatedSigner(address);
 
 XdrSorobanAuthorizationEntry _makeSourceAccountEntry() {
   final args = XdrInvokeContractArgs(
@@ -184,19 +183,17 @@ OZParsedContextRule _rule({
   OZContextRuleType contextType = const OZContextRuleTypeDefault(),
   List<OZSmartAccountSigner> signers = const <OZSmartAccountSigner>[],
   List<String> policies = const <String>[],
-}) =>
-    OZParsedContextRule(
-      id: id,
-      contextType: contextType,
-      name: 'rule-$id',
-      signers: signers,
-      signerIds: const <int>[],
-      policies: policies,
-      policyIds: const <int>[],
-    );
+}) => OZParsedContextRule(
+  id: id,
+  contextType: contextType,
+  name: 'rule-$id',
+  signers: signers,
+  signerIds: const <int>[],
+  policies: policies,
+  policyIds: const <int>[],
+);
 
 void main() {
-
   group('addContextRule validation', () {
     test('addContextRule_emptyName_throws', () async {
       final h = _buildHarness();
@@ -331,21 +328,23 @@ void main() {
   });
 
   group('OZContextRuleManager CRUD shape', () {
-    test('addContextRule with default type encodes a Default Vec arg',
-        () async {
-      final h = _buildHarness();
-      final mgr = OZContextRuleManager(h.kit);
-      await mgr.addContextRule(
-        contextType: const OZContextRuleTypeDefault(),
-        name: 'default-rule',
-        signers: <OZSmartAccountSigner>[_delegated(_accountAddress)],
-      );
-      final args = h.txOps.submitCalls.single.hostFunction.invokeContract!.args;
-      expect(args[0].vec![0].sym, 'Default');
-    });
+    test(
+      'addContextRule with default type encodes a Default Vec arg',
+      () async {
+        final h = _buildHarness();
+        final mgr = OZContextRuleManager(h.kit);
+        await mgr.addContextRule(
+          contextType: const OZContextRuleTypeDefault(),
+          name: 'default-rule',
+          signers: <OZSmartAccountSigner>[_delegated(_accountAddress)],
+        );
+        final args =
+            h.txOps.submitCalls.single.hostFunction.invokeContract!.args;
+        expect(args[0].vec![0].sym, 'Default');
+      },
+    );
 
-    test('addContextRule with CallContract encodes the address',
-        () async {
+    test('addContextRule with CallContract encodes the address', () async {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
       await mgr.addContextRule(
@@ -358,8 +357,7 @@ void main() {
       expect(args[0].vec![1].discriminant, XdrSCValType.SCV_ADDRESS);
     });
 
-    test('addContextRule rejects an invalid policy contract address',
-        () async {
+    test('addContextRule rejects an invalid policy contract address', () async {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
       await expectLater(
@@ -397,15 +395,18 @@ void main() {
       expect(h.txOps.submitCalls, isEmpty);
     });
 
-    test('removeContextRule emits a single-arg invocation with the rule id',
-        () async {
-      final h = _buildHarness();
-      final mgr = OZContextRuleManager(h.kit);
-      await mgr.removeContextRule(id: 8);
-      final args = h.txOps.submitCalls.single.hostFunction.invokeContract!.args;
-      expect(args.length, 1);
-      expect(args[0].u32?.uint32, 8);
-    });
+    test(
+      'removeContextRule emits a single-arg invocation with the rule id',
+      () async {
+        final h = _buildHarness();
+        final mgr = OZContextRuleManager(h.kit);
+        await mgr.removeContextRule(id: 8);
+        final args =
+            h.txOps.submitCalls.single.hostFunction.invokeContract!.args;
+        expect(args.length, 1);
+        expect(args[0].u32?.uint32, 8);
+      },
+    );
 
     test('parseContextRule round-trips a hand-built rule ScVal', () async {
       final h = _buildHarness();
@@ -421,9 +422,7 @@ void main() {
         XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString('hello')),
         XdrSCMapEntry(
           XdrSCVal.forSymbol('signers'),
-          XdrSCVal.forVec(<XdrSCVal>[
-            _delegated(_accountAddress).toScVal(),
-          ]),
+          XdrSCVal.forVec(<XdrSCVal>[_delegated(_accountAddress).toScVal()]),
         ),
         XdrSCMapEntry(
           XdrSCVal.forSymbol('signer_ids'),
@@ -437,10 +436,7 @@ void main() {
           XdrSCVal.forSymbol('policy_ids'),
           XdrSCVal.forVec(const <XdrSCVal>[]),
         ),
-        XdrSCMapEntry(
-          XdrSCVal.forSymbol('valid_until'),
-          XdrSCVal.forVoid(),
-        ),
+        XdrSCMapEntry(XdrSCVal.forSymbol('valid_until'), XdrSCVal.forVoid()),
       ]);
 
       final parsed = mgr.parseContextRule(ruleScVal);
@@ -509,8 +505,10 @@ void main() {
     test('addContextRule_withSelectedSigners_routesToMultiSigner', () async {
       final h = _buildHarness();
       final mockMulti = MockOZMultiSignerManager(h.kit);
-      mockMulti.submitWithMultipleSignersDefault =
-          const OZTransactionResult(success: true, hash: 'multi-add');
+      mockMulti.submitWithMultipleSignersDefault = const OZTransactionResult(
+        success: true,
+        hash: 'multi-add',
+      );
       h.kit.setMultiSignerManager(mockMulti);
       final mgr = OZContextRuleManager(h.kit);
 
@@ -527,8 +525,10 @@ void main() {
     test('removeContextRule_withSelectedSigners_routesToMultiSigner', () async {
       final h = _buildHarness();
       final mockMulti = MockOZMultiSignerManager(h.kit);
-      mockMulti.submitWithMultipleSignersDefault =
-          const OZTransactionResult(success: true, hash: 'multi-remove');
+      mockMulti.submitWithMultipleSignersDefault = const OZTransactionResult(
+        success: true,
+        hash: 'multi-remove',
+      );
       h.kit.setMultiSignerManager(mockMulti);
       final mgr = OZContextRuleManager(h.kit);
 
@@ -556,8 +556,7 @@ void main() {
 
     test('u32Result_returnsCount', () async {
       final h = _buildHarness();
-      h.txOps.simulateAndExtractResultDefault =
-          XdrSCVal.forU32(5);
+      h.txOps.simulateAndExtractResultDefault = XdrSCVal.forU32(5);
       final mgr = OZContextRuleManager(h.kit);
 
       final count = await mgr.getContextRulesCount();
@@ -566,26 +565,31 @@ void main() {
   });
 
   group('OZContextRuleManager resolveContextRuleIdsForEntry', () {
-    test('emptyContextRules_delegatesToListContextRules_thenThrowsIfNoMatch', () async {
-      // When contextRules is empty, the manager calls listContextRules first.
-      // With 0 active rules, resolveContextRuleIdsForEntry ends up calling
-      // resolveContextRuleIdsForEntryWithRules with an empty list, which
-      // throws SmartAccountValidationException for any auth entry that requires a rule.
-      final h = _buildHarness();
-      // First simulate call = count (0), no rules fetched.
-      h.txOps.simulateAndExtractResultDefault = XdrSCVal.forU32(0);
-      final mgr = OZContextRuleManager(h.kit);
+    test(
+      'emptyContextRules_delegatesToListContextRules_thenThrowsIfNoMatch',
+      () async {
+        // When contextRules is empty, the manager calls listContextRules first.
+        // With 0 active rules, resolveContextRuleIdsForEntry ends up calling
+        // resolveContextRuleIdsForEntryWithRules with an empty list, which
+        // throws SmartAccountValidationException for any auth entry that requires a rule.
+        final h = _buildHarness();
+        // First simulate call = count (0), no rules fetched.
+        h.txOps.simulateAndExtractResultDefault = XdrSCVal.forU32(0);
+        final mgr = OZContextRuleManager(h.kit);
 
-      final entry = _makeSourceAccountEntry();
-      await expectLater(
-        mgr.resolveContextRuleIdsForEntry(
-          entry,
-          <OZSmartAccountSigner>[],
-          const <OZParsedContextRule>[], // empty → delegates to listContextRules → returns empty
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+        final entry = _makeSourceAccountEntry();
+        await expectLater(
+          mgr.resolveContextRuleIdsForEntry(
+            entry,
+            <OZSmartAccountSigner>[],
+            const <
+              OZParsedContextRule
+            >[], // empty → delegates to listContextRules → returns empty
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
 
     test('noMatchingContextRule_throwsInvalidInput', () {
       final h = _buildHarness();
@@ -657,7 +661,9 @@ void main() {
           return XdrSCVal.forU32(1);
         }
         // Second call (getContextRule): throw SmartAccountTransactionSimulationFailed.
-        throw SmartAccountTransactionException.simulationFailed('no rule at this id');
+        throw SmartAccountTransactionException.simulationFailed(
+          'no rule at this id',
+        );
       };
       final mgr = OZContextRuleManager(h.kit);
 
@@ -697,12 +703,14 @@ void main() {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
       final hash = _wasmHash(7);
-      final parsed = mgr.parseContextRule(_ruleWithContextType(
-        XdrSCVal.forVec(<XdrSCVal>[
-          XdrSCVal.forSymbol('CreateContract'),
-          XdrSCVal.forBytes(hash),
-        ]),
-      ));
+      final parsed = mgr.parseContextRule(
+        _ruleWithContextType(
+          XdrSCVal.forVec(<XdrSCVal>[
+            XdrSCVal.forSymbol('CreateContract'),
+            XdrSCVal.forBytes(hash),
+          ]),
+        ),
+      );
       expect(parsed.contextType, isA<OZContextRuleTypeCreateContract>());
       expect(
         (parsed.contextType as OZContextRuleTypeCreateContract).wasmHash,
@@ -715,12 +723,14 @@ void main() {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
       expect(
-        () => mgr.parseContextRule(_ruleWithContextType(
-          XdrSCVal.forVec(<XdrSCVal>[
-            XdrSCVal.forSymbol('CallContract'),
-            XdrSCVal.forU32(1), // not an address
-          ]),
-        )),
+        () => mgr.parseContextRule(
+          _ruleWithContextType(
+            XdrSCVal.forVec(<XdrSCVal>[
+              XdrSCVal.forSymbol('CallContract'),
+              XdrSCVal.forU32(1), // not an address
+            ]),
+          ),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -730,12 +740,14 @@ void main() {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
       expect(
-        () => mgr.parseContextRule(_ruleWithContextType(
-          XdrSCVal.forVec(<XdrSCVal>[
-            XdrSCVal.forSymbol('CreateContract'),
-            XdrSCVal.forU32(1), // not bytes
-          ]),
-        )),
+        () => mgr.parseContextRule(
+          _ruleWithContextType(
+            XdrSCVal.forVec(<XdrSCVal>[
+              XdrSCVal.forSymbol('CreateContract'),
+              XdrSCVal.forU32(1), // not bytes
+            ]),
+          ),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -771,9 +783,11 @@ void main() {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
       expect(
-        () => mgr.parseContextRule(_ruleWithSigners(<XdrSCVal>[
-          XdrSCVal.forVec(<XdrSCVal>[XdrSCVal.forU32(0)]),
-        ])),
+        () => mgr.parseContextRule(
+          _ruleWithSigners(<XdrSCVal>[
+            XdrSCVal.forVec(<XdrSCVal>[XdrSCVal.forU32(0)]),
+          ]),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -783,12 +797,14 @@ void main() {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
       expect(
-        () => mgr.parseContextRule(_ruleWithSigners(<XdrSCVal>[
-          XdrSCVal.forVec(<XdrSCVal>[
-            XdrSCVal.forSymbol('Delegated'),
-            XdrSCVal.forU32(0), // not an address
+        () => mgr.parseContextRule(
+          _ruleWithSigners(<XdrSCVal>[
+            XdrSCVal.forVec(<XdrSCVal>[
+              XdrSCVal.forSymbol('Delegated'),
+              XdrSCVal.forU32(0), // not an address
+            ]),
           ]),
-        ])),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -798,13 +814,15 @@ void main() {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
       expect(
-        () => mgr.parseContextRule(_ruleWithSigners(<XdrSCVal>[
-          XdrSCVal.forVec(<XdrSCVal>[
-            XdrSCVal.forSymbol('External'),
-            XdrSCVal.forU32(0), // not an address
-            XdrSCVal.forBytes(Uint8List.fromList(<int>[1, 2, 3])),
+        () => mgr.parseContextRule(
+          _ruleWithSigners(<XdrSCVal>[
+            XdrSCVal.forVec(<XdrSCVal>[
+              XdrSCVal.forSymbol('External'),
+              XdrSCVal.forU32(0), // not an address
+              XdrSCVal.forBytes(Uint8List.fromList(<int>[1, 2, 3])),
+            ]),
           ]),
-        ])),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -814,15 +832,17 @@ void main() {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
       expect(
-        () => mgr.parseContextRule(_ruleWithSigners(<XdrSCVal>[
-          XdrSCVal.forVec(<XdrSCVal>[
-            XdrSCVal.forSymbol('External'),
-            XdrSCVal.forAddress(
-              Address.forContractId(_verifierContract).toXdr(),
-            ),
-            XdrSCVal.forU32(0), // not bytes
+        () => mgr.parseContextRule(
+          _ruleWithSigners(<XdrSCVal>[
+            XdrSCVal.forVec(<XdrSCVal>[
+              XdrSCVal.forSymbol('External'),
+              XdrSCVal.forAddress(
+                Address.forContractId(_verifierContract).toXdr(),
+              ),
+              XdrSCVal.forU32(0), // not bytes
+            ]),
           ]),
-        ])),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -832,15 +852,17 @@ void main() {
       // _requireContractAddressFromXdr returning the C-address.
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
-      final parsed = mgr.parseContextRule(_ruleWithSigners(<XdrSCVal>[
-        XdrSCVal.forVec(<XdrSCVal>[
-          XdrSCVal.forSymbol('External'),
-          XdrSCVal.forAddress(
-            Address.forContractId(_verifierContract).toXdr(),
-          ),
-          XdrSCVal.forBytes(Uint8List.fromList(<int>[9, 8, 7])),
+      final parsed = mgr.parseContextRule(
+        _ruleWithSigners(<XdrSCVal>[
+          XdrSCVal.forVec(<XdrSCVal>[
+            XdrSCVal.forSymbol('External'),
+            XdrSCVal.forAddress(
+              Address.forContractId(_verifierContract).toXdr(),
+            ),
+            XdrSCVal.forBytes(Uint8List.fromList(<int>[9, 8, 7])),
+          ]),
         ]),
-      ]));
+      );
       expect(parsed.signers.single, isA<OZExternalSigner>());
       expect(
         (parsed.signers.single as OZExternalSigner).verifierAddress,
@@ -854,15 +876,17 @@ void main() {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
       expect(
-        () => mgr.parseContextRule(_ruleWithSigners(<XdrSCVal>[
-          XdrSCVal.forVec(<XdrSCVal>[
-            XdrSCVal.forSymbol('External'),
-            XdrSCVal.forAddress(
-              Address.forAccountId(_accountAddress).toXdr(),
-            ),
-            XdrSCVal.forBytes(Uint8List.fromList(<int>[1])),
+        () => mgr.parseContextRule(
+          _ruleWithSigners(<XdrSCVal>[
+            XdrSCVal.forVec(<XdrSCVal>[
+              XdrSCVal.forSymbol('External'),
+              XdrSCVal.forAddress(
+                Address.forAccountId(_accountAddress).toXdr(),
+              ),
+              XdrSCVal.forBytes(Uint8List.fromList(<int>[1])),
+            ]),
           ]),
-        ])),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -906,11 +930,15 @@ void main() {
     test('policies field with valid address entries round-trips', () {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
-      final parsed = mgr.parseContextRule(_ruleWithPoliciesField(
-        XdrSCVal.forVec(<XdrSCVal>[
-          XdrSCVal.forAddress(Address.forContractId(_verifierContract).toXdr()),
-        ]),
-      ));
+      final parsed = mgr.parseContextRule(
+        _ruleWithPoliciesField(
+          XdrSCVal.forVec(<XdrSCVal>[
+            XdrSCVal.forAddress(
+              Address.forContractId(_verifierContract).toXdr(),
+            ),
+          ]),
+        ),
+      );
       expect(parsed.policies, <String>[_verifierContract]);
     });
   });
@@ -948,10 +976,7 @@ void main() {
         () => mgr.resolveContextRuleIdsForEntryWithRules(
           _makeSourceAccountEntry(),
           const <OZSmartAccountSigner>[],
-          <OZParsedContextRule>[
-            _rule(id: 1),
-            _rule(id: 2),
-          ],
+          <OZParsedContextRule>[_rule(id: 1), _rule(id: 2)],
         ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
@@ -1059,44 +1084,52 @@ void main() {
       );
     });
 
-    test('V1 create-contract entry referencing an external executable throws',
-        () {
-      // Covers _extractWasmHash CONTRACT_EXECUTABLE_EXTERNAL_REF branch: an
-      // external reference names no wasm hash, so no CreateContract rule can
-      // match it.
-      final h = _buildHarness();
-      final mgr = OZContextRuleManager(h.kit);
-      expect(
-        () => mgr.resolveContextRuleIdsForEntryWithRules(
-          _makeCreateExternalRefEntry(),
-          const <OZSmartAccountSigner>[],
-          <OZParsedContextRule>[_rule(id: 12)],
-        ),
-        throwsA(isA<SmartAccountInvalidInput>().having(
-          (e) => e.message,
-          'message',
-          contains('external executable'),
-        )),
-      );
-    });
+    test(
+      'V1 create-contract entry referencing an external executable throws',
+      () {
+        // Covers _extractWasmHash CONTRACT_EXECUTABLE_EXTERNAL_REF branch: an
+        // external reference names no wasm hash, so no CreateContract rule can
+        // match it.
+        final h = _buildHarness();
+        final mgr = OZContextRuleManager(h.kit);
+        expect(
+          () => mgr.resolveContextRuleIdsForEntryWithRules(
+            _makeCreateExternalRefEntry(),
+            const <OZSmartAccountSigner>[],
+            <OZParsedContextRule>[_rule(id: 12)],
+          ),
+          throwsA(
+            isA<SmartAccountInvalidInput>().having(
+              (e) => e.message,
+              'message',
+              contains('external executable'),
+            ),
+          ),
+        );
+      },
+    );
 
-    test('V2 create-contract entry referencing an external executable throws',
-        () {
-      final h = _buildHarness();
-      final mgr = OZContextRuleManager(h.kit);
-      expect(
-        () => mgr.resolveContextRuleIdsForEntryWithRules(
-          _makeCreateExternalRefV2Entry(),
-          const <OZSmartAccountSigner>[],
-          <OZParsedContextRule>[_rule(id: 13)],
-        ),
-        throwsA(isA<SmartAccountInvalidInput>().having(
-          (e) => e.message,
-          'message',
-          contains('external executable'),
-        )),
-      );
-    });
+    test(
+      'V2 create-contract entry referencing an external executable throws',
+      () {
+        final h = _buildHarness();
+        final mgr = OZContextRuleManager(h.kit);
+        expect(
+          () => mgr.resolveContextRuleIdsForEntryWithRules(
+            _makeCreateExternalRefV2Entry(),
+            const <OZSmartAccountSigner>[],
+            <OZParsedContextRule>[_rule(id: 13)],
+          ),
+          throwsA(
+            isA<SmartAccountInvalidInput>().having(
+              (e) => e.message,
+              'message',
+              contains('external executable'),
+            ),
+          ),
+        );
+      },
+    );
 
     test('WASM executable with a missing hash throws', () {
       // Covers _extractWasmHash CONTRACT_EXECUTABLE_WASM null-hash guard:
@@ -1128,9 +1161,7 @@ void main() {
     test('executable of an unknown type throws', () {
       // Covers _extractWasmHash default branch: an executable carrying a
       // type discriminant outside the known WASM / Stellar-Asset set.
-      final executable = XdrContractExecutable(
-        XdrContractExecutableType(99),
-      );
+      final executable = XdrContractExecutable(XdrContractExecutableType(99));
       final args = XdrCreateContractArgs(_idPreimage(), executable);
       final entry = XdrSorobanAuthorizationEntry(
         XdrSorobanCredentials.forSourceAccount(),

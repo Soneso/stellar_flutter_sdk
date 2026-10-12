@@ -213,10 +213,7 @@ void main() {
       val2.u32 = XdrUint32(200);
 
       var original = XdrSCVal(XdrSCValType.SCV_MAP);
-      original.map = [
-        XdrSCMapEntry(key1, val1),
-        XdrSCMapEntry(key2, val2),
-      ];
+      original.map = [XdrSCMapEntry(key1, val1), XdrSCMapEntry(key2, val2)];
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCVal.encode(output, original);
@@ -300,7 +297,9 @@ void main() {
   group('XdrSCContractInstance optional storage', () {
     test('XdrSCContractInstance with null storage', () {
       var wasmHash = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xCC)));
-      var executable = XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
+      var executable = XdrContractExecutable(
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+      );
       executable.wasmHash = wasmHash;
 
       var instance = XdrSCContractInstance(executable, null);
@@ -316,12 +315,17 @@ void main() {
       var decoded = XdrSCVal.decode(input);
 
       expect(decoded.instance!.storage, isNull);
-      expect(decoded.instance!.executable.wasmHash!.hash, equals(wasmHash.hash));
+      expect(
+        decoded.instance!.executable.wasmHash!.hash,
+        equals(wasmHash.hash),
+      );
     });
 
     test('XdrSCContractInstance with storage encode/decode', () {
       var wasmHash = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xDD)));
-      var executable = XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
+      var executable = XdrContractExecutable(
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+      );
       executable.wasmHash = wasmHash;
 
       var storageKey = XdrSCVal(XdrSCValType.SCV_U32);
@@ -348,7 +352,8 @@ void main() {
 
     test('XdrSCContractInstance with empty storage', () {
       var executable = XdrContractExecutable(
-          XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET);
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET,
+      );
 
       var original = XdrSCContractInstance(executable, []);
 
@@ -364,23 +369,35 @@ void main() {
   });
 
   group('XdrSorobanCredentials branches', () {
-    test('XdrSorobanCredentials SOROBAN_CREDENTIALS_SOURCE_ACCOUNT has null address', () {
-      var original = XdrSorobanCredentials(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
+    test(
+      'XdrSorobanCredentials SOROBAN_CREDENTIALS_SOURCE_ACCOUNT has null address',
+      () {
+        var original = XdrSorobanCredentials(
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
+        );
 
-      XdrDataOutputStream output = XdrDataOutputStream();
-      XdrSorobanCredentials.encode(output, original);
-      Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSorobanCredentials.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
 
-      XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrSorobanCredentials.decode(input);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSorobanCredentials.decode(input);
 
-      expect(decoded.type.value, equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT.value));
-      expect(decoded.address, isNull);
-    });
+        expect(
+          decoded.type.value,
+          equals(
+            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT.value,
+          ),
+        );
+        expect(decoded.address, isNull);
+      },
+    );
 
     test('XdrSorobanCredentials SOROBAN_CREDENTIALS_ADDRESS encode/decode', () {
       var address = XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
-      address.contractId = XdrHash(Uint8List.fromList(List<int>.filled(32, 0xBB)));
+      address.contractId = XdrHash(
+        Uint8List.fromList(List<int>.filled(32, 0xBB)),
+      );
 
       var sig = XdrSCVal(XdrSCValType.SCV_VOID);
       var addressCreds = XdrSorobanAddressCredentials(
@@ -390,7 +407,9 @@ void main() {
         sig,
       );
 
-      var original = XdrSorobanCredentials(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS);
+      var original = XdrSorobanCredentials(
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS,
+      );
       original.address = addressCreds;
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -400,7 +419,10 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSorobanCredentials.decode(input);
 
-      expect(decoded.type.value, equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS.value));
+      expect(
+        decoded.type.value,
+        equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS.value),
+      );
       expect(decoded.address, isNotNull);
       expect(decoded.address!.nonce.int64, equals(BigInt.from(999)));
     });

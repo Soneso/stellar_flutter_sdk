@@ -119,11 +119,15 @@ class CreateClaimableBalanceOperation extends Operation {
     }
 
     XdrInt64 amount = XdrInt64(Util.decimalStringToStroops(this.amount));
-    XdrCreateClaimableBalanceOp op =
-        XdrCreateClaimableBalanceOp(this.asset.toXdr(), amount, xdrClaimants);
+    XdrCreateClaimableBalanceOp op = XdrCreateClaimableBalanceOp(
+      this.asset.toXdr(),
+      amount,
+      xdrClaimants,
+    );
 
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.CREATE_CLAIMABLE_BALANCE);
+    XdrOperationBody body = XdrOperationBody(
+      XdrOperationType.CREATE_CLAIMABLE_BALANCE,
+    );
     body.createClaimableBalanceOp = op;
     return body;
   }
@@ -137,7 +141,8 @@ class CreateClaimableBalanceOperation extends Operation {
   ///
   /// Returns: A builder configured with claimants, asset, and amount from the XDR.
   static CreateClaimableBalanceOperationBuilder builder(
-      XdrCreateClaimableBalanceOp op) {
+    XdrCreateClaimableBalanceOp op,
+  ) {
     List<Claimant> claimants = List<Claimant>.empty(growable: true);
     for (int i = 0; i < op.claimants.length; i++) {
       claimants.add(Claimant.fromXdr(op.claimants[i]));
@@ -174,14 +179,20 @@ class CreateClaimableBalanceOperationBuilder
   /// - [_asset] The asset of the claimable balance.
   /// - [_amount] The amount in decimal string format (e.g., "100.50").
   CreateClaimableBalanceOperationBuilder(
-      this._claimants, this._asset, this._amount);
+    this._claimants,
+    this._asset,
+    this._amount,
+  );
 
   /// Builds the create claimable balance operation.
   ///
   /// Returns: A configured [CreateClaimableBalanceOperation] instance.
   CreateClaimableBalanceOperation build() {
-    CreateClaimableBalanceOperation operation =
-        CreateClaimableBalanceOperation(_claimants, _asset, _amount);
+    CreateClaimableBalanceOperation operation = CreateClaimableBalanceOperation(
+      _claimants,
+      _asset,
+      _amount,
+    );
     return applySourceAccount(operation);
   }
 }

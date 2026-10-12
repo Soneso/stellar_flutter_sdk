@@ -166,28 +166,27 @@ bool isHexString(String input) {
 /// - [Address] for working with Stellar addresses
 /// - [StrKey] for encoding and decoding address types
 Address? addressFromId(String id) {
-
   if (isHexString(id)) {
     try {
       final contractId = StrKey.encodeContractIdHex(id);
       if (StrKey.isValidContractId(contractId)) {
         return Address.forContractId(contractId);
       }
-    } catch(e) {}
+    } catch (e) {}
 
     try {
       final liquidityPoolId = StrKey.encodeLiquidityPoolIdHex(id);
       if (StrKey.isValidLiquidityPoolId(liquidityPoolId)) {
         return Address.forLiquidityPoolId(liquidityPoolId);
       }
-    } catch(e) {}
+    } catch (e) {}
 
     try {
       final claimableBalanceId = StrKey.encodeClaimableBalanceIdHex(id);
       if (StrKey.isValidClaimableBalanceId(claimableBalanceId)) {
         return Address.forClaimableBalanceId(claimableBalanceId);
       }
-    } catch(e) {}
+    } catch (e) {}
   } else {
     if (StrKey.isValidStellarAccountId(id)) {
       return Address.forAccountId(id);
@@ -266,7 +265,9 @@ class FriendBot {
   /// ```
   static Future<bool> fundTestAccount(String accountId) async {
     var url = Uri.parse("https://friendbot.stellar.org/?addr=$accountId");
-    return await http.get(url, headers: RequestBuilder.headers).then((response) {
+    return await http.get(url, headers: RequestBuilder.headers).then((
+      response,
+    ) {
       switch (response.statusCode) {
         case 200:
           return true;
@@ -331,8 +332,12 @@ class FuturenetFriendBot {
   /// bool success = await FuturenetFriendBot.fundTestAccount(accountId);
   /// ```
   static Future<bool> fundTestAccount(String accountId) async {
-    var url = Uri.parse("https://friendbot-futurenet.stellar.org?addr=$accountId");
-    return await http.get(url, headers: RequestBuilder.headers).then((response) {
+    var url = Uri.parse(
+      "https://friendbot-futurenet.stellar.org?addr=$accountId",
+    );
+    return await http.get(url, headers: RequestBuilder.headers).then((
+      response,
+    ) {
       switch (response.statusCode) {
         case 200:
           return true;
@@ -463,7 +468,10 @@ class Util {
   /// // Returns UTF-8 bytes of "XLM" plus one zero byte
   /// ```
   static Uint8List paddedByteArrayString(String string, int length) {
-    return Util.paddedByteArray(Uint8List.fromList(utf8.encode(string)), length);
+    return Util.paddedByteArray(
+      Uint8List.fromList(utf8.encode(string)),
+      length,
+    );
   }
 
   /// Converts a padded byte array back to a string.
@@ -586,7 +594,9 @@ class Util {
   /// ```
   static Future<Uint8List> readFile(String filePath) async {
     if (kIsWeb) {
-      throw UnsupportedError('Util.readFile() not supported on web. Use file picker or fetch from URL.');
+      throw UnsupportedError(
+        'Util.readFile() not supported on web. Use file picker or fetch from URL.',
+      );
     }
     Uri myUri = Uri.parse(filePath);
     File theFile = new File.fromUri(myUri);
@@ -684,8 +694,9 @@ class Util {
   static BigInt decimalStringToStroops(String value) {
     final String trimmed = value.trim();
     final bool negative = trimmed.startsWith("-");
-    final String unsigned =
-        (negative || trimmed.startsWith("+")) ? trimmed.substring(1) : trimmed;
+    final String unsigned = (negative || trimmed.startsWith("+"))
+        ? trimmed.substring(1)
+        : trimmed;
 
     // An amount is decimal digits, so the value is validated before BigInt.parse
     // sees it: BigInt.parse also reads hex and honours a sign of its own, and the
@@ -719,8 +730,10 @@ class Util {
     // bounds has no faithful 64-bit rendering.
     if (signed < BitConstants.int64MinValueBigInt ||
         signed > BitConstants.int64MaxValueBigInt) {
-      throw Exception("Amount out of range: $value is not between "
-          "-922337203685.4775808 and 922337203685.4775807");
+      throw Exception(
+        "Amount out of range: $value is not between "
+        "-922337203685.4775808 and 922337203685.4775807",
+      );
     }
     return signed;
   }
@@ -747,7 +760,8 @@ class Util {
     final bool negative = value.isNegative;
     String amountString = value.abs().toString();
     if (amountString.length > 7) {
-      amountString = amountString.substring(0, amountString.length - 7) +
+      amountString =
+          amountString.substring(0, amountString.length - 7) +
           "." +
           amountString.substring(amountString.length - 7, amountString.length);
     } else {
@@ -757,7 +771,9 @@ class Util {
       amountString = point + amountString;
     }
     amountString = removeTailZero(amountString);
-    return (negative && amountString != "0") ? "-" + amountString : amountString;
+    return (negative && amountString != "0")
+        ? "-" + amountString
+        : amountString;
   }
 
   /// Converts a decimal amount string to stroops.
@@ -799,7 +815,6 @@ class Util {
     }
     return XdrSCVal.forI128BigInt(value);
   }
-
 }
 
 /// Provides Base32 encoding and decoding functionality.
@@ -955,7 +970,10 @@ class Base32 {
     Uint8List bytes = new Uint8List(hex.length ~/ 2);
     final RegExp regex = new RegExp('[0-9a-f]{2}');
     for (Match match in regex.allMatches(hex.toLowerCase())) {
-      bytes[i++] = int.parse(hex.toLowerCase().substring(match.start, match.end), radix: 16);
+      bytes[i++] = int.parse(
+        hex.toLowerCase().substring(match.start, match.end),
+        radix: 16,
+      );
     }
     return bytes;
   }
@@ -980,7 +998,7 @@ class Base32 {
     0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
     0x16, // 'p', 'q', 'r', 's', 't', 'u', 'v', 'w'
     0x17, 0x18, 0x19, 0xFF, 0xFF, 0xFF, 0xFF,
-    0xFF // 'x', 'y', 'z', '{', '|', '}', '~', 'DEL'
+    0xFF, // 'x', 'y', 'z', '{', '|', '}', '~', 'DEL'
   ];
 }
 
@@ -1016,7 +1034,7 @@ String base16encode(final List<int> bytes) => base16codec.encode(bytes);
 /// ```dart
 /// List<int> bytes = base16decode("ff0080"); // Returns [255, 0, 128]
 /// ```
-List<int> base16decode(final String encoded)=> base16codec.decode(encoded);
+List<int> base16decode(final String encoded) => base16codec.decode(encoded);
 
 /// Codec for Base16 (hexadecimal) encoding and decoding.
 ///
@@ -1030,7 +1048,7 @@ List<int> base16decode(final String encoded)=> base16codec.decode(encoded);
 /// String hex = codec.encode([255, 128, 0]);
 /// List<int> bytes = codec.decode("ff8000");
 /// ```
-class Base16Codec extends Codec<List<int>, String>{
+class Base16Codec extends Codec<List<int>, String> {
   const Base16Codec();
 
   final Converter<String, List<int>> decoder = const Base16Decoder();
@@ -1045,7 +1063,7 @@ const int _charactersPerByte = 2;
 ///
 /// Converts each byte to two hexadecimal characters, padded with
 /// leading zeros if necessary.
-class Base16Encoder extends Converter<List<int>, String>{
+class Base16Encoder extends Converter<List<int>, String> {
   const Base16Encoder();
 
   /// Converts a byte array to a hexadecimal string.
@@ -1055,9 +1073,9 @@ class Base16Encoder extends Converter<List<int>, String>{
   ///
   /// Returns: Hexadecimal string representation
   @override
-  String convert(final List<int> input){
+  String convert(final List<int> input) {
     final StringBuffer buffer = StringBuffer();
-    for(final int byte in input)
+    for (final int byte in input)
       buffer.write(byte.toRadixString(_radix).padLeft(_charactersPerByte, "0"));
     return buffer.toString();
   }
@@ -1066,7 +1084,7 @@ class Base16Encoder extends Converter<List<int>, String>{
 /// Decoder for converting Base16 (hexadecimal) strings to byte arrays.
 ///
 /// Parses pairs of hexadecimal characters into individual bytes.
-class Base16Decoder extends Converter<String, List<int>>{
+class Base16Decoder extends Converter<String, List<int>> {
   const Base16Decoder();
 
   /// Converts a hexadecimal string to a byte array.
@@ -1077,8 +1095,7 @@ class Base16Decoder extends Converter<String, List<int>>{
   /// Returns: Decoded byte array
   @override
   List<int> convert(final String input) => [
-    for(int i=0; i<input.length; i+=_charactersPerByte)
-      int.parse(input.substring(i, i+_charactersPerByte), radix: _radix),
+    for (int i = 0; i < input.length; i += _charactersPerByte)
+      int.parse(input.substring(i, i + _charactersPerByte), radix: _radix),
   ];
 }
-

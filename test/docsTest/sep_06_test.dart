@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
@@ -54,8 +53,9 @@ void main() {
 
   test('sep-06: Creating the service - Direct URL', () {
     // Snippet from sep-06.md "Direct URL"
-    TransferServerService transferService =
-        TransferServerService("https://testanchor.stellar.org/sep6");
+    TransferServerService transferService = TransferServerService(
+      "https://testanchor.stellar.org/sep6",
+    );
 
     expect(transferService, isNotNull);
   });
@@ -151,7 +151,9 @@ void main() {
     expect(response.instructions!.containsKey(bankNumberKey), true);
     expect(response.instructions![bankNumberKey]!.value, "121122676");
     expect(
-        response.instructions![bankNumberKey]!.description, "US bank routing number");
+      response.instructions![bankNumberKey]!.description,
+      "US bank routing number",
+    );
 
     expect(response.id, "9421871e-0623-4356-b7b5-5996da122f3e");
     expect(response.feeFixed, 0.5);
@@ -159,7 +161,10 @@ void main() {
     expect(response.minAmount, 10.0);
     expect(response.maxAmount, 10000.0);
     expect(response.eta, 3600);
-    expect(response.extraInfo?.message, "Please include your name in the memo.");
+    expect(
+      response.extraInfo?.message,
+      "Please include your name in the memo.",
+    );
   });
 
   test('sep-06: Deposit with all options', () async {
@@ -227,8 +232,10 @@ void main() {
     WithdrawResponse response = await transferService.withdraw(request);
 
     // Verify withdraw response fields from the doc
-    expect(response.accountId,
-        "GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ");
+    expect(
+      response.accountId,
+      "GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ",
+    );
     expect(response.memoType, "id");
     expect(response.memo, "123");
     expect(response.id, "9421871e-0623-4356-b7b5-5996da122f3e");
@@ -302,8 +309,9 @@ void main() {
       jwt: jwtToken,
     );
 
-    DepositResponse response =
-        await transferService.depositExchange(depositExchange);
+    DepositResponse response = await transferService.depositExchange(
+      depositExchange,
+    );
     expect(response.id, "9421871e-0623-4356-b7b5-5996da122f3e");
     expect(response.instructions, isNotNull);
   });
@@ -335,8 +343,9 @@ void main() {
       jwt: jwtToken,
     );
 
-    WithdrawResponse response =
-        await transferService.withdrawExchange(withdrawExchange);
+    WithdrawResponse response = await transferService.withdrawExchange(
+      withdrawExchange,
+    );
     expect(response.accountId, isNotNull);
     expect(response.id, isNotNull);
     expect(response.memo, "123");
@@ -395,8 +404,9 @@ void main() {
       lang: "en",
     );
 
-    AnchorTransactionsResponse response =
-        await transferService.transactions(request);
+    AnchorTransactionsResponse response = await transferService.transactions(
+      request,
+    );
 
     expect(response.transactions.length, 3);
 
@@ -415,15 +425,19 @@ void main() {
     AnchorTransaction tx2 = response.transactions[1];
     expect(tx2.kind, "deposit-exchange");
     expect(tx2.amountInAsset, "iso4217:BRL");
-    expect(tx2.amountOutAsset,
-        "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN");
+    expect(
+      tx2.amountOutAsset,
+      "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+    );
 
     // Third transaction: withdrawal with refunds
     AnchorTransaction tx3 = response.transactions[2];
     expect(tx3.kind, "withdrawal");
     expect(tx3.status, "completed");
-    expect(tx3.withdrawAnchorAccount,
-        "GBANAGOAXH5ONSBI2I6I5LHP2TCRHWMZIAMGUQH2TNKQNCOGJ7GC3ZOL");
+    expect(
+      tx3.withdrawAnchorAccount,
+      "GBANAGOAXH5ONSBI2I6I5LHP2TCRHWMZIAMGUQH2TNKQNCOGJ7GC3ZOL",
+    );
     expect(tx3.withdrawMemo, "186384");
     expect(tx3.withdrawMemoType, "id");
     expect(tx3.refunds, isNotNull);
@@ -451,8 +465,9 @@ void main() {
     request.id = "82fhs729f63dh0v4";
     request.jwt = jwtToken;
 
-    AnchorTransactionResponse response =
-        await transferService.transaction(request);
+    AnchorTransactionResponse response = await transferService.transaction(
+      request,
+    );
     AnchorTransaction tx = response.transaction;
 
     expect(tx.id, "82fhs729f63dh0v4");
@@ -473,16 +488,18 @@ void main() {
     request2.stellarTransactionId =
         "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a";
     request2.jwt = jwtToken;
-    AnchorTransactionResponse response2 =
-        await transferService.transaction(request2);
+    AnchorTransactionResponse response2 = await transferService.transaction(
+      request2,
+    );
     expect(response2.transaction.id, "82fhs729f63dh0v4");
 
     // Or by external transaction ID
     AnchorTransactionRequest request3 = AnchorTransactionRequest();
     request3.externalTransactionId = "1238234";
     request3.jwt = jwtToken;
-    AnchorTransactionResponse response3 =
-        await transferService.transaction(request3);
+    AnchorTransactionResponse response3 = await transferService.transaction(
+      request3,
+    );
     expect(response3.transaction.id, "82fhs729f63dh0v4");
   });
 
@@ -509,33 +526,34 @@ void main() {
     AnchorTransactionRequest txRequest = AnchorTransactionRequest();
     txRequest.id = "82fhs729f63dh0v4";
     txRequest.jwt = jwtToken;
-    AnchorTransactionResponse txResponse =
-        await transferService.transaction(txRequest);
+    AnchorTransactionResponse txResponse = await transferService.transaction(
+      txRequest,
+    );
 
     expect(txResponse.transaction.status, "pending_transaction_info_update");
     expect(txResponse.transaction.requiredInfoMessage, isNotNull);
     expect(txResponse.transaction.requiredInfoUpdates, isNotNull);
     expect(txResponse.transaction.requiredInfoUpdates!.length, 2);
-    expect(txResponse.transaction.requiredInfoUpdates!["dest"]!.description,
-        "your bank account number");
+    expect(
+      txResponse.transaction.requiredInfoUpdates!["dest"]!.description,
+      "your bank account number",
+    );
 
     // Submit the updated information
     // Note: id is a positional argument, not named
-    PatchTransactionRequest patchRequest =
-        PatchTransactionRequest("82fhs729f63dh0v4");
-    patchRequest.fields = {
-      "dest": "12345678901234",
-      "dest_extra": "021000021",
-    };
+    PatchTransactionRequest patchRequest = PatchTransactionRequest(
+      "82fhs729f63dh0v4",
+    );
+    patchRequest.fields = {"dest": "12345678901234", "dest_extra": "021000021"};
     patchRequest.jwt = jwtToken;
 
-    http.Response patchResponse =
-        await transferService.patchTransaction(patchRequest);
+    http.Response patchResponse = await transferService.patchTransaction(
+      patchRequest,
+    );
     expect(patchResponse.statusCode, 200);
   });
 
-  test('sep-06: Error handling - CustomerInformationNeededException',
-      () async {
+  test('sep-06: Error handling - CustomerInformationNeededException', () async {
     // Snippet from sep-06.md "Error handling"
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
@@ -563,8 +581,7 @@ void main() {
     expect(thrown, true);
   });
 
-  test('sep-06: Error handling - CustomerInformationStatusException',
-      () async {
+  test('sep-06: Error handling - CustomerInformationStatusException', () async {
     // Snippet from sep-06.md "Error handling"
     final transferService = TransferServerService(serviceAddress);
     transferService.httpClient = MockClient((request) async {
@@ -586,8 +603,10 @@ void main() {
     } on CustomerInformationStatusException catch (e) {
       thrown = true;
       expect(e.response.status, "denied");
-      expect(e.response.moreInfoUrl,
-          "https://api.example.com/kycstatus?account=GACW7NONV43MZIFHCOKCQJAKSJSISSICFVUJ2C6EZIW5773OU3HD64VI");
+      expect(
+        e.response.moreInfoUrl,
+        "https://api.example.com/kycstatus?account=GACW7NONV43MZIFHCOKCQJAKSJSISSICFVUJ2C6EZIW5773OU3HD64VI",
+      );
     }
     expect(thrown, true);
   });

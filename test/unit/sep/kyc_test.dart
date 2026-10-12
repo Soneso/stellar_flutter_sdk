@@ -13,11 +13,14 @@ void main() {
         expect(request.url.queryParameters['id'], 'customer-123');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'id': 'customer-123',
-          'status': 'ACCEPTED',
-          'message': 'Customer information has been approved'
-        }), 200);
+        return http.Response(
+          json.encode({
+            'id': 'customer-123',
+            'status': 'ACCEPTED',
+            'message': 'Customer information has been approved',
+          }),
+          200,
+        );
       });
 
       final service = KYCService(
@@ -42,11 +45,14 @@ void main() {
         expect(request.url.path, endsWith('/customer'));
         expect(request.url.queryParameters['account'], 'GXXXXXXX');
 
-        return http.Response(json.encode({
-          'id': 'customer-456',
-          'status': 'PROCESSING',
-          'message': 'Your information is being reviewed'
-        }), 200);
+        return http.Response(
+          json.encode({
+            'id': 'customer-456',
+            'status': 'PROCESSING',
+            'message': 'Your information is being reviewed',
+          }),
+          200,
+        );
       });
 
       final service = KYCService(
@@ -65,154 +71,169 @@ void main() {
       expect(response.message, 'Your information is being reviewed');
     });
 
-    test('get customer info with NEEDS_INFO status and required fields', () async {
-      final mockClient = MockClient((request) async {
-        expect(request.url.path, endsWith('/customer'));
-        expect(request.url.queryParameters['account'], 'GXXXXXXX');
-        expect(request.url.queryParameters['type'], 'sep31-sender');
+    test(
+      'get customer info with NEEDS_INFO status and required fields',
+      () async {
+        final mockClient = MockClient((request) async {
+          expect(request.url.path, endsWith('/customer'));
+          expect(request.url.queryParameters['account'], 'GXXXXXXX');
+          expect(request.url.queryParameters['type'], 'sep31-sender');
 
-        return http.Response(json.encode({
-          'status': 'NEEDS_INFO',
-          'fields': {
-            'first_name': {
-              'type': 'string',
-              'description': 'Your first name',
-              'optional': false
-            },
-            'last_name': {
-              'type': 'string',
-              'description': 'Your last name',
-              'optional': false
-            },
-            'email_address': {
-              'type': 'string',
-              'description': 'Your email address',
-              'optional': false
-            },
-            'country_code': {
-              'type': 'string',
-              'description': 'ISO 3166-1 alpha-3 country code',
-              'choices': ['USA', 'CAN', 'MEX'],
-              'optional': false
-            },
-            'photo_id_front': {
-              'type': 'binary',
-              'description': 'Front of government-issued photo ID',
-              'optional': true
-            }
-          }
-        }), 200);
-      });
+          return http.Response(
+            json.encode({
+              'status': 'NEEDS_INFO',
+              'fields': {
+                'first_name': {
+                  'type': 'string',
+                  'description': 'Your first name',
+                  'optional': false,
+                },
+                'last_name': {
+                  'type': 'string',
+                  'description': 'Your last name',
+                  'optional': false,
+                },
+                'email_address': {
+                  'type': 'string',
+                  'description': 'Your email address',
+                  'optional': false,
+                },
+                'country_code': {
+                  'type': 'string',
+                  'description': 'ISO 3166-1 alpha-3 country code',
+                  'choices': ['USA', 'CAN', 'MEX'],
+                  'optional': false,
+                },
+                'photo_id_front': {
+                  'type': 'binary',
+                  'description': 'Front of government-issued photo ID',
+                  'optional': true,
+                },
+              },
+            }),
+            200,
+          );
+        });
 
-      final service = KYCService(
-        'https://api.example.com',
-        httpClient: mockClient,
-      );
+        final service = KYCService(
+          'https://api.example.com',
+          httpClient: mockClient,
+        );
 
-      final request = GetCustomerInfoRequest()
-        ..account = 'GXXXXXXX'
-        ..type = 'sep31-sender'
-        ..jwt = 'test-jwt';
+        final request = GetCustomerInfoRequest()
+          ..account = 'GXXXXXXX'
+          ..type = 'sep31-sender'
+          ..jwt = 'test-jwt';
 
-      final response = await service.getCustomerInfo(request);
+        final response = await service.getCustomerInfo(request);
 
-      expect(response.status, 'NEEDS_INFO');
-      expect(response.fields, isNotNull);
-      expect(response.fields!.length, 5);
+        expect(response.status, 'NEEDS_INFO');
+        expect(response.fields, isNotNull);
+        expect(response.fields!.length, 5);
 
-      final firstNameField = response.fields!['first_name']!;
-      expect(firstNameField.type, 'string');
-      expect(firstNameField.description, 'Your first name');
-      expect(firstNameField.optional, false);
+        final firstNameField = response.fields!['first_name']!;
+        expect(firstNameField.type, 'string');
+        expect(firstNameField.description, 'Your first name');
+        expect(firstNameField.optional, false);
 
-      final countryField = response.fields!['country_code']!;
-      expect(countryField.type, 'string');
-      expect(countryField.choices, ['USA', 'CAN', 'MEX']);
+        final countryField = response.fields!['country_code']!;
+        expect(countryField.type, 'string');
+        expect(countryField.choices, ['USA', 'CAN', 'MEX']);
 
-      final photoField = response.fields!['photo_id_front']!;
-      expect(photoField.type, 'binary');
-      expect(photoField.optional, true);
-    });
+        final photoField = response.fields!['photo_id_front']!;
+        expect(photoField.type, 'binary');
+        expect(photoField.optional, true);
+      },
+    );
 
-    test('get customer info with NEEDS_INFO and provided fields with status', () async {
-      final mockClient = MockClient((request) async {
-        expect(request.url.path, endsWith('/customer'));
-        expect(request.url.queryParameters['id'], 'customer-789');
+    test(
+      'get customer info with NEEDS_INFO and provided fields with status',
+      () async {
+        final mockClient = MockClient((request) async {
+          expect(request.url.path, endsWith('/customer'));
+          expect(request.url.queryParameters['id'], 'customer-789');
 
-        return http.Response(json.encode({
-          'id': 'customer-789',
-          'status': 'NEEDS_INFO',
-          'fields': {
-            'photo_id_front': {
-              'type': 'binary',
-              'description': 'Front of photo ID',
-              'optional': false
-            }
-          },
-          'provided_fields': {
-            'first_name': {
-              'type': 'string',
-              'description': 'First name',
-              'status': 'ACCEPTED'
-            },
-            'last_name': {
-              'type': 'string',
-              'description': 'Last name',
-              'status': 'ACCEPTED'
-            },
-            'email_address': {
-              'type': 'string',
-              'description': 'Email address',
-              'status': 'VERIFICATION_REQUIRED'
-            },
-            'mobile_number': {
-              'type': 'string',
-              'description': 'Phone number',
-              'status': 'REJECTED',
-              'error': 'Invalid phone number format'
-            }
-          }
-        }), 200);
-      });
+          return http.Response(
+            json.encode({
+              'id': 'customer-789',
+              'status': 'NEEDS_INFO',
+              'fields': {
+                'photo_id_front': {
+                  'type': 'binary',
+                  'description': 'Front of photo ID',
+                  'optional': false,
+                },
+              },
+              'provided_fields': {
+                'first_name': {
+                  'type': 'string',
+                  'description': 'First name',
+                  'status': 'ACCEPTED',
+                },
+                'last_name': {
+                  'type': 'string',
+                  'description': 'Last name',
+                  'status': 'ACCEPTED',
+                },
+                'email_address': {
+                  'type': 'string',
+                  'description': 'Email address',
+                  'status': 'VERIFICATION_REQUIRED',
+                },
+                'mobile_number': {
+                  'type': 'string',
+                  'description': 'Phone number',
+                  'status': 'REJECTED',
+                  'error': 'Invalid phone number format',
+                },
+              },
+            }),
+            200,
+          );
+        });
 
-      final service = KYCService(
-        'https://api.example.com',
-        httpClient: mockClient,
-      );
+        final service = KYCService(
+          'https://api.example.com',
+          httpClient: mockClient,
+        );
 
-      final request = GetCustomerInfoRequest()
-        ..id = 'customer-789'
-        ..jwt = 'test-jwt';
+        final request = GetCustomerInfoRequest()
+          ..id = 'customer-789'
+          ..jwt = 'test-jwt';
 
-      final response = await service.getCustomerInfo(request);
+        final response = await service.getCustomerInfo(request);
 
-      expect(response.id, 'customer-789');
-      expect(response.status, 'NEEDS_INFO');
-      expect(response.fields!.length, 1);
-      expect(response.providedFields, isNotNull);
-      expect(response.providedFields!.length, 4);
+        expect(response.id, 'customer-789');
+        expect(response.status, 'NEEDS_INFO');
+        expect(response.fields!.length, 1);
+        expect(response.providedFields, isNotNull);
+        expect(response.providedFields!.length, 4);
 
-      final firstName = response.providedFields!['first_name']!;
-      expect(firstName.status, 'ACCEPTED');
+        final firstName = response.providedFields!['first_name']!;
+        expect(firstName.status, 'ACCEPTED');
 
-      final email = response.providedFields!['email_address']!;
-      expect(email.status, 'VERIFICATION_REQUIRED');
+        final email = response.providedFields!['email_address']!;
+        expect(email.status, 'VERIFICATION_REQUIRED');
 
-      final mobile = response.providedFields!['mobile_number']!;
-      expect(mobile.status, 'REJECTED');
-      expect(mobile.error, 'Invalid phone number format');
-    });
+        final mobile = response.providedFields!['mobile_number']!;
+        expect(mobile.status, 'REJECTED');
+        expect(mobile.error, 'Invalid phone number format');
+      },
+    );
 
     test('get customer info with REJECTED status', () async {
       final mockClient = MockClient((request) async {
         expect(request.url.path, endsWith('/customer'));
         expect(request.url.queryParameters['id'], 'customer-rejected');
 
-        return http.Response(json.encode({
-          'id': 'customer-rejected',
-          'status': 'REJECTED',
-          'message': 'Customer information could not be verified'
-        }), 200);
+        return http.Response(
+          json.encode({
+            'id': 'customer-rejected',
+            'status': 'REJECTED',
+            'message': 'Customer information could not be verified',
+          }),
+          200,
+        );
       });
 
       final service = KYCService(
@@ -238,9 +259,7 @@ void main() {
         expect(request.url.queryParameters['memo'], '123456');
         expect(request.url.queryParameters['memo_type'], 'id');
 
-        return http.Response(json.encode({
-          'status': 'ACCEPTED'
-        }), 200);
+        return http.Response(json.encode({'status': 'ACCEPTED'}), 200);
       });
 
       final service = KYCService(
@@ -263,10 +282,10 @@ void main() {
         expect(request.url.queryParameters['transaction_id'], 'tx-123');
         expect(request.url.queryParameters['type'], 'sep6-deposit');
 
-        return http.Response(json.encode({
-          'status': 'NEEDS_INFO',
-          'fields': {}
-        }), 200);
+        return http.Response(
+          json.encode({'status': 'NEEDS_INFO', 'fields': {}}),
+          200,
+        );
       });
 
       final service = KYCService(
@@ -288,16 +307,19 @@ void main() {
         expect(request.url.path, endsWith('/customer'));
         expect(request.url.queryParameters['lang'], 'es');
 
-        return http.Response(json.encode({
-          'status': 'NEEDS_INFO',
-          'fields': {
-            'first_name': {
-              'type': 'string',
-              'description': 'Tu nombre',
-              'optional': false
-            }
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'status': 'NEEDS_INFO',
+            'fields': {
+              'first_name': {
+                'type': 'string',
+                'description': 'Tu nombre',
+                'optional': false,
+              },
+            },
+          }),
+          200,
+        );
       });
 
       final service = KYCService(
@@ -322,9 +344,7 @@ void main() {
         expect(request.method, 'PUT');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'id': 'new-customer-123'
-        }), 200);
+        return http.Response(json.encode({'id': 'new-customer-123'}), 200);
       });
 
       final service = KYCService(
@@ -351,9 +371,7 @@ void main() {
         expect(request.url.path, endsWith('/customer'));
         expect(request.method, 'PUT');
 
-        return http.Response(json.encode({
-          'id': 'existing-customer-456'
-        }), 200);
+        return http.Response(json.encode({'id': 'existing-customer-456'}), 200);
       });
 
       final service = KYCService(
@@ -378,9 +396,7 @@ void main() {
         expect(request.url.path, endsWith('/customer'));
         expect(request.method, 'PUT');
 
-        return http.Response(json.encode({
-          'id': 'customer-full-profile'
-        }), 200);
+        return http.Response(json.encode({'id': 'customer-full-profile'}), 200);
       });
 
       final service = KYCService(
@@ -415,9 +431,7 @@ void main() {
         expect(request.url.path, endsWith('/customer'));
         expect(request.method, 'PUT');
 
-        return http.Response(json.encode({
-          'id': 'customer-with-docs'
-        }), 200);
+        return http.Response(json.encode({'id': 'customer-with-docs'}), 200);
       });
 
       final service = KYCService(
@@ -448,9 +462,7 @@ void main() {
         expect(request.url.path, endsWith('/customer'));
         expect(request.method, 'PUT');
 
-        return http.Response(json.encode({
-          'id': 'org-customer-123'
-        }), 200);
+        return http.Response(json.encode({'id': 'org-customer-123'}), 200);
       });
 
       final service = KYCService(
@@ -478,9 +490,10 @@ void main() {
         expect(request.url.path, endsWith('/customer'));
         expect(request.method, 'PUT');
 
-        return http.Response(json.encode({
-          'id': 'customer-custom-fields'
-        }), 200);
+        return http.Response(
+          json.encode({'id': 'customer-custom-fields'}),
+          200,
+        );
       });
 
       final service = KYCService(
@@ -490,10 +503,7 @@ void main() {
 
       final request = PutCustomerInfoRequest()
         ..account = 'GXXXXXXX'
-        ..customFields = {
-          'referral_code': 'REF123',
-          'account_type': 'premium'
-        }
+        ..customFields = {'referral_code': 'REF123', 'account_type': 'premium'}
         ..jwt = 'test-jwt';
 
       final response = await service.putCustomerInfo(request);
@@ -506,9 +516,7 @@ void main() {
         expect(request.url.path, endsWith('/customer'));
         expect(request.method, 'PUT');
 
-        return http.Response(json.encode({
-          'id': 'customer-with-memo'
-        }), 200);
+        return http.Response(json.encode({'id': 'customer-with-memo'}), 200);
       });
 
       final service = KYCService(
@@ -539,16 +547,16 @@ void main() {
         expect(request.method, 'PUT');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'id': 'customer-123',
-          'status': 'ACCEPTED',
-          'provided_fields': {
-            'email_address': {
-              'type': 'string',
-              'status': 'ACCEPTED'
-            }
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'id': 'customer-123',
+            'status': 'ACCEPTED',
+            'provided_fields': {
+              'email_address': {'type': 'string', 'status': 'ACCEPTED'},
+            },
+          }),
+          200,
+        );
       });
 
       final service = KYCService(
@@ -558,9 +566,7 @@ void main() {
 
       final request = PutCustomerVerificationRequest()
         ..id = 'customer-123'
-        ..verificationFields = {
-          'email_address_verification': '123456'
-        }
+        ..verificationFields = {'email_address_verification': '123456'}
         ..jwt = 'test-jwt';
 
       final response = await service.putCustomerVerification(request);
@@ -575,20 +581,17 @@ void main() {
         expect(request.url.path, endsWith('/customer/verification'));
         expect(request.method, 'PUT');
 
-        return http.Response(json.encode({
-          'id': 'customer-456',
-          'status': 'ACCEPTED',
-          'provided_fields': {
-            'email_address': {
-              'type': 'string',
-              'status': 'ACCEPTED'
+        return http.Response(
+          json.encode({
+            'id': 'customer-456',
+            'status': 'ACCEPTED',
+            'provided_fields': {
+              'email_address': {'type': 'string', 'status': 'ACCEPTED'},
+              'mobile_number': {'type': 'string', 'status': 'ACCEPTED'},
             },
-            'mobile_number': {
-              'type': 'string',
-              'status': 'ACCEPTED'
-            }
-          }
-        }), 200);
+          }),
+          200,
+        );
       });
 
       final service = KYCService(
@@ -600,7 +603,7 @@ void main() {
         ..id = 'customer-456'
         ..verificationFields = {
           'email_address_verification': '123456',
-          'mobile_number_verification': '654321'
+          'mobile_number_verification': '654321',
         }
         ..jwt = 'test-jwt';
 
@@ -617,23 +620,23 @@ void main() {
         expect(request.url.path, endsWith('/customer/verification'));
         expect(request.method, 'PUT');
 
-        return http.Response(json.encode({
-          'id': 'customer-789',
-          'status': 'NEEDS_INFO',
-          'fields': {
-            'photo_id_front': {
-              'type': 'binary',
-              'description': 'Photo ID required',
-              'optional': false
-            }
-          },
-          'provided_fields': {
-            'email_address': {
-              'type': 'string',
-              'status': 'ACCEPTED'
-            }
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'id': 'customer-789',
+            'status': 'NEEDS_INFO',
+            'fields': {
+              'photo_id_front': {
+                'type': 'binary',
+                'description': 'Photo ID required',
+                'optional': false,
+              },
+            },
+            'provided_fields': {
+              'email_address': {'type': 'string', 'status': 'ACCEPTED'},
+            },
+          }),
+          200,
+        );
       });
 
       final service = KYCService(
@@ -643,9 +646,7 @@ void main() {
 
       final request = PutCustomerVerificationRequest()
         ..id = 'customer-789'
-        ..verificationFields = {
-          'email_address_verification': '999999'
-        }
+        ..verificationFields = {'email_address_verification': '999999'}
         ..jwt = 'test-jwt';
 
       final response = await service.putCustomerVerification(request);
@@ -763,12 +764,15 @@ void main() {
         expect(request.method, 'POST');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'file_id': 'file-123',
-          'content_type': 'image/jpeg',
-          'size': 1024,
-          'expires_at': '2025-12-31T23:59:59Z'
-        }), 200);
+        return http.Response(
+          json.encode({
+            'file_id': 'file-123',
+            'content_type': 'image/jpeg',
+            'size': 1024,
+            'expires_at': '2025-12-31T23:59:59Z',
+          }),
+          200,
+        );
       });
 
       final service = KYCService(
@@ -791,17 +795,20 @@ void main() {
         expect(request.url.queryParameters['file_id'], 'file-123');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'files': [
-            {
-              'file_id': 'file-123',
-              'content_type': 'image/jpeg',
-              'size': 1024,
-              'expires_at': '2025-12-31T23:59:59Z',
-              'customer_id': 'customer-456'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'files': [
+              {
+                'file_id': 'file-123',
+                'content_type': 'image/jpeg',
+                'size': 1024,
+                'expires_at': '2025-12-31T23:59:59Z',
+                'customer_id': 'customer-456',
+              },
+            ],
+          }),
+          200,
+        );
       });
 
       final service = KYCService(
@@ -809,7 +816,10 @@ void main() {
         httpClient: mockClient,
       );
 
-      final response = await service.getCustomerFiles('test-jwt', fileId: 'file-123');
+      final response = await service.getCustomerFiles(
+        'test-jwt',
+        fileId: 'file-123',
+      );
 
       expect(response.files.length, 1);
       expect(response.files[0].fileId, 'file-123');
@@ -822,22 +832,25 @@ void main() {
         expect(request.url.queryParameters['customer_id'], 'customer-789');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'files': [
-            {
-              'file_id': 'file-001',
-              'content_type': 'image/jpeg',
-              'size': 2048,
-              'customer_id': 'customer-789'
-            },
-            {
-              'file_id': 'file-002',
-              'content_type': 'application/pdf',
-              'size': 4096,
-              'customer_id': 'customer-789'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'files': [
+              {
+                'file_id': 'file-001',
+                'content_type': 'image/jpeg',
+                'size': 2048,
+                'customer_id': 'customer-789',
+              },
+              {
+                'file_id': 'file-002',
+                'content_type': 'application/pdf',
+                'size': 4096,
+                'customer_id': 'customer-789',
+              },
+            ],
+          }),
+          200,
+        );
       });
 
       final service = KYCService(
@@ -845,7 +858,10 @@ void main() {
         httpClient: mockClient,
       );
 
-      final response = await service.getCustomerFiles('test-jwt', customerId: 'customer-789');
+      final response = await service.getCustomerFiles(
+        'test-jwt',
+        customerId: 'customer-789',
+      );
 
       expect(response.files.length, 2);
       expect(response.files[0].fileId, 'file-001');
@@ -858,9 +874,10 @@ void main() {
   group('KYCService Error Handling', () {
     test('handle 400 bad request error', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Invalid account parameter'
-        }), 400);
+        return http.Response(
+          json.encode({'error': 'Invalid account parameter'}),
+          400,
+        );
       });
 
       final service = KYCService(
@@ -880,9 +897,7 @@ void main() {
 
     test('handle 403 forbidden error', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Forbidden'
-        }), 403);
+        return http.Response(json.encode({'error': 'Forbidden'}), 403);
       });
 
       final service = KYCService(
@@ -902,9 +917,7 @@ void main() {
 
     test('handle 404 not found error', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Customer not found'
-        }), 404);
+        return http.Response(json.encode({'error': 'Customer not found'}), 404);
       });
 
       final service = KYCService(
@@ -929,17 +942,13 @@ void main() {
         expect(request.headers['Authorization'], 'Bearer test-jwt');
         expect(request.headers['X-Custom-Header'], 'custom-value');
 
-        return http.Response(json.encode({
-          'status': 'ACCEPTED'
-        }), 200);
+        return http.Response(json.encode({'status': 'ACCEPTED'}), 200);
       });
 
       final service = KYCService(
         'https://api.example.com',
         httpClient: mockClient,
-        httpRequestHeaders: {
-          'X-Custom-Header': 'custom-value',
-        },
+        httpRequestHeaders: {'X-Custom-Header': 'custom-value'},
       );
 
       final request = GetCustomerInfoRequest()
@@ -949,27 +958,26 @@ void main() {
       await service.getCustomerInfo(request);
     });
 
-    test('verify custom headers are passed through on GET /customer/files', () async {
-      // This test verifies that custom headers are properly passed through on GET /customer/files requests
-      final mockClient = MockClient((request) async {
-        expect(request.headers['Authorization'], 'Bearer test-jwt');
-        expect(request.headers['X-Custom-Header'], 'custom-value');
+    test(
+      'verify custom headers are passed through on GET /customer/files',
+      () async {
+        // This test verifies that custom headers are properly passed through on GET /customer/files requests
+        final mockClient = MockClient((request) async {
+          expect(request.headers['Authorization'], 'Bearer test-jwt');
+          expect(request.headers['X-Custom-Header'], 'custom-value');
 
-        return http.Response(json.encode({
-          'files': []
-        }), 200);
-      });
+          return http.Response(json.encode({'files': []}), 200);
+        });
 
-      final service = KYCService(
-        'https://api.example.com',
-        httpClient: mockClient,
-        httpRequestHeaders: {
-          'X-Custom-Header': 'custom-value',
-        },
-      );
+        final service = KYCService(
+          'https://api.example.com',
+          httpClient: mockClient,
+          httpRequestHeaders: {'X-Custom-Header': 'custom-value'},
+        );
 
-      await service.getCustomerFiles('test-jwt', customerId: 'customer-id');
-    });
+        await service.getCustomerFiles('test-jwt', customerId: 'customer-id');
+      },
+    );
   });
 
   group('NaturalPersonKYCFields', () {
@@ -1218,7 +1226,10 @@ void main() {
       var fields = kyc.fields();
       expect(fields['organization.name'], equals('Example Corp'));
       expect(fields['organization.VAT_number'], equals('VAT123456789'));
-      expect(fields['organization.registration_number'], equals('REG987654321'));
+      expect(
+        fields['organization.registration_number'],
+        equals('REG987654321'),
+      );
       expect(fields['organization.registration_date'], equals('2020-01-15'));
     });
 
@@ -1227,7 +1238,10 @@ void main() {
       kyc.registeredAddress = '123 Business Plaza\nNew York, NY 10001';
 
       var fields = kyc.fields();
-      expect(fields['organization.registered_address'], equals('123 Business Plaza\nNew York, NY 10001'));
+      expect(
+        fields['organization.registered_address'],
+        equals('123 Business Plaza\nNew York, NY 10001'),
+      );
     });
 
     test('sets and gets shareholder information', () {
@@ -1392,11 +1406,15 @@ void main() {
 
     test('sets and gets crypto fields', () {
       var kyc = FinancialAccountKYCFields();
-      kyc.cryptoAddress = 'GDJKZLTXCKVQYIGJQIYSNFJ3CEKIIZ6HIAZEDE2KBPCSEPBVH4GNDLTJ';
+      kyc.cryptoAddress =
+          'GDJKZLTXCKVQYIGJQIYSNFJ3CEKIIZ6HIAZEDE2KBPCSEPBVH4GNDLTJ';
       kyc.cryptoMemo = '12345';
 
       var fields = kyc.fields();
-      expect(fields['crypto_address'], equals('GDJKZLTXCKVQYIGJQIYSNFJ3CEKIIZ6HIAZEDE2KBPCSEPBVH4GNDLTJ'));
+      expect(
+        fields['crypto_address'],
+        equals('GDJKZLTXCKVQYIGJQIYSNFJ3CEKIIZ6HIAZEDE2KBPCSEPBVH4GNDLTJ'),
+      );
       expect(fields['crypto_memo'], equals('12345'));
     });
 
@@ -1453,7 +1471,10 @@ void main() {
       expect(fields['card.country_code'], equals('US'));
       expect(fields['card.state_or_province'], equals('CA'));
       expect(fields['card.city'], equals('San Francisco'));
-      expect(fields['card.address'], equals('123 Main St\nSan Francisco, CA 94102'));
+      expect(
+        fields['card.address'],
+        equals('123 Main St\nSan Francisco, CA 94102'),
+      );
     });
 
     test('sets and gets token field', () {

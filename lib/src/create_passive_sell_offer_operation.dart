@@ -67,7 +67,11 @@ class CreatePassiveSellOfferOperation extends Operation {
   /// - [_amount] Amount of selling asset to sell.
   /// - [_price] Price per unit of selling in terms of buying.
   CreatePassiveSellOfferOperation(
-      this._selling, this._buying, this._amount, this._price);
+    this._selling,
+    this._buying,
+    this._amount,
+    this._price,
+  );
 
   /// The asset being sold in this operation
   Asset get selling => _selling;
@@ -88,10 +92,15 @@ class CreatePassiveSellOfferOperation extends Operation {
   XdrOperationBody toOperationBody() {
     var amount = new XdrInt64(Util.decimalStringToStroops(this.amount));
     var price = Price.fromString(this.price);
-    XdrOperationBody body =
-        new XdrOperationBody(XdrOperationType.CREATE_PASSIVE_SELL_OFFER);
+    XdrOperationBody body = new XdrOperationBody(
+      XdrOperationType.CREATE_PASSIVE_SELL_OFFER,
+    );
     body.createPassiveSellOfferOp = new XdrCreatePassiveSellOfferOp(
-        selling.toXdr(), buying.toXdr(), amount, price.toXdr());
+      selling.toXdr(),
+      buying.toXdr(),
+      amount,
+      price.toXdr(),
+    );
 
     return body;
   }
@@ -103,15 +112,17 @@ class CreatePassiveSellOfferOperation extends Operation {
   ///
   /// Returns: Builder configured with XDR operation data.
   static CreatePassiveSellOfferOperationBuilder builder(
-      XdrCreatePassiveSellOfferOp op) {
+    XdrCreatePassiveSellOfferOp op,
+  ) {
     int n = op.price.n.int32;
     int d = op.price.d.int32;
 
     return CreatePassiveSellOfferOperationBuilder(
-        Asset.fromXdr(op.selling),
-        Asset.fromXdr(op.buying),
-        Util.stroopsToDecimalString(op.amount.int64),
-        Price(n, d).toDecimalString());
+      Asset.fromXdr(op.selling),
+      Asset.fromXdr(op.buying),
+      Util.stroopsToDecimalString(op.amount.int64),
+      Price(n, d).toDecimalString(),
+    );
   }
 }
 
@@ -144,7 +155,11 @@ class CreatePassiveSellOfferOperationBuilder
   /// - [_amount] Amount of selling asset to sell.
   /// - [_price] Price per unit of selling in terms of buying.
   CreatePassiveSellOfferOperationBuilder(
-      this._selling, this._buying, this._amount, this._price);
+    this._selling,
+    this._buying,
+    this._amount,
+    this._price,
+  );
 
   /// Builds the CreatePassiveSellOffer operation.
   ///

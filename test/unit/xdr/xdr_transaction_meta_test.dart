@@ -9,10 +9,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 void main() {
   group('XDR Transaction Meta - Edge Cases & Complex Constructions', () {
     test('XdrPreconditionsV2 with null timeBounds encode/decode', () {
-      var ledgerBounds = XdrLedgerBounds(
-        XdrUint32(500),
-        XdrUint32(1000),
-      );
+      var ledgerBounds = XdrLedgerBounds(XdrUint32(500), XdrUint32(1000));
 
       var original = XdrPreconditionsV2(
         null,
@@ -65,36 +62,47 @@ void main() {
       expect(decoded.minSeqNum, isNull);
     });
 
-    test('XdrPreconditionsV2 with multiple extraSigners of different types', () {
-      var signerKey1 = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
-      signerKey1.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAA)));
+    test(
+      'XdrPreconditionsV2 with multiple extraSigners of different types',
+      () {
+        var signerKey1 = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+        signerKey1.ed25519 = XdrUint256(
+          Uint8List.fromList(List<int>.filled(32, 0xAA)),
+        );
 
-      var signerKey2 = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
-      signerKey2.preAuthTx = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xBB)));
+        var signerKey2 = XdrSignerKey(
+          XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX,
+        );
+        signerKey2.preAuthTx = XdrUint256(
+          Uint8List.fromList(List<int>.filled(32, 0xBB)),
+        );
 
-      var signerKey3 = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
-      signerKey3.hashX = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xCC)));
+        var signerKey3 = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
+        signerKey3.hashX = XdrUint256(
+          Uint8List.fromList(List<int>.filled(32, 0xCC)),
+        );
 
-      var original = XdrPreconditionsV2(
-        null,
-        null,
-        null,
-        XdrUint64(BigInt.from(3600)),
-        XdrUint32(10),
-        [signerKey1, signerKey2, signerKey3],
-      );
+        var original = XdrPreconditionsV2(
+          null,
+          null,
+          null,
+          XdrUint64(BigInt.from(3600)),
+          XdrUint32(10),
+          [signerKey1, signerKey2, signerKey3],
+        );
 
-      XdrDataOutputStream output = XdrDataOutputStream();
-      XdrPreconditionsV2.encode(output, original);
-      Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrPreconditionsV2.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
 
-      XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrPreconditionsV2.decode(input);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrPreconditionsV2.decode(input);
 
-      expect(decoded.extraSigners.length, equals(3));
-      expect(decoded.minSeqAge.uint64, equals(BigInt.from(3600)));
-      expect(decoded.minSeqLedgerGap.uint32, equals(10));
-    });
+        expect(decoded.extraSigners.length, equals(3));
+        expect(decoded.minSeqAge.uint64, equals(BigInt.from(3600)));
+        expect(decoded.minSeqLedgerGap.uint32, equals(10));
+      },
+    );
 
     test('XdrTransactionResultSet empty results encode/decode', () {
       var original = XdrTransactionResultSet([]);
@@ -149,12 +157,22 @@ void main() {
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
-      var contractEvent = XdrContractEvent(eventExt, hash, XdrContractEventType.CONTRACT, body);
+      var contractEvent = XdrContractEvent(
+        eventExt,
+        hash,
+        XdrContractEventType.CONTRACT,
+        body,
+      );
 
       var returnValue = XdrSCVal(XdrSCValType.SCV_BOOL);
       returnValue.b = false;
 
-      var original = XdrSorobanTransactionMeta(ext, [contractEvent], returnValue, []);
+      var original = XdrSorobanTransactionMeta(
+        ext,
+        [contractEvent],
+        returnValue,
+        [],
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSorobanTransactionMeta.encode(output, original);
@@ -165,7 +183,10 @@ void main() {
 
       expect(decoded.events.length, equals(1));
       expect(decoded.events[0].hash, isNotNull);
-      expect(decoded.returnValue.discriminant.value, equals(XdrSCValType.SCV_BOOL.value));
+      expect(
+        decoded.returnValue.discriminant.value,
+        equals(XdrSCValType.SCV_BOOL.value),
+      );
       expect(decoded.returnValue.b, equals(false));
     });
 
@@ -178,7 +199,12 @@ void main() {
       var body = XdrContractEventBody(0);
       body.v0 = bodyV0;
 
-      var contractEvent = XdrContractEvent(ext, null, XdrContractEventType.DIAGNOSTIC, body);
+      var contractEvent = XdrContractEvent(
+        ext,
+        null,
+        XdrContractEventType.DIAGNOSTIC,
+        body,
+      );
 
       var original = XdrDiagnosticEvent(false, contractEvent);
 
@@ -190,7 +216,10 @@ void main() {
       var decoded = XdrDiagnosticEvent.decode(input);
 
       expect(decoded.inSuccessfulContractCall, equals(false));
-      expect(decoded.event.type.value, equals(XdrContractEventType.DIAGNOSTIC.value));
+      expect(
+        decoded.event.type.value,
+        equals(XdrContractEventType.DIAGNOSTIC.value),
+      );
     });
 
     test('XdrTransactionMeta discriminant 4 with V2 operation meta', () {
@@ -205,7 +234,15 @@ void main() {
       var sorobanMetaExt = XdrSorobanTransactionMetaExt(0);
       var sorobanMeta = XdrSorobanTransactionMetaV2(sorobanMetaExt, null);
 
-      var v4 = XdrTransactionMetaV4(ext, txChangesBefore, [opMeta1, opMeta2], txChangesAfter, sorobanMeta, [], []);
+      var v4 = XdrTransactionMetaV4(
+        ext,
+        txChangesBefore,
+        [opMeta1, opMeta2],
+        txChangesAfter,
+        sorobanMeta,
+        [],
+        [],
+      );
 
       var original = XdrTransactionMeta(4);
       original.v4 = v4;

@@ -76,8 +76,11 @@ class SEP30RecoveryService {
   /// Creates a SEP30RecoveryService with explicit recovery server address.
   ///
   /// Initializes the service with HTTP client for making SEP-30 API requests.
-  SEP30RecoveryService(this._serviceAddress,
-      {http.Client? httpClient, this.httpRequestHeaders}) {
+  SEP30RecoveryService(
+    this._serviceAddress, {
+    http.Client? httpClient,
+    this.httpRequestHeaders,
+  }) {
     this.httpClient = httpClient ?? http.Client();
   }
 
@@ -102,9 +105,14 @@ class SEP30RecoveryService {
   ///
   /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#post-accountsaddress
   Future<SEP30AccountResponse> registerAccount(
-      String address, SEP30Request request, String jwt) async {
-    Uri requestURI =
-        Util.appendEndpointToUrl(_serviceAddress, 'accounts/$address');
+    String address,
+    SEP30Request request,
+    String jwt,
+  ) async {
+    Uri requestURI = Util.appendEndpointToUrl(
+      _serviceAddress,
+      'accounts/$address',
+    );
     Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwt;
     headers.putIfAbsent("Content-Type", () => "application/json");
@@ -112,28 +120,35 @@ class SEP30RecoveryService {
     SEP30AccountResponse result = await httpClient
         .post(requestURI, body: json.encode(request.toJson()), headers: headers)
         .then((response) {
-      switch (response.statusCode) {
-        case 200:
-          return SEP30AccountResponse.fromJson(json.decode(response.body));
-        case 400:
-          throw SEP30BadRequestResponseException(
-              errorFromResponseBody(response.body));
-        case 401:
-          throw SEP30UnauthorizedResponseException(
-              errorFromResponseBody(response.body));
-        case 404:
-          throw SEP30NotFoundResponseException(
-              errorFromResponseBody(response.body));
-        case 409:
-          throw SEP30ConflictResponseException(
-              errorFromResponseBody(response.body));
-        default:
-          throw new SEP30UnknownResponseException(
-              response.statusCode, response.body);
-      }
-    }).catchError((onError) {
-      throw onError;
-    });
+          switch (response.statusCode) {
+            case 200:
+              return SEP30AccountResponse.fromJson(json.decode(response.body));
+            case 400:
+              throw SEP30BadRequestResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 401:
+              throw SEP30UnauthorizedResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 404:
+              throw SEP30NotFoundResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 409:
+              throw SEP30ConflictResponseException(
+                errorFromResponseBody(response.body),
+              );
+            default:
+              throw new SEP30UnknownResponseException(
+                response.statusCode,
+                response.body,
+              );
+          }
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -159,9 +174,14 @@ class SEP30RecoveryService {
   ///
   /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#put-accountsaddress
   Future<SEP30AccountResponse> updateIdentitiesForAccount(
-      String address, SEP30Request request, String jwt) async {
-    Uri requestURI =
-        Util.appendEndpointToUrl(_serviceAddress, 'accounts/$address');
+    String address,
+    SEP30Request request,
+    String jwt,
+  ) async {
+    Uri requestURI = Util.appendEndpointToUrl(
+      _serviceAddress,
+      'accounts/$address',
+    );
     Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwt;
     headers.putIfAbsent("Content-Type", () => "application/json");
@@ -169,28 +189,35 @@ class SEP30RecoveryService {
     SEP30AccountResponse result = await httpClient
         .put(requestURI, body: json.encode(request.toJson()), headers: headers)
         .then((response) {
-      switch (response.statusCode) {
-        case 200:
-          return SEP30AccountResponse.fromJson(json.decode(response.body));
-        case 400:
-          throw SEP30BadRequestResponseException(
-              errorFromResponseBody(response.body));
-        case 401:
-          throw SEP30UnauthorizedResponseException(
-              errorFromResponseBody(response.body));
-        case 404:
-          throw SEP30NotFoundResponseException(
-              errorFromResponseBody(response.body));
-        case 409:
-          throw SEP30ConflictResponseException(
-              errorFromResponseBody(response.body));
-        default:
-          throw new SEP30UnknownResponseException(
-              response.statusCode, response.body);
-      }
-    }).catchError((onError) {
-      throw onError;
-    });
+          switch (response.statusCode) {
+            case 200:
+              return SEP30AccountResponse.fromJson(json.decode(response.body));
+            case 400:
+              throw SEP30BadRequestResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 401:
+              throw SEP30UnauthorizedResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 404:
+              throw SEP30NotFoundResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 409:
+              throw SEP30ConflictResponseException(
+                errorFromResponseBody(response.body),
+              );
+            default:
+              throw new SEP30UnknownResponseException(
+                response.statusCode,
+                response.body,
+              );
+          }
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -220,40 +247,58 @@ class SEP30RecoveryService {
   /// - [SEP30UnknownResponseException] on other HTTP errors
   ///
   /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#post-accountsaddresssignsigning-address
-  Future<SEP30SignatureResponse> signTransaction(String address,
-      String signingAddress, String transaction, String jwt) async {
+  Future<SEP30SignatureResponse> signTransaction(
+    String address,
+    String signingAddress,
+    String transaction,
+    String jwt,
+  ) async {
     Uri requestURI = Util.appendEndpointToUrl(
-        _serviceAddress, 'accounts/$address/sign/$signingAddress');
+      _serviceAddress,
+      'accounts/$address/sign/$signingAddress',
+    );
     Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwt;
     headers.putIfAbsent("Content-Type", () => "application/json");
 
     SEP30SignatureResponse result = await httpClient
-        .post(requestURI,
-            body: json.encode({"transaction": transaction}), headers: headers)
+        .post(
+          requestURI,
+          body: json.encode({"transaction": transaction}),
+          headers: headers,
+        )
         .then((response) {
-      switch (response.statusCode) {
-        case 200:
-          return SEP30SignatureResponse.fromJson(json.decode(response.body));
-        case 400:
-          throw SEP30BadRequestResponseException(
-              errorFromResponseBody(response.body));
-        case 401:
-          throw SEP30UnauthorizedResponseException(
-              errorFromResponseBody(response.body));
-        case 404:
-          throw SEP30NotFoundResponseException(
-              errorFromResponseBody(response.body));
-        case 409:
-          throw SEP30ConflictResponseException(
-              errorFromResponseBody(response.body));
-        default:
-          throw new SEP30UnknownResponseException(
-              response.statusCode, response.body);
-      }
-    }).catchError((onError) {
-      throw onError;
-    });
+          switch (response.statusCode) {
+            case 200:
+              return SEP30SignatureResponse.fromJson(
+                json.decode(response.body),
+              );
+            case 400:
+              throw SEP30BadRequestResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 401:
+              throw SEP30UnauthorizedResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 404:
+              throw SEP30NotFoundResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 409:
+              throw SEP30ConflictResponseException(
+                errorFromResponseBody(response.body),
+              );
+            default:
+              throw new SEP30UnknownResponseException(
+                response.statusCode,
+                response.body,
+              );
+          }
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -278,37 +323,49 @@ class SEP30RecoveryService {
   ///
   /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#get-accountsaddress
   Future<SEP30AccountResponse> accountDetails(
-      String address, String jwt) async {
-    Uri requestURI =
-        Util.appendEndpointToUrl(_serviceAddress, 'accounts/$address');
+    String address,
+    String jwt,
+  ) async {
+    Uri requestURI = Util.appendEndpointToUrl(
+      _serviceAddress,
+      'accounts/$address',
+    );
     Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwt;
     headers.putIfAbsent("Content-Type", () => "application/json");
 
-    SEP30AccountResponse result =
-        await httpClient.get(requestURI, headers: headers).then((response) {
-      switch (response.statusCode) {
-        case 200:
-          return SEP30AccountResponse.fromJson(json.decode(response.body));
-        case 400:
-          throw SEP30BadRequestResponseException(
-              errorFromResponseBody(response.body));
-        case 401:
-          throw SEP30UnauthorizedResponseException(
-              errorFromResponseBody(response.body));
-        case 404:
-          throw SEP30NotFoundResponseException(
-              errorFromResponseBody(response.body));
-        case 409:
-          throw SEP30ConflictResponseException(
-              errorFromResponseBody(response.body));
-        default:
-          throw new SEP30UnknownResponseException(
-              response.statusCode, response.body);
-      }
-    }).catchError((onError) {
-      throw onError;
-    });
+    SEP30AccountResponse result = await httpClient
+        .get(requestURI, headers: headers)
+        .then((response) {
+          switch (response.statusCode) {
+            case 200:
+              return SEP30AccountResponse.fromJson(json.decode(response.body));
+            case 400:
+              throw SEP30BadRequestResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 401:
+              throw SEP30UnauthorizedResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 404:
+              throw SEP30NotFoundResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 409:
+              throw SEP30ConflictResponseException(
+                errorFromResponseBody(response.body),
+              );
+            default:
+              throw new SEP30UnknownResponseException(
+                response.statusCode,
+                response.body,
+              );
+          }
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -333,36 +390,46 @@ class SEP30RecoveryService {
   ///
   /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#delete-accountsaddress
   Future<SEP30AccountResponse> deleteAccount(String address, String jwt) async {
-    Uri requestURI =
-        Util.appendEndpointToUrl(_serviceAddress, 'accounts/$address');
+    Uri requestURI = Util.appendEndpointToUrl(
+      _serviceAddress,
+      'accounts/$address',
+    );
     Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwt;
     headers.putIfAbsent("Content-Type", () => "application/json");
 
-    SEP30AccountResponse result =
-        await httpClient.delete(requestURI, headers: headers).then((response) {
-      switch (response.statusCode) {
-        case 200:
-          return SEP30AccountResponse.fromJson(json.decode(response.body));
-        case 400:
-          throw SEP30BadRequestResponseException(
-              errorFromResponseBody(response.body));
-        case 401:
-          throw SEP30UnauthorizedResponseException(
-              errorFromResponseBody(response.body));
-        case 404:
-          throw SEP30NotFoundResponseException(
-              errorFromResponseBody(response.body));
-        case 409:
-          throw SEP30ConflictResponseException(
-              errorFromResponseBody(response.body));
-        default:
-          throw new SEP30UnknownResponseException(
-              response.statusCode, response.body);
-      }
-    }).catchError((onError) {
-      throw onError;
-    });
+    SEP30AccountResponse result = await httpClient
+        .delete(requestURI, headers: headers)
+        .then((response) {
+          switch (response.statusCode) {
+            case 200:
+              return SEP30AccountResponse.fromJson(json.decode(response.body));
+            case 400:
+              throw SEP30BadRequestResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 401:
+              throw SEP30UnauthorizedResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 404:
+              throw SEP30NotFoundResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 409:
+              throw SEP30ConflictResponseException(
+                errorFromResponseBody(response.body),
+              );
+            default:
+              throw new SEP30UnknownResponseException(
+                response.statusCode,
+                response.body,
+              );
+          }
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -399,37 +466,47 @@ class SEP30RecoveryService {
   Future<SEP30AccountsResponse> accounts(String jwt, {String? after}) async {
     Uri requestURI = after == null
         ? Util.appendEndpointToUrl(_serviceAddress, 'accounts')
-        : Util.appendEndpointToUrl(_serviceAddress, 'accounts')
-            .replace(queryParameters: {'after': after});
+        : Util.appendEndpointToUrl(
+            _serviceAddress,
+            'accounts',
+          ).replace(queryParameters: {'after': after});
 
     Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers["Authorization"] = "Bearer " + jwt;
     headers.putIfAbsent("Content-Type", () => "application/json");
 
-    SEP30AccountsResponse result =
-        await httpClient.get(requestURI, headers: headers).then((response) {
-      switch (response.statusCode) {
-        case 200:
-          return SEP30AccountsResponse.fromJson(json.decode(response.body));
-        case 400:
-          throw SEP30BadRequestResponseException(
-              errorFromResponseBody(response.body));
-        case 401:
-          throw SEP30UnauthorizedResponseException(
-              errorFromResponseBody(response.body));
-        case 404:
-          throw SEP30NotFoundResponseException(
-              errorFromResponseBody(response.body));
-        case 409:
-          throw SEP30ConflictResponseException(
-              errorFromResponseBody(response.body));
-        default:
-          throw new SEP30UnknownResponseException(
-              response.statusCode, response.body);
-      }
-    }).catchError((onError) {
-      throw onError;
-    });
+    SEP30AccountsResponse result = await httpClient
+        .get(requestURI, headers: headers)
+        .then((response) {
+          switch (response.statusCode) {
+            case 200:
+              return SEP30AccountsResponse.fromJson(json.decode(response.body));
+            case 400:
+              throw SEP30BadRequestResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 401:
+              throw SEP30UnauthorizedResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 404:
+              throw SEP30NotFoundResponseException(
+                errorFromResponseBody(response.body),
+              );
+            case 409:
+              throw SEP30ConflictResponseException(
+                errorFromResponseBody(response.body),
+              );
+            default:
+              throw new SEP30UnknownResponseException(
+                response.statusCode,
+                response.body,
+              );
+          }
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -466,14 +543,13 @@ class SEP30Request {
 
   /// Converts this SEP-30 request to a JSON map.
   Map<String, dynamic> toJson() {
-    List<Map<String, dynamic>> valArr =
-        List<Map<String, dynamic>>.empty(growable: true);
+    List<Map<String, dynamic>> valArr = List<Map<String, dynamic>>.empty(
+      growable: true,
+    );
     for (SEP30RequestIdentity identity in identities) {
       valArr.add(identity.toJson());
     }
-    return {
-      'identities': valArr,
-    };
+    return {'identities': valArr};
   }
 }
 
@@ -505,15 +581,13 @@ class SEP30RequestIdentity {
 
   /// Converts this request identity to a JSON map.
   Map<String, dynamic> toJson() {
-    List<Map<String, dynamic>> valArr =
-        List<Map<String, dynamic>>.empty(growable: true);
+    List<Map<String, dynamic>> valArr = List<Map<String, dynamic>>.empty(
+      growable: true,
+    );
     for (SEP30AuthMethod authMethod in authMethods) {
       valArr.add(authMethod.toJson());
     }
-    return {
-      'role': role,
-      'auth_methods': valArr,
-    };
+    return {'role': role, 'auth_methods': valArr};
   }
 }
 
@@ -547,10 +621,7 @@ class SEP30AuthMethod {
 
   /// Converts this authentication method to a JSON map.
   Map<String, dynamic> toJson() {
-    return {
-      'type': type,
-      'value': value,
-    };
+    return {'type': type, 'value': value};
   }
 }
 
@@ -592,11 +663,14 @@ class SEP30AccountResponse extends Response {
   /// Creates a SEP30AccountResponse from JSON response data.
   factory SEP30AccountResponse.fromJson(Map<String, dynamic> json) =>
       SEP30AccountResponse(
-          json['address'],
-          List<SEP30ResponseIdentity>.from(
-              json['identities'].map((e) => SEP30ResponseIdentity.fromJson(e))),
-          List<SEP30ResponseSigner>.from(
-              json['signers'].map((e) => SEP30ResponseSigner.fromJson(e))));
+        json['address'],
+        List<SEP30ResponseIdentity>.from(
+          json['identities'].map((e) => SEP30ResponseIdentity.fromJson(e)),
+        ),
+        List<SEP30ResponseSigner>.from(
+          json['signers'].map((e) => SEP30ResponseSigner.fromJson(e)),
+        ),
+      );
 }
 
 /// Response containing a list of accounts.
@@ -624,8 +698,11 @@ class SEP30AccountsResponse extends Response {
 
   /// Creates a SEP30AccountsResponse from JSON response data.
   factory SEP30AccountsResponse.fromJson(Map<String, dynamic> json) =>
-      SEP30AccountsResponse(List<SEP30AccountResponse>.from(
-          json['accounts'].map((e) => SEP30AccountResponse.fromJson(e))));
+      SEP30AccountsResponse(
+        List<SEP30AccountResponse>.from(
+          json['accounts'].map((e) => SEP30AccountResponse.fromJson(e)),
+        ),
+      );
 }
 
 /// Signer information for recovery transactions.

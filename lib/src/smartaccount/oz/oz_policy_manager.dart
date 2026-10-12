@@ -120,8 +120,9 @@ final class OZWeightedThresholdPolicyParams extends OZPolicyInstallParams {
       );
     }
 
-    final sortedWeightsEntries =
-        OZPolicyManager.sortMapByKeyXdr(weightsEntries);
+    final sortedWeightsEntries = OZPolicyManager.sortMapByKeyXdr(
+      weightsEntries,
+    );
 
     final topEntries = <XdrSCMapEntry>[
       XdrSCMapEntry(
@@ -136,8 +137,7 @@ final class OZWeightedThresholdPolicyParams extends OZPolicyInstallParams {
     return XdrSCVal.forMap(topEntries);
   }
 
-  static const _weightsEquality =
-      MapEquality<OZSmartAccountSigner, int>();
+  static const _weightsEquality = MapEquality<OZSmartAccountSigner, int>();
 
   @override
   bool operator ==(Object other) {
@@ -154,10 +154,11 @@ final class OZWeightedThresholdPolicyParams extends OZPolicyInstallParams {
     // key order). Folding through a sorted (key.hashCode, value)
     // projection keeps `hashCode` consistent with `==` regardless of
     // iteration order.
-    final folded = signerWeights.entries
-        .map((e) => Object.hash(e.key, e.value))
-        .toList(growable: false)
-      ..sort();
+    final folded =
+        signerWeights.entries
+            .map((e) => Object.hash(e.key, e.value))
+            .toList(growable: false)
+          ..sort();
     return Object.hashAll(<Object?>[threshold, ...folded]);
   }
 }
@@ -239,10 +240,9 @@ final class OZRawPolicyParams extends OZPolicyInstallParams {
   }
 
   @override
-  int get hashCode =>
-      const ListEquality<int>().hash(
-        OZPolicyManager.scValToXdrBytes(installParams),
-      );
+  int get hashCode => const ListEquality<int>().hash(
+    OZPolicyManager.scValToXdrBytes(installParams),
+  );
 }
 
 /// Manager for policy operations on OpenZeppelin smart accounts.
@@ -429,7 +429,12 @@ class OZPolicyManager {
       policyId: policyId,
     );
 
-    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(
+      _kit as OZSmartAccountWalletKitInterface,
+      hostFunction,
+      selectedSigners,
+      forceMethod,
+    );
   }
 
   /// Removes a policy by matching the policy contract [policyAddress].
@@ -531,7 +536,12 @@ class OZPolicyManager {
       installParams: installParams.toScVal(),
     );
 
-    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(
+      _kit as OZSmartAccountWalletKitInterface,
+      hostFunction,
+      selectedSigners,
+      forceMethod,
+    );
   }
 
   // -------------------------------------------------------------------------
@@ -566,10 +576,7 @@ class OZPolicyManager {
       XdrInvokeContractArgs(
         Address.forContractId(contractId).toXdr(),
         'remove_policy',
-        <XdrSCVal>[
-          XdrSCVal.forU32(contextRuleId),
-          XdrSCVal.forU32(policyId),
-        ],
+        <XdrSCVal>[XdrSCVal.forU32(contextRuleId), XdrSCVal.forU32(policyId)],
       ),
     );
   }

@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 600))
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -116,15 +115,16 @@ void main() {
 
   test('sdk-usage: Muxed Accounts', () {
     // Create muxed account from base account + ID
-    MuxedAccount muxedAccount =
-        MuxedAccount(account1.accountId, BigInt.from(123456789));
+    MuxedAccount muxedAccount = MuxedAccount(
+      account1.accountId,
+      BigInt.from(123456789),
+    );
 
     expect(muxedAccount.id, BigInt.from(123456789));
     expect(muxedAccount.ed25519AccountId, account1.accountId);
 
     // Parse existing muxed address
-    MuxedAccount? parsed =
-        MuxedAccount.fromAccountId(muxedAccount.accountId);
+    MuxedAccount? parsed = MuxedAccount.fromAccountId(muxedAccount.accountId);
     expect(parsed, isNotNull);
     expect(parsed!.ed25519AccountId, account1.accountId);
     expect(parsed.id, BigInt.from(123456789));

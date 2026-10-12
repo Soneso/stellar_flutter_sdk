@@ -124,7 +124,16 @@ class WebAuthnCborParser {
   /// - `-1` (crv): `1` (P-256)
   /// - `-2` (x): bstr of length 32 (header only)
   static final Uint8List _coseEs256KeyPrefix = Uint8List.fromList(<int>[
-    0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
+    0xA5,
+    0x01,
+    0x02,
+    0x03,
+    0x26,
+    0x20,
+    0x01,
+    0x21,
+    0x58,
+    0x20,
   ]);
 
   // Attestation object parsing
@@ -152,7 +161,8 @@ class WebAuthnCborParser {
   /// is malformed, empty, not a CBOR map, or does not contain an `"authData"`
   /// key.
   static Uint8List? extractAuthenticatorDataFromAttestation(
-      Uint8List attestationObject) {
+    Uint8List attestationObject,
+  ) {
     if (attestationObject.isEmpty) return null;
 
     var offset = 0;
@@ -424,15 +434,17 @@ class WebAuthnCborParser {
   /// Returns the parsed [AuthenticatorFlags] containing device type and
   /// backup status. Fields are `null` when the flags byte cannot be read.
   static AuthenticatorFlags parseAuthenticatorFlags(
-      Uint8List? authenticatorData) {
+    Uint8List? authenticatorData,
+  ) {
     if (authenticatorData == null || authenticatorData.length <= flagsOffset) {
       return const AuthenticatorFlags(deviceType: null, backedUp: null);
     }
 
     final flags = authenticatorData[flagsOffset] & 0xFF;
 
-    final deviceType =
-        (flags & flagBE) != 0 ? deviceTypeMulti : deviceTypeSingle;
+    final deviceType = (flags & flagBE) != 0
+        ? deviceTypeMulti
+        : deviceTypeSingle;
     final backedUp = (flags & flagBS) != 0;
 
     return AuthenticatorFlags(deviceType: deviceType, backedUp: backedUp);
@@ -483,7 +495,8 @@ class WebAuthnCborParser {
       // Cap the 4-byte length at 0x7FFFFFFF: a value with the high bit set would
       // declare a >2 GiB byte string, far beyond any legitimate WebAuthn payload
       // size and almost certainly malformed or hostile input. Reject defensively.
-      final raw = ((data[offset + 1] & 0xFF) << 24) |
+      final raw =
+          ((data[offset + 1] & 0xFF) << 24) |
           ((data[offset + 2] & 0xFF) << 16) |
           ((data[offset + 3] & 0xFF) << 8) |
           (data[offset + 4] & 0xFF);
@@ -497,7 +510,9 @@ class WebAuthnCborParser {
 
     if (dataStart + length > data.length) return null;
 
-    final bytes = Uint8List.fromList(data.sublist(dataStart, dataStart + length));
+    final bytes = Uint8List.fromList(
+      data.sublist(dataStart, dataStart + length),
+    );
     return (bytes, dataStart + length);
   }
 
@@ -585,7 +600,8 @@ class WebAuthnCborParser {
       );
     } else if (additionalInfo == 26) {
       if (offset + 4 >= data.length) return null;
-      final raw = ((data[offset + 1] & 0xFF) << 24) |
+      final raw =
+          ((data[offset + 1] & 0xFF) << 24) |
           ((data[offset + 2] & 0xFF) << 16) |
           ((data[offset + 3] & 0xFF) << 8) |
           (data[offset + 4] & 0xFF);
@@ -681,10 +697,14 @@ class WebAuthnCborParser {
       case 7:
         // Simple value or float.
         if (additionalInfo <= 23) return offset + 1;
-        if (additionalInfo == 24) return offset + 1 < data.length ? offset + 2 : null;
-        if (additionalInfo == 25) return offset + 2 < data.length ? offset + 3 : null;
-        if (additionalInfo == 26) return offset + 4 < data.length ? offset + 5 : null;
-        if (additionalInfo == 27) return offset + 8 < data.length ? offset + 9 : null;
+        if (additionalInfo == 24)
+          return offset + 1 < data.length ? offset + 2 : null;
+        if (additionalInfo == 25)
+          return offset + 2 < data.length ? offset + 3 : null;
+        if (additionalInfo == 26)
+          return offset + 4 < data.length ? offset + 5 : null;
+        if (additionalInfo == 27)
+          return offset + 8 < data.length ? offset + 9 : null;
         return null;
       default:
         return null;
@@ -711,10 +731,14 @@ class WebAuthnCborParser {
     final additionalInfo = firstByte & 0x1F;
 
     if (additionalInfo < 24) return offset + 1;
-    if (additionalInfo == 24) return offset + 1 < data.length ? offset + 2 : null;
-    if (additionalInfo == 25) return offset + 2 < data.length ? offset + 3 : null;
-    if (additionalInfo == 26) return offset + 4 < data.length ? offset + 5 : null;
-    if (additionalInfo == 27) return offset + 8 < data.length ? offset + 9 : null;
+    if (additionalInfo == 24)
+      return offset + 1 < data.length ? offset + 2 : null;
+    if (additionalInfo == 25)
+      return offset + 2 < data.length ? offset + 3 : null;
+    if (additionalInfo == 26)
+      return offset + 4 < data.length ? offset + 5 : null;
+    if (additionalInfo == 27)
+      return offset + 8 < data.length ? offset + 9 : null;
     return null;
   }
 

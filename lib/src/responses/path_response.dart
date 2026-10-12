@@ -110,16 +110,17 @@ class PathResponse extends Response {
   /// - [path] List of intermediate assets in the payment path
   /// - [links] Hypermedia links to related resources
   PathResponse(
-      this.destinationAmount,
-      this.destinationAssetType,
-      this.destinationAssetCode,
-      this.destinationAssetIssuer,
-      this.sourceAmount,
-      this.sourceAssetType,
-      this.sourceAssetCode,
-      this.sourceAssetIssuer,
-      this.path,
-      this.links);
+    this.destinationAmount,
+    this.destinationAssetType,
+    this.destinationAssetCode,
+    this.destinationAssetIssuer,
+    this.sourceAmount,
+    this.sourceAssetType,
+    this.sourceAssetCode,
+    this.sourceAssetIssuer,
+    this.path,
+    this.links,
+  );
 
   /// The destination asset as an Asset object.
   ///
@@ -129,7 +130,10 @@ class PathResponse extends Response {
     if (destinationAssetType == Asset.TYPE_NATIVE) {
       return AssetTypeNative();
     } else {
-      return Asset.createNonNativeAsset(destinationAssetCode!, destinationAssetIssuer!);
+      return Asset.createNonNativeAsset(
+        destinationAssetCode!,
+        destinationAssetIssuer!,
+      );
     }
   }
 
@@ -146,22 +150,28 @@ class PathResponse extends Response {
   }
 
   /// Constructs a PathResponse from JSON returned by Horizon API.
-  factory PathResponse.fromJson(Map<String, dynamic> json) => PathResponse(
-      json['destination_amount'],
-      json['destination_asset_type'],
-      json['destination_asset_code'],
-      json['destination_asset_issuer'],
-      json['source_amount'],
-      json['source_asset_type'],
-      json['source_asset_code'],
-      json['source_asset_issuer'],
-      json['path'] == null
-          ? []
-          : (json['path'] as List).map((e) => e = Asset.fromJson(e)).toList(),
-      json['_links'] == null ? null : PathResponseLinks.fromJson(json['_links']))
-    ..rateLimitLimit = convertInt(json['rateLimitLimit'])
-    ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
-    ..rateLimitReset = convertInt(json['rateLimitReset']);
+  factory PathResponse.fromJson(Map<String, dynamic> json) =>
+      PathResponse(
+          json['destination_amount'],
+          json['destination_asset_type'],
+          json['destination_asset_code'],
+          json['destination_asset_issuer'],
+          json['source_amount'],
+          json['source_asset_type'],
+          json['source_asset_code'],
+          json['source_asset_issuer'],
+          json['path'] == null
+              ? []
+              : (json['path'] as List)
+                    .map((e) => e = Asset.fromJson(e))
+                    .toList(),
+          json['_links'] == null
+              ? null
+              : PathResponseLinks.fromJson(json['_links']),
+        )
+        ..rateLimitLimit = convertInt(json['rateLimitLimit'])
+        ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
+        ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
 /// Hypermedia links related to this path response.
@@ -183,5 +193,7 @@ class PathResponseLinks {
 
   /// Constructs PathResponseLinks from JSON returned by Horizon API.
   factory PathResponseLinks.fromJson(Map<String, dynamic> json) =>
-      PathResponseLinks(json['self'] == null ? null : Link.fromJson(json['self']));
+      PathResponseLinks(
+        json['self'] == null ? null : Link.fromJson(json['self']),
+      );
 }

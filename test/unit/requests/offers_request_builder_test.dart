@@ -39,7 +39,8 @@ void main() {
     });
 
     group('forAccount', () {
-      final accountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final accountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('sets account segment in URI', () {
         final builder = OffersRequestBuilder(mockClient, serverUri);
@@ -71,7 +72,8 @@ void main() {
     });
 
     group('forSeller', () {
-      final sellerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final sellerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds seller query parameter', () {
         final builder = OffersRequestBuilder(mockClient, serverUri);
@@ -103,7 +105,8 @@ void main() {
     });
 
     group('forBuyingAsset', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds buying asset parameters for AlphaNum4', () {
         final builder = OffersRequestBuilder(mockClient, serverUri);
@@ -111,9 +114,15 @@ void main() {
         builder.forBuyingAsset(asset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['buying_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['buying_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['buying_asset_code'], equals('USD'));
-        expect(uri.queryParameters['buying_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['buying_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds buying asset parameters for AlphaNum12', () {
@@ -122,9 +131,15 @@ void main() {
         builder.forBuyingAsset(asset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['buying_asset_type'], equals('credit_alphanum12'));
+        expect(
+          uri.queryParameters['buying_asset_type'],
+          equals('credit_alphanum12'),
+        );
         expect(uri.queryParameters['buying_asset_code'], equals('LONGASSET'));
-        expect(uri.queryParameters['buying_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['buying_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds buying asset parameters for native asset', () {
@@ -147,7 +162,8 @@ void main() {
     });
 
     group('forSellingAsset', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds selling asset parameters for AlphaNum4', () {
         final builder = OffersRequestBuilder(mockClient, serverUri);
@@ -155,9 +171,15 @@ void main() {
         builder.forSellingAsset(asset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['selling_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['selling_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['selling_asset_code'], equals('EUR'));
-        expect(uri.queryParameters['selling_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['selling_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds selling asset parameters for native asset', () {
@@ -181,7 +203,8 @@ void main() {
     });
 
     group('forSponsor', () {
-      final sponsorAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final sponsorAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds sponsor query parameter', () {
         final builder = OffersRequestBuilder(mockClient, serverUri);
@@ -199,7 +222,8 @@ void main() {
       });
 
       test('can be combined with other filters', () {
-        final sellerAccountId = 'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
+        final sellerAccountId =
+            'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
         final builder = OffersRequestBuilder(mockClient, serverUri);
         builder
           ..forSeller(sellerAccountId)
@@ -240,7 +264,8 @@ void main() {
     });
 
     group('buildUri with combinations', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('builds URI with buying and selling assets', () {
         final builder = OffersRequestBuilder(mockClient, serverUri);
@@ -260,8 +285,10 @@ void main() {
       });
 
       test('builds URI with seller and sponsor', () {
-        final sellerAccountId = 'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
-        final sponsorAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+        final sellerAccountId =
+            'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
+        final sponsorAccountId =
+            'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
         final builder = OffersRequestBuilder(mockClient, serverUri);
         builder
           ..forSeller(sellerAccountId)
@@ -362,7 +389,10 @@ void main() {
 
       test('handles HTTP errors gracefully', () async {
         final client = MockClient((request) async {
-          return http.Response('{"type": "not_found", "title": "Resource Missing"}', 404);
+          return http.Response(
+            '{"type": "not_found", "title": "Resource Missing"}',
+            404,
+          );
         });
 
         final builder = OffersRequestBuilder(client, serverUri);
@@ -373,14 +403,20 @@ void main() {
 
     group('requestExecute static method', () {
       test('executes request for custom URI', () async {
-        final mockResponse = '{"_embedded": {"records": []}, "_links": {"self": {"href": "test"}}}';
+        final mockResponse =
+            '{"_embedded": {"records": []}, "_links": {"self": {"href": "test"}}}';
         final client = MockClient((request) async {
           expect(request.url.toString(), contains('/offers'));
           return http.Response(mockResponse, 200);
         });
 
-        final customUri = Uri.parse('https://horizon-testnet.stellar.org/offers?cursor=test');
-        final page = await OffersRequestBuilder.requestExecute(client, customUri);
+        final customUri = Uri.parse(
+          'https://horizon-testnet.stellar.org/offers?cursor=test',
+        );
+        final page = await OffersRequestBuilder.requestExecute(
+          client,
+          customUri,
+        );
 
         expect(page, isNotNull);
         expect(page.records, isEmpty);

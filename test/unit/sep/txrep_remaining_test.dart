@@ -11,16 +11,19 @@ void main() {
 
     setUp(() {
       sourceKeyPair = KeyPair.fromSecretSeed(
-          'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+      );
       sourceAccountId = sourceKeyPair.accountId;
       destinationKeyPair = KeyPair.fromSecretSeed(
-          'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
+        'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+      );
       destinationAccountId = destinationKeyPair.accountId;
     });
 
     group('Error Handling Tests', () {
       test('fromTxRep throws on invalid feeBump.tx.fee parse error', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX_FEE_BUMP
 feeBump.tx.feeSource: $sourceAccountId
 feeBump.tx.fee: not_a_number
@@ -36,12 +39,15 @@ feeBump.tx.innerTx.signatures.len: 0
 feeBump.tx.ext.v: 0
 feeBump.signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('fromTxRep throws on invalid tx.fee parse error', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: invalid_fee
@@ -52,12 +58,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('fromTxRep throws on invalid extraSigners with bad prefix', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -75,12 +84,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('fromTxRep throws on invalid timeBounds values', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -94,12 +106,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('fromTxRep throws on timeBounds present but incomplete', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -111,12 +126,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid ledgerBounds values', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -135,12 +153,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('fromTxRep throws on ledgerBounds present but incomplete', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -157,12 +178,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('fromTxRep throws on missing signature hint', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -174,12 +198,15 @@ tx.ext.v: 0
 signatures.len: 1
 signatures[0].signature: 1234567890abcdef
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on missing signature value', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -191,12 +218,15 @@ tx.ext.v: 0
 signatures.len: 1
 signatures[0].hint: 12345678
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid hex in signature hint', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -209,8 +239,10 @@ signatures.len: 1
 signatures[0].hint: not_hex_value
 signatures[0].signature: 1234567890abcdef
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
     });
 
@@ -224,13 +256,17 @@ signatures[0].signature: 1234567890abcdef
       });
 
       test('Signed payload signer type exists', () {
-        expect(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD.value, 3);
+        expect(
+          XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD.value,
+          3,
+        );
       });
     });
 
     group('Operation Coverage - RestoreFootprint', () {
       test('fromTxRep parses RESTORE_FOOTPRINT operation', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -251,7 +287,8 @@ signatures.len: 0
       });
 
       test('fromTxRep parses RESTORE_FOOTPRINT with source account', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -274,12 +311,15 @@ signatures.len: 0
       });
 
       test('toTxRep converts RESTORE_FOOTPRINT operation', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final operation = RestoreFootprintOperation();
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -291,7 +331,8 @@ signatures.len: 0
 
     group('Operation Coverage - ExtendFootprintTTL', () {
       test('fromTxRep parses EXTEND_FOOTPRINT_TTL operation', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -314,7 +355,8 @@ signatures.len: 0
       });
 
       test('fromTxRep parses EXTEND_FOOTPRINT_TTL with source account', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -339,12 +381,15 @@ signatures.len: 0
       });
 
       test('toTxRep converts EXTEND_FOOTPRINT_TTL operation', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final operation = ExtendFootprintTTLOperation(100000);
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -361,8 +406,14 @@ signatures.len: 0
         for (int i = 0; i < 32; i++) {
           contractIdBytes[i] = i;
         }
-        final contractId = StrKey.encodeContractIdHex(Util.bytesToHex(contractIdBytes));
-        final function = InvokeContractHostFunction(contractId, 'test', arguments: []);
+        final contractId = StrKey.encodeContractIdHex(
+          Util.bytesToHex(contractIdBytes),
+        );
+        final function = InvokeContractHostFunction(
+          contractId,
+          'test',
+          arguments: [],
+        );
         final operation = InvokeHostFunctionOperation(function);
 
         expect(operation, isNotNull);
@@ -373,7 +424,8 @@ signatures.len: 0
 
     group('Soroban Credentials Coverage', () {
       test('SOROBAN_CREDENTIALS_SOURCE_ACCOUNT type exists', () {
-        final credType = XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT;
+        final credType =
+            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT;
         expect(credType.value, 0);
       });
 
@@ -387,7 +439,10 @@ signatures.len: 0
       test('SC_ADDRESS_TYPE_ACCOUNT exists', () {
         final address = Address.forAccountId(sourceAccountId);
         final scAddress = address.toXdr();
-        expect(scAddress.discriminant, XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT);
+        expect(
+          scAddress.discriminant,
+          XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT,
+        );
       });
 
       test('SC_ADDRESS_TYPE_CONTRACT exists', () {
@@ -395,17 +450,30 @@ signatures.len: 0
         for (int i = 0; i < 32; i++) {
           contractIdBytes[i] = i;
         }
-        final contractId = StrKey.encodeContractIdHex(Util.bytesToHex(contractIdBytes));
+        final contractId = StrKey.encodeContractIdHex(
+          Util.bytesToHex(contractIdBytes),
+        );
         final address = Address.forContractId(contractId);
         final scAddress = address.toXdr();
-        expect(scAddress.discriminant, XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
+        expect(
+          scAddress.discriminant,
+          XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT,
+        );
       });
 
       test('SC_ADDRESS_TYPE_MUXED_ACCOUNT exists', () {
-        final muxedAccount = MuxedAccount(sourceAccountId, BigInt.from(1234567890));
-        final scAddress = Address.forMuxedAccountId(muxedAccount.accountId).toXdr();
+        final muxedAccount = MuxedAccount(
+          sourceAccountId,
+          BigInt.from(1234567890),
+        );
+        final scAddress = Address.forMuxedAccountId(
+          muxedAccount.accountId,
+        ).toXdr();
 
-        expect(scAddress.discriminant, XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT);
+        expect(
+          scAddress.discriminant,
+          XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT,
+        );
       });
 
       test('SC_ADDRESS_TYPE_CLAIMABLE_BALANCE type value exists', () {
@@ -446,38 +514,79 @@ signatures.len: 0
 
     group('ContractExecutable Coverage', () {
       test('toTxRep converts CONTRACT_EXECUTABLE_WASM', () {
-        final executableType = XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM;
+        final executableType =
+            XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM;
         expect(executableType.value, 0);
       });
 
       test('toTxRep converts CONTRACT_EXECUTABLE_STELLAR_ASSET', () {
-        final executableType = XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET;
+        final executableType =
+            XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET;
         expect(executableType.value, 1);
       });
     });
 
     group('ConfigSettingID Coverage', () {
       test('ConfigSettingID enum values exist', () {
-        expect(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES.value, 0);
+        expect(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES.value,
+          0,
+        );
         expect(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0.value, 1);
-        expect(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0.value, 2);
-        expect(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0.value, 3);
+        expect(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0.value,
+          2,
+        );
+        expect(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0.value,
+          3,
+        );
         expect(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0.value, 4);
-        expect(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0.value, 5);
-        expect(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS.value, 6);
-        expect(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES.value, 7);
-        expect(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES.value, 8);
-        expect(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES.value, 9);
+        expect(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0.value,
+          5,
+        );
+        expect(
+          XdrConfigSettingID
+              .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS
+              .value,
+          6,
+        );
+        expect(
+          XdrConfigSettingID
+              .CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES
+              .value,
+          7,
+        );
+        expect(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES.value,
+          8,
+        );
+        expect(
+          XdrConfigSettingID
+              .CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES
+              .value,
+          9,
+        );
         expect(XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL.value, 10);
-        expect(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES.value, 11);
-        expect(XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW.value, 12);
+        expect(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES.value,
+          11,
+        );
+        expect(
+          XdrConfigSettingID
+              .CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW
+              .value,
+          12,
+        );
         expect(XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR.value, 13);
       });
     });
 
     group('Unknown Operation Type Error', () {
       test('fromTxRep throws on unknown operation type', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -490,8 +599,10 @@ tx.operations[0].body.type: UNKNOWN_OPERATION_TYPE
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
     });
 
@@ -502,8 +613,11 @@ signatures.len: 0
     });
 
     group('ClaimPredicate Not Predicate Coverage', () {
-      test('fromTxRep parses ClaimPredicate with NOT and present predicate', () {
-        final txRep = '''
+      test(
+        'fromTxRep parses ClaimPredicate with NOT and present predicate',
+        () {
+          final txRep =
+              '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -524,16 +638,18 @@ tx.operations[0].body.createClaimableBalanceOp.claimants[0].v0.predicate.notPred
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        final envelope = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
-        expect(envelope, isNotEmpty);
+          final envelope = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+          expect(envelope, isNotEmpty);
 
-        final roundTrip = TxRep.fromTransactionEnvelopeXdrBase64(envelope);
-        expect(roundTrip, contains('CLAIM_PREDICATE_NOT'));
-        expect(roundTrip, contains('notPredicate._present: true'));
-      });
+          final roundTrip = TxRep.fromTransactionEnvelopeXdrBase64(envelope);
+          expect(roundTrip, contains('CLAIM_PREDICATE_NOT'));
+          expect(roundTrip, contains('notPredicate._present: true'));
+        },
+      );
 
       test('fromTxRep parses ClaimPredicate with NOT and absent predicate', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -562,7 +678,10 @@ signatures.len: 0
 
     group('Empty Signatures Coverage', () {
       test('toTxRep handles null signatures list', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final destination = MuxedAccount.fromAccountId(destinationAccountId)!;
         final transaction = TransactionBuilder(sourceAccount)
             .addOperation(PaymentOperation(destination, Asset.NATIVE, '10'))
@@ -577,10 +696,15 @@ signatures.len: 0
 
     group('Amount Conversion Coverage', () {
       test('_toAmount and _fromAmount handle various amounts correctly', () {
-        final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final destination = MuxedAccount.fromAccountId(destinationAccountId)!;
         final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(PaymentOperation(destination, Asset.NATIVE, '123.4567890'))
+            .addOperation(
+              PaymentOperation(destination, Asset.NATIVE, '123.4567890'),
+            )
             .build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);

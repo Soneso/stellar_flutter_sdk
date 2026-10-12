@@ -9,7 +9,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 void main() {
   group('XDR Trustline - Factory Methods & Setters', () {
     test('XdrTrustLineEntry encode/decode with forAccountId factory', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var accountId = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       var asset = XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_NATIVE);
       var ext = XdrTrustLineEntryExt(0);
 
@@ -63,11 +65,16 @@ void main() {
     });
 
     test('XdrOfferEntryFlags toString', () {
-      expect(XdrOfferEntryFlags.PASSIVE_FLAG.toString(), contains('OfferEntryFlags'));
+      expect(
+        XdrOfferEntryFlags.PASSIVE_FLAG.toString(),
+        contains('OfferEntryFlags'),
+      );
     });
 
     test('XdrManageOfferSuccessResult with multiple offersClaimed', () {
-      var sellerId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var sellerId = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       var asset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
 
       var claimAtom1 = XdrClaimOfferAtom(
@@ -109,14 +116,22 @@ void main() {
       var decoded = XdrManageOfferSuccessResult.decode(input);
 
       expect(decoded.offersClaimed.length, equals(2));
-      expect(decoded.offersClaimed[0].orderBook!.offerID.uint64, equals(BigInt.from(111)));
-      expect(decoded.offersClaimed[1].orderBook!.offerID.uint64, equals(BigInt.from(222)));
+      expect(
+        decoded.offersClaimed[0].orderBook!.offerID.uint64,
+        equals(BigInt.from(111)),
+      );
+      expect(
+        decoded.offersClaimed[1].orderBook!.offerID.uint64,
+        equals(BigInt.from(222)),
+      );
     });
   });
 
   group('XDR Payment - Complex Constructions', () {
     test('XdrPathPaymentResultSuccess with multiple offers', () {
-      var sellerId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var sellerId = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       var asset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
 
       var claimAtom = XdrClaimOfferAtom(

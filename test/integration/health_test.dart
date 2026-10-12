@@ -44,15 +44,23 @@ void main() {
 
     test('test health response isHealthy property', () async {
       // Test various combinations
-      String healthyJson = '{"database_connected": true, "core_up": true, "core_synced": true}';
-      String dbDownJson = '{"database_connected": false, "core_up": true, "core_synced": true}';
-      String coreDownJson = '{"database_connected": true, "core_up": false, "core_synced": true}';
-      String notSyncedJson = '{"database_connected": true, "core_up": true, "core_synced": false}';
+      String healthyJson =
+          '{"database_connected": true, "core_up": true, "core_synced": true}';
+      String dbDownJson =
+          '{"database_connected": false, "core_up": true, "core_synced": true}';
+      String coreDownJson =
+          '{"database_connected": true, "core_up": false, "core_synced": true}';
+      String notSyncedJson =
+          '{"database_connected": true, "core_up": true, "core_synced": false}';
 
       final healthyResponse = HealthResponse.fromJson(json.decode(healthyJson));
       final dbDownResponse = HealthResponse.fromJson(json.decode(dbDownJson));
-      final coreDownResponse = HealthResponse.fromJson(json.decode(coreDownJson));
-      final notSyncedResponse = HealthResponse.fromJson(json.decode(notSyncedJson));
+      final coreDownResponse = HealthResponse.fromJson(
+        json.decode(coreDownJson),
+      );
+      final notSyncedResponse = HealthResponse.fromJson(
+        json.decode(notSyncedJson),
+      );
 
       expect(healthyResponse.isHealthy, true);
       expect(dbDownResponse.isHealthy, false);
@@ -125,7 +133,10 @@ void main() {
       final mockClient = MockClient((request) async {
         // Verify the complete URL
         expect(request.url.toString(), 'https://horizon.stellar.org/health');
-        return http.Response('{"database_connected": true, "core_up": true, "core_synced": true}', 200);
+        return http.Response(
+          '{"database_connected": true, "core_up": true, "core_synced": true}',
+          200,
+        );
       });
 
       final builder = HealthRequestBuilder(mockClient, serverURI);
@@ -137,7 +148,10 @@ void main() {
     test('test health endpoint integration with StellarSDK', () async {
       // Test that the health getter is properly exposed in StellarSDK
       final mockClient = MockClient((request) async {
-        return http.Response('{"database_connected": true, "core_up": true, "core_synced": true}', 200);
+        return http.Response(
+          '{"database_connected": true, "core_up": true, "core_synced": true}',
+          200,
+        );
       });
 
       final sdk = StellarSDK.PUBLIC;
@@ -262,7 +276,10 @@ void main() {
         expect(request.url.host, 'custom-horizon.example.com');
         expect(request.url.path, '/health');
 
-        return http.Response('{"database_connected": true, "core_up": true, "core_synced": true}', 200);
+        return http.Response(
+          '{"database_connected": true, "core_up": true, "core_synced": true}',
+          200,
+        );
       });
 
       final sdk = StellarSDK('https://custom-horizon.example.com');
@@ -293,21 +310,25 @@ void main() {
   });
 
   group('Health real server tests', () {
-    test('test health endpoint with real PUBLIC network', skip: false, () async {
-      final sdk = StellarSDK.PUBLIC;
+    test(
+      'test health endpoint with real PUBLIC network',
+      skip: false,
+      () async {
+        final sdk = StellarSDK.PUBLIC;
 
-      final response = await sdk.health.execute();
+        final response = await sdk.health.execute();
 
-      expect(response, isNotNull);
-      expect(response.databaseConnected, isA<bool>());
-      expect(response.coreUp, isA<bool>());
-      expect(response.coreSynced, isA<bool>());
+        expect(response, isNotNull);
+        expect(response.databaseConnected, isA<bool>());
+        expect(response.coreUp, isA<bool>());
+        expect(response.coreSynced, isA<bool>());
 
-      print('Health status: ${response.isHealthy}');
-      print('Database connected: ${response.databaseConnected}');
-      print('Core up: ${response.coreUp}');
-      print('Core synced: ${response.coreSynced}');
-    });
+        print('Health status: ${response.isHealthy}');
+        print('Database connected: ${response.databaseConnected}');
+        print('Core up: ${response.coreUp}');
+        print('Core synced: ${response.coreSynced}');
+      },
+    );
 
     test('test health endpoint with real TESTNET', skip: false, () async {
       final sdk = StellarSDK.TESTNET;

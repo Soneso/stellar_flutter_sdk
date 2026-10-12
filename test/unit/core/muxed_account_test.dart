@@ -3,8 +3,10 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   group('MuxedAccount', () {
-    final testAccountId = 'GAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSTVY';
-    final testMuxedAccountId = 'MAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSAAAAAAAAAAE2LP26';
+    final testAccountId =
+        'GAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSTVY';
+    final testMuxedAccountId =
+        'MAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSAAAAAAAAAAE2LP26';
     final testMuxedId = BigInt.from(1234);
 
     group('MuxedAccount creation', () {
@@ -63,7 +65,9 @@ void main() {
       });
 
       test('returns null for account ID with wrong prefix', () {
-        final account = MuxedAccount.fromAccountId('X' + testAccountId.substring(1));
+        final account = MuxedAccount.fromAccountId(
+          'X' + testAccountId.substring(1),
+        );
 
         expect(account, isNull);
       });
@@ -122,7 +126,10 @@ void main() {
         final account = MuxedAccount(testAccountId, id);
         final xdr = account.toXdr();
 
-        expect(xdr.discriminant, equals(XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519));
+        expect(
+          xdr.discriminant,
+          equals(XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519),
+        );
       });
     });
 

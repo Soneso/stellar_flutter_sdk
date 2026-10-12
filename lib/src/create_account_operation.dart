@@ -72,10 +72,12 @@ class CreateAccountOperation extends Operation {
   /// Returns: XDR OperationBody for this create account operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrAccountID xDestination =
-        XdrAccountID(KeyPair.fromAccountId(this.destination).xdrPublicKey);
-    XdrInt64 startingBalance =
-    XdrInt64(Util.decimalStringToStroops(this.startingBalance));
+    XdrAccountID xDestination = XdrAccountID(
+      KeyPair.fromAccountId(this.destination).xdrPublicKey,
+    );
+    XdrInt64 startingBalance = XdrInt64(
+      Util.decimalStringToStroops(this.startingBalance),
+    );
 
     XdrOperationBody body = XdrOperationBody(XdrOperationType.CREATE_ACCOUNT);
     body.createAccountOp = XdrCreateAccountOp(xDestination, startingBalance);
@@ -90,8 +92,9 @@ class CreateAccountOperation extends Operation {
   /// Returns: Builder configured with XDR operation data.
   static CreateAccountOperationBuilder builder(XdrCreateAccountOp op) {
     return CreateAccountOperationBuilder(
-        KeyPair.fromXdrPublicKey(op.destination.accountID).accountId,
-        Util.stroopsToDecimalString(op.startingBalance.int64));
+      KeyPair.fromXdrPublicKey(op.destination.accountID).accountId,
+      Util.stroopsToDecimalString(op.startingBalance.int64),
+    );
   }
 }
 
@@ -123,8 +126,10 @@ class CreateAccountOperationBuilder
   ///
   /// Returns: Configured CreateAccountOperation instance.
   CreateAccountOperation build() {
-    CreateAccountOperation operation =
-        CreateAccountOperation(_destination, _startingBalance);
+    CreateAccountOperation operation = CreateAccountOperation(
+      _destination,
+      _startingBalance,
+    );
     return applySourceAccount(operation);
   }
 }

@@ -33,7 +33,14 @@ void main() {
       final cred = OZStoredCredential(
         credentialId: 'integration-real-idb-1',
         publicKey: Uint8List.fromList(<int>[
-          0x04, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48,
+          0x04,
+          0x42,
+          0x43,
+          0x44,
+          0x45,
+          0x46,
+          0x47,
+          0x48,
         ]),
       );
       await adapter.save(cred);

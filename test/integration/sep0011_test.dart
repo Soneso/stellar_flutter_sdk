@@ -126,8 +126,9 @@ signatures[0].signature: c52a9c15a60a9b7281cb9e932e0eb1ffbe9a759b6cc242eeb08dda8
 
     String transactionEnvelopeXdrBase64 =
         TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
-    String txRepRes =
-        TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
+    String txRepRes = TxRep.fromTransactionEnvelopeXdrBase64(
+      transactionEnvelopeXdrBase64,
+    );
     assert(txRepRes == txRep);
   });
 
@@ -511,8 +512,9 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
 
     String transactionEnvelopeXdrBase64 =
         TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
-    String txRepRes =
-        TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
+    String txRepRes = TxRep.fromTransactionEnvelopeXdrBase64(
+      transactionEnvelopeXdrBase64,
+    );
     assert(txRepRes == txRepWithoutComments);
   });
 
@@ -532,20 +534,23 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
     String accountBId = keyPairB.accountId;
 
     Operation createAccount = new CreateAccountOperationBuilder(
-            accountBId, "922337203685.4775807")
-        .build();
-    Operation payment = new PaymentOperationBuilder(accountBId, Asset.NATIVE,
-            "802337203685.123333")
-        .setSourceAccount(accountAId)
-        .build();
+      accountBId,
+      "922337203685.4775807",
+    ).build();
+    Operation payment = new PaymentOperationBuilder(
+      accountBId,
+      Asset.NATIVE,
+      "802337203685.123333",
+    ).setSourceAccount(accountAId).build();
     Asset nonNativeAsset = AssetTypeCreditAlphaNum4(
-        "USD", "GAZFEVBSEGJJ63WPVVIWXLZLWN2JYZECECGT6GUNP4FJDVZVNXWQWMYI");
+      "USD",
+      "GAZFEVBSEGJJ63WPVVIWXLZLWN2JYZECECGT6GUNP4FJDVZVNXWQWMYI",
+    );
     Operation nonNativePayment = new PaymentOperationBuilder(
-            accountBId,
-            nonNativeAsset,
-            "802337203685.123333")
-        .setSourceAccount(accountAId)
-        .build();
+      accountBId,
+      nonNativeAsset,
+      "802337203685.123333",
+    ).setSourceAccount(accountAId).build();
 
     Asset iomAsset = AssetTypeCreditAlphaNum4("IOM", keyPairA.accountId);
     Asset ecoAsset = AssetTypeCreditAlphaNum4("ECO", keyPairA.accountId);
@@ -554,42 +559,63 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
     List<Asset> path = [ecoAsset, astroAsset];
     PathPaymentStrictReceiveOperation strictReceive =
         PathPaymentStrictReceiveOperationBuilder(
-                iomAsset, "2", accountBId, moonAsset, "8")
-            .setPath(path)
-            .build();
+          iomAsset,
+          "2",
+          accountBId,
+          moonAsset,
+          "8",
+        ).setPath(path).build();
 
     PathPaymentStrictSendOperation strictSend =
         PathPaymentStrictSendOperationBuilder(
-                iomAsset, "400", accountBId, moonAsset, "1200")
-            .setPath(path)
-            .build();
+          iomAsset,
+          "400",
+          accountBId,
+          moonAsset,
+          "1200",
+        ).setPath(path).build();
 
     ManageSellOfferOperation manageSellOfferOperation =
-        ManageSellOfferOperationBuilder(ecoAsset, Asset.NATIVE, "8282", '0.7')
-            .setOfferId('9298298398333')
-            .build();
+        ManageSellOfferOperationBuilder(
+          ecoAsset,
+          Asset.NATIVE,
+          "8282",
+          '0.7',
+        ).setOfferId('9298298398333').build();
     ManageBuyOfferOperation manageBuyOfferOperation =
-        ManageBuyOfferOperationBuilder(moonAsset, ecoAsset, "12", '0.2')
-            .setOfferId('9298298398334')
-            .build();
+        ManageBuyOfferOperationBuilder(
+          moonAsset,
+          ecoAsset,
+          "12",
+          '0.2',
+        ).setOfferId('9298298398334').build();
 
     CreatePassiveSellOfferOperation createPassiveSellOfferOperation =
         CreatePassiveSellOfferOperationBuilder(
-                astroAsset, moonAsset, "2828", '0.5')
-            .build();
+          astroAsset,
+          moonAsset,
+          "2828",
+          '0.5',
+        ).build();
 
     String limit = "10000";
-    ChangeTrustOperation changeTrustOperation =
-        ChangeTrustOperationBuilder(astroAsset, limit).build();
+    ChangeTrustOperation changeTrustOperation = ChangeTrustOperationBuilder(
+      astroAsset,
+      limit,
+    ).build();
 
-    AllowTrustOperation allowTrustOperation =
-        AllowTrustOperationBuilder(accountBId, "MOON", 1).build();
+    AllowTrustOperation allowTrustOperation = AllowTrustOperationBuilder(
+      accountBId,
+      "MOON",
+      1,
+    ).build();
 
     TimeBounds tb = TimeBounds(1595282368, 1595284000);
     MemoText mt = MemoText("Enjoy this transaction");
 
-    XdrSignerKey signer =
-        XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+    XdrSignerKey signer = XdrSignerKey(
+      XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519,
+    );
     signer.ed25519 = XdrUint256(StrKey.decodeStellarAccountId(accountBId));
 
     SetOptionsOperation setOptionsOperation = SetOptionsOperationBuilder()
@@ -606,8 +632,8 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
 
     AccountMergeOperation accountMergeOperation =
         AccountMergeOperationBuilder.forMuxedDestinationAccount(
-                MuxedAccount(accountBId, BigInt.from(1010011222)))
-            .build();
+          MuxedAccount(accountBId, BigInt.from(1010011222)),
+        ).build();
 
     String key = "Sommer";
     String value = "Die Möbel sind heiß!";
@@ -615,11 +641,14 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
     List<int> list = value.codeUnits;
     Uint8List valueBytes = Uint8List.fromList(list);
 
-    ManageDataOperation manageDataOperation =
-        ManageDataOperationBuilder(key, valueBytes).build();
+    ManageDataOperation manageDataOperation = ManageDataOperationBuilder(
+      key,
+      valueBytes,
+    ).build();
 
-    BumpSequenceOperation bumpSequenceOperation =
-        BumpSequenceOperationBuilder(a.sequenceNumber + BigInt.from(10)).build();
+    BumpSequenceOperation bumpSequenceOperation = BumpSequenceOperationBuilder(
+      a.sequenceNumber + BigInt.from(10),
+    ).build();
 
     Transaction transaction = new TransactionBuilder(a)
         .addTimeBounds(tb)
@@ -644,20 +673,24 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
 
     KeyPair keyPairC = KeyPair.random();
     FeeBumpTransaction feeBump = FeeBumpTransactionBuilder(transaction)
-        .setMuxedFeeAccount(MuxedAccount(keyPairC.accountId, BigInt.from(110000)))
+        .setMuxedFeeAccount(
+          MuxedAccount(keyPairC.accountId, BigInt.from(110000)),
+        )
         .setBaseFee(101)
         .build();
     feeBump.sign(keyPairC, Network.TESTNET);
     String transactionEnvelopeXdrBase64 = feeBump.toEnvelopeXdrBase64();
     print(transactionEnvelopeXdrBase64);
-    String txrep =
-        TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
+    String txrep = TxRep.fromTransactionEnvelopeXdrBase64(
+      transactionEnvelopeXdrBase64,
+    );
     print(txrep);
     print('----------------');
     transactionEnvelopeXdrBase64 = transaction.toEnvelopeXdrBase64();
     print(transactionEnvelopeXdrBase64);
-    txrep =
-        TxRep.fromTransactionEnvelopeXdrBase64(transactionEnvelopeXdrBase64);
+    txrep = TxRep.fromTransactionEnvelopeXdrBase64(
+      transactionEnvelopeXdrBase64,
+    );
     print(txrep);
   });
 
@@ -1088,7 +1121,5 @@ signatures[0].signature: bd33b8de6ca4354d653329e4cfd2f012a3c155c816bca8275721bd8
     //print(txRep);
     xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
     assert(deploySacWithAssetXdr == xdr);
-
   });
-
 }

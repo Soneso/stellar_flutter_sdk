@@ -25,10 +25,8 @@ Uint8List _bytes(int n, [int seed = 0]) {
 OZDelegatedSigner _del([String addr = kValidGAddress]) =>
     OZDelegatedSigner(addr);
 
-OZExternalSigner _ext({int seed = 1}) => OZExternalSigner(
-      kValidContractId,
-      _bytes(32, seed),
-    );
+OZExternalSigner _ext({int seed = 1}) =>
+    OZExternalSigner(kValidContractId, _bytes(32, seed));
 
 void main() {
   group('OZSmartAccountAuthPayload data class', () {
@@ -163,9 +161,7 @@ void main() {
       final scVal = XdrSCVal.forMap([
         XdrSCMapEntry(
           XdrSCVal.forSymbol('signers'),
-          XdrSCVal.forMap([
-            XdrSCMapEntry(s.toScVal(), XdrSCVal.forU32(7)),
-          ]),
+          XdrSCVal.forMap([XdrSCMapEntry(s.toScVal(), XdrSCVal.forU32(7))]),
         ),
       ]);
       expect(
@@ -176,10 +172,7 @@ void main() {
 
     test('testRead_unknownKeysAreIgnored', () {
       final scVal = XdrSCVal.forMap([
-        XdrSCMapEntry(
-          XdrSCVal.forSymbol('unknown_key'),
-          XdrSCVal.forU32(123),
-        ),
+        XdrSCMapEntry(XdrSCVal.forSymbol('unknown_key'), XdrSCVal.forU32(123)),
       ]);
       final out = OZSmartAccountAuthPayloadCodec.read(scVal);
       expect(out.signers, isEmpty);
@@ -219,10 +212,7 @@ void main() {
 
     test('testRead_signersNotMapIsIgnored', () {
       final scVal = XdrSCVal.forMap([
-        XdrSCMapEntry(
-          XdrSCVal.forSymbol('signers'),
-          XdrSCVal.forU32(7),
-        ),
+        XdrSCMapEntry(XdrSCVal.forSymbol('signers'), XdrSCVal.forU32(7)),
       ]);
       final out = OZSmartAccountAuthPayloadCodec.read(scVal);
       expect(out.signers, isEmpty);
@@ -243,10 +233,7 @@ void main() {
       final scVal = XdrSCVal.forMap([
         XdrSCMapEntry(
           XdrSCVal.forSymbol('context_rule_ids'),
-          XdrSCVal.forVec([
-            XdrSCVal.forU32(0),
-            XdrSCVal.forU32(0xFFFFFFFF),
-          ]),
+          XdrSCVal.forVec([XdrSCVal.forU32(0), XdrSCVal.forU32(0xFFFFFFFF)]),
         ),
       ]);
       final out = OZSmartAccountAuthPayloadCodec.read(scVal);
@@ -319,11 +306,17 @@ void main() {
       final s1 = _del(kValidGAddress);
       final s2 = _del(kValidGAddress2);
       final p1 = OZSmartAccountAuthPayload(
-        signers: <OZSmartAccountSigner, Uint8List>{s1: _bytes(4), s2: _bytes(8)},
+        signers: <OZSmartAccountSigner, Uint8List>{
+          s1: _bytes(4),
+          s2: _bytes(8),
+        },
         contextRuleIds: const <int>[],
       );
       final p2 = OZSmartAccountAuthPayload(
-        signers: <OZSmartAccountSigner, Uint8List>{s2: _bytes(8), s1: _bytes(4)},
+        signers: <OZSmartAccountSigner, Uint8List>{
+          s2: _bytes(8),
+          s1: _bytes(4),
+        },
         contextRuleIds: const <int>[],
       );
       final out1 = OZSmartAccountAuthPayloadCodec.write(p1);
@@ -500,7 +493,8 @@ void main() {
 
     test('testCodecSignerFromScVal_throwsOnNonVec', () {
       expect(
-        () => OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forU32(0)),
+        () =>
+            OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forU32(0)),
         throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
@@ -519,7 +513,8 @@ void main() {
 
     test('testCodecSignerFromScVal_throwsOnEmptyVec', () {
       expect(
-        () => OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forVec([])),
+        () =>
+            OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forVec([])),
         throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
@@ -528,7 +523,10 @@ void main() {
       final s1 = _del(kValidGAddress);
       final s2 = _del(kValidGAddress2);
       final p = OZSmartAccountAuthPayload(
-        signers: <OZSmartAccountSigner, Uint8List>{s2: _bytes(8), s1: _bytes(4)},
+        signers: <OZSmartAccountSigner, Uint8List>{
+          s2: _bytes(8),
+          s1: _bytes(4),
+        },
         contextRuleIds: const <int>[],
       );
       final encoded = OZSmartAccountAuthPayloadCodec.write(p);
@@ -570,7 +568,10 @@ void main() {
         contextRuleIds: const <int>[],
       );
       OZSmartAccountAuthPayloadCodec.upsertSigner(
-          p, _del(kValidGAddress), _bytes(4, 9));
+        p,
+        _del(kValidGAddress),
+        _bytes(4, 9),
+      );
       expect(p.signers, hasLength(1));
       expect(p.signers.values.first[0], 9);
     });
@@ -582,7 +583,10 @@ void main() {
         contextRuleIds: const <int>[],
       );
       OZSmartAccountAuthPayloadCodec.upsertSigner(
-          p, _ext(seed: 1), _bytes(4, 9));
+        p,
+        _ext(seed: 1),
+        _bytes(4, 9),
+      );
       expect(p.signers, hasLength(1));
     });
 
@@ -652,14 +656,16 @@ void main() {
 
     test('testSignerFromScVal_nonVecThrows', () {
       expect(
-        () => OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forU32(0)),
+        () =>
+            OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forU32(0)),
         throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
     test('testSignerFromScVal_emptyVecThrows', () {
       expect(
-        () => OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forVec([])),
+        () =>
+            OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forVec([])),
         throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
@@ -764,9 +770,7 @@ void main() {
   // (rather than randomly-generated KeyPairs) so the encoded bytes are
   // reproducible. Update the expected hex whenever the encoding changes.
   group('AuthPayload codec golden vector', () {
-    test(
-        'goldenVector5_authPayloadWithTwoDelegatedSigners_matchesFixture',
-        () {
+    test('goldenVector5_authPayloadWithTwoDelegatedSigners_matchesFixture', () {
       final signerA = OZDelegatedSigner(kValidGAddress);
       final signerB = OZDelegatedSigner(kValidContractId);
       final payload = OZSmartAccountAuthPayload(
@@ -784,8 +788,11 @@ void main() {
       final actualHex = Util.bytesToHex(encoded).toLowerCase();
       const expectedHex =
           '0000001100000001000000020000000f00000010636f6e746578745f72756c655f6964730000001000000001000000020000000300000007000000030000000b0000000f000000077369676e657273000000001100000001000000020000001000000001000000020000000f0000000944656c656761746564000000000000120000000000000000e8a61a861e60af60f80773e06346e5c72cbe59dcadda37608d58ef42511d9fdc0000000d00000002aabb00000000001000000001000000020000000f0000000944656c6567617465640000000000001200000001c58b2bfbc4f054e7324f6bf20cad3e026e41bbad1a6d20c3d7d4918ded1654110000000d00000002ccdd0000';
-      expect(actualHex, expectedHex,
-          reason: 'Golden vector 5 mismatch — actual: $actualHex');
+      expect(
+        actualHex,
+        expectedHex,
+        reason: 'Golden vector 5 mismatch — actual: $actualHex',
+      );
     });
   });
 }

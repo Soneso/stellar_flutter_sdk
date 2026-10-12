@@ -127,19 +127,20 @@ class TradeAggregationResponse extends Response {
   /// - [close] Closing price at period end
   /// - [closeR] Closing price as rational number
   TradeAggregationResponse(
-      this.timestamp,
-      this.tradeCount,
-      this.baseVolume,
-      this.counterVolume,
-      this.avg,
-      this.high,
-      this.highR,
-      this.low,
-      this.lowR,
-      this.open,
-      this.openR,
-      this.close,
-      this.closeR);
+    this.timestamp,
+    this.tradeCount,
+    this.baseVolume,
+    this.counterVolume,
+    this.avg,
+    this.high,
+    this.highR,
+    this.low,
+    this.lowR,
+    this.open,
+    this.openR,
+    this.close,
+    this.closeR,
+  );
 
   /// Converts the timestamp to a DateTime object.
   ///
@@ -151,20 +152,20 @@ class TradeAggregationResponse extends Response {
   /// Constructs a TradeAggregationResponse from JSON returned by Horizon API.
   factory TradeAggregationResponse.fromJson(Map<String, dynamic> json) =>
       new TradeAggregationResponse(
-        json['timestamp'],
-        json['trade_count'],
-        json['base_volume'],
-        json['counter_volume'],
-        json['avg'],
-        json['high'],
-        Price.fromJson(json['high_r']),
-        json['low'],
-        Price.fromJson(json['low_r']),
-        json['open'],
-        Price.fromJson(json['open_r']),
-        json['close'],
-        Price.fromJson(json['close_r']),
-      )
+          json['timestamp'],
+          json['trade_count'],
+          json['base_volume'],
+          json['counter_volume'],
+          json['avg'],
+          json['high'],
+          Price.fromJson(json['high_r']),
+          json['low'],
+          Price.fromJson(json['low_r']),
+          json['open'],
+          Price.fromJson(json['open_r']),
+          json['close'],
+          Price.fromJson(json['close_r']),
+        )
         ..rateLimitLimit = convertInt(json['rateLimitLimit'])
         ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
         ..rateLimitReset = convertInt(json['rateLimitReset']);

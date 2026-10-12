@@ -59,8 +59,7 @@ class _FakeStore {
   List<JSObject> getAll() => List<JSObject>.from(records);
 
   List<JSObject> getAllByIndex(String indexName, JSAny? query) {
-    final queryString =
-        query is JSString ? query.toDart : query?.toString();
+    final queryString = query is JSString ? query.toDart : query?.toString();
     return records.where((r) {
       final value = r.getProperty<JSAny?>(indexName.toJS);
       if (value is JSString) {
@@ -92,17 +91,23 @@ class _FakeFactory {
         final req = JSObject();
         if (unavailable) {
           // Schedule onerror.
-          _scheduleError(req,
-              _domException('UnknownError', 'IndexedDB unavailable'));
+          _scheduleError(
+            req,
+            _domException('UnknownError', 'IndexedDB unavailable'),
+          );
           return req;
         }
         if (versionError) {
           // Simulate the VersionError raised by the browser when an
           // existing database has a HIGHER schema version than the one
           // the adapter requests on open(name, version).
-          _scheduleError(req,
-              _domException('VersionError',
-                  'The requested version (1) is less than the existing version (2).'));
+          _scheduleError(
+            req,
+            _domException(
+              'VersionError',
+              'The requested version (1) is less than the existing version (2).',
+            ),
+          );
           return req;
         }
         final db = databases.putIfAbsent(name.toDart, () => _FakeDatabase());
@@ -112,8 +117,7 @@ class _FakeFactory {
         Future.microtask(() {
           if (db.stores.isEmpty) {
             req.setProperty('result'.toJS, dbProxy);
-            final onUpgrade =
-                req.getProperty<JSAny?>('onupgradeneeded'.toJS);
+            final onUpgrade = req.getProperty<JSAny?>('onupgradeneeded'.toJS);
             if (onUpgrade is JSFunction) {
               final event = JSObject();
               event.setProperty('target'.toJS, req);
@@ -297,8 +301,10 @@ JSObject _objectStoreProxy(_FakeStore store) {
         (([JSAny? query, JSNumber? count]) {
           final req = _request();
           Future.microtask(() {
-            _resolveRequest(req,
-                store.getAllByIndex(indexName.toDart, query).toJS);
+            _resolveRequest(
+              req,
+              store.getAllByIndex(indexName.toDart, query).toJS,
+            );
           });
           return req;
         }).toJS,
@@ -365,12 +371,7 @@ OZStoredCredential _credential({
 }) {
   return OZStoredCredential(
     credentialId: credentialId,
-    publicKey: Uint8List.fromList(<int>[
-      0x04,
-      0x42,
-      0x43,
-      0x44,
-    ]),
+    publicKey: Uint8List.fromList(<int>[0x04, 0x42, 0x43, 0x44]),
     contractId: contractId,
     isPrimary: isPrimary,
     createdAt: createdAt,
@@ -382,13 +383,12 @@ OZStoredSession _session({
   String contractId = 'CABC',
   int connectedAt = 5_000,
   int expiresAt = 9_000_000_000_000,
-}) =>
-    OZStoredSession(
-      credentialId: credentialId,
-      contractId: contractId,
-      connectedAt: connectedAt,
-      expiresAt: expiresAt,
-    );
+}) => OZStoredSession(
+  credentialId: credentialId,
+  contractId: contractId,
+  connectedAt: connectedAt,
+  expiresAt: expiresAt,
+);
 
 void main() {
   group('OZIndexedDBStorageAdapter (web)', () {
@@ -445,13 +445,10 @@ void main() {
       await adapter.save(_credential());
       final db = fakeFactory.databases['schema_db'];
       expect(db, isNotNull);
-      expect(
-        db!.stores.keys.toSet(),
-        {
-          OZIndexedDBStorageAdapter.storeCredentials,
-          OZIndexedDBStorageAdapter.storeSessions,
-        },
-      );
+      expect(db!.stores.keys.toSet(), {
+        OZIndexedDBStorageAdapter.storeCredentials,
+        OZIndexedDBStorageAdapter.storeSessions,
+      });
       expect(OZIndexedDBStorageAdapter.dbVersion, 1);
     });
 
@@ -473,10 +470,14 @@ void main() {
         dbName: 'quota_db',
       );
       // Force the request to fail when calling put.
-      final db = factory.databases.putIfAbsent('quota_db', () => _FakeDatabase());
+      final db = factory.databases.putIfAbsent(
+        'quota_db',
+        () => _FakeDatabase(),
+      );
       // Pre-create the stores so `open` does not run upgradeneeded.
-      db.stores[OZIndexedDBStorageAdapter.storeCredentials] =
-          _FakeStore('credentialId');
+      db.stores[OZIndexedDBStorageAdapter.storeCredentials] = _FakeStore(
+        'credentialId',
+      );
       db.stores[OZIndexedDBStorageAdapter.storeSessions] = _FakeStore('key');
       // Inject a put-failing override after first open.
       db.throwOnTransaction = true;
@@ -567,11 +568,7 @@ void main() {
         adapter.save(_credential()),
         throwsA(
           isA<SmartAccountStorageReadFailed>()
-              .having(
-                (e) => e.message,
-                'message',
-                contains('indexedDB:open'),
-              )
+              .having((e) => e.message, 'message', contains('indexedDB:open'))
               .having(
                 (e) => e.cause.toString(),
                 'cause',
@@ -584,17 +581,19 @@ void main() {
       );
     });
 
-    test('test_close_releases_database_connection_and_reopens_on_next_op',
-        () async {
-      final adapter = newAdapter(dbName: 'reopen_db');
-      await adapter.save(_credential());
-      await adapter.close();
-      // After close, another save should reopen the database successfully.
-      await expectLater(
-        adapter.save(_credential(credentialId: 'second')),
-        completes,
-      );
-    });
+    test(
+      'test_close_releases_database_connection_and_reopens_on_next_op',
+      () async {
+        final adapter = newAdapter(dbName: 'reopen_db');
+        await adapter.save(_credential());
+        await adapter.close();
+        // After close, another save should reopen the database successfully.
+        await expectLater(
+          adapter.save(_credential(credentialId: 'second')),
+          completes,
+        );
+      },
+    );
 
     test('test_delete_database_removes_all_data', () async {
       final adapter = newAdapter(dbName: 'delete_db');
@@ -607,10 +606,7 @@ void main() {
       final adapter = newAdapter(dbName: 'default_target');
       await adapter.save(_credential());
       await adapter.deleteDatabase();
-      expect(
-        fakeFactory.databases.containsKey('default_target'),
-        isFalse,
-      );
+      expect(fakeFactory.databases.containsKey('default_target'), isFalse);
     });
   });
 }

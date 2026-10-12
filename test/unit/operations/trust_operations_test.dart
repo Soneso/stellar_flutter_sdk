@@ -9,17 +9,24 @@ void main() {
     late Asset euroAsset;
 
     setUp(() {
-      sourceKeyPair = KeyPair.fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      issuerKeyPair = KeyPair.fromAccountId('GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ');
+      sourceKeyPair = KeyPair.fromAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
+      issuerKeyPair = KeyPair.fromAccountId(
+        'GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ',
+      );
       usdAsset = AssetTypeCreditAlphaNum4('USD', issuerKeyPair.accountId);
-      euroAsset = AssetTypeCreditAlphaNum12('EUROTOKEN', issuerKeyPair.accountId);
+      euroAsset = AssetTypeCreditAlphaNum12(
+        'EUROTOKEN',
+        issuerKeyPair.accountId,
+      );
     });
 
     group('creation', () {
       test('creates with AlphaNum4 asset and maximum limit', () {
         final operation = ChangeTrustOperationBuilder(
           usdAsset,
-          ChangeTrustOperationBuilder.MAX_LIMIT
+          ChangeTrustOperationBuilder.MAX_LIMIT,
         ).build();
 
         expect(operation.asset, equals(usdAsset));
@@ -30,7 +37,7 @@ void main() {
       test('creates with AlphaNum12 asset and specific limit', () {
         final operation = ChangeTrustOperationBuilder(
           euroAsset,
-          '5000.00'
+          '5000.00',
         ).build();
 
         expect(operation.asset, equals(euroAsset));
@@ -39,10 +46,7 @@ void main() {
       });
 
       test('creates with zero limit to remove trustline', () {
-        final operation = ChangeTrustOperationBuilder(
-          usdAsset,
-          '0'
-        ).build();
+        final operation = ChangeTrustOperationBuilder(usdAsset, '0').build();
 
         expect(operation.asset, equals(usdAsset));
         expect(operation.limit, equals('0'));
@@ -51,36 +55,48 @@ void main() {
       test('creates with source account', () {
         final operation = ChangeTrustOperationBuilder(
           usdAsset,
-          '1000.00'
+          '1000.00',
         ).setSourceAccount(sourceKeyPair.accountId).build();
 
         expect(operation.sourceAccount, isNotNull);
-        expect(operation.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(sourceKeyPair.accountId),
+        );
       });
 
       test('creates with muxed source account', () {
-        final muxedSource = MuxedAccount(sourceKeyPair.accountId, BigInt.from(12345));
+        final muxedSource = MuxedAccount(
+          sourceKeyPair.accountId,
+          BigInt.from(12345),
+        );
         final operation = ChangeTrustOperationBuilder(
           usdAsset,
-          '1000.00'
+          '1000.00',
         ).setMuxedSourceAccount(muxedSource).build();
 
         expect(operation.sourceAccount, isNotNull);
-        expect(operation.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(sourceKeyPair.accountId),
+        );
         expect(operation.sourceAccount!.id, equals(BigInt.from(12345)));
       });
 
       test('creates with decimal precision limit', () {
         final operation = ChangeTrustOperationBuilder(
           usdAsset,
-          '100.0000001'
+          '100.0000001',
         ).build();
 
         expect(operation.limit, equals('100.0000001'));
       });
 
       test('verifies MAX_LIMIT constant value', () {
-        expect(ChangeTrustOperationBuilder.MAX_LIMIT, equals('922337203685.4775807'));
+        expect(
+          ChangeTrustOperationBuilder.MAX_LIMIT,
+          equals('922337203685.4775807'),
+        );
       });
     });
 
@@ -88,14 +104,16 @@ void main() {
       test('XDR round-trip preserves AlphaNum4 asset data', () {
         final operation = ChangeTrustOperationBuilder(
           usdAsset,
-          '1000.00'
+          '1000.00',
         ).build();
 
         final xdrBody = operation.toOperationBody();
         expect(xdrBody.discriminant, equals(XdrOperationType.CHANGE_TRUST));
         expect(xdrBody.changeTrustOp, isNotNull);
 
-        final restoredBuilder = ChangeTrustOperation.builder(xdrBody.changeTrustOp!);
+        final restoredBuilder = ChangeTrustOperation.builder(
+          xdrBody.changeTrustOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.asset, isA<AssetTypeCreditAlphaNum4>());
@@ -108,11 +126,13 @@ void main() {
       test('XDR round-trip preserves AlphaNum12 asset data', () {
         final operation = ChangeTrustOperationBuilder(
           euroAsset,
-          '5000.00'
+          '5000.00',
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ChangeTrustOperation.builder(xdrBody.changeTrustOp!);
+        final restoredBuilder = ChangeTrustOperation.builder(
+          xdrBody.changeTrustOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.asset, isA<AssetTypeCreditAlphaNum12>());
@@ -125,24 +145,25 @@ void main() {
       test('XDR round-trip preserves maximum limit', () {
         final operation = ChangeTrustOperationBuilder(
           usdAsset,
-          ChangeTrustOperationBuilder.MAX_LIMIT
+          ChangeTrustOperationBuilder.MAX_LIMIT,
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ChangeTrustOperation.builder(xdrBody.changeTrustOp!);
+        final restoredBuilder = ChangeTrustOperation.builder(
+          xdrBody.changeTrustOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.limit, equals('922337203685.4775807'));
       });
 
       test('XDR round-trip preserves zero limit', () {
-        final operation = ChangeTrustOperationBuilder(
-          usdAsset,
-          '0'
-        ).build();
+        final operation = ChangeTrustOperationBuilder(usdAsset, '0').build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ChangeTrustOperation.builder(xdrBody.changeTrustOp!);
+        final restoredBuilder = ChangeTrustOperation.builder(
+          xdrBody.changeTrustOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.limit, equals('0'));
@@ -151,11 +172,13 @@ void main() {
       test('XDR round-trip preserves decimal precision', () {
         final operation = ChangeTrustOperationBuilder(
           usdAsset,
-          '100.0000001'
+          '100.0000001',
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ChangeTrustOperation.builder(xdrBody.changeTrustOp!);
+        final restoredBuilder = ChangeTrustOperation.builder(
+          xdrBody.changeTrustOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.limit, equals('100.0000001'));
@@ -166,26 +189,28 @@ void main() {
       test('builder supports method chaining', () {
         final operation = ChangeTrustOperationBuilder(
           usdAsset,
-          '1000.00'
-        )
-          .setSourceAccount(sourceKeyPair.accountId)
-          .build();
+          '1000.00',
+        ).setSourceAccount(sourceKeyPair.accountId).build();
 
         expect(operation, isNotNull);
         expect(operation, isA<ChangeTrustOperation>());
         expect(operation.asset, equals(usdAsset));
         expect(operation.limit, equals('1000.00'));
-        expect(operation.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(sourceKeyPair.accountId),
+        );
       });
 
       test('builder can set muxed source account', () {
-        final muxedSource = MuxedAccount(sourceKeyPair.accountId, BigInt.from(99999));
+        final muxedSource = MuxedAccount(
+          sourceKeyPair.accountId,
+          BigInt.from(99999),
+        );
         final operation = ChangeTrustOperationBuilder(
           usdAsset,
-          '1000.00'
-        )
-          .setMuxedSourceAccount(muxedSource)
-          .build();
+          '1000.00',
+        ).setMuxedSourceAccount(muxedSource).build();
 
         expect(operation.sourceAccount!.id, equals(BigInt.from(99999)));
       });
@@ -195,7 +220,7 @@ void main() {
       test('asset getter returns correct asset', () {
         final operation = ChangeTrustOperationBuilder(
           usdAsset,
-          '1000.00'
+          '1000.00',
         ).build();
 
         final asset = operation.asset;
@@ -206,7 +231,7 @@ void main() {
       test('limit getter returns correct limit', () {
         final operation = ChangeTrustOperationBuilder(
           usdAsset,
-          '1000.00'
+          '1000.00',
         ).build();
 
         expect(operation.limit, equals('1000.00'));
@@ -220,8 +245,12 @@ void main() {
     late String assetCode;
 
     setUp(() {
-      issuerKeyPair = KeyPair.fromAccountId('GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ');
-      trustorKeyPair = KeyPair.fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      issuerKeyPair = KeyPair.fromAccountId(
+        'GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ',
+      );
+      trustorKeyPair = KeyPair.fromAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       assetCode = 'USD';
     });
 
@@ -230,7 +259,7 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           assetCode,
-          1 // AUTHORIZED_FLAG
+          1, // AUTHORIZED_FLAG
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.trustor, equals(trustorKeyPair.accountId));
@@ -243,7 +272,7 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           assetCode,
-          0 // No authorization
+          0, // No authorization
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.trustor, equals(trustorKeyPair.accountId));
@@ -256,7 +285,7 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           assetCode,
-          2 // AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG
+          2, // AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.trustor, equals(trustorKeyPair.accountId));
@@ -269,7 +298,7 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           'USD',
-          1
+          1,
         ).build();
 
         expect(operation.assetCode, equals('USD'));
@@ -279,22 +308,28 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           'LONGASSET',
-          1
+          1,
         ).build();
 
         expect(operation.assetCode, equals('LONGASSET'));
       });
 
       test('creates with muxed source account', () {
-        final muxedIssuer = MuxedAccount(issuerKeyPair.accountId, BigInt.from(54321));
+        final muxedIssuer = MuxedAccount(
+          issuerKeyPair.accountId,
+          BigInt.from(54321),
+        );
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           assetCode,
-          1
+          1,
         ).setMuxedSourceAccount(muxedIssuer).build();
 
         expect(operation.sourceAccount, isNotNull);
-        expect(operation.sourceAccount!.ed25519AccountId, equals(issuerKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(issuerKeyPair.accountId),
+        );
         expect(operation.sourceAccount!.id, equals(BigInt.from(54321)));
       });
     });
@@ -304,14 +339,16 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           assetCode,
-          1
+          1,
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         final xdrBody = operation.toOperationBody();
         expect(xdrBody.discriminant, equals(XdrOperationType.ALLOW_TRUST));
         expect(xdrBody.allowTrustOp, isNotNull);
 
-        final restoredBuilder = AllowTrustOperation.builder(xdrBody.allowTrustOp!);
+        final restoredBuilder = AllowTrustOperation.builder(
+          xdrBody.allowTrustOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.trustor, equals(trustorKeyPair.accountId));
@@ -324,11 +361,13 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           assetCode,
-          0
+          0,
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = AllowTrustOperation.builder(xdrBody.allowTrustOp!);
+        final restoredBuilder = AllowTrustOperation.builder(
+          xdrBody.allowTrustOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.authorize, isFalse);
@@ -339,11 +378,13 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           assetCode,
-          2
+          2,
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = AllowTrustOperation.builder(xdrBody.allowTrustOp!);
+        final restoredBuilder = AllowTrustOperation.builder(
+          xdrBody.allowTrustOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.authorize, isFalse);
@@ -354,11 +395,13 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           'LONGASSET',
-          1
+          1,
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = AllowTrustOperation.builder(xdrBody.allowTrustOp!);
+        final restoredBuilder = AllowTrustOperation.builder(
+          xdrBody.allowTrustOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.assetCode, equals('LONGASSET'));
@@ -370,10 +413,8 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           assetCode,
-          1
-        )
-          .setSourceAccount(issuerKeyPair.accountId)
-          .build();
+          1,
+        ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation, isNotNull);
         expect(operation, isA<AllowTrustOperation>());
@@ -387,7 +428,7 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           assetCode,
-          1
+          1,
         ).build();
 
         expect(operation.trustor, equals(trustorKeyPair.accountId));
@@ -397,7 +438,7 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           assetCode,
-          1
+          1,
         ).build();
 
         expect(operation.assetCode, equals(assetCode));
@@ -407,7 +448,7 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           assetCode,
-          1
+          1,
         ).build();
 
         expect(operation.authorize, isTrue);
@@ -417,7 +458,7 @@ void main() {
         final operation = AllowTrustOperationBuilder(
           trustorKeyPair.accountId,
           assetCode,
-          2
+          2,
         ).build();
 
         expect(operation.authorizeToMaintainLiabilities, isTrue);
@@ -431,8 +472,12 @@ void main() {
     late Asset usdAsset;
 
     setUp(() {
-      issuerKeyPair = KeyPair.fromAccountId('GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ');
-      trustorKeyPair = KeyPair.fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      issuerKeyPair = KeyPair.fromAccountId(
+        'GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ',
+      );
+      trustorKeyPair = KeyPair.fromAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       usdAsset = AssetTypeCreditAlphaNum4('USD', issuerKeyPair.accountId);
     });
 
@@ -442,7 +487,7 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           0, // clearFlags
-          1  // setFlags: AUTHORIZED_FLAG
+          1, // setFlags: AUTHORIZED_FLAG
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.trustorId, equals(trustorKeyPair.accountId));
@@ -457,9 +502,9 @@ void main() {
             trustorKeyPair.accountId,
             usdAsset,
             0, // clearFlags
-            1  // setFlags: AUTHORIZED_FLAG
+            1, // setFlags: AUTHORIZED_FLAG
           ).setSourceAccount('INVALID'),
-          throwsException
+          throwsException,
         );
       });
 
@@ -468,7 +513,7 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           1, // clearFlags: AUTHORIZED_FLAG
-          0  // setFlags
+          0, // setFlags
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.clearFlags, equals(1));
@@ -480,7 +525,7 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           1, // clearFlags: AUTHORIZED_FLAG
-          2  // setFlags: AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG
+          2, // setFlags: AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.clearFlags, equals(1));
@@ -492,7 +537,7 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           0, // clearFlags
-          4  // setFlags: TRUSTLINE_CLAWBACK_ENABLED_FLAG
+          4, // setFlags: TRUSTLINE_CLAWBACK_ENABLED_FLAG
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.setFlags, equals(4));
@@ -502,8 +547,8 @@ void main() {
         final operation = SetTrustLineFlagsOperationBuilder(
           trustorKeyPair.accountId,
           usdAsset,
-          0,   // clearFlags
-          1 | 4 // setFlags: AUTHORIZED_FLAG | TRUSTLINE_CLAWBACK_ENABLED_FLAG
+          0, // clearFlags
+          1 | 4, // setFlags: AUTHORIZED_FLAG | TRUSTLINE_CLAWBACK_ENABLED_FLAG
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.setFlags, equals(5));
@@ -514,7 +559,7 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           1, // clearFlags: AUTHORIZED_FLAG
-          2  // setFlags: AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG
+          2, // setFlags: AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.clearFlags, equals(1));
@@ -522,28 +567,37 @@ void main() {
       });
 
       test('creates with AlphaNum12 asset', () {
-        final euroAsset = AssetTypeCreditAlphaNum12('EUROTOKEN', issuerKeyPair.accountId);
+        final euroAsset = AssetTypeCreditAlphaNum12(
+          'EUROTOKEN',
+          issuerKeyPair.accountId,
+        );
         final operation = SetTrustLineFlagsOperationBuilder(
           trustorKeyPair.accountId,
           euroAsset,
           0,
-          1
+          1,
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.asset, equals(euroAsset));
       });
 
       test('creates with muxed source account', () {
-        final muxedIssuer = MuxedAccount(issuerKeyPair.accountId, BigInt.from(11111));
+        final muxedIssuer = MuxedAccount(
+          issuerKeyPair.accountId,
+          BigInt.from(11111),
+        );
         final operation = SetTrustLineFlagsOperationBuilder(
           trustorKeyPair.accountId,
           usdAsset,
           0,
-          1
+          1,
         ).setMuxedSourceAccount(muxedIssuer).build();
 
         expect(operation.sourceAccount, isNotNull);
-        expect(operation.sourceAccount!.ed25519AccountId, equals(issuerKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(issuerKeyPair.accountId),
+        );
         expect(operation.sourceAccount!.id, equals(BigInt.from(11111)));
       });
     });
@@ -554,18 +608,26 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           0,
-          1
+          1,
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         final xdrBody = operation.toOperationBody();
-        expect(xdrBody.discriminant, equals(XdrOperationType.SET_TRUST_LINE_FLAGS));
+        expect(
+          xdrBody.discriminant,
+          equals(XdrOperationType.SET_TRUST_LINE_FLAGS),
+        );
         expect(xdrBody.setTrustLineFlagsOp, isNotNull);
 
-        final restoredBuilder = SetTrustLineFlagsOperation.builder(xdrBody.setTrustLineFlagsOp!);
+        final restoredBuilder = SetTrustLineFlagsOperation.builder(
+          xdrBody.setTrustLineFlagsOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.trustorId, equals(trustorKeyPair.accountId));
-        expect((restored.asset as AssetTypeCreditAlphaNum4).code, equals('USD'));
+        expect(
+          (restored.asset as AssetTypeCreditAlphaNum4).code,
+          equals('USD'),
+        );
         expect(restored.clearFlags, equals(0));
         expect(restored.setFlags, equals(1));
       });
@@ -575,11 +637,13 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           1,
-          0
+          0,
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = SetTrustLineFlagsOperation.builder(xdrBody.setTrustLineFlagsOp!);
+        final restoredBuilder = SetTrustLineFlagsOperation.builder(
+          xdrBody.setTrustLineFlagsOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.clearFlags, equals(1));
@@ -591,11 +655,13 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           1,
-          2
+          2,
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = SetTrustLineFlagsOperation.builder(xdrBody.setTrustLineFlagsOp!);
+        final restoredBuilder = SetTrustLineFlagsOperation.builder(
+          xdrBody.setTrustLineFlagsOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.clearFlags, equals(1));
@@ -607,11 +673,13 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           0,
-          4
+          4,
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = SetTrustLineFlagsOperation.builder(xdrBody.setTrustLineFlagsOp!);
+        final restoredBuilder = SetTrustLineFlagsOperation.builder(
+          xdrBody.setTrustLineFlagsOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.setFlags, equals(4));
@@ -622,11 +690,13 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           0,
-          5 // AUTHORIZED_FLAG | TRUSTLINE_CLAWBACK_ENABLED_FLAG
+          5, // AUTHORIZED_FLAG | TRUSTLINE_CLAWBACK_ENABLED_FLAG
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = SetTrustLineFlagsOperation.builder(xdrBody.setTrustLineFlagsOp!);
+        final restoredBuilder = SetTrustLineFlagsOperation.builder(
+          xdrBody.setTrustLineFlagsOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.setFlags, equals(5));
@@ -639,10 +709,8 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           0,
-          1
-        )
-          .setSourceAccount(issuerKeyPair.accountId)
-          .build();
+          1,
+        ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation, isNotNull);
         expect(operation, isA<SetTrustLineFlagsOperation>());
@@ -657,7 +725,7 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           0,
-          1
+          1,
         ).build();
 
         expect(operation.trustorId, equals(trustorKeyPair.accountId));
@@ -668,11 +736,14 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           0,
-          1
+          1,
         ).build();
 
         expect(operation.asset, isA<AssetTypeCreditAlphaNum4>());
-        expect((operation.asset as AssetTypeCreditAlphaNum4).code, equals('USD'));
+        expect(
+          (operation.asset as AssetTypeCreditAlphaNum4).code,
+          equals('USD'),
+        );
       });
 
       test('clearFlags getter returns correct value', () {
@@ -680,7 +751,7 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           1,
-          0
+          0,
         ).build();
 
         expect(operation.clearFlags, equals(1));
@@ -691,7 +762,7 @@ void main() {
           trustorKeyPair.accountId,
           usdAsset,
           0,
-          1
+          1,
         ).build();
 
         expect(operation.setFlags, equals(1));
@@ -705,8 +776,12 @@ void main() {
     late Asset usdAsset;
 
     setUp(() {
-      issuerKeyPair = KeyPair.fromAccountId('GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ');
-      holderKeyPair = KeyPair.fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      issuerKeyPair = KeyPair.fromAccountId(
+        'GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ',
+      );
+      holderKeyPair = KeyPair.fromAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       usdAsset = AssetTypeCreditAlphaNum4('USD', issuerKeyPair.accountId);
     });
 
@@ -715,20 +790,26 @@ void main() {
         final operation = ClawbackOperationBuilder(
           usdAsset,
           holderKeyPair.accountId,
-          '100.0'
+          '100.0',
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
-        expect(operation.from.ed25519AccountId, equals(holderKeyPair.accountId));
+        expect(
+          operation.from.ed25519AccountId,
+          equals(holderKeyPair.accountId),
+        );
         expect(operation.asset, equals(usdAsset));
         expect(operation.amount, equals('100.0'));
-        expect(operation.sourceAccount!.ed25519AccountId, equals(issuerKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(issuerKeyPair.accountId),
+        );
       });
 
       test('creates with AlphaNum4 asset', () {
         final operation = ClawbackOperationBuilder(
           usdAsset,
           holderKeyPair.accountId,
-          '50.75'
+          '50.75',
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.asset, isA<AssetTypeCreditAlphaNum4>());
@@ -739,11 +820,14 @@ void main() {
       });
 
       test('creates with AlphaNum12 asset', () {
-        final euroAsset = AssetTypeCreditAlphaNum12('EUROTOKEN', issuerKeyPair.accountId);
+        final euroAsset = AssetTypeCreditAlphaNum12(
+          'EUROTOKEN',
+          issuerKeyPair.accountId,
+        );
         final operation = ClawbackOperationBuilder(
           euroAsset,
           holderKeyPair.accountId,
-          '25.5'
+          '25.5',
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.asset, isA<AssetTypeCreditAlphaNum12>());
@@ -756,7 +840,7 @@ void main() {
         final operation = ClawbackOperationBuilder(
           usdAsset,
           holderKeyPair.accountId,
-          '100.0000001'
+          '100.0000001',
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.amount, equals('100.0000001'));
@@ -766,34 +850,46 @@ void main() {
         final operation = ClawbackOperationBuilder(
           usdAsset,
           holderKeyPair.accountId,
-          '922337203685.4775807'
+          '922337203685.4775807',
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.amount, equals('922337203685.4775807'));
       });
 
       test('creates with muxed source account', () {
-        final muxedIssuer = MuxedAccount(issuerKeyPair.accountId, BigInt.from(99999));
+        final muxedIssuer = MuxedAccount(
+          issuerKeyPair.accountId,
+          BigInt.from(99999),
+        );
         final operation = ClawbackOperationBuilder(
           usdAsset,
           holderKeyPair.accountId,
-          '100.0'
+          '100.0',
         ).setMuxedSourceAccount(muxedIssuer).build();
 
         expect(operation.sourceAccount, isNotNull);
-        expect(operation.sourceAccount!.ed25519AccountId, equals(issuerKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(issuerKeyPair.accountId),
+        );
         expect(operation.sourceAccount!.id, equals(BigInt.from(99999)));
       });
 
       test('creates with muxed from account', () {
-        final muxedHolder = MuxedAccount(holderKeyPair.accountId, BigInt.from(77777));
+        final muxedHolder = MuxedAccount(
+          holderKeyPair.accountId,
+          BigInt.from(77777),
+        );
         final operation = ClawbackOperationBuilder.forMuxedFromAccount(
           usdAsset,
           muxedHolder,
-          '100.0'
+          '100.0',
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
-        expect(operation.from.ed25519AccountId, equals(holderKeyPair.accountId));
+        expect(
+          operation.from.ed25519AccountId,
+          equals(holderKeyPair.accountId),
+        );
         expect(operation.from.id, equals(BigInt.from(77777)));
       });
     });
@@ -803,7 +899,7 @@ void main() {
         final operation = ClawbackOperationBuilder(
           usdAsset,
           holderKeyPair.accountId,
-          '100.0'
+          '100.0',
         ).setSourceAccount(issuerKeyPair.accountId).build();
 
         final xdrBody = operation.toOperationBody();
@@ -814,16 +910,22 @@ void main() {
         final restored = restoredBuilder.build();
 
         expect(restored.from.ed25519AccountId, equals(holderKeyPair.accountId));
-        expect((restored.asset as AssetTypeCreditAlphaNum4).code, equals('USD'));
+        expect(
+          (restored.asset as AssetTypeCreditAlphaNum4).code,
+          equals('USD'),
+        );
         expect(restored.amount, equals('100'));
       });
 
       test('XDR round-trip with AlphaNum12 asset', () {
-        final euroAsset = AssetTypeCreditAlphaNum12('EUROTOKEN', issuerKeyPair.accountId);
+        final euroAsset = AssetTypeCreditAlphaNum12(
+          'EUROTOKEN',
+          issuerKeyPair.accountId,
+        );
         final operation = ClawbackOperationBuilder(
           euroAsset,
           holderKeyPair.accountId,
-          '50.75'
+          '50.75',
         ).build();
 
         final xdrBody = operation.toOperationBody();
@@ -831,7 +933,10 @@ void main() {
         final restored = restoredBuilder.build();
 
         expect(restored.asset, isA<AssetTypeCreditAlphaNum12>());
-        expect((restored.asset as AssetTypeCreditAlphaNum12).code, equals('EUROTOKEN'));
+        expect(
+          (restored.asset as AssetTypeCreditAlphaNum12).code,
+          equals('EUROTOKEN'),
+        );
         expect(restored.amount, equals('50.75'));
       });
 
@@ -839,7 +944,7 @@ void main() {
         final operation = ClawbackOperationBuilder(
           usdAsset,
           holderKeyPair.accountId,
-          '100.0000001'
+          '100.0000001',
         ).build();
 
         final xdrBody = operation.toOperationBody();
@@ -853,7 +958,7 @@ void main() {
         final operation = ClawbackOperationBuilder(
           usdAsset,
           holderKeyPair.accountId,
-          '922337203685.4775807'
+          '922337203685.4775807',
         ).build();
 
         final xdrBody = operation.toOperationBody();
@@ -864,11 +969,14 @@ void main() {
       });
 
       test('XDR round-trip with muxed from account', () {
-        final muxedHolder = MuxedAccount(holderKeyPair.accountId, BigInt.from(12345));
+        final muxedHolder = MuxedAccount(
+          holderKeyPair.accountId,
+          BigInt.from(12345),
+        );
         final operation = ClawbackOperationBuilder.forMuxedFromAccount(
           usdAsset,
           muxedHolder,
-          '100.0'
+          '100.0',
         ).build();
 
         final xdrBody = operation.toOperationBody();
@@ -885,27 +993,29 @@ void main() {
         final operation = ClawbackOperationBuilder(
           usdAsset,
           holderKeyPair.accountId,
-          '100.0'
-        )
-          .setSourceAccount(issuerKeyPair.accountId)
-          .build();
+          '100.0',
+        ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation, isNotNull);
         expect(operation, isA<ClawbackOperation>());
-        expect(operation.from.ed25519AccountId, equals(holderKeyPair.accountId));
+        expect(
+          operation.from.ed25519AccountId,
+          equals(holderKeyPair.accountId),
+        );
         expect(operation.asset, equals(usdAsset));
         expect(operation.amount, equals('100.0'));
       });
 
       test('builder can create with muxed from account', () {
-        final muxedHolder = MuxedAccount(holderKeyPair.accountId, BigInt.from(55555));
+        final muxedHolder = MuxedAccount(
+          holderKeyPair.accountId,
+          BigInt.from(55555),
+        );
         final operation = ClawbackOperationBuilder.forMuxedFromAccount(
           usdAsset,
           muxedHolder,
-          '100.0'
-        )
-          .setSourceAccount(issuerKeyPair.accountId)
-          .build();
+          '100.0',
+        ).setSourceAccount(issuerKeyPair.accountId).build();
 
         expect(operation.from.id, equals(BigInt.from(55555)));
       });
@@ -916,17 +1026,20 @@ void main() {
         final operation = ClawbackOperationBuilder(
           usdAsset,
           holderKeyPair.accountId,
-          '100.0'
+          '100.0',
         ).build();
 
-        expect(operation.from.ed25519AccountId, equals(holderKeyPair.accountId));
+        expect(
+          operation.from.ed25519AccountId,
+          equals(holderKeyPair.accountId),
+        );
       });
 
       test('asset getter returns correct asset', () {
         final operation = ClawbackOperationBuilder(
           usdAsset,
           holderKeyPair.accountId,
-          '100.0'
+          '100.0',
         ).build();
 
         final asset = operation.asset;
@@ -938,7 +1051,7 @@ void main() {
         final operation = ClawbackOperationBuilder(
           usdAsset,
           holderKeyPair.accountId,
-          '100.0'
+          '100.0',
         ).build();
 
         expect(operation.amount, equals('100.0'));
@@ -953,100 +1066,120 @@ void main() {
     late Asset usdAsset;
 
     setUp(() {
-      sourceKeyPair = KeyPair.fromSecretSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
-      issuerKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4');
-      holderKeyPair = KeyPair.fromSecretSeed('SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
+      sourceKeyPair = KeyPair.fromSecretSeed(
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+      );
+      issuerKeyPair = KeyPair.fromSecretSeed(
+        'SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4',
+      );
+      holderKeyPair = KeyPair.fromSecretSeed(
+        'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+      );
       usdAsset = AssetTypeCreditAlphaNum4('USD', issuerKeyPair.accountId);
     });
 
     test('change trust operation can be added to transaction', () {
-      final sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(2908908335136768));
+      final sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(2908908335136768),
+      );
 
       final changeTrust = ChangeTrustOperationBuilder(
         usdAsset,
-        '1000.00'
+        '1000.00',
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(changeTrust)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(changeTrust).build();
 
       expect(transaction.operations.length, equals(1));
       expect(transaction.operations[0], isA<ChangeTrustOperation>());
     });
 
     test('allow trust operation can be added to transaction', () {
-      final sourceAccount = Account(issuerKeyPair.accountId, BigInt.from(2908908335136768));
+      final sourceAccount = Account(
+        issuerKeyPair.accountId,
+        BigInt.from(2908908335136768),
+      );
 
       final allowTrust = AllowTrustOperationBuilder(
         holderKeyPair.accountId,
         'USD',
-        1
+        1,
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(allowTrust)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(allowTrust).build();
 
       expect(transaction.operations.length, equals(1));
       expect(transaction.operations[0], isA<AllowTrustOperation>());
     });
 
     test('set trust line flags operation can be added to transaction', () {
-      final sourceAccount = Account(issuerKeyPair.accountId, BigInt.from(2908908335136768));
+      final sourceAccount = Account(
+        issuerKeyPair.accountId,
+        BigInt.from(2908908335136768),
+      );
 
       final setFlags = SetTrustLineFlagsOperationBuilder(
         holderKeyPair.accountId,
         usdAsset,
         0,
-        1
+        1,
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(setFlags)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(setFlags).build();
 
       expect(transaction.operations.length, equals(1));
       expect(transaction.operations[0], isA<SetTrustLineFlagsOperation>());
     });
 
     test('clawback operation can be added to transaction', () {
-      final sourceAccount = Account(issuerKeyPair.accountId, BigInt.from(2908908335136768));
+      final sourceAccount = Account(
+        issuerKeyPair.accountId,
+        BigInt.from(2908908335136768),
+      );
 
       final clawback = ClawbackOperationBuilder(
         usdAsset,
         holderKeyPair.accountId,
-        '100.0'
+        '100.0',
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(clawback)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(clawback).build();
 
       expect(transaction.operations.length, equals(1));
       expect(transaction.operations[0], isA<ClawbackOperation>());
     });
 
     test('multiple trust operations in single transaction', () {
-      final sourceAccount = Account(issuerKeyPair.accountId, BigInt.from(2908908335136768));
+      final sourceAccount = Account(
+        issuerKeyPair.accountId,
+        BigInt.from(2908908335136768),
+      );
 
       final setFlags = SetTrustLineFlagsOperationBuilder(
         holderKeyPair.accountId,
         usdAsset,
         0,
-        1
+        1,
       ).build();
 
       final clawback = ClawbackOperationBuilder(
         usdAsset,
         holderKeyPair.accountId,
-        '50.0'
+        '50.0',
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(setFlags)
-        .addOperation(clawback)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(setFlags).addOperation(clawback).build();
 
       expect(transaction.operations.length, equals(2));
       expect(transaction.operations[0], isA<SetTrustLineFlagsOperation>());
@@ -1055,17 +1188,14 @@ void main() {
 
     test('trust operations with different asset types', () {
       final usd4 = AssetTypeCreditAlphaNum4('USD', issuerKeyPair.accountId);
-      final euro12 = AssetTypeCreditAlphaNum12('EUROTOKEN', issuerKeyPair.accountId);
+      final euro12 = AssetTypeCreditAlphaNum12(
+        'EUROTOKEN',
+        issuerKeyPair.accountId,
+      );
 
-      final trustOp1 = ChangeTrustOperationBuilder(
-        usd4,
-        '1000.00'
-      ).build();
+      final trustOp1 = ChangeTrustOperationBuilder(usd4, '1000.00').build();
 
-      final trustOp2 = ChangeTrustOperationBuilder(
-        euro12,
-        '2000.00'
-      ).build();
+      final trustOp2 = ChangeTrustOperationBuilder(euro12, '2000.00').build();
 
       expect(trustOp1.asset, isA<AssetTypeCreditAlphaNum4>());
       expect(trustOp2.asset, isA<AssetTypeCreditAlphaNum12>());

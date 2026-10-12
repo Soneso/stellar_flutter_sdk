@@ -8,11 +8,8 @@ void main() {
         'enabled': true,
         'authentication_required': true,
         'fields': {
-          'dest': {
-            'description': 'your email address',
-            'optional': false,
-          }
-        }
+          'dest': {'description': 'your email address', 'optional': false},
+        },
       };
 
       final asset = DepositExchangeAsset.fromJson(json);
@@ -34,10 +31,10 @@ void main() {
               'dest': {
                 'description': 'your bank account number',
                 'optional': false,
-              }
-            }
-          }
-        }
+              },
+            },
+          },
+        },
       };
 
       final asset = WithdrawExchangeAsset.fromJson(json);

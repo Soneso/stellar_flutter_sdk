@@ -32,8 +32,8 @@ class TxRep {
   ) {
     XdrTransactionEnvelope envelope =
         XdrTransactionEnvelope.fromEnvelopeXdrString(
-      transactionEnvelopeXdrBase64,
-    );
+          transactionEnvelopeXdrBase64,
+        );
 
     // Resolve the inner transaction and detect fee bump.
     XdrTransaction tx;
@@ -89,7 +89,9 @@ class TxRep {
 
     if (isFeeBump) {
       final fb = feeBumpEnv!;
-      lines.add('feeBump.tx.feeSource: ${TxRepHelper.formatMuxedAccount(fb.tx.feeSource)}');
+      lines.add(
+        'feeBump.tx.feeSource: ${TxRepHelper.formatMuxedAccount(fb.tx.feeSource)}',
+      );
       lines.add('feeBump.tx.fee: ${fb.tx.fee.int64}');
       lines.add('feeBump.tx.innerTx.type: ENVELOPE_TYPE_TX');
     }
@@ -145,7 +147,8 @@ class TxRep {
     Map<String, String> map = TxRepHelper.parse(txRep);
 
     String? typeStr = TxRepHelper.getValue(map, 'type');
-    if (typeStr != 'ENVELOPE_TYPE_TX' && typeStr != 'ENVELOPE_TYPE_TX_FEE_BUMP') {
+    if (typeStr != 'ENVELOPE_TYPE_TX' &&
+        typeStr != 'ENVELOPE_TYPE_TX_FEE_BUMP') {
       throw Exception('unsupported or missing TxRep type: $typeStr');
     }
     bool isFeeBump = typeStr == 'ENVELOPE_TYPE_TX_FEE_BUMP';
@@ -153,12 +156,9 @@ class TxRep {
 
     // Validate inner transaction type for fee bump envelopes.
     if (isFeeBump) {
-      String? innerType =
-          TxRepHelper.getValue(map, 'feeBump.tx.innerTx.type');
+      String? innerType = TxRepHelper.getValue(map, 'feeBump.tx.innerTx.type');
       if (innerType != null && innerType != 'ENVELOPE_TYPE_TX') {
-        throw Exception(
-          'unexpected feeBump.tx.innerTx.type: $innerType',
-        );
+        throw Exception('unexpected feeBump.tx.innerTx.type: $innerType');
       }
     }
 
@@ -167,19 +167,22 @@ class TxRep {
 
     // Parse inner signatures.
     String sigPrefix = isFeeBump ? 'feeBump.tx.innerTx.' : '';
-    List<XdrDecoratedSignature> innerSignatures =
-        _decodeSignatures(map, sigPrefix);
+    List<XdrDecoratedSignature> innerSignatures = _decodeSignatures(
+      map,
+      sigPrefix,
+    );
 
     XdrTransactionEnvelope envelope;
 
     if (isFeeBump) {
       // Build inner V1 envelope.
-      XdrTransactionV1Envelope innerEnv =
-          XdrTransactionV1Envelope(tx, innerSignatures);
+      XdrTransactionV1Envelope innerEnv = XdrTransactionV1Envelope(
+        tx,
+        innerSignatures,
+      );
 
       // Parse fee bump fields.
-      String? feeSourceStr =
-          TxRepHelper.getValue(map, 'feeBump.tx.feeSource');
+      String? feeSourceStr = TxRepHelper.getValue(map, 'feeBump.tx.feeSource');
       if (feeSourceStr == null) {
         throw Exception('missing feeBump.tx.feeSource');
       }
@@ -191,8 +194,9 @@ class TxRep {
       }
       XdrInt64 fee = XdrInt64(BigInt.parse(feeStr));
 
-      XdrFeeBumpTransactionInnerTx innerTx =
-          XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX);
+      XdrFeeBumpTransactionInnerTx innerTx = XdrFeeBumpTransactionInnerTx(
+        XdrEnvelopeType.ENVELOPE_TYPE_TX,
+      );
       innerTx.v1 = innerEnv;
 
       String? fbExtV = TxRepHelper.getValue(map, 'feeBump.tx.ext.v');
@@ -200,21 +204,32 @@ class TxRep {
         throw Exception('unsupported feeBump.tx.ext.v: $fbExtV');
       }
       XdrFeeBumpTransactionExt fbExt = XdrFeeBumpTransactionExt(0);
-      XdrFeeBumpTransaction fbTx =
-          XdrFeeBumpTransaction(feeSource, fee, innerTx, fbExt);
+      XdrFeeBumpTransaction fbTx = XdrFeeBumpTransaction(
+        feeSource,
+        fee,
+        innerTx,
+        fbExt,
+      );
 
-      List<XdrDecoratedSignature> fbSignatures =
-          _decodeSignatures(map, 'feeBump.');
+      List<XdrDecoratedSignature> fbSignatures = _decodeSignatures(
+        map,
+        'feeBump.',
+      );
 
-      XdrFeeBumpTransactionEnvelope fbEnv =
-          XdrFeeBumpTransactionEnvelope(fbTx, fbSignatures);
+      XdrFeeBumpTransactionEnvelope fbEnv = XdrFeeBumpTransactionEnvelope(
+        fbTx,
+        fbSignatures,
+      );
 
-      envelope =
-          XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP);
+      envelope = XdrTransactionEnvelope(
+        XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP,
+      );
       envelope.feeBump = fbEnv;
     } else {
-      XdrTransactionV1Envelope v1Env =
-          XdrTransactionV1Envelope(tx, innerSignatures);
+      XdrTransactionV1Envelope v1Env = XdrTransactionV1Envelope(
+        tx,
+        innerSignatures,
+      );
       envelope = XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX);
       envelope.v1 = v1Env;
     }
@@ -227,11 +242,7 @@ class TxRep {
   // ---------------------------------------------------------------------------
 
   /// Encode a memo, handling text escaping manually.
-  static void _encodeMemo(
-    XdrMemo memo,
-    List<String> lines,
-    String prefix,
-  ) {
+  static void _encodeMemo(XdrMemo memo, List<String> lines, String prefix) {
     lines.add('$prefix.type: ${memo.discriminant.enumName()}');
     switch (memo.discriminant) {
       case XdrMemoType.MEMO_NONE:
@@ -280,12 +291,16 @@ class TxRep {
     String prefix,
   ) {
     // Source account.
-    String? sourceAccountStr = TxRepHelper.getValue(map, '$prefix.sourceAccount');
+    String? sourceAccountStr = TxRepHelper.getValue(
+      map,
+      '$prefix.sourceAccount',
+    );
     if (sourceAccountStr == null) {
       throw Exception('missing $prefix.sourceAccount');
     }
-    XdrMuxedAccount sourceAccount =
-        TxRepHelper.parseMuxedAccount(sourceAccountStr);
+    XdrMuxedAccount sourceAccount = TxRepHelper.parseMuxedAccount(
+      sourceAccountStr,
+    );
 
     // Fee.
     String? feeStr = TxRepHelper.getValue(map, '$prefix.fee');
@@ -305,8 +320,10 @@ class TxRep {
       cond = XdrPreconditions.fromTxRep(map, '$prefix.cond');
     } else {
       // Legacy format: check for tx.timeBounds._present.
-      String? tbPresent =
-          TxRepHelper.getValue(map, '$prefix.timeBounds._present');
+      String? tbPresent = TxRepHelper.getValue(
+        map,
+        '$prefix.timeBounds._present',
+      );
       if (tbPresent == 'true') {
         cond = XdrPreconditions(XdrPreconditionType.PRECOND_TIME);
         cond.timeBounds = XdrTimeBounds.fromTxRep(map, '$prefix.timeBounds');
@@ -332,8 +349,10 @@ class TxRep {
     XdrTransactionExt ext;
     if (extV != null && extV == '1') {
       ext = XdrTransactionExt(1);
-      ext.sorobanData =
-          XdrSorobanTransactionData.fromTxRep(map, '$prefix.sorobanData');
+      ext.sorobanData = XdrSorobanTransactionData.fromTxRep(
+        map,
+        '$prefix.sorobanData',
+      );
     } else {
       ext = XdrTransactionExt(0);
     }
@@ -421,22 +440,27 @@ class TxRep {
     int len = int.parse(lenStr);
     List<XdrDecoratedSignature> signatures = [];
     for (int i = 0; i < len; i++) {
-      String? hintStr =
-          TxRepHelper.getValue(map, '${prefix}signatures[$i].hint');
+      String? hintStr = TxRepHelper.getValue(
+        map,
+        '${prefix}signatures[$i].hint',
+      );
       if (hintStr == null) {
         throw Exception('missing ${prefix}signatures[$i].hint');
       }
-      String? sigStr =
-          TxRepHelper.getValue(map, '${prefix}signatures[$i].signature');
+      String? sigStr = TxRepHelper.getValue(
+        map,
+        '${prefix}signatures[$i].signature',
+      );
       if (sigStr == null) {
         throw Exception('missing ${prefix}signatures[$i].signature');
       }
-      signatures.add(XdrDecoratedSignature(
-        XdrSignatureHint(Util.hexToBytes(hintStr)),
-        XdrSignature(Util.hexToBytes(sigStr)),
-      ));
+      signatures.add(
+        XdrDecoratedSignature(
+          XdrSignatureHint(Util.hexToBytes(hintStr)),
+          XdrSignature(Util.hexToBytes(sigStr)),
+        ),
+      );
     }
     return signatures;
   }
-
 }

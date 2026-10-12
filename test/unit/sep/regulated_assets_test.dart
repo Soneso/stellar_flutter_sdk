@@ -7,7 +7,8 @@ import 'dart:convert';
 void main() {
   group('RegulatedAssetsService - fromDomain', () {
     test('creates instance from stellar.toml with regulated assets', () async {
-      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+      final testIssuer =
+          'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
 
       final mockClient = MockClient((request) async {
         if (request.url.path.contains('.well-known/stellar.toml')) {
@@ -34,14 +35,23 @@ approval_criteria="KYC required for all transactions"
       expect(service.regulatedAssets.length, 1);
       expect(service.regulatedAssets[0].code, 'USDC');
       expect(service.regulatedAssets[0].issuerId, testIssuer);
-      expect(service.regulatedAssets[0].approvalServer, 'https://api.example.com/approve');
-      expect(service.regulatedAssets[0].approvalCriteria, 'KYC required for all transactions');
+      expect(
+        service.regulatedAssets[0].approvalServer,
+        'https://api.example.com/approve',
+      );
+      expect(
+        service.regulatedAssets[0].approvalCriteria,
+        'KYC required for all transactions',
+      );
     });
 
     test('filters out non-regulated assets', () async {
-      final testIssuer1 = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
-      final testIssuer2 = 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN';
-      final testIssuer3 = 'GBSTRUSD7IRX73RQZBL3RQUH6KS3O4NYFY3QCALDLZD77XMZOPWAVTUK';
+      final testIssuer1 =
+          'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+      final testIssuer2 =
+          'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN';
+      final testIssuer3 =
+          'GBSTRUSD7IRX73RQZBL3RQUH6KS3O4NYFY3QCALDLZD77XMZOPWAVTUK';
 
       final mockClient = MockClient((request) async {
         if (request.url.path.contains('.well-known/stellar.toml')) {
@@ -75,8 +85,10 @@ issuer="$testIssuer3"
     });
 
     test('handles multiple regulated assets', () async {
-      final testIssuer1 = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
-      final testIssuer2 = 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN';
+      final testIssuer1 =
+          'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+      final testIssuer2 =
+          'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN';
 
       final mockClient = MockClient((request) async {
         if (request.url.path.contains('.well-known/stellar.toml')) {
@@ -107,7 +119,10 @@ approval_criteria="Must be verified goat owner"
       expect(service.regulatedAssets.length, 2);
       expect(service.regulatedAssets[0].code, 'USDC');
       expect(service.regulatedAssets[1].code, 'GOAT');
-      expect(service.regulatedAssets[1].approvalCriteria, 'Must be verified goat owner');
+      expect(
+        service.regulatedAssets[1].approvalCriteria,
+        'Must be verified goat owner',
+      );
     });
 
     test('throws IncompleteInitData when network passphrase missing', () async {
@@ -134,7 +149,8 @@ approval_server="https://api.example.com/approve"
     });
 
     test('uses custom HTTP headers', () async {
-      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+      final testIssuer =
+          'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
 
       final mockClient = MockClient((request) async {
         expect(request.headers['X-Custom-Header'], 'test-value');
@@ -157,7 +173,8 @@ approval_server="https://api.example.com/approve"
     });
 
     test('fromDomain forwards horizonUrl and network to constructor', () async {
-      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+      final testIssuer =
+          'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
 
       // TOML without NETWORK_PASSPHRASE and without HORIZON_URL.
       // The service must use the explicit parameters instead.
@@ -181,21 +198,26 @@ approval_server="https://api.example.com/approve"
         network: Network.TESTNET,
       );
 
-      expect(service.network.networkPassphrase,
-          Network.TESTNET.networkPassphrase);
+      expect(
+        service.network.networkPassphrase,
+        Network.TESTNET.networkPassphrase,
+      );
       expect(service.regulatedAssets, isNotEmpty);
       expect(service.regulatedAssets[0].code, 'USDC');
     });
   });
 
   group('RegulatedAssetsService - constructor network resolution', () {
-    test('constructor uses explicit network parameter without throwing', () async {
-      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+    test(
+      'constructor uses explicit network parameter without throwing',
+      () async {
+        final testIssuer =
+            'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
 
-      // Build a StellarToml with no networkPassphrase but with a horizonUrl.
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('.well-known/stellar.toml')) {
-          return http.Response('''
+        // Build a StellarToml with no networkPassphrase but with a horizonUrl.
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('.well-known/stellar.toml')) {
+            return http.Response('''
 HORIZON_URL="https://horizon-testnet.stellar.org"
 [[CURRENCIES]]
 code="USDC"
@@ -203,24 +225,32 @@ issuer="$testIssuer"
 regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
-        }
-        return http.Response('Not found', 404);
-      });
+          }
+          return http.Response('Not found', 404);
+        });
 
-      final toml = await StellarToml.fromDomain('example.com',
-          httpClient: mockClient);
-      final service = RegulatedAssetsService(toml, network: Network.TESTNET);
+        final toml = await StellarToml.fromDomain(
+          'example.com',
+          httpClient: mockClient,
+        );
+        final service = RegulatedAssetsService(toml, network: Network.TESTNET);
 
-      expect(service.network.networkPassphrase,
-          Network.TESTNET.networkPassphrase);
-    });
+        expect(
+          service.network.networkPassphrase,
+          Network.TESTNET.networkPassphrase,
+        );
+      },
+    );
 
-    test('constructor falls back to toml network passphrase when network is null', () async {
-      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+    test(
+      'constructor falls back to toml network passphrase when network is null',
+      () async {
+        final testIssuer =
+            'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
 
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('.well-known/stellar.toml')) {
-          return http.Response('''
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('.well-known/stellar.toml')) {
+            return http.Response('''
 NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
 HORIZON_URL="https://horizon-testnet.stellar.org"
 [[CURRENCIES]]
@@ -229,40 +259,50 @@ issuer="$testIssuer"
 regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
-        }
-        return http.Response('Not found', 404);
-      });
+          }
+          return http.Response('Not found', 404);
+        });
 
-      final toml = await StellarToml.fromDomain('example.com',
-          httpClient: mockClient);
-      final service = RegulatedAssetsService(toml);
+        final toml = await StellarToml.fromDomain(
+          'example.com',
+          httpClient: mockClient,
+        );
+        final service = RegulatedAssetsService(toml);
 
-      expect(service.network.networkPassphrase,
-          'Test SDF Network ; September 2015');
-    });
+        expect(
+          service.network.networkPassphrase,
+          'Test SDF Network ; September 2015',
+        );
+      },
+    );
 
-    test('constructor throws IncompleteInitData when no network available', () async {
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('.well-known/stellar.toml')) {
-          return http.Response('''
+    test(
+      'constructor throws IncompleteInitData when no network available',
+      () async {
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('.well-known/stellar.toml')) {
+            return http.Response('''
 [[CURRENCIES]]
 code="USDC"
 issuer="GXXXXXXX"
 regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
-        }
-        return http.Response('Not found', 404);
-      });
+          }
+          return http.Response('Not found', 404);
+        });
 
-      final toml = await StellarToml.fromDomain('example.com',
-          httpClient: mockClient);
+        final toml = await StellarToml.fromDomain(
+          'example.com',
+          httpClient: mockClient,
+        );
 
-      expect(
-        () => RegulatedAssetsService(toml),
-        throwsA(isA<IncompleteInitData>()),
-      );
-    });
+        expect(
+          () => RegulatedAssetsService(toml),
+          throwsA(isA<IncompleteInitData>()),
+        );
+      },
+    );
   });
 
   group('RegulatedAssetsService - authorizationRequired', () {
@@ -271,7 +311,8 @@ approval_server="https://api.example.com/approve"
     // signature and exception handling behavior without making actual network calls.
 
     test('throws IssuerAccountNotFound when account lookup fails', () async {
-      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+      final testIssuer =
+          'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
 
       final mockClient = MockClient((request) async {
         if (request.url.path.contains('.well-known/stellar.toml')) {
@@ -303,12 +344,15 @@ approval_server="https://api.example.com/approve"
       );
     });
 
-    test('RegulatedAsset has correct issuer ID for authorization check', () async {
-      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+    test(
+      'RegulatedAsset has correct issuer ID for authorization check',
+      () async {
+        final testIssuer =
+            'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
 
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('.well-known/stellar.toml')) {
-          return http.Response('''
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('.well-known/stellar.toml')) {
+            return http.Response('''
 NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
 HORIZON_URL="https://horizon-testnet.stellar.org"
 [[CURRENCIES]]
@@ -317,21 +361,23 @@ issuer="$testIssuer"
 regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
-        }
-        return http.Response('Not found', 404);
-      });
+          }
+          return http.Response('Not found', 404);
+        });
 
-      final service = await RegulatedAssetsService.fromDomain(
-        'example.com',
-        httpClient: mockClient,
-      );
+        final service = await RegulatedAssetsService.fromDomain(
+          'example.com',
+          httpClient: mockClient,
+        );
 
-      final asset = service.regulatedAssets[0];
-      expect(asset.issuerId, testIssuer);
-    });
+        final asset = service.regulatedAssets[0];
+        expect(asset.issuerId, testIssuer);
+      },
+    );
 
     test('service sdk is initialized with correct network', () async {
-      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+      final testIssuer =
+          'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
 
       final mockClient = MockClient((request) async {
         if (request.url.path.contains('.well-known/stellar.toml')) {
@@ -354,15 +400,20 @@ approval_server="https://api.example.com/approve"
       );
 
       expect(service.sdk, isNotNull);
-      expect(service.network.networkPassphrase, 'Test SDF Network ; September 2015');
+      expect(
+        service.network.networkPassphrase,
+        'Test SDF Network ; September 2015',
+      );
     });
   });
 
   group('RegulatedAssetsService - postTransaction', () {
-    test('successfully posts transaction and receives success status', () async {
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('.well-known/stellar.toml')) {
-          return http.Response('''
+    test(
+      'successfully posts transaction and receives success status',
+      () async {
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('.well-known/stellar.toml')) {
+            return http.Response('''
 NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
 HORIZON_URL="https://horizon-testnet.stellar.org"
 [[CURRENCIES]]
@@ -371,42 +422,48 @@ issuer="GXXXXXXX"
 regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
-        } else if (request.url.toString().contains('approve')) {
-          expect(request.method, 'POST');
-          expect(request.headers['Content-Type'], 'application/json');
+          } else if (request.url.toString().contains('approve')) {
+            expect(request.method, 'POST');
+            expect(request.headers['Content-Type'], 'application/json');
 
-          final body = json.decode(request.body);
-          expect(body['tx'], isNotNull);
+            final body = json.decode(request.body);
+            expect(body['tx'], isNotNull);
 
-          return http.Response(json.encode({
-            'status': 'success',
-            'tx': 'AAAAAgAAAAA...',
-            'message': 'Transaction approved successfully',
-          }), 200);
-        }
-        return http.Response('Not found', 404);
-      });
+            return http.Response(
+              json.encode({
+                'status': 'success',
+                'tx': 'AAAAAgAAAAA...',
+                'message': 'Transaction approved successfully',
+              }),
+              200,
+            );
+          }
+          return http.Response('Not found', 404);
+        });
 
-      final service = await RegulatedAssetsService.fromDomain(
-        'example.com',
-        httpClient: mockClient,
-      );
+        final service = await RegulatedAssetsService.fromDomain(
+          'example.com',
+          httpClient: mockClient,
+        );
 
-      final response = await service.postTransaction(
-        'AAAAAgAAAAA...',
-        'https://api.example.com/approve',
-      );
+        final response = await service.postTransaction(
+          'AAAAAgAAAAA...',
+          'https://api.example.com/approve',
+        );
 
-      expect(response, isA<PostTransactionSuccess>());
-      final success = response as PostTransactionSuccess;
-      expect(success.tx, 'AAAAAgAAAAA...');
-      expect(success.message, 'Transaction approved successfully');
-    });
+        expect(response, isA<PostTransactionSuccess>());
+        final success = response as PostTransactionSuccess;
+        expect(success.tx, 'AAAAAgAAAAA...');
+        expect(success.message, 'Transaction approved successfully');
+      },
+    );
 
-    test('successfully posts transaction and receives revised status', () async {
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('.well-known/stellar.toml')) {
-          return http.Response('''
+    test(
+      'successfully posts transaction and receives revised status',
+      () async {
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('.well-known/stellar.toml')) {
+            return http.Response('''
 NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
 HORIZON_URL="https://horizon-testnet.stellar.org"
 [[CURRENCIES]]
@@ -415,36 +472,42 @@ issuer="GXXXXXXX"
 regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
-        } else if (request.url.toString().contains('approve')) {
-          return http.Response(json.encode({
-            'status': 'revised',
-            'tx': 'AAAAAgAAAABBBBB...',
-            'message': 'Added authorization operations',
-          }), 200);
-        }
-        return http.Response('Not found', 404);
-      });
+          } else if (request.url.toString().contains('approve')) {
+            return http.Response(
+              json.encode({
+                'status': 'revised',
+                'tx': 'AAAAAgAAAABBBBB...',
+                'message': 'Added authorization operations',
+              }),
+              200,
+            );
+          }
+          return http.Response('Not found', 404);
+        });
 
-      final service = await RegulatedAssetsService.fromDomain(
-        'example.com',
-        httpClient: mockClient,
-      );
+        final service = await RegulatedAssetsService.fromDomain(
+          'example.com',
+          httpClient: mockClient,
+        );
 
-      final response = await service.postTransaction(
-        'AAAAAgAAAAA...',
-        'https://api.example.com/approve',
-      );
+        final response = await service.postTransaction(
+          'AAAAAgAAAAA...',
+          'https://api.example.com/approve',
+        );
 
-      expect(response, isA<PostTransactionRevised>());
-      final revised = response as PostTransactionRevised;
-      expect(revised.tx, 'AAAAAgAAAABBBBB...');
-      expect(revised.message, 'Added authorization operations');
-    });
+        expect(response, isA<PostTransactionRevised>());
+        final revised = response as PostTransactionRevised;
+        expect(revised.tx, 'AAAAAgAAAABBBBB...');
+        expect(revised.message, 'Added authorization operations');
+      },
+    );
 
-    test('successfully posts transaction and receives pending status', () async {
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('.well-known/stellar.toml')) {
-          return http.Response('''
+    test(
+      'successfully posts transaction and receives pending status',
+      () async {
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('.well-known/stellar.toml')) {
+            return http.Response('''
 NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
 HORIZON_URL="https://horizon-testnet.stellar.org"
 [[CURRENCIES]]
@@ -453,36 +516,42 @@ issuer="GXXXXXXX"
 regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
-        } else if (request.url.toString().contains('approve')) {
-          return http.Response(json.encode({
-            'status': 'pending',
-            'timeout': 5000,
-            'message': 'Manual review required',
-          }), 200);
-        }
-        return http.Response('Not found', 404);
-      });
+          } else if (request.url.toString().contains('approve')) {
+            return http.Response(
+              json.encode({
+                'status': 'pending',
+                'timeout': 5000,
+                'message': 'Manual review required',
+              }),
+              200,
+            );
+          }
+          return http.Response('Not found', 404);
+        });
 
-      final service = await RegulatedAssetsService.fromDomain(
-        'example.com',
-        httpClient: mockClient,
-      );
+        final service = await RegulatedAssetsService.fromDomain(
+          'example.com',
+          httpClient: mockClient,
+        );
 
-      final response = await service.postTransaction(
-        'AAAAAgAAAAA...',
-        'https://api.example.com/approve',
-      );
+        final response = await service.postTransaction(
+          'AAAAAgAAAAA...',
+          'https://api.example.com/approve',
+        );
 
-      expect(response, isA<PostTransactionPending>());
-      final pending = response as PostTransactionPending;
-      expect(pending.timeout, 5000);
-      expect(pending.message, 'Manual review required');
-    });
+        expect(response, isA<PostTransactionPending>());
+        final pending = response as PostTransactionPending;
+        expect(pending.timeout, 5000);
+        expect(pending.message, 'Manual review required');
+      },
+    );
 
-    test('successfully posts transaction and receives action_required status', () async {
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('.well-known/stellar.toml')) {
-          return http.Response('''
+    test(
+      'successfully posts transaction and receives action_required status',
+      () async {
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('.well-known/stellar.toml')) {
+            return http.Response('''
 NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
 HORIZON_URL="https://horizon-testnet.stellar.org"
 [[CURRENCIES]]
@@ -491,40 +560,46 @@ issuer="GXXXXXXX"
 regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
-        } else if (request.url.toString().contains('approve')) {
-          return http.Response(json.encode({
-            'status': 'action_required',
-            'message': 'KYC information required',
-            'action_url': 'https://api.example.com/kyc',
-            'action_method': 'POST',
-            'action_fields': ['email_address', 'mobile_number'],
-          }), 200);
-        }
-        return http.Response('Not found', 404);
-      });
+          } else if (request.url.toString().contains('approve')) {
+            return http.Response(
+              json.encode({
+                'status': 'action_required',
+                'message': 'KYC information required',
+                'action_url': 'https://api.example.com/kyc',
+                'action_method': 'POST',
+                'action_fields': ['email_address', 'mobile_number'],
+              }),
+              200,
+            );
+          }
+          return http.Response('Not found', 404);
+        });
 
-      final service = await RegulatedAssetsService.fromDomain(
-        'example.com',
-        httpClient: mockClient,
-      );
+        final service = await RegulatedAssetsService.fromDomain(
+          'example.com',
+          httpClient: mockClient,
+        );
 
-      final response = await service.postTransaction(
-        'AAAAAgAAAAA...',
-        'https://api.example.com/approve',
-      );
+        final response = await service.postTransaction(
+          'AAAAAgAAAAA...',
+          'https://api.example.com/approve',
+        );
 
-      expect(response, isA<PostTransactionActionRequired>());
-      final actionRequired = response as PostTransactionActionRequired;
-      expect(actionRequired.message, 'KYC information required');
-      expect(actionRequired.actionUrl, 'https://api.example.com/kyc');
-      expect(actionRequired.actionMethod, 'POST');
-      expect(actionRequired.actionFields, ['email_address', 'mobile_number']);
-    });
+        expect(response, isA<PostTransactionActionRequired>());
+        final actionRequired = response as PostTransactionActionRequired;
+        expect(actionRequired.message, 'KYC information required');
+        expect(actionRequired.actionUrl, 'https://api.example.com/kyc');
+        expect(actionRequired.actionMethod, 'POST');
+        expect(actionRequired.actionFields, ['email_address', 'mobile_number']);
+      },
+    );
 
-    test('successfully posts transaction and receives rejected status', () async {
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('.well-known/stellar.toml')) {
-          return http.Response('''
+    test(
+      'successfully posts transaction and receives rejected status',
+      () async {
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('.well-known/stellar.toml')) {
+            return http.Response('''
 NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
 HORIZON_URL="https://horizon-testnet.stellar.org"
 [[CURRENCIES]]
@@ -533,29 +608,33 @@ issuer="GXXXXXXX"
 regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
-        } else if (request.url.toString().contains('approve')) {
-          return http.Response(json.encode({
-            'status': 'rejected',
-            'error': 'Transaction violates compliance rules',
-          }), 200);
-        }
-        return http.Response('Not found', 404);
-      });
+          } else if (request.url.toString().contains('approve')) {
+            return http.Response(
+              json.encode({
+                'status': 'rejected',
+                'error': 'Transaction violates compliance rules',
+              }),
+              200,
+            );
+          }
+          return http.Response('Not found', 404);
+        });
 
-      final service = await RegulatedAssetsService.fromDomain(
-        'example.com',
-        httpClient: mockClient,
-      );
+        final service = await RegulatedAssetsService.fromDomain(
+          'example.com',
+          httpClient: mockClient,
+        );
 
-      final response = await service.postTransaction(
-        'AAAAAgAAAAA...',
-        'https://api.example.com/approve',
-      );
+        final response = await service.postTransaction(
+          'AAAAAgAAAAA...',
+          'https://api.example.com/approve',
+        );
 
-      expect(response, isA<PostTransactionRejected>());
-      final rejected = response as PostTransactionRejected;
-      expect(rejected.error, 'Transaction violates compliance rules');
-    });
+        expect(response, isA<PostTransactionRejected>());
+        final rejected = response as PostTransactionRejected;
+        expect(rejected.error, 'Transaction violates compliance rules');
+      },
+    );
 
     test('handles HTTP 400 error response with rejected status', () async {
       final mockClient = MockClient((request) async {
@@ -571,10 +650,13 @@ approval_server="https://api.example.com/approve"
           ''', 200);
         } else if (request.url.toString().contains('approve')) {
           // 400 responses with error field need a status to be parsed
-          return http.Response(json.encode({
-            'status': 'rejected',
-            'error': 'Invalid transaction format',
-          }), 400);
+          return http.Response(
+            json.encode({
+              'status': 'rejected',
+              'error': 'Invalid transaction format',
+            }),
+            400,
+          );
         }
         return http.Response('Not found', 404);
       });
@@ -594,10 +676,12 @@ approval_server="https://api.example.com/approve"
       expect(rejected.error, 'Invalid transaction format');
     });
 
-    test('throws UnknownPostTransactionResponse on unexpected status code', () async {
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('.well-known/stellar.toml')) {
-          return http.Response('''
+    test(
+      'throws UnknownPostTransactionResponse on unexpected status code',
+      () async {
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('.well-known/stellar.toml')) {
+            return http.Response('''
 NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
 HORIZON_URL="https://horizon-testnet.stellar.org"
 [[CURRENCIES]]
@@ -606,30 +690,33 @@ issuer="GXXXXXXX"
 regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
-        } else if (request.url.toString().contains('approve')) {
-          return http.Response('Internal Server Error', 500);
-        }
-        return http.Response('Not found', 404);
-      });
+          } else if (request.url.toString().contains('approve')) {
+            return http.Response('Internal Server Error', 500);
+          }
+          return http.Response('Not found', 404);
+        });
 
-      final service = await RegulatedAssetsService.fromDomain(
-        'example.com',
-        httpClient: mockClient,
-      );
+        final service = await RegulatedAssetsService.fromDomain(
+          'example.com',
+          httpClient: mockClient,
+        );
 
-      expect(
-        () => service.postTransaction(
-          'AAAAAgAAAAA...',
-          'https://api.example.com/approve',
-        ),
-        throwsA(isA<UnknownPostTransactionResponse>()),
-      );
-    });
+        expect(
+          () => service.postTransaction(
+            'AAAAAgAAAAA...',
+            'https://api.example.com/approve',
+          ),
+          throwsA(isA<UnknownPostTransactionResponse>()),
+        );
+      },
+    );
 
-    test('throws UnknownPostTransactionResponseStatus on unknown status', () async {
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('.well-known/stellar.toml')) {
-          return http.Response('''
+    test(
+      'throws UnknownPostTransactionResponseStatus on unknown status',
+      () async {
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('.well-known/stellar.toml')) {
+            return http.Response('''
 NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
 HORIZON_URL="https://horizon-testnet.stellar.org"
 [[CURRENCIES]]
@@ -638,28 +725,32 @@ issuer="GXXXXXXX"
 regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
-        } else if (request.url.toString().contains('approve')) {
-          return http.Response(json.encode({
-            'status': 'unknown_status',
-            'message': 'Something unexpected',
-          }), 200);
-        }
-        return http.Response('Not found', 404);
-      });
+          } else if (request.url.toString().contains('approve')) {
+            return http.Response(
+              json.encode({
+                'status': 'unknown_status',
+                'message': 'Something unexpected',
+              }),
+              200,
+            );
+          }
+          return http.Response('Not found', 404);
+        });
 
-      final service = await RegulatedAssetsService.fromDomain(
-        'example.com',
-        httpClient: mockClient,
-      );
+        final service = await RegulatedAssetsService.fromDomain(
+          'example.com',
+          httpClient: mockClient,
+        );
 
-      expect(
-        () => service.postTransaction(
-          'AAAAAgAAAAA...',
-          'https://api.example.com/approve',
-        ),
-        throwsA(isA<UnknownPostTransactionResponseStatus>()),
-      );
-    });
+        expect(
+          () => service.postTransaction(
+            'AAAAAgAAAAA...',
+            'https://api.example.com/approve',
+          ),
+          throwsA(isA<UnknownPostTransactionResponseStatus>()),
+        );
+      },
+    );
 
     test('uses custom HTTP headers', () async {
       final mockClient = MockClient((request) async {
@@ -675,10 +766,10 @@ approval_server="https://api.example.com/approve"
           ''', 200);
         } else if (request.url.toString().contains('approve')) {
           expect(request.headers['X-Custom-Header'], 'custom-value');
-          return http.Response(json.encode({
-            'status': 'success',
-            'tx': 'AAAAAgAAAAA...',
-          }), 200);
+          return http.Response(
+            json.encode({'status': 'success', 'tx': 'AAAAAgAAAAA...'}),
+            200,
+          );
         }
         return http.Response('Not found', 404);
       });
@@ -697,10 +788,12 @@ approval_server="https://api.example.com/approve"
   });
 
   group('RegulatedAssetsService - postAction', () {
-    test('successfully posts action and receives no_further_action_required', () async {
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('.well-known/stellar.toml')) {
-          return http.Response('''
+    test(
+      'successfully posts action and receives no_further_action_required',
+      () async {
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('.well-known/stellar.toml')) {
+            return http.Response('''
 NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
 HORIZON_URL="https://horizon-testnet.stellar.org"
 [[CURRENCIES]]
@@ -709,32 +802,34 @@ issuer="GXXXXXXX"
 regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
-        } else if (request.url.toString().contains('kyc')) {
-          expect(request.method, 'POST');
-          expect(request.headers['Content-Type'], 'application/json');
+          } else if (request.url.toString().contains('kyc')) {
+            expect(request.method, 'POST');
+            expect(request.headers['Content-Type'], 'application/json');
 
-          final body = json.decode(request.body);
-          expect(body['email_address'], 'user@example.com');
+            final body = json.decode(request.body);
+            expect(body['email_address'], 'user@example.com');
 
-          return http.Response(json.encode({
-            'result': 'no_further_action_required',
-          }), 200);
-        }
-        return http.Response('Not found', 404);
-      });
+            return http.Response(
+              json.encode({'result': 'no_further_action_required'}),
+              200,
+            );
+          }
+          return http.Response('Not found', 404);
+        });
 
-      final service = await RegulatedAssetsService.fromDomain(
-        'example.com',
-        httpClient: mockClient,
-      );
+        final service = await RegulatedAssetsService.fromDomain(
+          'example.com',
+          httpClient: mockClient,
+        );
 
-      final response = await service.postAction(
-        'https://api.example.com/kyc',
-        {'email_address': 'user@example.com'},
-      );
+        final response = await service.postAction(
+          'https://api.example.com/kyc',
+          {'email_address': 'user@example.com'},
+        );
 
-      expect(response, isA<PostActionDone>());
-    });
+        expect(response, isA<PostActionDone>());
+      },
+    );
 
     test('successfully posts action and receives follow_next_url', () async {
       final mockClient = MockClient((request) async {
@@ -749,11 +844,14 @@ regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
         } else if (request.url.toString().contains('kyc')) {
-          return http.Response(json.encode({
-            'result': 'follow_next_url',
-            'next_url': 'https://api.example.com/kyc/verify',
-            'message': 'Please verify your identity',
-          }), 200);
+          return http.Response(
+            json.encode({
+              'result': 'follow_next_url',
+              'next_url': 'https://api.example.com/kyc/verify',
+              'message': 'Please verify your identity',
+            }),
+            200,
+          );
         }
         return http.Response('Not found', 404);
       });
@@ -763,10 +861,9 @@ approval_server="https://api.example.com/approve"
         httpClient: mockClient,
       );
 
-      final response = await service.postAction(
-        'https://api.example.com/kyc',
-        {'email_address': 'user@example.com'},
-      );
+      final response = await service.postAction('https://api.example.com/kyc', {
+        'email_address': 'user@example.com',
+      });
 
       expect(response, isA<PostActionNextUrl>());
       final nextUrl = response as PostActionNextUrl;
@@ -774,10 +871,12 @@ approval_server="https://api.example.com/approve"
       expect(nextUrl.message, 'Please verify your identity');
     });
 
-    test('throws UnknownPostActionResponse on unexpected status code', () async {
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('.well-known/stellar.toml')) {
-          return http.Response('''
+    test(
+      'throws UnknownPostActionResponse on unexpected status code',
+      () async {
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('.well-known/stellar.toml')) {
+            return http.Response('''
 NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
 HORIZON_URL="https://horizon-testnet.stellar.org"
 [[CURRENCIES]]
@@ -786,25 +885,25 @@ issuer="GXXXXXXX"
 regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
-        } else if (request.url.toString().contains('kyc')) {
-          return http.Response('Internal Server Error', 500);
-        }
-        return http.Response('Not found', 404);
-      });
+          } else if (request.url.toString().contains('kyc')) {
+            return http.Response('Internal Server Error', 500);
+          }
+          return http.Response('Not found', 404);
+        });
 
-      final service = await RegulatedAssetsService.fromDomain(
-        'example.com',
-        httpClient: mockClient,
-      );
+        final service = await RegulatedAssetsService.fromDomain(
+          'example.com',
+          httpClient: mockClient,
+        );
 
-      expect(
-        () => service.postAction(
-          'https://api.example.com/kyc',
-          {'email_address': 'user@example.com'},
-        ),
-        throwsA(isA<UnknownPostActionResponse>()),
-      );
-    });
+        expect(
+          () => service.postAction('https://api.example.com/kyc', {
+            'email_address': 'user@example.com',
+          }),
+          throwsA(isA<UnknownPostActionResponse>()),
+        );
+      },
+    );
 
     test('throws UnknownPostActionResponseResult on unknown result', () async {
       final mockClient = MockClient((request) async {
@@ -819,9 +918,7 @@ regulated=true
 approval_server="https://api.example.com/approve"
           ''', 200);
         } else if (request.url.toString().contains('kyc')) {
-          return http.Response(json.encode({
-            'result': 'unknown_result',
-          }), 200);
+          return http.Response(json.encode({'result': 'unknown_result'}), 200);
         }
         return http.Response('Not found', 404);
       });
@@ -832,10 +929,9 @@ approval_server="https://api.example.com/approve"
       );
 
       expect(
-        () => service.postAction(
-          'https://api.example.com/kyc',
-          {'email_address': 'user@example.com'},
-        ),
+        () => service.postAction('https://api.example.com/kyc', {
+          'email_address': 'user@example.com',
+        }),
         throwsA(isA<UnknownPostActionResponseResult>()),
       );
     });
@@ -854,9 +950,10 @@ approval_server="https://api.example.com/approve"
           ''', 200);
         } else if (request.url.toString().contains('kyc')) {
           expect(request.headers['X-Custom-Header'], 'custom-value');
-          return http.Response(json.encode({
-            'result': 'no_further_action_required',
-          }), 200);
+          return http.Response(
+            json.encode({'result': 'no_further_action_required'}),
+            200,
+          );
         }
         return http.Response('Not found', 404);
       });
@@ -867,10 +964,9 @@ approval_server="https://api.example.com/approve"
         httpRequestHeaders: {'X-Custom-Header': 'custom-value'},
       );
 
-      await service.postAction(
-        'https://api.example.com/kyc',
-        {'email_address': 'user@example.com'},
-      );
+      await service.postAction('https://api.example.com/kyc', {
+        'email_address': 'user@example.com',
+      });
     });
   });
 
@@ -962,12 +1058,16 @@ approval_server="https://api.example.com/approve"
 
   group('RegulatedAssetsService - Exception Classes', () {
     test('IssuerAccountNotFound formats message correctly', () {
-      final exception = IssuerAccountNotFound('Issuer account GXXXXXXX not found');
+      final exception = IssuerAccountNotFound(
+        'Issuer account GXXXXXXX not found',
+      );
       expect(exception.toString(), 'Issuer account GXXXXXXX not found');
     });
 
     test('IncompleteInitData formats message correctly', () {
-      final exception = IncompleteInitData('could not find a network passphrase');
+      final exception = IncompleteInitData(
+        'could not find a network passphrase',
+      );
       expect(exception.toString(), 'could not find a network passphrase');
     });
 
@@ -979,7 +1079,10 @@ approval_server="https://api.example.com/approve"
     });
 
     test('UnknownPostTransactionResponse formats message correctly', () {
-      final exception = UnknownPostTransactionResponse(500, 'Internal Server Error');
+      final exception = UnknownPostTransactionResponse(
+        500,
+        'Internal Server Error',
+      );
       expect(exception.toString(), contains('500'));
       expect(exception.toString(), contains('Internal Server Error'));
       expect(exception.code, 500);
@@ -1004,7 +1107,8 @@ approval_server="https://api.example.com/approve"
 
   group('RegulatedAssetsService - RegulatedAsset', () {
     test('creates regulated asset correctly', () {
-      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+      final testIssuer =
+          'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
 
       final asset = RegulatedAsset(
         'USDC',
@@ -1020,7 +1124,8 @@ approval_server="https://api.example.com/approve"
     });
 
     test('creates regulated asset without approval criteria', () {
-      final testIssuer = 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN';
+      final testIssuer =
+          'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN';
 
       final asset = RegulatedAsset(
         'GOAT',
@@ -1035,7 +1140,8 @@ approval_server="https://api.example.com/approve"
     });
 
     test('toXdr creates valid XDR asset', () {
-      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+      final testIssuer =
+          'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
 
       final asset = RegulatedAsset(
         'USDC',
@@ -1048,7 +1154,8 @@ approval_server="https://api.example.com/approve"
     });
 
     test('type returns correct asset type', () {
-      final testIssuer = 'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
+      final testIssuer =
+          'GDIROJW2YHMSFZJJ4R5XWWNUVND5I45YEWS5DSFKXCHMADZ5V374U2LM';
 
       final asset4 = RegulatedAsset(
         'USDC',

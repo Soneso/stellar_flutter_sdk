@@ -41,7 +41,6 @@ void main() {
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJHQTZVSVhYUEVXWUZJTE5VSVdBQzM3WTRRUEVaTVFWREpIREtWV0ZaSjJLQ1dVQklVNUlYWk5EQSIsImp0aSI6IjE0NGQzNjdiY2IwZTcyY2FiZmRiZGU2MGVhZTBhZDczM2NjNjVkMmE2NTg3MDgzZGFiM2Q2MTZmODg1MTkwMjQiLCJpc3MiOiJodHRwczovL2ZsYXBweS1iaXJkLWRhcHAuZmlyZWJhc2VhcHAuY29tLyIsImlhdCI6MTUzNDI1Nzk5NCwiZXhwIjoxNTM0MzQ0Mzk0fQ.8nbB83Z6vGBgC1X9r3N6oQCFTBzDiITAfCJasRft0z0";
 
   test('test get info', () async {
-
     final service = SEP38QuoteService(quoteServer);
 
     service.httpClient = MockClient((request) async {
@@ -59,10 +58,14 @@ void main() {
     SEP38InfoResponse response = await service.info(jwtToken: jwtToken);
     List<SEP38Asset> assets = response.assets;
     assert(assets.length == 3);
-    assert(assets[0].asset ==
-        'stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN');
-    assert(assets[1].asset ==
-        'stellar:BRL:GDVKY2GU2DRXWTBEYJJWSFXIGBZV6AZNBVVSUHEPZI54LIS6BA7DVVSP');
+    assert(
+      assets[0].asset ==
+          'stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
+    );
+    assert(
+      assets[1].asset ==
+          'stellar:BRL:GDVKY2GU2DRXWTBEYJJWSFXIGBZV6AZNBVVSUHEPZI54LIS6BA7DVVSP',
+    );
     assert(assets[2].asset == 'iso4217:BRL');
     assert(assets[2].countryCodes != null);
     assert(assets[2].countryCodes!.length == 1);
@@ -70,25 +73,37 @@ void main() {
     assert(assets[2].sellDeliveryMethods != null);
     assert(assets[2].sellDeliveryMethods!.length == 3);
     assert(assets[2].sellDeliveryMethods![0].name == 'cash');
-    assert(assets[2].sellDeliveryMethods![0].description ==
-        'Deposit cash BRL at one of our agent locations.');
+    assert(
+      assets[2].sellDeliveryMethods![0].description ==
+          'Deposit cash BRL at one of our agent locations.',
+    );
     assert(assets[2].sellDeliveryMethods![1].name == 'ACH');
-    assert(assets[2].sellDeliveryMethods![1].description ==
-        "Send BRL directly to the Anchor's bank account.");
+    assert(
+      assets[2].sellDeliveryMethods![1].description ==
+          "Send BRL directly to the Anchor's bank account.",
+    );
     assert(assets[2].sellDeliveryMethods![2].name == 'PIX');
-    assert(assets[2].sellDeliveryMethods![2].description ==
-        "Send BRL directly to the Anchor's bank account.");
+    assert(
+      assets[2].sellDeliveryMethods![2].description ==
+          "Send BRL directly to the Anchor's bank account.",
+    );
     assert(assets[2].buyDeliveryMethods != null);
     assert(assets[2].buyDeliveryMethods!.length == 3);
     assert(assets[2].buyDeliveryMethods![0].name == 'cash');
-    assert(assets[2].buyDeliveryMethods![0].description ==
-        'Pick up cash BRL at one of our payout locations.');
+    assert(
+      assets[2].buyDeliveryMethods![0].description ==
+          'Pick up cash BRL at one of our payout locations.',
+    );
     assert(assets[2].buyDeliveryMethods![1].name == 'ACH');
-    assert(assets[2].buyDeliveryMethods![1].description ==
-        "Have BRL sent directly to your bank account.");
+    assert(
+      assets[2].buyDeliveryMethods![1].description ==
+          "Have BRL sent directly to your bank account.",
+    );
     assert(assets[2].buyDeliveryMethods![2].name == 'PIX');
-    assert(assets[2].buyDeliveryMethods![2].description ==
-        "Have BRL sent directly to the account of your choice.");
+    assert(
+      assets[2].buyDeliveryMethods![2].description ==
+          "Have BRL sent directly to the account of your choice.",
+    );
   });
 
   test('test get prices', () async {
@@ -113,11 +128,12 @@ void main() {
     var buyDeliveryMethod = 'ACH';
 
     SEP38PricesResponse response = await service.prices(
-        sellAsset: sellAsset,
-        sellAmount: sellAmount,
-        buyDeliveryMethod: buyDeliveryMethod,
-        countryCode: countryCode,
-        jwtToken: jwtToken);
+      sellAsset: sellAsset,
+      sellAmount: sellAmount,
+      buyDeliveryMethod: buyDeliveryMethod,
+      countryCode: countryCode,
+      jwtToken: jwtToken,
+    );
     List<SEP38BuyAsset> buyAssets = response.buyAssets;
     assert(buyAssets.length == 1);
     assert(buyAssets[0].asset == 'iso4217:BRL');
@@ -161,13 +177,14 @@ void main() {
     var context = 'sep6';
 
     SEP38PriceResponse response = await service.price(
-        context: context,
-        sellAsset: sellAsset,
-        buyAsset: buyAsset,
-        sellAmount: sellAmount,
-        sellDeliveryMethod: sellDeliveryMethod,
-        countryCode: countryCode,
-        jwtToken: jwtToken);
+      context: context,
+      sellAsset: sellAsset,
+      buyAsset: buyAsset,
+      sellAmount: sellAmount,
+      sellDeliveryMethod: sellDeliveryMethod,
+      countryCode: countryCode,
+      jwtToken: jwtToken,
+    );
 
     assert(response.totalPrice == "5.42");
     assert(response.price == "5.00");
@@ -186,13 +203,14 @@ void main() {
     context = 'sep31';
 
     response = await service.price(
-        context: context,
-        sellAsset: sellAsset,
-        buyAsset: buyAsset,
-        buyAmount: buyAmount,
-        sellDeliveryMethod: sellDeliveryMethod,
-        countryCode: countryCode,
-        jwtToken: jwtToken);
+      context: context,
+      sellAsset: sellAsset,
+      buyAsset: buyAsset,
+      buyAmount: buyAmount,
+      sellDeliveryMethod: sellDeliveryMethod,
+      countryCode: countryCode,
+      jwtToken: jwtToken,
+    );
 
     assert(response.totalPrice == "5.42");
     assert(response.price == "5.00");
@@ -200,8 +218,10 @@ void main() {
     assert(response.buyAmount == "100");
     fee = response.fee;
     assert(fee.total == "8.40");
-    assert(fee.asset ==
-        "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN");
+    assert(
+      fee.asset ==
+          "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+    );
     var feeDetails = fee.details;
     assert(feeDetails != null);
     assert(feeDetails!.length == 1);
@@ -217,13 +237,14 @@ void main() {
     context = 'sep6';
 
     response = await service.price(
-        context: context,
-        sellAsset: sellAsset,
-        buyAsset: buyAsset,
-        sellAmount: sellAmount,
-        buyDeliveryMethod: buyDeliveryMethod,
-        countryCode: countryCode,
-        jwtToken: jwtToken);
+      context: context,
+      sellAsset: sellAsset,
+      buyAsset: buyAsset,
+      sellAmount: sellAmount,
+      buyDeliveryMethod: buyDeliveryMethod,
+      countryCode: countryCode,
+      jwtToken: jwtToken,
+    );
 
     assert(response.totalPrice == "0.20");
     assert(response.price == "0.18");
@@ -236,8 +257,10 @@ void main() {
     assert(feeDetails != null);
     assert(feeDetails!.length == 1);
     assert(feeDetails![0].name == "PIX fee");
-    assert(feeDetails![0].description ==
-        "Fee charged in order to process the outgoing PIX transaction.");
+    assert(
+      feeDetails![0].description ==
+          "Fee charged in order to process the outgoing PIX transaction.",
+    );
     assert(feeDetails![0].amount == "55.5556");
 
     sellAsset =
@@ -249,13 +272,14 @@ void main() {
     context = 'sep31';
 
     response = await service.price(
-        context: context,
-        sellAsset: sellAsset,
-        buyAsset: buyAsset,
-        buyAmount: buyAmount,
-        buyDeliveryMethod: buyDeliveryMethod,
-        countryCode: countryCode,
-        jwtToken: jwtToken);
+      context: context,
+      sellAsset: sellAsset,
+      buyAsset: buyAsset,
+      buyAmount: buyAmount,
+      buyDeliveryMethod: buyDeliveryMethod,
+      countryCode: countryCode,
+      jwtToken: jwtToken,
+    );
 
     assert(response.totalPrice == "0.20");
     assert(response.price == "0.18");
@@ -263,8 +287,10 @@ void main() {
     assert(response.buyAmount == "500");
     fee = response.fee;
     assert(fee.total == "10.00");
-    assert(fee.asset ==
-        "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN");
+    assert(
+      fee.asset ==
+          "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+    );
     feeDetails = fee.details;
     assert(feeDetails != null);
     assert(feeDetails!.length == 2);
@@ -272,21 +298,24 @@ void main() {
     assert(feeDetails![0].description == null);
     assert(feeDetails![0].amount == "5.00");
     assert(feeDetails![1].name == "PIX fee");
-    assert(feeDetails![1].description ==
-        "Fee charged in order to process the outgoing BRL PIX transaction.");
+    assert(
+      feeDetails![1].description ==
+          "Fee charged in order to process the outgoing BRL PIX transaction.",
+    );
     assert(feeDetails![1].amount == "5.00");
 
     var ex = false;
     try {
       response = await service.price(
-          context: context,
-          sellAsset: sellAsset,
-          buyAsset: buyAsset,
-          buyAmount: buyAmount,
-          sellAmount: sellAmount,
-          buyDeliveryMethod: buyDeliveryMethod,
-          countryCode: countryCode,
-          jwtToken: jwtToken);
+        context: context,
+        sellAsset: sellAsset,
+        buyAsset: buyAsset,
+        buyAmount: buyAmount,
+        sellAmount: sellAmount,
+        buyDeliveryMethod: buyDeliveryMethod,
+        countryCode: countryCode,
+        jwtToken: jwtToken,
+      );
     } catch (ArgumentError) {
       // The caller must provide either [sellAmount] or [buyAmount], but not both.
       ex = true;
@@ -297,12 +326,13 @@ void main() {
     ex = false;
     try {
       response = await service.price(
-          context: context,
-          sellAsset: sellAsset,
-          buyAsset: buyAsset,
-          buyDeliveryMethod: buyDeliveryMethod,
-          countryCode: countryCode,
-          jwtToken: jwtToken);
+        context: context,
+        sellAsset: sellAsset,
+        buyAsset: buyAsset,
+        buyDeliveryMethod: buyDeliveryMethod,
+        countryCode: countryCode,
+        jwtToken: jwtToken,
+      );
     } catch (ArgumentError) {
       // The caller must provide either [sellAmount] or [buyAmount], but not both.
       ex = true;
@@ -322,7 +352,9 @@ void main() {
         var sellAsset = json.decode(request.body)["sell_asset"];
         if (sellAsset == 'iso4217:SAD') {
           return http.Response(
-              "{'error':'SAD not allowed'}", 403); // permission denied
+            "{'error':'SAD not allowed'}",
+            403,
+          ); // permission denied
         }
 
         return http.Response(firmQuoteResponseSuccess(), 200); // OK
@@ -341,13 +373,14 @@ void main() {
     var context = 'sep31';
 
     var request = SEP38PostQuoteRequest(
-        context: context,
-        sellAsset: sellAsset,
-        buyAsset: buyAsset,
-        buyAmount: buyAmount,
-        expireAfter: expireAfter,
-        sellDeliveryMethod: sellDeliveryMethod,
-        countryCode: countryCode);
+      context: context,
+      sellAsset: sellAsset,
+      buyAsset: buyAsset,
+      buyAmount: buyAmount,
+      expireAfter: expireAfter,
+      sellDeliveryMethod: sellDeliveryMethod,
+      countryCode: countryCode,
+    );
     SEP38QuoteResponse response = await service.postQuote(request, jwtToken);
     assert(response.id == 'de762cda-a193-4961-861e-57b31fed6eb3');
     assert(response.expiresAt == DateTime.parse('2024-02-01T10:40:14+0000'));
@@ -360,8 +393,10 @@ void main() {
 
     var fee = response.fee;
     assert(fee.total == "8.40");
-    assert(fee.asset ==
-        "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN");
+    assert(
+      fee.asset ==
+          "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+    );
     var feeDetails = fee.details;
     assert(feeDetails != null);
     assert(feeDetails!.length == 1);
@@ -371,14 +406,15 @@ void main() {
     var ex = false;
     try {
       request = SEP38PostQuoteRequest(
-          context: context,
-          sellAsset: sellAsset,
-          buyAsset: buyAsset,
-          buyAmount: buyAmount,
-          sellAmount: "542",
-          expireAfter: expireAfter,
-          sellDeliveryMethod: sellDeliveryMethod,
-          countryCode: countryCode);
+        context: context,
+        sellAsset: sellAsset,
+        buyAsset: buyAsset,
+        buyAmount: buyAmount,
+        sellAmount: "542",
+        expireAfter: expireAfter,
+        sellDeliveryMethod: sellDeliveryMethod,
+        countryCode: countryCode,
+      );
       response = await service.postQuote(request, jwtToken);
     } catch (ArgumentError) {
       ex = true;
@@ -389,12 +425,13 @@ void main() {
     ex = false;
     try {
       request = SEP38PostQuoteRequest(
-          context: context,
-          sellAsset: sellAsset,
-          buyAsset: buyAsset,
-          expireAfter: expireAfter,
-          sellDeliveryMethod: sellDeliveryMethod,
-          countryCode: countryCode);
+        context: context,
+        sellAsset: sellAsset,
+        buyAsset: buyAsset,
+        expireAfter: expireAfter,
+        sellDeliveryMethod: sellDeliveryMethod,
+        countryCode: countryCode,
+      );
       response = await service.postQuote(request, jwtToken);
     } catch (ArgumentError) {
       ex = true;
@@ -403,13 +440,14 @@ void main() {
     ex = false;
     try {
       request = SEP38PostQuoteRequest(
-          context: context,
-          sellAsset: "iso4217:SAD",
-          buyAsset: buyAsset,
-          buyAmount: buyAmount,
-          expireAfter: expireAfter,
-          sellDeliveryMethod: sellDeliveryMethod,
-          countryCode: countryCode);
+        context: context,
+        sellAsset: "iso4217:SAD",
+        buyAsset: buyAsset,
+        buyAmount: buyAmount,
+        expireAfter: expireAfter,
+        sellDeliveryMethod: sellDeliveryMethod,
+        countryCode: countryCode,
+      );
       response = await service.postQuote(request, jwtToken);
     } catch (SEP38PermissionDenied) {
       ex = true;
@@ -422,9 +460,9 @@ void main() {
       String authHeader = request.headers["Authorization"]!;
       if (request.url.toString().startsWith(quoteServer) &&
           request.method == "GET" &&
-          request.url
-              .toString()
-              .endsWith("quote/de762cda-a193-4961-861e-57b31fed6eb3") &&
+          request.url.toString().endsWith(
+            "quote/de762cda-a193-4961-861e-57b31fed6eb3",
+          ) &&
           authHeader.contains(jwtToken)) {
         return http.Response(firmQuoteResponseSuccess(), 200); // OK
       }
@@ -433,21 +471,27 @@ void main() {
     });
 
     SEP38QuoteResponse response = await service.getQuote(
-        'de762cda-a193-4961-861e-57b31fed6eb3', jwtToken);
+      'de762cda-a193-4961-861e-57b31fed6eb3',
+      jwtToken,
+    );
     assert(response.id == 'de762cda-a193-4961-861e-57b31fed6eb3');
     assert(response.expiresAt == DateTime.parse('2024-02-01T10:40:14+0000'));
     assert(response.totalPrice == "5.42");
     assert(response.price == "5.00");
     assert(response.sellAsset == 'iso4217:BRL');
-    assert(response.buyAsset ==
-        'stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN');
+    assert(
+      response.buyAsset ==
+          'stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
+    );
     assert(response.sellAmount == "542");
     assert(response.buyAmount == "100");
 
     var fee = response.fee;
     assert(fee.total == "8.40");
-    assert(fee.asset ==
-        "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN");
+    assert(
+      fee.asset ==
+          "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+    );
     var feeDetails = fee.details;
     assert(feeDetails != null);
     assert(feeDetails!.length == 1);

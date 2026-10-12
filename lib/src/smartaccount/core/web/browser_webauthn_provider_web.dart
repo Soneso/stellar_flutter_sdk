@@ -135,8 +135,10 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
         credential.response as web.AuthenticatorAttestationResponse;
     final attestationObjectBytes = _bufferToBytes(response.attestationObject);
 
-    final extractedPublicKey =
-        _extractPublicKey(response, attestationObjectBytes);
+    final extractedPublicKey = _extractPublicKey(
+      response,
+      attestationObjectBytes,
+    );
     final transports = _extractTransports(response);
     final flagsInfo = _parseAuthenticatorFlags(attestationObjectBytes);
 
@@ -217,8 +219,7 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
 
     final credential = credentialAny as web.PublicKeyCredential;
     final credentialIdBytes = _bufferToBytes(credential.rawId);
-    final response =
-        credential.response as web.AuthenticatorAssertionResponse;
+    final response = credential.response as web.AuthenticatorAssertionResponse;
     final authenticatorDataBytes = _bufferToBytes(response.authenticatorData);
     final clientDataJSONBytes = _bufferToBytes(response.clientDataJSON);
     final signatureBytes = _bufferToBytes(response.signature);
@@ -242,10 +243,14 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
     final spkiKey = _tryGetPublicKeyFromResponse(response);
     if (spkiKey != null) return spkiKey;
 
-    final authDataKey = _tryExtractFromAuthenticatorData(attestationObjectBytes);
+    final authDataKey = _tryExtractFromAuthenticatorData(
+      attestationObjectBytes,
+    );
     if (authDataKey != null) return authDataKey;
 
-    final patternKey = _tryExtractFromAttestationPattern(attestationObjectBytes);
+    final patternKey = _tryExtractFromAttestationPattern(
+      attestationObjectBytes,
+    );
     if (patternKey != null) return patternKey;
 
     throw WebAuthnException.registrationFailed(
@@ -264,8 +269,9 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
       // callable (`typeof === "function"`) before invoking; otherwise fall
       // through to attestation-object parsing.
       if (!response.has('getPublicKey')) return null;
-      final getPublicKeyProp =
-          response.getProperty<JSAny?>('getPublicKey'.toJS);
+      final getPublicKeyProp = response.getProperty<JSAny?>(
+        'getPublicKey'.toJS,
+      );
       if (getPublicKeyProp == null) return null;
       if (!getPublicKeyProp.typeofEquals('function')) return null;
 
@@ -281,10 +287,14 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
     }
   }
 
-  Uint8List? _tryExtractFromAuthenticatorData(Uint8List attestationObjectBytes) {
+  Uint8List? _tryExtractFromAuthenticatorData(
+    Uint8List attestationObjectBytes,
+  ) {
     try {
-      final authData = WebAuthnCborParser
-          .extractAuthenticatorDataFromAttestation(attestationObjectBytes);
+      final authData =
+          WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
+            attestationObjectBytes,
+          );
       if (authData == null) return null;
       return SmartAccountUtils.extractPublicKeyFromAuthenticatorData(authData);
     } on Object {
@@ -292,10 +302,13 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
     }
   }
 
-  Uint8List? _tryExtractFromAttestationPattern(Uint8List attestationObjectBytes) {
+  Uint8List? _tryExtractFromAttestationPattern(
+    Uint8List attestationObjectBytes,
+  ) {
     try {
-      return SmartAccountUtils
-          .extractPublicKeyFromAttestationObject(attestationObjectBytes);
+      return SmartAccountUtils.extractPublicKeyFromAttestationObject(
+        attestationObjectBytes,
+      );
     } on Object {
       return null;
     }
@@ -305,9 +318,10 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
   // Authenticator flags + transports
   // ---------------------------------------------------------------------------
 
-  AuthenticatorFlags _parseAuthenticatorFlags(Uint8List attestationObjectBytes) {
-    final authData =
-        WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
+  AuthenticatorFlags _parseAuthenticatorFlags(
+    Uint8List attestationObjectBytes,
+  ) {
+    final authData = WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
       attestationObjectBytes,
     );
     return WebAuthnCborParser.parseAuthenticatorFlags(authData);
@@ -317,7 +331,8 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
     web.AuthenticatorAttestationResponse response,
   ) {
     try {
-      final hasGetTransports = response.has('getTransports') &&
+      final hasGetTransports =
+          response.has('getTransports') &&
           response.getProperty<JSAny?>('getTransports'.toJS) != null;
       if (!hasGetTransports) return null;
 
@@ -326,9 +341,7 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
       if (jsArray == null) return null;
       final dartList = jsArray.toDart;
       if (dartList.isEmpty) return null;
-      return dartList
-          .map((s) => s.toDart)
-          .toList(growable: false);
+      return dartList.map((s) => s.toDart).toList(growable: false);
     } on Object {
       return null;
     }
@@ -378,7 +391,10 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
       default:
         return isRegistration
             ? WebAuthnException.registrationFailed(errorMessage, cause: error)
-            : WebAuthnException.authenticationFailed(errorMessage, cause: error);
+            : WebAuthnException.authenticationFailed(
+                errorMessage,
+                cause: error,
+              );
     }
   }
 

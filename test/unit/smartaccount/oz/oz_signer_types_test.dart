@@ -40,8 +40,10 @@ void main() {
     });
 
     test('OZExternalSigner is OZSmartAccountSigner', () {
-      expect(OZExternalSigner(kValidContractId, _bytes(8)),
-          isA<OZSmartAccountSigner>());
+      expect(
+        OZExternalSigner(kValidContractId, _bytes(8)),
+        isA<OZSmartAccountSigner>(),
+      );
     });
 
     test('uniqueKey for OZDelegatedSigner has delegated prefix', () {
@@ -51,13 +53,14 @@ void main() {
     });
 
     test(
-        'uniqueKey for OZExternalSigner has external prefix and hex keyData',
-        () {
-      final s = OZExternalSigner(kValidContractId, _bytes(4));
-      expect(s.uniqueKey, startsWith('external:'));
-      expect(s.uniqueKey, contains(kValidContractId));
-      expect(s.uniqueKey, contains('00010203'));
-    });
+      'uniqueKey for OZExternalSigner has external prefix and hex keyData',
+      () {
+        final s = OZExternalSigner(kValidContractId, _bytes(4));
+        expect(s.uniqueKey, startsWith('external:'));
+        expect(s.uniqueKey, contains(kValidContractId));
+        expect(s.uniqueKey, contains('00010203'));
+      },
+    );
   });
 
   group('OZDelegatedSigner', () {
@@ -72,8 +75,10 @@ void main() {
     });
 
     test('rejects invalid address', () {
-      expect(() => OZDelegatedSigner('NOT_A_VALID_ADDRESS'),
-          throwsA(isA<SmartAccountInvalidAddress>()));
+      expect(
+        () => OZDelegatedSigner('NOT_A_VALID_ADDRESS'),
+        throwsA(isA<SmartAccountInvalidAddress>()),
+      );
     });
 
     test('equality on identical address returns true', () {
@@ -97,9 +102,10 @@ void main() {
     test('not equal to OZExternalSigner', () {
       // ignore: unrelated_type_equality_checks
       expect(
-          OZDelegatedSigner(kValidGAddress) ==
-              OZExternalSigner(kValidContractId, _bytes(8)),
-          isFalse);
+        OZDelegatedSigner(kValidGAddress) ==
+            OZExternalSigner(kValidContractId, _bytes(8)),
+        isFalse,
+      );
     });
 
     test('not equal to non-signer types', () {
@@ -125,13 +131,17 @@ void main() {
     });
 
     test('toScVal Vec[0] is "Delegated"', () {
-      expect(OZDelegatedSigner(kValidGAddress).toScVal().vec![0].sym,
-          'Delegated');
+      expect(
+        OZDelegatedSigner(kValidGAddress).toScVal().vec![0].sym,
+        'Delegated',
+      );
     });
 
     test('toScVal Vec[1] is account address', () {
-      expect(OZDelegatedSigner(kValidGAddress).toScVal().vec![1].discriminant,
-          XdrSCValType.SCV_ADDRESS);
+      expect(
+        OZDelegatedSigner(kValidGAddress).toScVal().vec![1].discriminant,
+        XdrSCValType.SCV_ADDRESS,
+      );
     });
 
     test('canHashIntoSet (set deduplication)', () {
@@ -161,13 +171,17 @@ void main() {
     });
 
     test('rejects invalid verifier address', () {
-      expect(() => OZExternalSigner('NOT_VALID', _bytes(8)),
-          throwsA(isA<SmartAccountInvalidAddress>()));
+      expect(
+        () => OZExternalSigner('NOT_VALID', _bytes(8)),
+        throwsA(isA<SmartAccountInvalidAddress>()),
+      );
     });
 
     test('rejects empty keyData', () {
-      expect(() => OZExternalSigner(kValidContractId, Uint8List(0)),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => OZExternalSigner(kValidContractId, Uint8List(0)),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('keyData is stored by value (input mutation does not bleed in)', () {
@@ -205,9 +219,10 @@ void main() {
     test('not equal to OZDelegatedSigner', () {
       // ignore: unrelated_type_equality_checks
       expect(
-          OZExternalSigner(kValidContractId, _bytes(8)) ==
-              OZDelegatedSigner(kValidGAddress),
-          isFalse);
+        OZExternalSigner(kValidContractId, _bytes(8)) ==
+            OZDelegatedSigner(kValidGAddress),
+        isFalse,
+      );
     });
 
     test('uniqueKey is stable across calls', () {
@@ -223,8 +238,9 @@ void main() {
 
     test('toScVal returns Vec with 3 elements', () {
       expect(
-          OZExternalSigner(kValidContractId, _bytes(8)).toScVal().vec!.length,
-          3);
+        OZExternalSigner(kValidContractId, _bytes(8)).toScVal().vec!.length,
+        3,
+      );
     });
 
     test('canBeMapKey', () {
@@ -380,8 +396,9 @@ void main() {
     test('OZDelegatedSigner toScVal/signerFromScVal preserves identity', () {
       final s = OZDelegatedSigner(kValidGAddress);
       final scVal = s.toScVal();
-      final reconstructed =
-          OZSmartAccountAuthPayloadCodec.signerFromScVal(scVal);
+      final reconstructed = OZSmartAccountAuthPayloadCodec.signerFromScVal(
+        scVal,
+      );
       expect(reconstructed, isA<OZDelegatedSigner>());
       expect((reconstructed as OZDelegatedSigner).address, s.address);
     });
@@ -389,8 +406,9 @@ void main() {
     test('OZExternalSigner toScVal/signerFromScVal preserves identity', () {
       final s = OZExternalSigner(kValidContractId, _bytes(8, 9));
       final scVal = s.toScVal();
-      final reconstructed =
-          OZSmartAccountAuthPayloadCodec.signerFromScVal(scVal);
+      final reconstructed = OZSmartAccountAuthPayloadCodec.signerFromScVal(
+        scVal,
+      );
       expect(reconstructed, isA<OZExternalSigner>());
       final ext = reconstructed as OZExternalSigner;
       expect(ext.verifierAddress, s.verifierAddress);
@@ -403,8 +421,9 @@ void main() {
         publicKey: _secp256r1Pubkey(),
         credentialId: _bytes(20),
       );
-      final reconstructed =
-          OZSmartAccountAuthPayloadCodec.signerFromScVal(s.toScVal());
+      final reconstructed = OZSmartAccountAuthPayloadCodec.signerFromScVal(
+        s.toScVal(),
+      );
       expect(reconstructed, isA<OZExternalSigner>());
       expect((reconstructed as OZExternalSigner).keyData, s.keyData);
     });
@@ -414,8 +433,9 @@ void main() {
         verifierAddress: kValidContractId,
         publicKey: _ed25519Pubkey(),
       );
-      final reconstructed =
-          OZSmartAccountAuthPayloadCodec.signerFromScVal(s.toScVal());
+      final reconstructed = OZSmartAccountAuthPayloadCodec.signerFromScVal(
+        s.toScVal(),
+      );
       expect(reconstructed, isA<OZExternalSigner>());
       expect((reconstructed as OZExternalSigner).keyData.length, 32);
     });
@@ -423,8 +443,10 @@ void main() {
 
   group('uniqueKey format details', () {
     test('format ends with hex of keyData', () {
-      final s = OZExternalSigner(kValidContractId,
-          Uint8List.fromList([0xAB, 0xCD, 0xEF]));
+      final s = OZExternalSigner(
+        kValidContractId,
+        Uint8List.fromList([0xAB, 0xCD, 0xEF]),
+      );
       expect(s.uniqueKey.endsWith('abcdef'), isTrue);
     });
 
@@ -489,7 +511,9 @@ void main() {
 
     test('toScVal does not throw for valid signer', () {
       expect(
-          () => OZDelegatedSigner(kValidGAddress).toScVal(), returnsNormally);
+        () => OZDelegatedSigner(kValidGAddress).toScVal(),
+        returnsNormally,
+      );
       expect(
         () => OZExternalSigner(kValidContractId, _bytes(8)).toScVal(),
         returnsNormally,

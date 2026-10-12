@@ -474,7 +474,7 @@ abstract class Memo {
   /// See also:
   /// - [fromJson] for creating memos from JSON map
   factory Memo.fromStrings(String memo, String memoType) {
-    return Memo.fromJson({'memo' : memo, 'memo_type': memoType});
+    return Memo.fromJson({'memo': memo, 'memo_type': memoType});
   }
 
   /// Creates a Memo instance.
@@ -568,9 +568,15 @@ abstract class MemoHashAbstract extends Memo {
   /// - [MemoTooLongException] If bytes exceed 32 bytes
   MemoHashAbstract(Uint8List bytes) {
     if (bytes.length < StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
-      bytes = Util.paddedByteArray(bytes, StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES);
-    } else if (bytes.length > StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
-      throw MemoTooLongException("MEMO_HASH can contain ${StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES} bytes at max.");
+      bytes = Util.paddedByteArray(
+        bytes,
+        StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES,
+      );
+    } else if (bytes.length >
+        StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
+      throw MemoTooLongException(
+        "MEMO_HASH can contain ${StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES} bytes at max.",
+      );
     }
 
     this._bytes = bytes;
@@ -586,9 +592,15 @@ abstract class MemoHashAbstract extends Memo {
   MemoHashAbstract.string(String hexString) {
     Uint8List bytes = Util.hexToBytes(hexString.toUpperCase());
     if (bytes.length < StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
-      bytes = Util.paddedByteArray(bytes, StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES);
-    } else if (bytes.length > StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
-      throw MemoTooLongException("MEMO_HASH can contain ${StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES} bytes at max.");
+      bytes = Util.paddedByteArray(
+        bytes,
+        StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES,
+      );
+    } else if (bytes.length >
+        StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
+      throw MemoTooLongException(
+        "MEMO_HASH can contain ${StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES} bytes at max.",
+      );
     }
 
     this._bytes = bytes;

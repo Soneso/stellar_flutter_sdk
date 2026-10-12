@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -62,13 +61,17 @@ void main() {
       if (request.method == 'POST' &&
           url.contains('transactions/deposit/interactive')) {
         return http.Response(
-            depositOverride ?? interactiveJson(), depositStatus);
+          depositOverride ?? interactiveJson(),
+          depositStatus,
+        );
       }
 
       if (request.method == 'POST' &&
           url.contains('transactions/withdraw/interactive')) {
         return http.Response(
-            withdrawOverride ?? interactiveJson(), withdrawStatus);
+          withdrawOverride ?? interactiveJson(),
+          withdrawStatus,
+        );
       }
 
       // Important: 'transaction' singular match must come after 'transactions' plural
@@ -78,13 +81,17 @@ void main() {
         // Check if it's the plural endpoint (has asset_code param typically)
         if (url.contains('asset_code') || !url.contains('id=')) {
           return http.Response(
-              transactionsOverride ?? transactionsJson(), transactionsStatus);
+            transactionsOverride ?? transactionsJson(),
+            transactionsStatus,
+          );
         }
       }
 
       if (request.method == 'GET' && url.contains('transaction')) {
         return http.Response(
-            transactionOverride ?? transactionJson(), transactionStatus);
+          transactionOverride ?? transactionJson(),
+          transactionStatus,
+        );
       }
 
       return http.Response(json.encode({'error': 'Bad request'}), 400);
@@ -114,8 +121,9 @@ void main() {
   // --- Creating the interactive service ---
   test('sep-24: Creating service from direct URL', () {
     // Corresponds to "From a direct URL" section
-    TransferServerSEP24Service service =
-        TransferServerSEP24Service('https://api.anchor.com/sep24');
+    TransferServerSEP24Service service = TransferServerSEP24Service(
+      'https://api.anchor.com/sep24',
+    );
 
     expect(service, isNotNull);
   });
@@ -555,8 +563,7 @@ void main() {
       expect(lastId, isNotEmpty);
 
       request.pagingId = lastId;
-      SEP24TransactionsResponse nextPage =
-          await service.transactions(request);
+      SEP24TransactionsResponse nextPage = await service.transactions(request);
       expect(nextPage.transactions, isNotNull);
     }
   });
@@ -576,8 +583,10 @@ void main() {
     // Withdrawal-specific fields
     expect(tx.kind, equals('withdrawal'));
     expect(tx.status, equals('completed'));
-    expect(tx.withdrawAnchorAccount,
-        equals('GBANAGOAXH5ONSBI2I6I5LHP2TCRHWMZIAMGUQH2TNKQNCOGJ7GC3ZOL'));
+    expect(
+      tx.withdrawAnchorAccount,
+      equals('GBANAGOAXH5ONSBI2I6I5LHP2TCRHWMZIAMGUQH2TNKQNCOGJ7GC3ZOL'),
+    );
     expect(tx.withdrawMemo, equals('186384'));
     expect(tx.withdrawMemoType, equals('id'));
   });
@@ -616,7 +625,9 @@ void main() {
     final service = TransferServerSEP24Service(serviceAddress);
     service.httpClient = MockClient((request) async {
       return http.Response(
-          json.encode({'type': 'authentication_required'}), 403);
+        json.encode({'type': 'authentication_required'}),
+        403,
+      );
     });
 
     bool thrown = false;
@@ -638,9 +649,11 @@ void main() {
     final service = TransferServerSEP24Service(serviceAddress);
     service.httpClient = MockClient((request) async {
       return http.Response(
-          json.encode(
-              {'error': "This anchor doesn't support the given currency"}),
-          400);
+        json.encode({
+          'error': "This anchor doesn't support the given currency",
+        }),
+        400,
+      );
     });
 
     bool thrown = false;
@@ -712,7 +725,9 @@ void main() {
     final service = TransferServerSEP24Service(serviceAddress);
     service.httpClient = MockClient((request) async {
       return http.Response(
-          json.encode({'type': 'authentication_required'}), 403);
+        json.encode({'type': 'authentication_required'}),
+        403,
+      );
     });
 
     bool thrown = false;
@@ -732,7 +747,9 @@ void main() {
     final service = TransferServerSEP24Service(serviceAddress);
     service.httpClient = MockClient((request) async {
       return http.Response(
-          json.encode({'type': 'authentication_required'}), 403);
+        json.encode({'type': 'authentication_required'}),
+        403,
+      );
     });
 
     bool thrown = false;

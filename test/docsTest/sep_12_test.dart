@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
@@ -100,45 +99,50 @@ void main() {
   }
 
   // -- Quick example --
-  test('sep-12: Quick example - create service, check status, submit info', () async {
-    // Snippet from sep-12.md "Quick example"
-    final kycService = KYCService(serviceAddress);
+  test(
+    'sep-12: Quick example - create service, check status, submit info',
+    () async {
+      // Snippet from sep-12.md "Quick example"
+      final kycService = KYCService(serviceAddress);
 
-    // Mock GET /customer to return NEEDS_INFO
-    kycService.httpClient = mockGetCustomer(responseGetCustomerRequiresInfo());
+      // Mock GET /customer to return NEEDS_INFO
+      kycService.httpClient = mockGetCustomer(
+        responseGetCustomerRequiresInfo(),
+      );
 
-    final request = GetCustomerInfoRequest();
-    request.jwt = jwtToken;
-    final response = await kycService.getCustomerInfo(request);
+      final request = GetCustomerInfoRequest();
+      request.jwt = jwtToken;
+      final response = await kycService.getCustomerInfo(request);
 
-    expect(response.status, 'NEEDS_INFO');
+      expect(response.status, 'NEEDS_INFO');
 
-    // Mock PUT /customer to return customer ID
-    kycService.httpClient = MockClient((request) async {
-      final authHeader = request.headers['Authorization']!;
-      if (request.method == 'PUT' &&
-          request.url.toString().contains('customer') &&
-          authHeader.contains(jwtToken)) {
-        return http.Response(responsePutCustomerInfo(), 200);
-      }
-      return http.Response(json.encode({'error': 'Bad request'}), 400);
-    });
+      // Mock PUT /customer to return customer ID
+      kycService.httpClient = MockClient((request) async {
+        final authHeader = request.headers['Authorization']!;
+        if (request.method == 'PUT' &&
+            request.url.toString().contains('customer') &&
+            authHeader.contains(jwtToken)) {
+          return http.Response(responsePutCustomerInfo(), 200);
+        }
+        return http.Response(json.encode({'error': 'Bad request'}), 400);
+      });
 
-    final personFields = NaturalPersonKYCFields();
-    personFields.firstName = 'Jane';
-    personFields.lastName = 'Doe';
-    personFields.emailAddress = 'jane@example.com';
+      final personFields = NaturalPersonKYCFields();
+      personFields.firstName = 'Jane';
+      personFields.lastName = 'Doe';
+      personFields.emailAddress = 'jane@example.com';
 
-    final kycFields = StandardKYCFields();
-    kycFields.naturalPersonKYCFields = personFields;
+      final kycFields = StandardKYCFields();
+      kycFields.naturalPersonKYCFields = personFields;
 
-    final putRequest = PutCustomerInfoRequest();
-    putRequest.jwt = jwtToken;
-    putRequest.kycFields = kycFields;
+      final putRequest = PutCustomerInfoRequest();
+      putRequest.jwt = jwtToken;
+      putRequest.kycFields = kycFields;
 
-    final putResponse = await kycService.putCustomerInfo(putRequest);
-    expect(putResponse.id, customerId);
-  });
+      final putResponse = await kycService.putCustomerInfo(putRequest);
+      expect(putResponse.id, customerId);
+    },
+  );
 
   // -- Creating the KYC service --
   test('sep-12: Creating the KYC service from direct URL', () {
@@ -171,61 +175,69 @@ void main() {
   });
 
   // -- Checking customer status: NEEDS_INFO with fields --
-  test('sep-12: Checking customer status - NEEDS_INFO with fields and choices', () async {
-    final kycService = KYCService(serviceAddress);
-    kycService.httpClient = mockGetCustomer(responseGetCustomerRequiresInfo());
+  test(
+    'sep-12: Checking customer status - NEEDS_INFO with fields and choices',
+    () async {
+      final kycService = KYCService(serviceAddress);
+      kycService.httpClient = mockGetCustomer(
+        responseGetCustomerRequiresInfo(),
+      );
 
-    final request = GetCustomerInfoRequest();
-    request.jwt = jwtToken;
-    request.id = customerId;
-    request.account = accountId;
+      final request = GetCustomerInfoRequest();
+      request.jwt = jwtToken;
+      request.id = customerId;
+      request.account = accountId;
 
-    final response = await kycService.getCustomerInfo(request);
+      final response = await kycService.getCustomerInfo(request);
 
-    expect(response.status, 'NEEDS_INFO');
-    expect(response.fields, isNotNull);
-    expect(response.fields!.length, 3);
+      expect(response.status, 'NEEDS_INFO');
+      expect(response.fields, isNotNull);
+      expect(response.fields!.length, 3);
 
-    // Check field with choices
-    final idType = response.fields!['id_type'];
-    expect(idType, isNotNull);
-    expect(idType!.type, 'string');
-    expect(idType.choices, isNotNull);
-    expect(idType.choices!.length, 3);
-    expect(idType.choices!.contains('Passport'), true);
+      // Check field with choices
+      final idType = response.fields!['id_type'];
+      expect(idType, isNotNull);
+      expect(idType!.type, 'string');
+      expect(idType.choices, isNotNull);
+      expect(idType.choices!.length, 3);
+      expect(idType.choices!.contains('Passport'), true);
 
-    // Check optional field
-    final emailAddress = response.fields!['email_address'];
-    expect(emailAddress, isNotNull);
-    expect(emailAddress!.optional, true);
+      // Check optional field
+      final emailAddress = response.fields!['email_address'];
+      expect(emailAddress, isNotNull);
+      expect(emailAddress!.optional, true);
 
-    // Check binary field
-    final photoIdFront = response.fields!['photo_id_front'];
-    expect(photoIdFront, isNotNull);
-    expect(photoIdFront!.type, 'binary');
-  });
+      // Check binary field
+      final photoIdFront = response.fields!['photo_id_front'];
+      expect(photoIdFront, isNotNull);
+      expect(photoIdFront!.type, 'binary');
+    },
+  );
 
   // -- Checking customer status: NEEDS_INFO with provided fields --
-  test('sep-12: Checking customer status - NEEDS_INFO with provided fields', () async {
-    final kycService = KYCService(serviceAddress);
-    kycService.httpClient = mockGetCustomer(responseGetCustomerNeedsInfo());
+  test(
+    'sep-12: Checking customer status - NEEDS_INFO with provided fields',
+    () async {
+      final kycService = KYCService(serviceAddress);
+      kycService.httpClient = mockGetCustomer(responseGetCustomerNeedsInfo());
 
-    final request = GetCustomerInfoRequest();
-    request.jwt = jwtToken;
-    request.id = customerId;
+      final request = GetCustomerInfoRequest();
+      request.jwt = jwtToken;
+      request.id = customerId;
 
-    final response = await kycService.getCustomerInfo(request);
+      final response = await kycService.getCustomerInfo(request);
 
-    expect(response.status, 'NEEDS_INFO');
-    expect(response.fields, isNotNull);
-    expect(response.fields!.length, 2);
-    expect(response.providedFields, isNotNull);
-    expect(response.providedFields!.length, 2);
+      expect(response.status, 'NEEDS_INFO');
+      expect(response.fields, isNotNull);
+      expect(response.fields!.length, 2);
+      expect(response.providedFields, isNotNull);
+      expect(response.providedFields!.length, 2);
 
-    final firstName = response.providedFields!['first_name'];
-    expect(firstName, isNotNull);
-    expect(firstName!.status, 'ACCEPTED');
-  });
+      final firstName = response.providedFields!['first_name'];
+      expect(firstName, isNotNull);
+      expect(firstName!.status, 'ACCEPTED');
+    },
+  );
 
   // -- Checking customer status: PROCESSING --
   test('sep-12: Checking customer status - PROCESSING', () async {
@@ -400,7 +412,8 @@ void main() {
     financialFields.cbuAlias = 'mi.cuenta.arg';
     financialFields.mobileMoneyNumber = '+254712345678';
     financialFields.mobileMoneyProvider = 'M-Pesa';
-    financialFields.cryptoAddress = '0x742d35Cc6634C0532925a3b844Bc9e7595f0AB12';
+    financialFields.cryptoAddress =
+        '0x742d35Cc6634C0532925a3b844Bc9e7595f0AB12';
 
     final personFields = NaturalPersonKYCFields();
     personFields.firstName = 'Jane';
@@ -545,46 +558,49 @@ void main() {
   });
 
   // -- Verifying contact information --
-  test('sep-12: Verifying contact information - check VERIFICATION_REQUIRED', () async {
-    // Snippet from sep-12.md "Verifying contact information"
-    final kycService = KYCService(serviceAddress);
-    kycService.httpClient = mockGetCustomer(responseGetCustomerVerificationRequired());
+  test(
+    'sep-12: Verifying contact information - check VERIFICATION_REQUIRED',
+    () async {
+      // Snippet from sep-12.md "Verifying contact information"
+      final kycService = KYCService(serviceAddress);
+      kycService.httpClient = mockGetCustomer(
+        responseGetCustomerVerificationRequired(),
+      );
 
-    final getRequest = GetCustomerInfoRequest();
-    getRequest.jwt = jwtToken;
-    getRequest.id = customerId;
-    final response = await kycService.getCustomerInfo(getRequest);
+      final getRequest = GetCustomerInfoRequest();
+      getRequest.jwt = jwtToken;
+      getRequest.id = customerId;
+      final response = await kycService.getCustomerInfo(getRequest);
 
-    expect(response.status, 'NEEDS_INFO');
-    expect(response.providedFields, isNotNull);
+      expect(response.status, 'NEEDS_INFO');
+      expect(response.providedFields, isNotNull);
 
-    final mobileNumber = response.providedFields!['mobile_number'];
-    expect(mobileNumber, isNotNull);
-    expect(mobileNumber!.status, 'VERIFICATION_REQUIRED');
+      final mobileNumber = response.providedFields!['mobile_number'];
+      expect(mobileNumber, isNotNull);
+      expect(mobileNumber!.status, 'VERIFICATION_REQUIRED');
 
-    // Submit verification code
-    kycService.httpClient = MockClient((request) async {
-      final authHeader = request.headers['Authorization']!;
-      if (request.method == 'PUT' &&
-          request.url.toString().contains('customer') &&
-          authHeader.contains(jwtToken)) {
-        expect(request.body, contains('mobile_number_verification'));
-        expect(request.body, contains('123456'));
-        return http.Response(responsePutCustomerInfo(), 200);
-      }
-      return http.Response(json.encode({'error': 'Bad request'}), 400);
-    });
+      // Submit verification code
+      kycService.httpClient = MockClient((request) async {
+        final authHeader = request.headers['Authorization']!;
+        if (request.method == 'PUT' &&
+            request.url.toString().contains('customer') &&
+            authHeader.contains(jwtToken)) {
+          expect(request.body, contains('mobile_number_verification'));
+          expect(request.body, contains('123456'));
+          return http.Response(responsePutCustomerInfo(), 200);
+        }
+        return http.Response(json.encode({'error': 'Bad request'}), 400);
+      });
 
-    final putRequest = PutCustomerInfoRequest();
-    putRequest.jwt = jwtToken;
-    putRequest.id = customerId;
-    putRequest.customFields = {
-      'mobile_number_verification': '123456',
-    };
+      final putRequest = PutCustomerInfoRequest();
+      putRequest.jwt = jwtToken;
+      putRequest.id = customerId;
+      putRequest.customFields = {'mobile_number_verification': '123456'};
 
-    final verifyResponse = await kycService.putCustomerInfo(putRequest);
-    expect(verifyResponse.id, customerId);
-  });
+      final verifyResponse = await kycService.putCustomerInfo(putRequest);
+      expect(verifyResponse.id, customerId);
+    },
+  );
 
   // -- Deprecated verification endpoint --
   test('sep-12: Deprecated verification endpoint', () async {
@@ -823,21 +839,24 @@ void main() {
   });
 
   // -- Error handling for postCustomerFile 400 --
-  test('sep-12: Error handling - postCustomerFile 400 invalid format', () async {
-    final kycService = KYCService(serviceAddress);
-    kycService.httpClient = MockClient((request) async {
-      return http.Response(
-        json.encode({'error': 'file cannot be decoded. Must be jpg or png.'}),
-        400,
-      );
-    });
+  test(
+    'sep-12: Error handling - postCustomerFile 400 invalid format',
+    () async {
+      final kycService = KYCService(serviceAddress);
+      kycService.httpClient = MockClient((request) async {
+        return http.Response(
+          json.encode({'error': 'file cannot be decoded. Must be jpg or png.'}),
+          400,
+        );
+      });
 
-    try {
-      await kycService.postCustomerFile(randomBytes(20000), jwtToken);
-      fail('Should have thrown ErrorResponse');
-    } on ErrorResponse catch (e) {
-      expect(e.code, 400);
-      expect(e.body, contains('cannot be decoded'));
-    }
-  });
+      try {
+        await kycService.postCustomerFile(randomBytes(20000), jwtToken);
+        fail('Should have thrown ErrorResponse');
+      } on ErrorResponse catch (e) {
+        expect(e.code, 400);
+        expect(e.body, contains('cannot be decoded'));
+      }
+    },
+  );
 }

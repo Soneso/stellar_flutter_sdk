@@ -80,8 +80,9 @@ class AccountFlag {
   ///   authorize: true
   /// ).build();
   /// ```
-  static final AUTH_REQUIRED_FLAG =
-      AccountFlag._internal(XdrAccountFlags.AUTH_REQUIRED_FLAG.value);
+  static final AUTH_REQUIRED_FLAG = AccountFlag._internal(
+    XdrAccountFlags.AUTH_REQUIRED_FLAG.value,
+  );
 
   /// Authorization revocable (0x2).
   ///
@@ -117,8 +118,9 @@ class AccountFlag {
   ///   authorize: false
   /// ).build();
   /// ```
-  static final AUTH_REVOCABLE_FLAG =
-      AccountFlag._internal(XdrAccountFlags.AUTH_REVOCABLE_FLAG.value);
+  static final AUTH_REVOCABLE_FLAG = AccountFlag._internal(
+    XdrAccountFlags.AUTH_REVOCABLE_FLAG.value,
+  );
 
   /// Authorization immutable (0x4).
   ///
@@ -157,8 +159,9 @@ class AccountFlag {
   ///     .build())
   ///   .build();
   /// ```
-  static final AUTH_IMMUTABLE_FLAG =
-      AccountFlag._internal(XdrAccountFlags.AUTH_IMMUTABLE_FLAG.value);
+  static final AUTH_IMMUTABLE_FLAG = AccountFlag._internal(
+    XdrAccountFlags.AUTH_IMMUTABLE_FLAG.value,
+  );
 
   /// Clawback enabled (0x8).
   ///
@@ -202,8 +205,9 @@ class AccountFlag {
   /// See also:
   /// - [ClawbackOperation] for clawing back assets
   /// - [CAP-35](https://stellar.org/protocol/cap-35) for protocol specification
-  static final AUTH_CLAWBACK_ENABLED_FLAG =
-      AccountFlag._internal(XdrAccountFlags.AUTH_CLAWBACK_ENABLED_FLAG.value);
+  static final AUTH_CLAWBACK_ENABLED_FLAG = AccountFlag._internal(
+    XdrAccountFlags.AUTH_CLAWBACK_ENABLED_FLAG.value,
+  );
 
   final _value;
 

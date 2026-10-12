@@ -32,13 +32,16 @@ dio.ResponseBody jsonRpcResponse(dynamic id, Map<String, dynamic> result) {
     jsonEncode({'jsonrpc': '2.0', 'id': id, 'result': result}),
     200,
     headers: {
-      'content-type': [dio.Headers.jsonContentType]
+      'content-type': [dio.Headers.jsonContentType],
     },
   );
 }
 
 dio.ResponseBody accountEntryResponse(
-    Map<String, dynamic> requestBody, KeyPair keyPair, BigInt sequence) {
+  Map<String, dynamic> requestBody,
+  KeyPair keyPair,
+  BigInt sequence,
+) {
   final accountEntry = XdrAccountEntry(
     XdrAccountID(keyPair.xdrPublicKey),
     XdrInt64(BigInt.zero),
@@ -59,7 +62,7 @@ dio.ResponseBody accountEntryResponse(
         'key': (requestBody['params']['keys'] as List)[0],
         'xdr': ledgerEntryData.toBase64EncodedXdrString(),
         'lastModifiedLedgerSeq': 99999,
-      }
+      },
     ],
     'latestLedger': 100000,
   });
@@ -71,9 +74,16 @@ XdrSorobanTransactionData transactionDataWithWrites(KeyPair keyPair) {
   final key = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
   key.account = XdrLedgerKeyAccount(XdrAccountID(keyPair.xdrPublicKey));
   final resources = XdrSorobanResources(
-      XdrLedgerFootprint([], [key]), XdrUint32(0), XdrUint32(0), XdrUint32(0));
+    XdrLedgerFootprint([], [key]),
+    XdrUint32(0),
+    XdrUint32(0),
+    XdrUint32(0),
+  );
   return XdrSorobanTransactionData(
-      XdrSorobanTransactionDataExt(0), resources, XdrInt64(BigInt.zero));
+    XdrSorobanTransactionDataExt(0),
+    resources,
+    XdrInt64(BigInt.zero),
+  );
 }
 
 Map<String, dynamic> successfulSimulation(XdrSorobanTransactionData txData) {
@@ -81,10 +91,7 @@ Map<String, dynamic> successfulSimulation(XdrSorobanTransactionData txData) {
     'minResourceFee': '100000',
     'transactionData': txData.toBase64EncodedXdrString(),
     'results': [
-      {
-        'auth': [],
-        'xdr': XdrSCVal.forU32(42).toBase64EncodedXdrString(),
-      }
+      {'auth': [], 'xdr': XdrSCVal.forU32(42).toBase64EncodedXdrString()},
     ],
     'latestLedger': 100000,
   };
@@ -97,7 +104,10 @@ void main() {
   final contractId = StrKey.encodeContractId(Uint8List(32));
 
   AssembledTransactionOptions buildOptions(
-      KeyPair keyPair, SorobanServer server, MethodOptions methodOptions) {
+    KeyPair keyPair,
+    SorobanServer server,
+    MethodOptions methodOptions,
+  ) {
     final clientOptions = ClientOptions(
       sourceAccountKeyPair: keyPair,
       contractId: contractId,
@@ -136,7 +146,10 @@ void main() {
           // consumed by the restore transaction: 1000, 2000, 3000.
           ledgerEntriesCalls++;
           return accountEntryResponse(
-              requestBody, keyPair, BigInt.from(1000 * ledgerEntriesCalls));
+            requestBody,
+            keyPair,
+            BigInt.from(1000 * ledgerEntriesCalls),
+          );
         case 'simulateTransaction':
           simulateCalls++;
           simulateEnvelopes?.add(requestBody['params']['transaction']);
@@ -153,7 +166,9 @@ void main() {
           // The restore transaction simulation and the re-simulation of
           // the rebuilt invocation both succeed.
           return jsonRpcResponse(
-              requestBody['id'], successfulSimulation(txData));
+            requestBody['id'],
+            successfulSimulation(txData),
+          );
         case 'sendTransaction':
           return jsonRpcResponse(requestBody['id'], {
             'status': 'PENDING',
@@ -177,27 +192,33 @@ void main() {
   }
 
   group('ClientOptions.server injection', () {
-    test('AssembledTransaction uses the injected server for RPC calls',
-        () async {
-      final keyPair = KeyPair.random();
-      var ledgerEntriesCalls = 0;
+    test(
+      'AssembledTransaction uses the injected server for RPC calls',
+      () async {
+        final keyPair = KeyPair.random();
+        var ledgerEntriesCalls = 0;
 
-      final mockDio = dio.Dio();
-      mockDio.httpClientAdapter = MockDioAdapter((options) {
-        final requestBody = jsonDecode(options.data);
-        expect(requestBody['method'], 'getLedgerEntries');
-        ledgerEntriesCalls++;
-        return accountEntryResponse(requestBody, keyPair, BigInt.from(1000));
-      });
-      final server = SorobanServer(rpcUrl, httpClient: mockDio);
+        final mockDio = dio.Dio();
+        mockDio.httpClientAdapter = MockDioAdapter((options) {
+          final requestBody = jsonDecode(options.data);
+          expect(requestBody['method'], 'getLedgerEntries');
+          ledgerEntriesCalls++;
+          return accountEntryResponse(requestBody, keyPair, BigInt.from(1000));
+        });
+        final server = SorobanServer(rpcUrl, httpClient: mockDio);
 
-      final tx = await AssembledTransaction.build(
-          options:
-              buildOptions(keyPair, server, MethodOptions(simulate: false)));
+        final tx = await AssembledTransaction.build(
+          options: buildOptions(
+            keyPair,
+            server,
+            MethodOptions(simulate: false),
+          ),
+        );
 
-      expect(identical(tx.server, server), isTrue);
-      expect(ledgerEntriesCalls, 1);
-    });
+        expect(identical(tx.server, server), isTrue);
+        expect(ledgerEntriesCalls, 1);
+      },
+    );
   });
 
   group('automatic footprint restore', () {
@@ -205,12 +226,19 @@ void main() {
       final keyPair = KeyPair.random();
       final txData = transactionDataWithWrites(keyPair);
       final simulateEnvelopes = <String>[];
-      final server = restoreFlowMockServer(keyPair, txData,
-          simulateEnvelopes: simulateEnvelopes);
+      final server = restoreFlowMockServer(
+        keyPair,
+        txData,
+        simulateEnvelopes: simulateEnvelopes,
+      );
 
       final tx = await AssembledTransaction.build(
-          options: buildOptions(
-              keyPair, server, MethodOptions(fee: 250, restore: true)));
+        options: buildOptions(
+          keyPair,
+          server,
+          MethodOptions(fee: 250, restore: true),
+        ),
+      );
 
       // The transaction is assembled from the final successful simulation.
       expect(tx.tx, isNotNull);
@@ -244,49 +272,64 @@ void main() {
       expect(rebuilt.fee, 250);
       final rebuiltOp = rebuilt.operations.first;
       expect(rebuiltOp, isA<InvokeHostFunctionOperation>());
-      expect((rebuiltOp as InvokeHostFunctionOperation).function,
-          isA<InvokeContractHostFunction>());
+      expect(
+        (rebuiltOp as InvokeHostFunctionOperation).function,
+        isA<InvokeContractHostFunction>(),
+      );
     });
 
-    test('reuses the original operation from buildWithOp when rebuilding',
-        () async {
-      final keyPair = KeyPair.random();
-      final txData = transactionDataWithWrites(keyPair);
-      final simulateEnvelopes = <String>[];
-      final server = restoreFlowMockServer(keyPair, txData,
-          simulateEnvelopes: simulateEnvelopes);
+    test(
+      'reuses the original operation from buildWithOp when rebuilding',
+      () async {
+        final keyPair = KeyPair.random();
+        final txData = transactionDataWithWrites(keyPair);
+        final simulateEnvelopes = <String>[];
+        final server = restoreFlowMockServer(
+          keyPair,
+          txData,
+          simulateEnvelopes: simulateEnvelopes,
+        );
 
-      final uploadFunction =
-          UploadContractWasmHostFunction(Uint8List.fromList([0, 1, 2, 3]));
-      final operation = InvokeHostFuncOpBuilder(uploadFunction).build();
+        final uploadFunction = UploadContractWasmHostFunction(
+          Uint8List.fromList([0, 1, 2, 3]),
+        );
+        final operation = InvokeHostFuncOpBuilder(uploadFunction).build();
 
-      final tx = await AssembledTransaction.buildWithOp(
+        final tx = await AssembledTransaction.buildWithOp(
           operation: operation,
-          options: buildOptions(keyPair, server, MethodOptions(restore: true)));
+          options: buildOptions(keyPair, server, MethodOptions(restore: true)),
+        );
 
-      expect(tx.tx, isNotNull);
-      expect(simulateEnvelopes.length, 3);
+        expect(tx.tx, isNotNull);
+        expect(simulateEnvelopes.length, 3);
 
-      // The rebuilt transaction carries the original upload operation, not a
-      // reconstructed invoke-contract operation.
-      final rebuilt =
-          AbstractTransaction.fromEnvelopeXdrString(simulateEnvelopes[2])
-              as Transaction;
-      final rebuiltOp = rebuilt.operations.first;
-      expect(rebuiltOp, isA<InvokeHostFunctionOperation>());
-      expect((rebuiltOp as InvokeHostFunctionOperation).function,
-          isA<UploadContractWasmHostFunction>());
-    });
+        // The rebuilt transaction carries the original upload operation, not a
+        // reconstructed invoke-contract operation.
+        final rebuilt =
+            AbstractTransaction.fromEnvelopeXdrString(simulateEnvelopes[2])
+                as Transaction;
+        final rebuiltOp = rebuilt.operations.first;
+        expect(rebuiltOp, isA<InvokeHostFunctionOperation>());
+        expect(
+          (rebuiltOp as InvokeHostFunctionOperation).function,
+          isA<UploadContractWasmHostFunction>(),
+        );
+      },
+    );
 
     test('restore and rebuilt transactions set no lower time bound', () async {
       final keyPair = KeyPair.random();
       final txData = transactionDataWithWrites(keyPair);
       final simulateEnvelopes = <String>[];
-      final server = restoreFlowMockServer(keyPair, txData,
-          simulateEnvelopes: simulateEnvelopes);
+      final server = restoreFlowMockServer(
+        keyPair,
+        txData,
+        simulateEnvelopes: simulateEnvelopes,
+      );
 
       await AssembledTransaction.build(
-          options: buildOptions(keyPair, server, MethodOptions(restore: true)));
+        options: buildOptions(keyPair, server, MethodOptions(restore: true)),
+      );
 
       // The initial invocation, the restore transaction, and the rebuilt
       // invocation were each simulated once.
@@ -303,52 +346,74 @@ void main() {
     test('throws when the restore transaction fails', () async {
       final keyPair = KeyPair.random();
       final txData = transactionDataWithWrites(keyPair);
-      final server =
-          restoreFlowMockServer(keyPair, txData, restoreSucceeds: false);
+      final server = restoreFlowMockServer(
+        keyPair,
+        txData,
+        restoreSucceeds: false,
+      );
 
       await expectLater(
         AssembledTransaction.build(
-            options:
-                buildOptions(keyPair, server, MethodOptions(restore: true))),
-        throwsA(isA<Exception>().having((e) => e.toString(), 'message',
-            contains('Automatic restore failed'))),
+          options: buildOptions(keyPair, server, MethodOptions(restore: true)),
+        ),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('Automatic restore failed'),
+          ),
+        ),
       );
     });
 
-    test('throws when restore is needed but the keypair has no private key',
-        () async {
-      final keyPair = KeyPair.random();
-      final publicOnly = KeyPair.fromAccountId(keyPair.accountId);
-      final txData = transactionDataWithWrites(keyPair);
+    test(
+      'throws when restore is needed but the keypair has no private key',
+      () async {
+        final keyPair = KeyPair.random();
+        final publicOnly = KeyPair.fromAccountId(keyPair.accountId);
+        final txData = transactionDataWithWrites(keyPair);
 
-      final mockDio = dio.Dio();
-      mockDio.httpClientAdapter = MockDioAdapter((options) {
-        final requestBody = jsonDecode(options.data);
-        switch (requestBody['method']) {
-          case 'getLedgerEntries':
-            return accountEntryResponse(
-                requestBody, keyPair, BigInt.from(1000));
-          case 'simulateTransaction':
-            return jsonRpcResponse(requestBody['id'], {
-              'restorePreamble': {
-                'transactionData': txData.toBase64EncodedXdrString(),
-                'minResourceFee': '50000',
-              },
-              'latestLedger': 100000,
-            });
-          default:
-            fail('Unexpected RPC method: ${requestBody['method']}');
-        }
-      });
-      final server = SorobanServer(rpcUrl, httpClient: mockDio);
+        final mockDio = dio.Dio();
+        mockDio.httpClientAdapter = MockDioAdapter((options) {
+          final requestBody = jsonDecode(options.data);
+          switch (requestBody['method']) {
+            case 'getLedgerEntries':
+              return accountEntryResponse(
+                requestBody,
+                keyPair,
+                BigInt.from(1000),
+              );
+            case 'simulateTransaction':
+              return jsonRpcResponse(requestBody['id'], {
+                'restorePreamble': {
+                  'transactionData': txData.toBase64EncodedXdrString(),
+                  'minResourceFee': '50000',
+                },
+                'latestLedger': 100000,
+              });
+            default:
+              fail('Unexpected RPC method: ${requestBody['method']}');
+          }
+        });
+        final server = SorobanServer(rpcUrl, httpClient: mockDio);
 
-      await expectLater(
-        AssembledTransaction.build(
-            options:
-                buildOptions(publicOnly, server, MethodOptions(restore: true))),
-        throwsA(isA<Exception>().having(
-            (e) => e.toString(), 'message', contains('no private key'))),
-      );
-    });
+        await expectLater(
+          AssembledTransaction.build(
+            options: buildOptions(
+              publicOnly,
+              server,
+              MethodOptions(restore: true),
+            ),
+          ),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('no private key'),
+            ),
+          ),
+        );
+      },
+    );
   });
 }

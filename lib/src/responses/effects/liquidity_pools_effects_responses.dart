@@ -53,24 +53,27 @@ class LiquidityPoolEffectResponse {
   /// - [totalTrustlines] Number of accounts holding pool shares
   /// - [totalShares] Total outstanding pool share tokens
   /// - [reserves] Current asset balances in the pool
-  LiquidityPoolEffectResponse(
-      {required this.poolId,
-      required this.fee,
-      required this.type,
-      required this.totalTrustlines,
-      required this.totalShares,
-      required this.reserves});
+  LiquidityPoolEffectResponse({
+    required this.poolId,
+    required this.fee,
+    required this.type,
+    required this.totalTrustlines,
+    required this.totalShares,
+    required this.reserves,
+  });
 
   /// Creates a liquidity pool effect response from Horizon API JSON.
   factory LiquidityPoolEffectResponse.fromJson(Map<String, dynamic> json) {
     return LiquidityPoolEffectResponse(
-        poolId: json['id'],
-        fee: json['fee_bp'],
-        type: json['type'],
-        totalTrustlines: json['total_trustlines'],
-        totalShares: json['total_shares'],
-        reserves: List<AssetAmount>.from(
-            json['reserves'].map((e) => AssetAmount.fromJson(e))));
+      poolId: json['id'],
+      fee: json['fee_bp'],
+      type: json['type'],
+      totalTrustlines: json['total_trustlines'],
+      totalShares: json['total_shares'],
+      reserves: List<AssetAmount>.from(
+        json['reserves'].map((e) => AssetAmount.fromJson(e)),
+      ),
+    );
   }
 }
 
@@ -116,15 +119,23 @@ class LiquidityPoolDepositedEffectResponse extends EffectResponse {
   /// - [liquidityPool] The liquidity pool details
   /// - [reservesDeposited] Amounts of each reserve asset deposited
   /// - [sharesReceived] Number of pool shares received
-  LiquidityPoolDepositedEffectResponse(super.id, super.type_i, super.type,
-      super.createdAt, super.pagingToken, super.account, super.links,
-      {required this.liquidityPool,
-      required this.reservesDeposited,
-      required this.sharesReceived});
+  LiquidityPoolDepositedEffectResponse(
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links, {
+    required this.liquidityPool,
+    required this.reservesDeposited,
+    required this.sharesReceived,
+  });
 
   /// Creates a liquidity pool deposited effect from Horizon API JSON.
   factory LiquidityPoolDepositedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       LiquidityPoolDepositedEffectResponse(
           json['id'],
           json['type_i'],
@@ -133,11 +144,14 @@ class LiquidityPoolDepositedEffectResponse extends EffectResponse {
           json['paging_token'],
           json['account'],
           EffectResponseLinks.fromJson(json['_links']),
-          liquidityPool:
-              LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']),
+          liquidityPool: LiquidityPoolEffectResponse.fromJson(
+            json['liquidity_pool'],
+          ),
           reservesDeposited: List<AssetAmount>.from(
-              json['reserves_deposited'].map((e) => AssetAmount.fromJson(e))),
-          sharesReceived: json['shares_received'])
+            json['reserves_deposited'].map((e) => AssetAmount.fromJson(e)),
+          ),
+          sharesReceived: json['shares_received'],
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -184,15 +198,23 @@ class LiquidityPoolWithdrewEffectResponse extends EffectResponse {
   /// - [liquidityPool] The liquidity pool details
   /// - [reservesReceived] Amounts of each reserve asset received
   /// - [sharesRedeemed] Number of pool shares redeemed
-  LiquidityPoolWithdrewEffectResponse(super.id, super.type_i, super.type,
-      super.createdAt, super.pagingToken, super.account, super.links,
-      {required this.liquidityPool,
-      required this.reservesReceived,
-      required this.sharesRedeemed});
+  LiquidityPoolWithdrewEffectResponse(
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links, {
+    required this.liquidityPool,
+    required this.reservesReceived,
+    required this.sharesRedeemed,
+  });
 
   /// Creates a liquidity pool withdrew effect from Horizon API JSON.
   factory LiquidityPoolWithdrewEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       LiquidityPoolWithdrewEffectResponse(
           json['id'],
           json['type_i'],
@@ -201,11 +223,14 @@ class LiquidityPoolWithdrewEffectResponse extends EffectResponse {
           json['paging_token'],
           json['account'],
           EffectResponseLinks.fromJson(json['_links']),
-          liquidityPool:
-              LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']),
+          liquidityPool: LiquidityPoolEffectResponse.fromJson(
+            json['liquidity_pool'],
+          ),
           reservesReceived: List<AssetAmount>.from(
-              json['reserves_received'].map((e) => AssetAmount.fromJson(e))),
-          sharesRedeemed: json['shares_redeemed'])
+            json['reserves_received'].map((e) => AssetAmount.fromJson(e)),
+          ),
+          sharesRedeemed: json['shares_redeemed'],
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -252,13 +277,23 @@ class LiquidityPoolTradeEffectResponse extends EffectResponse {
   /// - [liquidityPool] The liquidity pool details
   /// - [sold] Asset and amount sold in the trade
   /// - [bought] Asset and amount bought in the trade
-  LiquidityPoolTradeEffectResponse(super.id, super.type_i, super.type,
-      super.createdAt, super.pagingToken, super.account, super.links,
-      {required this.liquidityPool, required this.sold, required this.bought});
+  LiquidityPoolTradeEffectResponse(
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links, {
+    required this.liquidityPool,
+    required this.sold,
+    required this.bought,
+  });
 
   /// Creates a liquidity pool trade effect from Horizon API JSON.
   factory LiquidityPoolTradeEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       LiquidityPoolTradeEffectResponse(
           json['id'],
           json['type_i'],
@@ -267,10 +302,12 @@ class LiquidityPoolTradeEffectResponse extends EffectResponse {
           json['paging_token'],
           json['account'],
           EffectResponseLinks.fromJson(json['_links']),
-          liquidityPool:
-              LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']),
+          liquidityPool: LiquidityPoolEffectResponse.fromJson(
+            json['liquidity_pool'],
+          ),
           sold: AssetAmount.fromJson(json['sold']),
-          bought: AssetAmount.fromJson(json['bought']))
+          bought: AssetAmount.fromJson(json['bought']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -309,13 +346,21 @@ class LiquidityPoolCreatedEffectResponse extends EffectResponse {
   ///
   /// Parameters:
   /// - [liquidityPool] The created liquidity pool details
-  LiquidityPoolCreatedEffectResponse(super.id, super.type_i, super.type,
-      super.createdAt, super.pagingToken, super.account, super.links,
-      {required this.liquidityPool});
+  LiquidityPoolCreatedEffectResponse(
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links, {
+    required this.liquidityPool,
+  });
 
   /// Creates a liquidity pool created effect from Horizon API JSON.
   factory LiquidityPoolCreatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       LiquidityPoolCreatedEffectResponse(
           json['id'],
           json['type_i'],
@@ -324,8 +369,10 @@ class LiquidityPoolCreatedEffectResponse extends EffectResponse {
           json['paging_token'],
           json['account'],
           EffectResponseLinks.fromJson(json['_links']),
-          liquidityPool:
-              LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']))
+          liquidityPool: LiquidityPoolEffectResponse.fromJson(
+            json['liquidity_pool'],
+          ),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -363,13 +410,21 @@ class LiquidityPoolRemovedEffectResponse extends EffectResponse {
   ///
   /// Parameters:
   /// - [liquidityPoolId] Unique identifier of the removed liquidity pool
-  LiquidityPoolRemovedEffectResponse(super.id, super.type_i, super.type,
-      super.createdAt, super.pagingToken, super.account, super.links,
-      {required this.liquidityPoolId});
+  LiquidityPoolRemovedEffectResponse(
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links, {
+    required this.liquidityPoolId,
+  });
 
   /// Creates a liquidity pool removed effect from Horizon API JSON.
   factory LiquidityPoolRemovedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       LiquidityPoolRemovedEffectResponse(
           json['id'],
           json['type_i'],
@@ -378,7 +433,8 @@ class LiquidityPoolRemovedEffectResponse extends EffectResponse {
           json['paging_token'],
           json['account'],
           EffectResponseLinks.fromJson(json['_links']),
-          liquidityPoolId: json['liquidity_pool_id'])
+          liquidityPoolId: json['liquidity_pool_id'],
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -414,13 +470,20 @@ class LiquidityPoolClaimableAssetAmount {
   /// - [amount] Amount of the asset converted to claimable balance
   /// - [claimableBalanceId] Unique identifier for the created claimable balance
   LiquidityPoolClaimableAssetAmount(
-      this.asset, this.amount, this.claimableBalanceId);
+    this.asset,
+    this.amount,
+    this.claimableBalanceId,
+  );
 
   /// Creates a liquidity pool claimable asset amount from Horizon API JSON.
   factory LiquidityPoolClaimableAssetAmount.fromJson(
-      Map<String, dynamic> json) {
+    Map<String, dynamic> json,
+  ) {
     return LiquidityPoolClaimableAssetAmount(
-        json['asset'], json['amount'], json['claimable_balance_id']);
+      json['asset'],
+      json['amount'],
+      json['claimable_balance_id'],
+    );
   }
 }
 
@@ -467,15 +530,23 @@ class LiquidityPoolRevokedEffectResponse extends EffectResponse {
   /// - [liquidityPool] The liquidity pool details
   /// - [reservesRevoked] Reserve amounts converted to claimable balances
   /// - [sharesRevoked] Number of pool shares that were revoked
-  LiquidityPoolRevokedEffectResponse(super.id, super.type_i, super.type,
-      super.createdAt, super.pagingToken, super.account, super.links,
-      {required this.liquidityPool,
-      required this.reservesRevoked,
-      required this.sharesRevoked});
+  LiquidityPoolRevokedEffectResponse(
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links, {
+    required this.liquidityPool,
+    required this.reservesRevoked,
+    required this.sharesRevoked,
+  });
 
   /// Creates a liquidity pool revoked effect from Horizon API JSON.
   factory LiquidityPoolRevokedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       LiquidityPoolRevokedEffectResponse(
           json['id'],
           json['type_i'],
@@ -484,12 +555,16 @@ class LiquidityPoolRevokedEffectResponse extends EffectResponse {
           json['paging_token'],
           json['account'],
           EffectResponseLinks.fromJson(json['_links']),
-          liquidityPool:
-              LiquidityPoolEffectResponse.fromJson(json['liquidity_pool']),
+          liquidityPool: LiquidityPoolEffectResponse.fromJson(
+            json['liquidity_pool'],
+          ),
           reservesRevoked: List<LiquidityPoolClaimableAssetAmount>.from(
-              json['reserves_revoked']
-                  .map((e) => LiquidityPoolClaimableAssetAmount.fromJson(e))),
-          sharesRevoked: json['shares_revoked'])
+            json['reserves_revoked'].map(
+              (e) => LiquidityPoolClaimableAssetAmount.fromJson(e),
+            ),
+          ),
+          sharesRevoked: json['shares_revoked'],
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }

@@ -6,22 +6,41 @@ void main() {
     test('should parse fromJson with all links', () {
       // Arrange
       final json = {
-        'effects': {'href': 'https://horizon.stellar.org/operations/123/effects'},
+        'effects': {
+          'href': 'https://horizon.stellar.org/operations/123/effects',
+        },
         'precedes': {'href': 'https://horizon.stellar.org/operations/124'},
         'self': {'href': 'https://horizon.stellar.org/operations/123'},
         'succeeds': {'href': 'https://horizon.stellar.org/operations/122'},
-        'transaction': {'href': 'https://horizon.stellar.org/transactions/abc123'},
+        'transaction': {
+          'href': 'https://horizon.stellar.org/transactions/abc123',
+        },
       };
 
       // Act
       final links = OperationResponseLinks.fromJson(json);
 
       // Assert
-      expect(links.effects.href, equals('https://horizon.stellar.org/operations/123/effects'));
-      expect(links.precedes.href, equals('https://horizon.stellar.org/operations/124'));
-      expect(links.self.href, equals('https://horizon.stellar.org/operations/123'));
-      expect(links.succeeds.href, equals('https://horizon.stellar.org/operations/122'));
-      expect(links.transaction.href, equals('https://horizon.stellar.org/transactions/abc123'));
+      expect(
+        links.effects.href,
+        equals('https://horizon.stellar.org/operations/123/effects'),
+      );
+      expect(
+        links.precedes.href,
+        equals('https://horizon.stellar.org/operations/124'),
+      );
+      expect(
+        links.self.href,
+        equals('https://horizon.stellar.org/operations/123'),
+      );
+      expect(
+        links.succeeds.href,
+        equals('https://horizon.stellar.org/operations/122'),
+      );
+      expect(
+        links.transaction.href,
+        equals('https://horizon.stellar.org/transactions/abc123'),
+      );
     });
   });
 
@@ -45,8 +64,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       // Act
@@ -76,8 +95,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final operation = OperationResponse.fromJson(json);
@@ -119,8 +138,11 @@ void main() {
       typeMapping.forEach((typeI, expectedType) {
         final json = _createMinimalOperationJson(typeI);
         final operation = OperationResponse.fromJson(json);
-        expect(operation.runtimeType, equals(expectedType),
-            reason: 'Type $typeI should create ${expectedType.toString()}');
+        expect(
+          operation.runtimeType,
+          equals(expectedType),
+          reason: 'Type $typeI should create ${expectedType.toString()}',
+        );
       });
     });
 
@@ -139,24 +161,35 @@ void main() {
         'id': '123456789',
         'paging_token': '123456789',
         'transaction_successful': true,
-        'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-        'source_account_muxed': 'MAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+        'source_account':
+            'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+        'source_account_muxed':
+            'MAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
         'source_account_muxed_id': '12345',
         'created_at': '2024-01-15T10:30:00Z',
         'transaction_hash': 'abc123def456',
         'funder': 'GBXGQJWVLWOYHFLVTKWV5FGHA3LNYY2JQKM7OAJAUEQFU6LPCSEFVXON',
-        'funder_muxed': 'MBXGQJWVLWOYHFLVTKWV5FGHA3LNYY2JQKM7OAJAUEQFU6LPCSEFVXON',
+        'funder_muxed':
+            'MBXGQJWVLWOYHFLVTKWV5FGHA3LNYY2JQKM7OAJAUEQFU6LPCSEFVXON',
         'funder_muxed_id': '67890',
         'starting_balance': '1000.0',
         'account': 'GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB',
         'sponsor': 'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOKY3B2WSQHG4W37',
         '_links': {
-          'effects': {'href': 'https://horizon.stellar.org/operations/123456789/effects'},
-          'precedes': {'href': 'https://horizon.stellar.org/operations/123456790'},
+          'effects': {
+            'href': 'https://horizon.stellar.org/operations/123456789/effects',
+          },
+          'precedes': {
+            'href': 'https://horizon.stellar.org/operations/123456790',
+          },
           'self': {'href': 'https://horizon.stellar.org/operations/123456789'},
-          'succeeds': {'href': 'https://horizon.stellar.org/operations/123456788'},
-          'transaction': {'href': 'https://horizon.stellar.org/transactions/abc123def456'}
-        }
+          'succeeds': {
+            'href': 'https://horizon.stellar.org/operations/123456788',
+          },
+          'transaction': {
+            'href': 'https://horizon.stellar.org/transactions/abc123def456',
+          },
+        },
       };
 
       // Act
@@ -166,19 +199,37 @@ void main() {
       expect(response.id, equals('123456789'));
       expect(response.pagingToken, equals('123456789'));
       expect(response.transactionSuccessful, equals(true));
-      expect(response.sourceAccount, equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
-      expect(response.sourceAccountMuxed, equals('MAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
+      expect(
+        response.sourceAccount,
+        equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+      );
+      expect(
+        response.sourceAccountMuxed,
+        equals('MAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+      );
       expect(response.sourceAccountMuxedId, equals('12345'));
       expect(response.type, equals('create_account'));
       expect(response.type_i, equals(0));
       expect(response.createdAt, equals('2024-01-15T10:30:00Z'));
       expect(response.transactionHash, equals('abc123def456'));
-      expect(response.funder, equals('GBXGQJWVLWOYHFLVTKWV5FGHA3LNYY2JQKM7OAJAUEQFU6LPCSEFVXON'));
-      expect(response.funderMuxed, equals('MBXGQJWVLWOYHFLVTKWV5FGHA3LNYY2JQKM7OAJAUEQFU6LPCSEFVXON'));
+      expect(
+        response.funder,
+        equals('GBXGQJWVLWOYHFLVTKWV5FGHA3LNYY2JQKM7OAJAUEQFU6LPCSEFVXON'),
+      );
+      expect(
+        response.funderMuxed,
+        equals('MBXGQJWVLWOYHFLVTKWV5FGHA3LNYY2JQKM7OAJAUEQFU6LPCSEFVXON'),
+      );
       expect(response.funderMuxedId, equals('67890'));
       expect(response.startingBalance, equals('1000.0'));
-      expect(response.account, equals('GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB'));
-      expect(response.sponsor, equals('GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOKY3B2WSQHG4W37'));
+      expect(
+        response.account,
+        equals('GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB'),
+      );
+      expect(
+        response.sponsor,
+        equals('GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOKY3B2WSQHG4W37'),
+      );
     });
 
     test('should handle optional fields as null', () {
@@ -199,8 +250,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = CreateAccountOperationResponse.fromJson(json);
@@ -238,8 +289,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = PaymentOperationResponse.fromJson(json);
@@ -275,21 +326,25 @@ void main() {
         'amount': '50.0',
         'asset_type': 'credit_alphanum4',
         'asset_code': 'USDC',
-        'asset_issuer': 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
+        'asset_issuer':
+            'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
         '_links': {
           'effects': {'href': 'url'},
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = PaymentOperationResponse.fromJson(json);
 
       expect(response.assetType, equals('credit_alphanum4'));
       expect(response.assetCode, equals('USDC'));
-      expect(response.assetIssuer, equals('GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN'));
+      expect(
+        response.assetIssuer,
+        equals('GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN'),
+      );
 
       // Test asset getter
       final asset = response.asset;
@@ -315,15 +370,16 @@ void main() {
         'price_r': {'n': 1, 'd': 10},
         'buying_asset_type': 'credit_alphanum4',
         'buying_asset_code': 'USDC',
-        'buying_asset_issuer': 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
+        'buying_asset_issuer':
+            'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
         'selling_asset_type': 'native',
         '_links': {
           'effects': {'href': 'url'},
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = ManageSellOfferOperationResponse.fromJson(json);
@@ -363,8 +419,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = ManageSellOfferOperationResponse.fromJson(json);
@@ -396,16 +452,16 @@ void main() {
           {
             'asset_type': 'credit_alphanum4',
             'asset_code': 'EUR',
-            'asset_issuer': 'GEURISSUER'
-          }
+            'asset_issuer': 'GEURISSUER',
+          },
         ],
         '_links': {
           'effects': {'href': 'url'},
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = PathPaymentStrictReceiveOperationResponse.fromJson(json);
@@ -445,8 +501,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = SetOptionsOperationResponse.fromJson(json);
@@ -488,8 +544,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = ChangeTrustOperationResponse.fromJson(json);
@@ -522,8 +578,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = ManageDataOperationResponse.fromJson(json);
@@ -549,8 +605,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = ManageDataOperationResponse.fromJson(json);
@@ -575,12 +631,14 @@ void main() {
         'parameters': [
           {
             'type': 'Symbol',
-            'value': 'AAAADwAAAAh0cmFuc2Zlcg==' // Valid XDR for Symbol "transfer"
+            'value':
+                'AAAADwAAAAh0cmFuc2Zlcg==', // Valid XDR for Symbol "transfer"
           },
           {
             'type': 'Address',
-            'value': 'AAAAEgAAAAG3hSx6F8b9GZ7E+3FP3PrRkPJBAAAAAAAAAAAAAAAA' // Valid XDR for Address
-          }
+            'value':
+                'AAAAEgAAAAG3hSx6F8b9GZ7E+3FP3PrRkPJBAAAAAAAAAAAAAAAA', // Valid XDR for Address
+          },
         ],
         'asset_balance_changes': [
           {
@@ -588,22 +646,25 @@ void main() {
             'from': 'GABC123',
             'to': 'GDEF456',
             'amount': '100.0',
-            'asset_type': 'native'
-          }
+            'asset_type': 'native',
+          },
         ],
         '_links': {
           'effects': {'href': 'url'},
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = InvokeHostFunctionOperationResponse.fromJson(json);
 
       expect(response.function, equals('HostFunctionTypeInvokeContract'));
-      expect(response.address, equals('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC'));
+      expect(
+        response.address,
+        equals('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC'),
+      );
       expect(response.salt, equals('salt123'));
       expect(response.parameters, hasLength(2));
       expect(response.parameters![0].type, equals('Symbol'));
@@ -633,8 +694,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = InvokeHostFunctionOperationResponse.fromJson(json);
@@ -661,24 +722,22 @@ void main() {
         'claimants': [
           {
             'destination': 'GDEST1',
-            'predicate': {'unconditional': true}
+            'predicate': {'unconditional': true},
           },
           {
             'destination': 'GDEST2',
             'predicate': {
-              'relative_time': {
-                'seconds': 3600
-              }
-            }
-          }
+              'relative_time': {'seconds': 3600},
+            },
+          },
         ],
         '_links': {
           'effects': {'href': 'url'},
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = CreateClaimableBalanceOperationResponse.fromJson(json);
@@ -702,14 +761,15 @@ void main() {
         'claimant': 'GCLAIMANT',
         'claimant_muxed': 'MCLAIMANT',
         'claimant_muxed_id': '999',
-        'balance_id': '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        'balance_id':
+            '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
         '_links': {
           'effects': {'href': 'url'},
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = ClaimClaimableBalanceOperationResponse.fromJson(json);
@@ -717,7 +777,12 @@ void main() {
       expect(response.claimantAccountId, equals('GCLAIMANT'));
       expect(response.claimantMuxed, equals('MCLAIMANT'));
       expect(response.claimantMuxedId, equals('999'));
-      expect(response.balanceId, equals('00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072'));
+      expect(
+        response.balanceId,
+        equals(
+          '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        ),
+      );
     });
   });
 
@@ -738,11 +803,13 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
-      final response = BeginSponsoringFutureReservesOperationResponse.fromJson(json);
+      final response = BeginSponsoringFutureReservesOperationResponse.fromJson(
+        json,
+      );
 
       expect(response.sponsoredId, equals('GSPONSORED'));
     });
@@ -765,11 +832,13 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
-      final response = EndSponsoringFutureReservesOperationResponse.fromJson(json);
+      final response = EndSponsoringFutureReservesOperationResponse.fromJson(
+        json,
+      );
 
       expect(response.beginSponsor, equals('GBEGIN'));
       expect(response.beginSponsorMuxed, equals('MBEGIN'));
@@ -792,7 +861,8 @@ void main() {
         'offer_id': '12345',
         'data_account_id': 'GDATA',
         'data_name': 'config',
-        'claimable_balance_id': '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        'claimable_balance_id':
+            '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
         'signer_account_id': 'GSIGNER',
         'signer_key': 'GKEY',
         '_links': {
@@ -800,8 +870,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = RevokeSponsorshipOperationResponse.fromJson(json);
@@ -812,7 +882,12 @@ void main() {
       expect(response.offerId, equals('12345'));
       expect(response.dataAccountId, equals('GDATA'));
       expect(response.dataName, equals('config'));
-      expect(response.claimableBalanceId, equals('00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072'));
+      expect(
+        response.claimableBalanceId,
+        equals(
+          '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        ),
+      );
       expect(response.signerAccountId, equals('GSIGNER'));
       expect(response.signerKey, equals('GKEY'));
     });
@@ -832,7 +907,7 @@ void main() {
         'liquidity_pool_id': 'pool789',
         'reserves_max': [
           {'asset': 'native', 'amount': '1000.0'},
-          {'asset': 'USD:GISSUER', 'amount': '2000.0'}
+          {'asset': 'USD:GISSUER', 'amount': '2000.0'},
         ],
         'min_price': '0.5',
         'min_price_r': {'n': 1, 'd': 2},
@@ -840,7 +915,7 @@ void main() {
         'max_price_r': {'n': 2, 'd': 1},
         'reserves_deposited': [
           {'asset': 'native', 'amount': '999.0'},
-          {'asset': 'USD:GISSUER', 'amount': '1998.0'}
+          {'asset': 'USD:GISSUER', 'amount': '1998.0'},
         ],
         'shares_received': '1414.213562',
         '_links': {
@@ -848,8 +923,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = LiquidityPoolDepositOperationResponse.fromJson(json);
@@ -876,19 +951,19 @@ void main() {
         'shares': '100.0',
         'reserves_min': [
           {'asset': 'native', 'amount': '70.0'},
-          {'asset': 'USD:GISSUER', 'amount': '70.0'}
+          {'asset': 'USD:GISSUER', 'amount': '70.0'},
         ],
         'reserves_received': [
           {'asset': 'native', 'amount': '71.0'},
-          {'asset': 'USD:GISSUER', 'amount': '71.0'}
+          {'asset': 'USD:GISSUER', 'amount': '71.0'},
         ],
         '_links': {
           'effects': {'href': 'url'},
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = LiquidityPoolWithdrawOperationResponse.fromJson(json);
@@ -923,8 +998,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = ClawbackOperationResponse.fromJson(json);
@@ -948,19 +1023,25 @@ void main() {
         'source_account': 'GISSUER',
         'created_at': '2024-01-15T23:30:00Z',
         'transaction_hash': 'hash891',
-        'balance_id': '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        'balance_id':
+            '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
         '_links': {
           'effects': {'href': 'url'},
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = ClawbackClaimableBalanceOperationResponse.fromJson(json);
 
-      expect(response.balanceId, equals('00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072'));
+      expect(
+        response.balanceId,
+        equals(
+          '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        ),
+      );
     });
   });
 
@@ -986,8 +1067,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = AccountMergeOperationResponse.fromJson(json);
@@ -1016,8 +1097,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = BumpSequenceOperationResponse.fromJson(json);
@@ -1040,8 +1121,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = InflationOperationResponse.fromJson(json);
@@ -1073,8 +1154,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = SetTrustlineFlagsOperationResponse.fromJson(json);
@@ -1085,7 +1166,10 @@ void main() {
       expect(response.setFlagsInt, equals([1]));
       expect(response.setFlags, equals(['authorized']));
       expect(response.clearFlagsInt, equals([2]));
-      expect(response.clearFlags, equals(['authorized_to_maintain_liabilities']));
+      expect(
+        response.clearFlags,
+        equals(['authorized_to_maintain_liabilities']),
+      );
     });
 
     test('should parse ExtendFootprintTTLOperationResponse', () {
@@ -1104,8 +1188,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = ExtendFootprintTTLOperationResponse.fromJson(json);
@@ -1128,8 +1212,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = RestoreFootprintOperationResponse.fromJson(json);
@@ -1162,8 +1246,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = AllowTrustOperationResponse.fromJson(json);
@@ -1199,8 +1283,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = CreatePassiveSellOfferOperationResponse.fromJson(json);
@@ -1236,8 +1320,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = ManageBuyOfferOperationResponse.fromJson(json);
@@ -1273,8 +1357,8 @@ void main() {
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = PathPaymentStrictSendOperationResponse.fromJson(json);
@@ -1291,7 +1375,7 @@ void main() {
     test('should parse ParameterResponse with XDR value', () {
       final json = {
         'type': 'Symbol',
-        'value': 'AAAADwAAAAh0cmFuc2Zlcg==' // Valid XDR for Symbol "transfer"
+        'value': 'AAAADwAAAAh0cmFuc2Zlcg==', // Valid XDR for Symbol "transfer"
       };
 
       final parameter = ParameterResponse.fromJson(json);
@@ -1312,7 +1396,7 @@ void main() {
         'asset_type': 'credit_alphanum4',
         'asset_code': 'TEST',
         'asset_issuer': 'GISSUER',
-        'destination_muxed_id': '54321'
+        'destination_muxed_id': '54321',
       };
 
       final change = AssetBalanceChange.fromJson(json);
@@ -1365,7 +1449,8 @@ void main() {
           'fee_charged': '100',
           'max_fee': '1000',
           'operation_count': 1,
-          'envelope_xdr': 'AAAAAGL8HQvQkbK2HA3WVjRrKmjX00fG8sLI7m0ERwJW/AX3AAAAZAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAArqN6LeOagjxMaUP96Bzfs9e77YB9MoXn+/fD/d9ZC',
+          'envelope_xdr':
+              'AAAAAGL8HQvQkbK2HA3WVjRrKmjX00fG8sLI7m0ERwJW/AX3AAAAZAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAArqN6LeOagjxMaUP96Bzfs9e77YB9MoXn+/fD/d9ZC',
           'result_xdr': 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAA=',
           'result_meta_xdr': 'AAAAAQAAAAIAAAADAA==',
           'fee_meta_xdr': 'AAAAAgAAAAMAAAAA',
@@ -1378,16 +1463,16 @@ void main() {
             'operations': {'href': 'url'},
             'effects': {'href': 'url'},
             'precedes': {'href': 'url'},
-            'succeeds': {'href': 'url'}
-          }
+            'succeeds': {'href': 'url'},
+          },
         },
         '_links': {
           'effects': {'href': 'url'},
           'precedes': {'href': 'url'},
           'self': {'href': 'url'},
           'succeeds': {'href': 'url'},
-          'transaction': {'href': 'url'}
-        }
+          'transaction': {'href': 'url'},
+        },
       };
 
       final response = PaymentOperationResponse.fromJson(json);
@@ -1415,8 +1500,8 @@ Map<String, dynamic> _createMinimalOperationJson(int typeI) {
       'precedes': {'href': 'url'},
       'self': {'href': 'url'},
       'succeeds': {'href': 'url'},
-      'transaction': {'href': 'url'}
-    }
+      'transaction': {'href': 'url'},
+    },
   };
 
   // Add type-specific required fields
@@ -1489,24 +1574,16 @@ Map<String, dynamic> _createMinimalOperationJson(int typeI) {
       });
       break;
     case 8: // AccountMerge
-      baseJson.addAll({
-        'account': 'GACCOUNT',
-        'into': 'GINTO',
-      });
+      baseJson.addAll({'account': 'GACCOUNT', 'into': 'GINTO'});
       break;
     case 9: // Inflation
       // No required fields beyond base
       break;
     case 10: // ManageData
-      baseJson.addAll({
-        'name': 'test',
-        'value': 'dGVzdA==',
-      });
+      baseJson.addAll({'name': 'test', 'value': 'dGVzdA=='});
       break;
     case 11: // BumpSequence
-      baseJson.addAll({
-        'bump_to': '123456789',
-      });
+      baseJson.addAll({'bump_to': '123456789'});
       break;
     case 12: // ManageBuyOffer
       baseJson.addAll({
@@ -1541,18 +1618,15 @@ Map<String, dynamic> _createMinimalOperationJson(int typeI) {
     case 15: // ClaimClaimableBalance
       baseJson.addAll({
         'claimant': 'GCLAIMANT',
-        'balance_id': '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        'balance_id':
+            '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
       });
       break;
     case 16: // BeginSponsoringFutureReserves
-      baseJson.addAll({
-        'sponsored_id': 'GSPONSORED',
-      });
+      baseJson.addAll({'sponsored_id': 'GSPONSORED'});
       break;
     case 17: // EndSponsoringFutureReserves
-      baseJson.addAll({
-        'begin_sponsor': 'GBEGIN',
-      });
+      baseJson.addAll({'begin_sponsor': 'GBEGIN'});
       break;
     case 18: // RevokeSponsorship
       // No strictly required fields beyond base
@@ -1566,14 +1640,12 @@ Map<String, dynamic> _createMinimalOperationJson(int typeI) {
       break;
     case 20: // ClawbackClaimableBalance
       baseJson.addAll({
-        'balance_id': '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        'balance_id':
+            '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
       });
       break;
     case 21: // SetTrustlineFlags
-      baseJson.addAll({
-        'trustor': 'GTRUSTOR',
-        'asset_type': 'native',
-      });
+      baseJson.addAll({'trustor': 'GTRUSTOR', 'asset_type': 'native'});
       break;
     case 22: // LiquidityPoolDeposit
       baseJson.addAll({
@@ -1603,9 +1675,7 @@ Map<String, dynamic> _createMinimalOperationJson(int typeI) {
       });
       break;
     case 25: // ExtendFootprintTTL
-      baseJson.addAll({
-        'extend_to': 100000,
-      });
+      baseJson.addAll({'extend_to': 100000});
       break;
     case 26: // RestoreFootprint
       // No required fields beyond base

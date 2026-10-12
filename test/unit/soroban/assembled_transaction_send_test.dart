@@ -32,13 +32,16 @@ dio.ResponseBody jsonRpcResponse(dynamic id, Map<String, dynamic> result) {
     jsonEncode({'jsonrpc': '2.0', 'id': id, 'result': result}),
     200,
     headers: {
-      'content-type': [dio.Headers.jsonContentType]
+      'content-type': [dio.Headers.jsonContentType],
     },
   );
 }
 
 dio.ResponseBody accountEntryResponse(
-    Map<String, dynamic> requestBody, KeyPair keyPair, BigInt sequence) {
+  Map<String, dynamic> requestBody,
+  KeyPair keyPair,
+  BigInt sequence,
+) {
   final accountEntry = XdrAccountEntry(
     XdrAccountID(keyPair.xdrPublicKey),
     XdrInt64(BigInt.zero),
@@ -59,7 +62,7 @@ dio.ResponseBody accountEntryResponse(
         'key': (requestBody['params']['keys'] as List)[0],
         'xdr': ledgerEntryData.toBase64EncodedXdrString(),
         'lastModifiedLedgerSeq': 99999,
-      }
+      },
     ],
     'latestLedger': 100000,
   });
@@ -71,9 +74,16 @@ XdrSorobanTransactionData transactionDataWithWrites(KeyPair keyPair) {
   final key = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
   key.account = XdrLedgerKeyAccount(XdrAccountID(keyPair.xdrPublicKey));
   final resources = XdrSorobanResources(
-      XdrLedgerFootprint([], [key]), XdrUint32(0), XdrUint32(0), XdrUint32(0));
+    XdrLedgerFootprint([], [key]),
+    XdrUint32(0),
+    XdrUint32(0),
+    XdrUint32(0),
+  );
   return XdrSorobanTransactionData(
-      XdrSorobanTransactionDataExt(0), resources, XdrInt64(BigInt.zero));
+    XdrSorobanTransactionDataExt(0),
+    resources,
+    XdrInt64(BigInt.zero),
+  );
 }
 
 Map<String, dynamic> successfulSimulation(XdrSorobanTransactionData txData) {
@@ -81,10 +91,7 @@ Map<String, dynamic> successfulSimulation(XdrSorobanTransactionData txData) {
     'minResourceFee': '100000',
     'transactionData': txData.toBase64EncodedXdrString(),
     'results': [
-      {
-        'auth': [],
-        'xdr': XdrSCVal.forU32(42).toBase64EncodedXdrString(),
-      }
+      {'auth': [], 'xdr': XdrSCVal.forU32(42).toBase64EncodedXdrString()},
     ],
     'latestLedger': 100000,
   };
@@ -97,7 +104,9 @@ void main() {
   final contractId = StrKey.encodeContractId(Uint8List(32));
 
   AssembledTransactionOptions buildOptions(
-      KeyPair keyPair, SorobanServer server) {
+    KeyPair keyPair,
+    SorobanServer server,
+  ) {
     final clientOptions = ClientOptions(
       sourceAccountKeyPair: keyPair,
       contractId: contractId,
@@ -131,7 +140,9 @@ void main() {
         case 'simulateTransaction':
           simulateEnvelopes?.add(requestBody['params']['transaction']);
           return jsonRpcResponse(
-              requestBody['id'], successfulSimulation(txData));
+            requestBody['id'],
+            successfulSimulation(txData),
+          );
         case 'sendTransaction':
           return jsonRpcResponse(requestBody['id'], sendResult);
         case 'getTransaction':
@@ -151,9 +162,12 @@ void main() {
   }
 
   Future<AssembledTransaction> buildSignedTx(
-      KeyPair keyPair, SorobanServer server) async {
-    final tx =
-        await AssembledTransaction.build(options: buildOptions(keyPair, server));
+    KeyPair keyPair,
+    SorobanServer server,
+  ) async {
+    final tx = await AssembledTransaction.build(
+      options: buildOptions(keyPair, server),
+    );
     tx.sign(force: true);
     return tx;
   }
@@ -162,15 +176,12 @@ void main() {
     test('PENDING is polled to the final transaction response', () async {
       final keyPair = KeyPair.random();
       final getTransactionCalls = <int>[];
-      final server = sendFlowMockServer(
-          keyPair,
-          {
-            'status': 'PENDING',
-            'hash': txHash,
-            'latestLedger': 100000,
-            'latestLedgerCloseTime': '1234567890',
-          },
-          getTransactionCalls: getTransactionCalls);
+      final server = sendFlowMockServer(keyPair, {
+        'status': 'PENDING',
+        'hash': txHash,
+        'latestLedger': 100000,
+        'latestLedgerCloseTime': '1234567890',
+      }, getTransactionCalls: getTransactionCalls);
 
       final tx = await buildSignedTx(keyPair, server);
       final response = await tx.send();
@@ -182,15 +193,12 @@ void main() {
     test('DUPLICATE is polled to the final transaction response', () async {
       final keyPair = KeyPair.random();
       final getTransactionCalls = <int>[];
-      final server = sendFlowMockServer(
-          keyPair,
-          {
-            'status': 'DUPLICATE',
-            'hash': txHash,
-            'latestLedger': 100000,
-            'latestLedgerCloseTime': '1234567890',
-          },
-          getTransactionCalls: getTransactionCalls);
+      final server = sendFlowMockServer(keyPair, {
+        'status': 'DUPLICATE',
+        'hash': txHash,
+        'latestLedger': 100000,
+        'latestLedgerCloseTime': '1234567890',
+      }, getTransactionCalls: getTransactionCalls);
 
       final tx = await buildSignedTx(keyPair, server);
       final response = await tx.send();
@@ -202,88 +210,99 @@ void main() {
     test('TRY_AGAIN_LATER throws without polling', () async {
       final keyPair = KeyPair.random();
       final getTransactionCalls = <int>[];
-      final server = sendFlowMockServer(
-          keyPair,
-          {
-            'status': 'TRY_AGAIN_LATER',
-            'hash': txHash,
-            'latestLedger': 100000,
-            'latestLedgerCloseTime': '1234567890',
-          },
-          getTransactionCalls: getTransactionCalls);
+      final server = sendFlowMockServer(keyPair, {
+        'status': 'TRY_AGAIN_LATER',
+        'hash': txHash,
+        'latestLedger': 100000,
+        'latestLedgerCloseTime': '1234567890',
+      }, getTransactionCalls: getTransactionCalls);
 
       final tx = await buildSignedTx(keyPair, server);
 
       await expectLater(
         tx.send(),
-        throwsA(isA<Exception>().having((e) => e.toString(), 'message',
-            contains('Send transaction failed with status: TRY_AGAIN_LATER'))),
-      );
-      expect(getTransactionCalls, isEmpty);
-    });
-
-    test('ERROR throws with the error result xdr and diagnostic events',
-        () async {
-      final keyPair = KeyPair.random();
-      final getTransactionCalls = <int>[];
-      // A TransactionResult with code txBAD_SEQ.
-      const errorResult = 'AAAAAAAAAGT////7AAAAAA==';
-      final eventBody = XdrContractEventBody(0);
-      eventBody.v0 = XdrContractEventV0([], XdrSCVal.forU32(7));
-      final diagnosticEvent = XdrDiagnosticEvent(
-          true,
-          XdrContractEvent(XdrExtensionPoint(0), null,
-              XdrContractEventType.CONTRACT, eventBody));
-      final diagnosticEventXdr = diagnosticEvent.toBase64EncodedXdrString();
-      final server = sendFlowMockServer(
-          keyPair,
-          {
-            'status': 'ERROR',
-            'hash': txHash,
-            'errorResultXdr': errorResult,
-            'diagnosticEventsXdr': [diagnosticEventXdr],
-            'latestLedger': 100000,
-            'latestLedgerCloseTime': '1234567890',
-          },
-          getTransactionCalls: getTransactionCalls);
-
-      final tx = await buildSignedTx(keyPair, server);
-
-      await expectLater(
-        tx.send(),
-        throwsA(isA<Exception>().having(
+        throwsA(
+          isA<Exception>().having(
             (e) => e.toString(),
             'message',
-            allOf(
-                contains('Send transaction failed with status: ERROR'),
-                contains(errorResult),
-                contains(diagnosticEventXdr)))),
+            contains('Send transaction failed with status: TRY_AGAIN_LATER'),
+          ),
+        ),
       );
       expect(getTransactionCalls, isEmpty);
     });
+
+    test(
+      'ERROR throws with the error result xdr and diagnostic events',
+      () async {
+        final keyPair = KeyPair.random();
+        final getTransactionCalls = <int>[];
+        // A TransactionResult with code txBAD_SEQ.
+        const errorResult = 'AAAAAAAAAGT////7AAAAAA==';
+        final eventBody = XdrContractEventBody(0);
+        eventBody.v0 = XdrContractEventV0([], XdrSCVal.forU32(7));
+        final diagnosticEvent = XdrDiagnosticEvent(
+          true,
+          XdrContractEvent(
+            XdrExtensionPoint(0),
+            null,
+            XdrContractEventType.CONTRACT,
+            eventBody,
+          ),
+        );
+        final diagnosticEventXdr = diagnosticEvent.toBase64EncodedXdrString();
+        final server = sendFlowMockServer(keyPair, {
+          'status': 'ERROR',
+          'hash': txHash,
+          'errorResultXdr': errorResult,
+          'diagnosticEventsXdr': [diagnosticEventXdr],
+          'latestLedger': 100000,
+          'latestLedgerCloseTime': '1234567890',
+        }, getTransactionCalls: getTransactionCalls);
+
+        final tx = await buildSignedTx(keyPair, server);
+
+        await expectLater(
+          tx.send(),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              allOf(
+                contains('Send transaction failed with status: ERROR'),
+                contains(errorResult),
+                contains(diagnosticEventXdr),
+              ),
+            ),
+          ),
+        );
+        expect(getTransactionCalls, isEmpty);
+      },
+    );
 
     test('an unknown status throws without polling', () async {
       final keyPair = KeyPair.random();
       final getTransactionCalls = <int>[];
-      final server = sendFlowMockServer(
-          keyPair,
-          {
-            'status': 'SOMETHING_UNEXPECTED',
-            'hash': txHash,
-            'latestLedger': 100000,
-            'latestLedgerCloseTime': '1234567890',
-          },
-          getTransactionCalls: getTransactionCalls);
+      final server = sendFlowMockServer(keyPair, {
+        'status': 'SOMETHING_UNEXPECTED',
+        'hash': txHash,
+        'latestLedger': 100000,
+        'latestLedgerCloseTime': '1234567890',
+      }, getTransactionCalls: getTransactionCalls);
 
       final tx = await buildSignedTx(keyPair, server);
 
       await expectLater(
         tx.send(),
-        throwsA(isA<Exception>().having(
+        throwsA(
+          isA<Exception>().having(
             (e) => e.toString(),
             'message',
             contains(
-                'Send transaction failed with status: SOMETHING_UNEXPECTED'))),
+              'Send transaction failed with status: SOMETHING_UNEXPECTED',
+            ),
+          ),
+        ),
       );
       expect(getTransactionCalls, isEmpty);
     });
@@ -300,8 +319,13 @@ void main() {
 
       await expectLater(
         tx.send(),
-        throwsA(isA<Exception>().having((e) => e.toString(), 'message',
-            contains('contains no transaction hash'))),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('contains no transaction hash'),
+          ),
+        ),
       );
     });
   });
@@ -310,15 +334,12 @@ void main() {
     test('built transactions set no lower time bound', () async {
       final keyPair = KeyPair.random();
       final simulateEnvelopes = <String>[];
-      final server = sendFlowMockServer(
-          keyPair,
-          {
-            'status': 'PENDING',
-            'hash': txHash,
-            'latestLedger': 100000,
-            'latestLedgerCloseTime': '1234567890',
-          },
-          simulateEnvelopes: simulateEnvelopes);
+      final server = sendFlowMockServer(keyPair, {
+        'status': 'PENDING',
+        'hash': txHash,
+        'latestLedger': 100000,
+        'latestLedgerCloseTime': '1234567890',
+      }, simulateEnvelopes: simulateEnvelopes);
 
       await AssembledTransaction.build(options: buildOptions(keyPair, server));
 
@@ -329,8 +350,10 @@ void main() {
       final timeBounds = transaction.preconditions?.timeBounds;
       expect(timeBounds, isNotNull);
       expect(timeBounds!.minTime, 0);
-      expect(timeBounds.maxTime,
-          greaterThan(DateTime.now().millisecondsSinceEpoch ~/ 1000));
+      expect(
+        timeBounds.maxTime,
+        greaterThan(DateTime.now().millisecondsSinceEpoch ~/ 1000),
+      );
     });
   });
 }

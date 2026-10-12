@@ -21,14 +21,10 @@ class TokenContractAllowanceDataKey {
 
   XdrSCVal toScVal() {
     final fields = <XdrSCMapEntry>[];
-    fields.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('from'),
-      from.toXdrSCVal(),
-    ));
-    fields.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('spender'),
-      spender.toXdrSCVal(),
-    ));
+    fields.add(XdrSCMapEntry(XdrSCVal.forSymbol('from'), from.toXdrSCVal()));
+    fields.add(
+      XdrSCMapEntry(XdrSCVal.forSymbol('spender'), spender.toXdrSCVal()),
+    );
     return XdrSCVal.forMap(fields);
   }
 
@@ -53,10 +49,7 @@ class TokenContractAllowanceDataKey {
           spender == other.spender;
 
   @override
-  int get hashCode => Object.hashAll([
-      from,
-      spender
-  ]);
+  int get hashCode => Object.hashAll([from, spender]);
 }
 
 /// TokenContractAllowanceValue struct
@@ -71,14 +64,18 @@ class TokenContractAllowanceValue {
 
   XdrSCVal toScVal() {
     final fields = <XdrSCMapEntry>[];
-    fields.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('amount'),
-      XdrSCVal.forI128BigInt(amount),
-    ));
-    fields.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('expiration_ledger'),
-      XdrSCVal.forU32(expirationLedger),
-    ));
+    fields.add(
+      XdrSCMapEntry(
+        XdrSCVal.forSymbol('amount'),
+        XdrSCVal.forI128BigInt(amount),
+      ),
+    );
+    fields.add(
+      XdrSCMapEntry(
+        XdrSCVal.forSymbol('expiration_ledger'),
+        XdrSCVal.forU32(expirationLedger),
+      ),
+    );
     return XdrSCVal.forMap(fields);
   }
 
@@ -103,10 +100,7 @@ class TokenContractAllowanceValue {
           expirationLedger == other.expirationLedger;
 
   @override
-  int get hashCode => Object.hashAll([
-      amount,
-      expirationLedger
-  ]);
+  int get hashCode => Object.hashAll([amount, expirationLedger]);
 }
 
 /// Kind enum for TokenContractDataKey
@@ -123,7 +117,8 @@ enum TokenContractDataKeyKind {
   factory TokenContractDataKeyKind.fromValue(String value) {
     return TokenContractDataKeyKind.values.firstWhere(
       (e) => e.value == value,
-      orElse: () => throw ArgumentError('Unknown TokenContractDataKeyKind value: $value'),
+      orElse: () =>
+          throw ArgumentError('Unknown TokenContractDataKeyKind value: $value'),
     );
   }
 }
@@ -192,16 +187,12 @@ class TokenContractDataKey {
     switch (kind) {
       case TokenContractDataKeyKind.Allowance:
         return TokenContractDataKey.allowance(
-          TokenContractAllowanceDataKey.fromScVal(vec[1])
+          TokenContractAllowanceDataKey.fromScVal(vec[1]),
         );
       case TokenContractDataKeyKind.Balance:
-        return TokenContractDataKey.balance(
-          Address.fromXdrSCVal(vec[1])
-        );
+        return TokenContractDataKey.balance(Address.fromXdrSCVal(vec[1]));
       case TokenContractDataKeyKind.State:
-        return TokenContractDataKey.state(
-          Address.fromXdrSCVal(vec[1])
-        );
+        return TokenContractDataKey.state(Address.fromXdrSCVal(vec[1]));
       case TokenContractDataKeyKind.Admin:
         return TokenContractDataKey.admin();
     }
@@ -254,18 +245,15 @@ class TokenContractTokenMetadata {
 
   XdrSCVal toScVal() {
     final fields = <XdrSCMapEntry>[];
-    fields.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('decimal'),
-      XdrSCVal.forU32(decimal),
-    ));
-    fields.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('name'),
-      XdrSCVal.forString(name),
-    ));
-    fields.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('symbol'),
-      XdrSCVal.forString(symbol),
-    ));
+    fields.add(
+      XdrSCMapEntry(XdrSCVal.forSymbol('decimal'), XdrSCVal.forU32(decimal)),
+    );
+    fields.add(
+      XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString(name)),
+    );
+    fields.add(
+      XdrSCMapEntry(XdrSCVal.forSymbol('symbol'), XdrSCVal.forString(symbol)),
+    );
     return XdrSCVal.forMap(fields);
   }
 
@@ -292,11 +280,7 @@ class TokenContractTokenMetadata {
           symbol == other.symbol;
 
   @override
-  int get hashCode => Object.hashAll([
-      decimal,
-      name,
-      symbol
-  ]);
+  int get hashCode => Object.hashAll([decimal, name, symbol]);
 }
 
 /// Client for interacting with the TokenContract contract
@@ -394,9 +378,7 @@ class TokenContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      newAdmin.toXdrSCVal(),
-    ];
+    final List<XdrSCVal> args = [newAdmin.toXdrSCVal()];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -419,9 +401,7 @@ class TokenContract {
     required Address newAdmin,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      newAdmin.toXdrSCVal(),
-    ];
+    final List<XdrSCVal> args = [newAdmin.toXdrSCVal()];
 
     return await _client.buildInvokeMethodTx(
       name: 'set_admin',
@@ -440,10 +420,7 @@ class TokenContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      from.toXdrSCVal(),
-      spender.toXdrSCVal(),
-    ];
+    final List<XdrSCVal> args = [from.toXdrSCVal(), spender.toXdrSCVal()];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -469,10 +446,7 @@ class TokenContract {
     required Address spender,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      from.toXdrSCVal(),
-      spender.toXdrSCVal(),
-    ];
+    final List<XdrSCVal> args = [from.toXdrSCVal(), spender.toXdrSCVal()];
 
     return await _client.buildInvokeMethodTx(
       name: 'allowance',
@@ -547,9 +521,7 @@ class TokenContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      id.toXdrSCVal(),
-    ];
+    final List<XdrSCVal> args = [id.toXdrSCVal()];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -574,9 +546,7 @@ class TokenContract {
     required Address id,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      id.toXdrSCVal(),
-    ];
+    final List<XdrSCVal> args = [id.toXdrSCVal()];
 
     return await _client.buildInvokeMethodTx(
       name: 'balance',
@@ -805,8 +775,7 @@ class TokenContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-    ];
+    final List<XdrSCVal> args = [];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -830,8 +799,7 @@ class TokenContract {
   Future<AssembledTransaction> buildDecimalsTx({
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-    ];
+    final List<XdrSCVal> args = [];
 
     return await _client.buildInvokeMethodTx(
       name: 'decimals',
@@ -848,8 +816,7 @@ class TokenContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-    ];
+    final List<XdrSCVal> args = [];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -873,8 +840,7 @@ class TokenContract {
   Future<AssembledTransaction> buildNameTx({
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-    ];
+    final List<XdrSCVal> args = [];
 
     return await _client.buildInvokeMethodTx(
       name: 'name',
@@ -891,8 +857,7 @@ class TokenContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-    ];
+    final List<XdrSCVal> args = [];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -916,8 +881,7 @@ class TokenContract {
   Future<AssembledTransaction> buildSymbolTx({
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-    ];
+    final List<XdrSCVal> args = [];
 
     return await _client.buildInvokeMethodTx(
       name: 'symbol',

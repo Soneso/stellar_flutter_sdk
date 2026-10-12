@@ -46,11 +46,15 @@ void main() {
       expect(signer.address, kValidContractId);
     });
 
-    test('test_delegated_signer_rejects_invalid_address_throws_invalid_address',
-        () {
-      expect(() => OZDelegatedSigner('not-an-address'),
-          throwsA(isA<SmartAccountInvalidAddress>()));
-    });
+    test(
+      'test_delegated_signer_rejects_invalid_address_throws_invalid_address',
+      () {
+        expect(
+          () => OZDelegatedSigner('not-an-address'),
+          throwsA(isA<SmartAccountInvalidAddress>()),
+        );
+      },
+    );
 
     test('test_delegated_signer_to_scval_returns_vec_symbol_address', () {
       final signer = OZDelegatedSigner(kValidGAddress);
@@ -80,77 +84,82 @@ void main() {
 
   group('OZExternalSigner.webAuthn', () {
     test(
-        'test_external_signer_webauthn_accepts_valid_65_byte_uncompressed_pubkey_with_credential_id',
-        () {
-      final pubkey = _makeSecp256r1Pubkey();
-      final credentialId = Uint8List.fromList(<int>[1, 2, 3, 4, 5, 6, 7, 8]);
-      final signer = OZExternalSigner.webAuthn(
-        verifierAddress: kValidContractId,
-        publicKey: pubkey,
-        credentialId: credentialId,
-      );
-      expect(signer.verifierAddress, kValidContractId);
-      expect(signer.keyData.length, pubkey.length + credentialId.length);
-      expect(signer.keyData.sublist(0, pubkey.length), pubkey);
-      expect(signer.keyData.sublist(pubkey.length), credentialId);
-    });
-
-    test(
-        'test_external_signer_webauthn_rejects_wrong_size_pubkey_throws_invalid_input',
-        () {
-      final pubkey = Uint8List(64);
-      pubkey[0] = 0x04;
-      expect(
-        () => OZExternalSigner.webAuthn(
+      'test_external_signer_webauthn_accepts_valid_65_byte_uncompressed_pubkey_with_credential_id',
+      () {
+        final pubkey = _makeSecp256r1Pubkey();
+        final credentialId = Uint8List.fromList(<int>[1, 2, 3, 4, 5, 6, 7, 8]);
+        final signer = OZExternalSigner.webAuthn(
           verifierAddress: kValidContractId,
           publicKey: pubkey,
-          credentialId: Uint8List.fromList(<int>[1, 2, 3]),
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+          credentialId: credentialId,
+        );
+        expect(signer.verifierAddress, kValidContractId);
+        expect(signer.keyData.length, pubkey.length + credentialId.length);
+        expect(signer.keyData.sublist(0, pubkey.length), pubkey);
+        expect(signer.keyData.sublist(pubkey.length), credentialId);
+      },
+    );
 
     test(
-        'test_external_signer_webauthn_rejects_compressed_pubkey_prefix_02_throws_invalid_input',
-        () {
-      final pubkey = _makeSecp256r1Pubkey(firstByte: 0x02);
-      expect(
-        () => OZExternalSigner.webAuthn(
-          verifierAddress: kValidContractId,
-          publicKey: pubkey,
-          credentialId: Uint8List.fromList(<int>[1, 2, 3]),
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+      'test_external_signer_webauthn_rejects_wrong_size_pubkey_throws_invalid_input',
+      () {
+        final pubkey = Uint8List(64);
+        pubkey[0] = 0x04;
+        expect(
+          () => OZExternalSigner.webAuthn(
+            verifierAddress: kValidContractId,
+            publicKey: pubkey,
+            credentialId: Uint8List.fromList(<int>[1, 2, 3]),
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
 
     test(
-        'test_external_signer_webauthn_rejects_compressed_pubkey_prefix_03_throws_invalid_input',
-        () {
-      final pubkey = _makeSecp256r1Pubkey(firstByte: 0x03);
-      expect(
-        () => OZExternalSigner.webAuthn(
-          verifierAddress: kValidContractId,
-          publicKey: pubkey,
-          credentialId: Uint8List.fromList(<int>[1, 2, 3]),
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+      'test_external_signer_webauthn_rejects_compressed_pubkey_prefix_02_throws_invalid_input',
+      () {
+        final pubkey = _makeSecp256r1Pubkey(firstByte: 0x02);
+        expect(
+          () => OZExternalSigner.webAuthn(
+            verifierAddress: kValidContractId,
+            publicKey: pubkey,
+            credentialId: Uint8List.fromList(<int>[1, 2, 3]),
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
 
     test(
-        'test_external_signer_webauthn_rejects_empty_credential_id_throws_invalid_input',
-        () {
-      final pubkey = _makeSecp256r1Pubkey();
-      expect(
-        () => OZExternalSigner.webAuthn(
-          verifierAddress: kValidContractId,
-          publicKey: pubkey,
-          credentialId: Uint8List(0),
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+      'test_external_signer_webauthn_rejects_compressed_pubkey_prefix_03_throws_invalid_input',
+      () {
+        final pubkey = _makeSecp256r1Pubkey(firstByte: 0x03);
+        expect(
+          () => OZExternalSigner.webAuthn(
+            verifierAddress: kValidContractId,
+            publicKey: pubkey,
+            credentialId: Uint8List.fromList(<int>[1, 2, 3]),
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
+
+    test(
+      'test_external_signer_webauthn_rejects_empty_credential_id_throws_invalid_input',
+      () {
+        final pubkey = _makeSecp256r1Pubkey();
+        expect(
+          () => OZExternalSigner.webAuthn(
+            verifierAddress: kValidContractId,
+            publicKey: pubkey,
+            credentialId: Uint8List(0),
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
   });
 
   group('OZExternalSigner.ed25519', () {
@@ -165,39 +174,43 @@ void main() {
     });
 
     test(
-        'test_external_signer_ed25519_rejects_wrong_size_pubkey_throws_invalid_input',
-        () {
-      final pubkey = Uint8List(31);
-      expect(
-        () => OZExternalSigner.ed25519(
-          verifierAddress: kValidContractId,
-          publicKey: pubkey,
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+      'test_external_signer_ed25519_rejects_wrong_size_pubkey_throws_invalid_input',
+      () {
+        final pubkey = Uint8List(31);
+        expect(
+          () => OZExternalSigner.ed25519(
+            verifierAddress: kValidContractId,
+            publicKey: pubkey,
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
   });
 
   group('OZExternalSigner generic constructor and validation', () {
     test(
-        'test_external_signer_rejects_non_contract_verifier_address_throws_invalid_address',
-        () {
-      expect(
-        () => OZExternalSigner(
-          kValidGAddress,
-          Uint8List.fromList(<int>[1, 2, 3]),
-        ),
-        throwsA(isA<SmartAccountInvalidAddress>()),
-      );
-    });
+      'test_external_signer_rejects_non_contract_verifier_address_throws_invalid_address',
+      () {
+        expect(
+          () => OZExternalSigner(
+            kValidGAddress,
+            Uint8List.fromList(<int>[1, 2, 3]),
+          ),
+          throwsA(isA<SmartAccountInvalidAddress>()),
+        );
+      },
+    );
 
-    test('test_external_signer_rejects_empty_key_data_throws_invalid_input',
-        () {
-      expect(
-        () => OZExternalSigner(kValidContractId, Uint8List(0)),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+    test(
+      'test_external_signer_rejects_empty_key_data_throws_invalid_input',
+      () {
+        expect(
+          () => OZExternalSigner(kValidContractId, Uint8List(0)),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
 
     test('test_external_signer_to_scval_returns_vec_symbol_address_bytes', () {
       final signer = OZExternalSigner(
@@ -216,15 +229,15 @@ void main() {
     });
 
     test(
-        'test_external_signer_unique_key_format_external_colon_verifier_colon_keyhex',
-        () {
-      final signer = OZExternalSigner(
-        kValidContractId,
-        Uint8List.fromList(<int>[0xAB, 0xCD]),
-      );
-      expect(signer.uniqueKey,
-          'external:$kValidContractId:abcd');
-    });
+      'test_external_signer_unique_key_format_external_colon_verifier_colon_keyhex',
+      () {
+        final signer = OZExternalSigner(
+          kValidContractId,
+          Uint8List.fromList(<int>[0xAB, 0xCD]),
+        );
+        expect(signer.uniqueKey, 'external:$kValidContractId:abcd');
+      },
+    );
   });
 
   group('OZExternalSigner equality and hashing', () {
@@ -307,22 +320,25 @@ void main() {
       expect(OZSubmissionMethod.values, contains(OZSubmissionMethod.rpc));
     });
 
-    test('test_delegatedSigner_toScVal_invalidAddress_throwsValidationException', () {
-      // OZDelegatedSigner.toScVal() catches Address construction failures.
-      // A garbage string passes the constructor validation regex check on some
-      // patterns but fails Address.forAccountId.
-      // Use a string that is accepted by the regex but rejected by StrKey.
-      // The validation regex in the constructor only checks for blank/empty.
-      // Use an address that looks like a contract but is actually valid - we
-      // want to trigger the catch block inside toScVal, which requires an
-      // address that StrKey.isValidContractId rejects but the constructor accepts.
-      // Actually, the constructor already validates - so we need to use the
-      // internal path differently. Test via equality.
-      final s1 = OZDelegatedSigner(kValidGAddress);
-      final s2 = OZDelegatedSigner(kValidGAddress);
-      expect(s1, equals(s2));
-      expect(s1.hashCode, equals(s2.hashCode));
-    });
+    test(
+      'test_delegatedSigner_toScVal_invalidAddress_throwsValidationException',
+      () {
+        // OZDelegatedSigner.toScVal() catches Address construction failures.
+        // A garbage string passes the constructor validation regex check on some
+        // patterns but fails Address.forAccountId.
+        // Use a string that is accepted by the regex but rejected by StrKey.
+        // The validation regex in the constructor only checks for blank/empty.
+        // Use an address that looks like a contract but is actually valid - we
+        // want to trigger the catch block inside toScVal, which requires an
+        // address that StrKey.isValidContractId rejects but the constructor accepts.
+        // Actually, the constructor already validates - so we need to use the
+        // internal path differently. Test via equality.
+        final s1 = OZDelegatedSigner(kValidGAddress);
+        final s2 = OZDelegatedSigner(kValidGAddress);
+        expect(s1, equals(s2));
+        expect(s1.hashCode, equals(s2.hashCode));
+      },
+    );
 
     test('test_submission_method_round_trip_through_string_or_index', () {
       // Round-trip through index.
@@ -332,8 +348,9 @@ void main() {
       }
       // Round-trip through string name.
       for (final method in OZSubmissionMethod.values) {
-        final viaName = OZSubmissionMethod.values
-            .firstWhere((m) => m.name == method.name);
+        final viaName = OZSubmissionMethod.values.firstWhere(
+          (m) => m.name == method.name,
+        );
         expect(viaName, method);
       }
       // Specific names match expected values.

@@ -51,8 +51,9 @@ void main() {
 
   group('XdrClaimPredicate', () {
     test('encode NOT predicate with null notPredicate', () {
-      final predicate =
-          XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_NOT);
+      final predicate = XdrClaimPredicate(
+        XdrClaimPredicateType.CLAIM_PREDICATE_NOT,
+      );
       predicate.notPredicate = null;
 
       final output = XdrDataOutputStream();
@@ -94,16 +95,21 @@ void main() {
   group('XdrClaimableBalanceID', () {
     test('discriminant setter', () {
       final id = XdrClaimableBalanceID(
-          XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
+      );
       id.discriminant = XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0;
-      expect(id.discriminant,
-          XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
+      expect(
+        id.discriminant,
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
+      );
     });
 
     test('forId with hex string', () {
       final id = XdrClaimableBalanceID.forId('00000000$_balanceHashHex');
-      expect(id.discriminant,
-          XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
+      expect(
+        id.discriminant,
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
+      );
       expect(Util.bytesToHex(id.v0!.hash), _balanceHashHex);
     });
 
@@ -122,15 +128,19 @@ void main() {
 
     test('forId with a hex id carrying its one byte discriminant', () {
       final id = XdrClaimableBalanceID.forId('00$_balanceHashHex');
-      expect(id.discriminant,
-          XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
+      expect(
+        id.discriminant,
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
+      );
       expect(Util.bytesToHex(id.v0!.hash), _balanceHashHex);
     });
 
     test('forId with a bare hex hash', () {
       final id = XdrClaimableBalanceID.forId(_balanceHashHex);
-      expect(id.discriminant,
-          XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
+      expect(
+        id.discriminant,
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
+      );
       expect(Util.bytesToHex(id.v0!.hash), _balanceHashHex);
     });
 
@@ -141,15 +151,23 @@ void main() {
       // and must not be dropped to leave a V0 id over the same hash.
       for (final taggedHex in <String>[
         '01$_balanceHashHex',
-        '00000001$_balanceHashHex'
+        '00000001$_balanceHashHex',
       ]) {
         XdrClaimableBalanceID? built;
         expect(
-            () => built = XdrClaimableBalanceID.forId(taggedHex),
-            throwsA(isA<FormatException>().having((e) => e.message, 'message',
-                contains('carries the discriminant 1, '
-                    'which names no claimable balance id type'))),
-            reason: taggedHex);
+          () => built = XdrClaimableBalanceID.forId(taggedHex),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              contains(
+                'carries the discriminant 1, '
+                'which names no claimable balance id type',
+              ),
+            ),
+          ),
+          reason: taggedHex,
+        );
         expect(built, isNull, reason: taggedHex);
       }
     });
@@ -164,23 +182,35 @@ void main() {
         '0000000000$_balanceHashHex',
       ]) {
         expect(
-            () => XdrClaimableBalanceID.forId(id),
-            throwsA(isA<FormatException>().having((e) => e.message, 'message',
-                contains('${id.length} characters given'))),
-            reason: id);
+          () => XdrClaimableBalanceID.forId(id),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              contains('${id.length} characters given'),
+            ),
+          ),
+          reason: id,
+        );
       }
 
       // 58 characters is the strkey width, so that case names the strkey rule.
       // A lower case "b" lands here too, so the rule names the case as well.
       for (final id in <String>['a' * 58, 'b' * 58]) {
         expect(
-            () => XdrClaimableBalanceID.forId(id),
-            throwsA(isA<FormatException>().having(
-                (e) => e.message,
-                'message',
-                contains('must be a strkey beginning with "B", '
-                    'which is upper case'))),
-            reason: id);
+          () => XdrClaimableBalanceID.forId(id),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              contains(
+                'must be a strkey beginning with "B", '
+                'which is upper case',
+              ),
+            ),
+          ),
+          reason: id,
+        );
       }
     });
 
@@ -192,9 +222,11 @@ void main() {
         '00${_balanceHashHex.toUpperCase()}',
         '00000000${_balanceHashHex.toUpperCase()}',
       ]) {
-        expect(Util.bytesToHex(XdrClaimableBalanceID.forId(spelling).v0!.hash),
-            _balanceHashHex,
-            reason: spelling);
+        expect(
+          Util.bytesToHex(XdrClaimableBalanceID.forId(spelling).v0!.hash),
+          _balanceHashHex,
+          reason: spelling,
+        );
       }
     });
 
@@ -205,9 +237,11 @@ void main() {
         '00000000$_balanceHashHex',
         StrKey.encodeClaimableBalanceIdHex(_balanceHashHex),
       ]) {
-        expect(XdrClaimableBalanceID.forId(spelling).paddedBalanceIdHex,
-            '00000000$_balanceHashHex',
-            reason: spelling);
+        expect(
+          XdrClaimableBalanceID.forId(spelling).paddedBalanceIdHex,
+          '00000000$_balanceHashHex',
+          reason: spelling,
+        );
       }
     });
   });
@@ -216,14 +250,15 @@ void main() {
     test('setters', () {
       final hash = Uint8List(32);
       final balanceId = XdrClaimableBalanceID(
-          XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
+      );
       balanceId.v0 = XdrHash(hash);
 
       final accountId = KeyPair.random().xdrPublicKey;
       final predicate = XdrClaimPredicate(
-          XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL);
-      final claimant =
-          XdrClaimant(XdrClaimantType.CLAIMANT_TYPE_V0);
+        XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL,
+      );
+      final claimant = XdrClaimant(XdrClaimantType.CLAIMANT_TYPE_V0);
       claimant.v0 = XdrClaimantV0(XdrAccountID(accountId), predicate);
 
       final asset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
@@ -231,7 +266,12 @@ void main() {
       final ext = XdrClaimableBalanceEntryExt(0);
 
       final entry = XdrClaimableBalanceEntry(
-          balanceId, [claimant], asset, amount, ext);
+        balanceId,
+        [claimant],
+        asset,
+        amount,
+        ext,
+      );
 
       entry.balanceID = balanceId;
       entry.claimants = [claimant];
@@ -258,7 +298,10 @@ void main() {
   group('XdrClaimableBalanceEntryExtV1', () {
     test('setters', () {
       final flags = XdrUint32(2);
-      final ext = XdrClaimableBalanceEntryExtV1(XdrClaimableBalanceEntryExtV1Ext(0), flags);
+      final ext = XdrClaimableBalanceEntryExtV1(
+        XdrClaimableBalanceEntryExtV1Ext(0),
+        flags,
+      );
 
       ext.ext.discriminant = 0;
       ext.flags = XdrUint32(4);
@@ -289,7 +332,12 @@ void main() {
       final header = XdrLedgerHeader(
         XdrUint32(20),
         XdrHash(hash),
-        XdrStellarValue(XdrHash(hash), XdrUint64(BigInt.from(1000)), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC)),
+        XdrStellarValue(
+          XdrHash(hash),
+          XdrUint64(BigInt.from(1000)),
+          [],
+          XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC),
+        ),
         XdrHash(hash),
         XdrHash(hash),
         XdrUint32(100),
@@ -306,7 +354,12 @@ void main() {
 
       header.ledgerVersion = XdrUint32(21);
       header.previousLedgerHash = XdrHash(hash);
-      header.scpValue = XdrStellarValue(XdrHash(hash), XdrUint64(BigInt.from(2000)), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC));
+      header.scpValue = XdrStellarValue(
+        XdrHash(hash),
+        XdrUint64(BigInt.from(2000)),
+        [],
+        XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC),
+      );
       header.txSetResultHash = XdrHash(hash);
       header.bucketListHash = XdrHash(hash);
       header.ledgerSeq = XdrUint32(101);
@@ -335,7 +388,10 @@ void main() {
 
     test('forTrustLine', () {
       final accountId = KeyPair.random().accountId;
-      final asset = Asset.createNonNativeAsset('USDC', KeyPair.random().accountId);
+      final asset = Asset.createNonNativeAsset(
+        'USDC',
+        KeyPair.random().accountId,
+      );
       final key = XdrLedgerKey.forTrustLine(accountId, asset.toXdr());
       expect(key.discriminant, XdrLedgerEntryType.TRUSTLINE);
       expect(key.trustLine, isNotNull);
@@ -356,8 +412,7 @@ void main() {
     });
 
     test('forClaimableBalance', () {
-      final key =
-          XdrLedgerKey.forClaimableBalance('00000000$_balanceHashHex');
+      final key = XdrLedgerKey.forClaimableBalance('00000000$_balanceHashHex');
       expect(key.discriminant, XdrLedgerEntryType.CLAIMABLE_BALANCE);
       expect(Util.bytesToHex(key.balanceID!.v0!.hash), _balanceHashHex);
     });
@@ -379,34 +434,52 @@ void main() {
       // An L-prefixed string is not hexadecimal, so a swallowed strkey failure
       // could only resurface as a hex parse error naming nothing useful.
       expect(
-          () => XdrLedgerKey.forLiquidityPool('LINVALIDPOOLID'),
-          throwsA(isA<FormatException>().having((e) => e.message, 'message',
-              contains('Encoded string must be 56 characters, got 14'))));
+        () => XdrLedgerKey.forLiquidityPool('LINVALIDPOOLID'),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            contains('Encoded string must be 56 characters, got 14'),
+          ),
+        ),
+      );
     });
 
-    test('forLiquidityPool refuses a hex id of a width other than 32 bytes', () {
-      // A width the key cannot hold must be refused, not zero-padded or
-      // truncated to a 32-byte hash that names a different pool.
-      for (final entry in <String, int>{'00ff': 2, 'ff' * 40: 40}.entries) {
-        expect(
+    test(
+      'forLiquidityPool refuses a hex id of a width other than 32 bytes',
+      () {
+        // A width the key cannot hold must be refused, not zero-padded or
+        // truncated to a 32-byte hash that names a different pool.
+        for (final entry in <String, int>{'00ff': 2, 'ff' * 40: 40}.entries) {
+          expect(
             () => XdrLedgerKey.forLiquidityPool(entry.key),
-            throwsA(isA<FormatException>().having(
+            throwsA(
+              isA<FormatException>().having(
                 (e) => e.message,
                 'message',
                 'Liquidity pool id must be hex of a 32 byte hash; '
-                    '${entry.value} bytes given')),
-            reason: entry.key);
-      }
-    });
+                    '${entry.value} bytes given',
+              ),
+            ),
+            reason: entry.key,
+          );
+        }
+      },
+    );
 
     test('forContractData', () {
       final contractId = Util.hexToBytes(
-          'c5b72e9a00bf93dd6e54538e3ab40b9d5265b0634e228862de66cd7b4052a1d0');
+        'c5b72e9a00bf93dd6e54538e3ab40b9d5265b0634e228862de66cd7b4052a1d0',
+      );
       final address = XdrSCAddress.forContractId(
-          StrKey.encodeContractId(contractId));
+        StrKey.encodeContractId(contractId),
+      );
       final scKey = XdrSCVal.forU32(1);
       final key = XdrLedgerKey.forContractData(
-          address, scKey, XdrContractDataDurability.TEMPORARY);
+        address,
+        scKey,
+        XdrContractDataDurability.TEMPORARY,
+      );
       expect(key.discriminant, XdrLedgerEntryType.CONTRACT_DATA);
       expect(key.contractData, isNotNull);
     });
@@ -420,7 +493,8 @@ void main() {
 
     test('forConfigSetting', () {
       final key = XdrLedgerKey.forConfigSetting(
-          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES);
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES,
+      );
       expect(key.discriminant, XdrLedgerEntryType.CONFIG_SETTING);
       expect(key.configSetting, isNotNull);
     });

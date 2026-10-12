@@ -41,7 +41,8 @@ void _assertKeysSortedAscending(List<XdrSCMapEntry> entries) {
     expect(
       compareScValHostOrder(entries[i].key, entries[i + 1].key) < 0,
       isTrue,
-      reason: 'Key at index $i (hex=${_xdrHex(entries[i].key)}) must precede '
+      reason:
+          'Key at index $i (hex=${_xdrHex(entries[i].key)}) must precede '
           'key at index ${i + 1} (hex=${_xdrHex(entries[i + 1].key)}) '
           'in host order',
     );
@@ -117,8 +118,7 @@ void main() {
       _assertKeysSortedAscending(sorted);
     });
 
-    test('Bytes keys sort by content with length only a prefix tiebreaker',
-        () {
+    test('Bytes keys sort by content with length only a prefix tiebreaker', () {
       // Host order: [0x01] < [0x01,0x02] (prefix, shorter first) < [0xFF]
       // (content decides; the one-byte [0xFF] sorts last despite being the
       // shortest).
@@ -156,10 +156,7 @@ void main() {
       // first, so different key types naturally separate before any content
       // comparison.
       final unsorted = <XdrSCMapEntry>[
-        XdrSCMapEntry(
-          XdrSCVal.forSymbol('symbol_key'),
-          XdrSCVal.forU32(1),
-        ),
+        XdrSCMapEntry(XdrSCVal.forSymbol('symbol_key'), XdrSCVal.forU32(1)),
         XdrSCMapEntry(XdrSCVal.forU32(42), XdrSCVal.forU32(2)),
         XdrSCMapEntry(
           XdrSCVal.forBytes(Uint8List.fromList(<int>[0x01])),
@@ -230,10 +227,7 @@ void main() {
 
     test('repeated sort across mixed types is idempotent', () {
       final unsorted = <XdrSCMapEntry>[
-        XdrSCMapEntry(
-          XdrSCVal.forBytes(_byte(0x10)),
-          XdrSCVal.forU32(1),
-        ),
+        XdrSCMapEntry(XdrSCVal.forBytes(_byte(0x10)), XdrSCVal.forU32(1)),
         XdrSCMapEntry(XdrSCVal.forSymbol('m'), XdrSCVal.forU32(2)),
         XdrSCMapEntry(XdrSCVal.forU32(3), XdrSCVal.forU32(3)),
       ];
@@ -282,8 +276,7 @@ void main() {
       final sorted = OZPolicyManager.sortMapByKeyXdr(entries);
 
       expect(sorted.length, 3);
-      final allValues =
-          sorted.map((e) => e.val.u32!.uint32).toSet();
+      final allValues = sorted.map((e) => e.val.u32!.uint32).toSet();
       expect(allValues, <int>{100, 200, 300});
     });
 
@@ -293,21 +286,24 @@ void main() {
       // inner element decides the order.
       final entries = <XdrSCMapEntry>[
         XdrSCMapEntry(
-          XdrSCVal.forVec(
-            <XdrSCVal>[XdrSCVal.forSymbol('z'), XdrSCVal.forU32(1)],
-          ),
+          XdrSCVal.forVec(<XdrSCVal>[
+            XdrSCVal.forSymbol('z'),
+            XdrSCVal.forU32(1),
+          ]),
           XdrSCVal.forU32(10),
         ),
         XdrSCMapEntry(
-          XdrSCVal.forVec(
-            <XdrSCVal>[XdrSCVal.forSymbol('a'), XdrSCVal.forU32(1)],
-          ),
+          XdrSCVal.forVec(<XdrSCVal>[
+            XdrSCVal.forSymbol('a'),
+            XdrSCVal.forU32(1),
+          ]),
           XdrSCVal.forU32(20),
         ),
         XdrSCMapEntry(
-          XdrSCVal.forVec(
-            <XdrSCVal>[XdrSCVal.forSymbol('m'), XdrSCVal.forU32(1)],
-          ),
+          XdrSCVal.forVec(<XdrSCVal>[
+            XdrSCVal.forSymbol('m'),
+            XdrSCVal.forU32(1),
+          ]),
           XdrSCVal.forU32(30),
         ),
       ];
@@ -323,50 +319,54 @@ void main() {
   // Round-trip with OZWeightedThresholdPolicyParams + policies map (4 cases)
   // -------------------------------------------------------------------------
   group('OZPolicyManager.sortMapByKeyXdr — policy round-trips', () {
-    test('OZWeightedThresholdPolicyParams inner signer_weights map is sorted', () {
-      // Pass signers in a deliberately unsorted order; the inner ScVal
-      // map for `signer_weights` must come out in the host's ScMap key
-      // order.
-      final params = OZWeightedThresholdPolicyParams(
-        signerWeights: <OZSmartAccountSigner, int>{
-          OZDelegatedSigner(_gAddr3): 20,
-          OZDelegatedSigner(_gAddr1): 50,
-          OZDelegatedSigner(_gAddr2): 30,
-        },
-        threshold: 100,
-      );
+    test(
+      'OZWeightedThresholdPolicyParams inner signer_weights map is sorted',
+      () {
+        // Pass signers in a deliberately unsorted order; the inner ScVal
+        // map for `signer_weights` must come out in the host's ScMap key
+        // order.
+        final params = OZWeightedThresholdPolicyParams(
+          signerWeights: <OZSmartAccountSigner, int>{
+            OZDelegatedSigner(_gAddr3): 20,
+            OZDelegatedSigner(_gAddr1): 50,
+            OZDelegatedSigner(_gAddr2): 30,
+          },
+          threshold: 100,
+        );
 
-      final scVal = params.toScVal();
-      final outerEntries = scVal.map!;
-      final signerWeightsEntry = outerEntries.firstWhere(
-        (e) => e.key.sym == 'signer_weights',
-      );
-      final innerEntries = signerWeightsEntry.val.map!;
+        final scVal = params.toScVal();
+        final outerEntries = scVal.map!;
+        final signerWeightsEntry = outerEntries.firstWhere(
+          (e) => e.key.sym == 'signer_weights',
+        );
+        final innerEntries = signerWeightsEntry.val.map!;
 
-      expect(innerEntries.length, 3);
-      _assertKeysSortedAscending(innerEntries);
-    });
+        expect(innerEntries.length, 3);
+        _assertKeysSortedAscending(innerEntries);
+      },
+    );
 
     test(
-        'OZWeightedThresholdPolicyParams XDR is deterministic across signer-input order',
-        () {
-      final s1 = OZDelegatedSigner(_gAddr1);
-      final s2 = OZDelegatedSigner(_gAddr2);
+      'OZWeightedThresholdPolicyParams XDR is deterministic across signer-input order',
+      () {
+        final s1 = OZDelegatedSigner(_gAddr1);
+        final s2 = OZDelegatedSigner(_gAddr2);
 
-      final paramsA = OZWeightedThresholdPolicyParams(
-        signerWeights: <OZSmartAccountSigner, int>{s1: 50, s2: 30},
-        threshold: 80,
-      );
-      final paramsB = OZWeightedThresholdPolicyParams(
-        signerWeights: <OZSmartAccountSigner, int>{s2: 30, s1: 50},
-        threshold: 80,
-      );
+        final paramsA = OZWeightedThresholdPolicyParams(
+          signerWeights: <OZSmartAccountSigner, int>{s1: 50, s2: 30},
+          threshold: 80,
+        );
+        final paramsB = OZWeightedThresholdPolicyParams(
+          signerWeights: <OZSmartAccountSigner, int>{s2: 30, s1: 50},
+          threshold: 80,
+        );
 
-      final hexA = _xdrHex(paramsA.toScVal());
-      final hexB = _xdrHex(paramsB.toScVal());
+        final hexA = _xdrHex(paramsA.toScVal());
+        final hexB = _xdrHex(paramsB.toScVal());
 
-      expect(hexA, hexB);
-    });
+        expect(hexA, hexB);
+      },
+    );
 
     test('policies map (Address keys) is sorted in host key order', () {
       // Mirrors the policies-map construction inside
@@ -412,10 +412,16 @@ void main() {
       };
       for (final entry in entries) {
         final expectedParam = expectedByKeyHex[_xdrHex(entry.key)];
-        expect(expectedParam, isNotNull,
-            reason: 'entry key must encode one of the input policy addresses');
-        expect(entry.val.u32!.uint32, expectedParam!.u32!.uint32,
-            reason: 'install param must stay attached to its address');
+        expect(
+          expectedParam,
+          isNotNull,
+          reason: 'entry key must encode one of the input policy addresses',
+        );
+        expect(
+          entry.val.u32!.uint32,
+          expectedParam!.u32!.uint32,
+          reason: 'install param must stay attached to its address',
+        );
       }
     });
 
@@ -423,14 +429,12 @@ void main() {
       // Same address set in two different insertion orders must serialise
       // identically once sorted.
       List<XdrSCMapEntry> build(List<String> order) => <XdrSCMapEntry>[
-            for (final address in order)
-              XdrSCMapEntry(
-                XdrSCVal.forAddress(
-                  Address.forContractId(address).toXdr(),
-                ),
-                XdrSCVal.forVoid(),
-              ),
-          ];
+        for (final address in order)
+          XdrSCMapEntry(
+            XdrSCVal.forAddress(Address.forContractId(address).toXdr()),
+            XdrSCVal.forVoid(),
+          ),
+      ];
 
       final sortedA = OZPolicyManager.sortMapByKeyXdr(
         build(<String>[_addr1, _addr2]),

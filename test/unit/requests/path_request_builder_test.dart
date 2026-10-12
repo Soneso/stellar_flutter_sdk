@@ -41,7 +41,8 @@ void main() {
     });
 
     group('sourceAccount', () {
-      final sourceAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final sourceAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds source_account query parameter', () {
         final builder = StrictReceivePathsRequestBuilder(mockClient, serverUri);
@@ -70,7 +71,8 @@ void main() {
     });
 
     group('sourceAssets', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds source_assets query parameter with single asset', () {
         final builder = StrictReceivePathsRequestBuilder(mockClient, serverUri);
@@ -95,7 +97,8 @@ void main() {
       });
 
       test('throws exception when combined with sourceAccount', () {
-        final sourceAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+        final sourceAccountId =
+            'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
         final builder = StrictReceivePathsRequestBuilder(mockClient, serverUri);
         builder.sourceAccount(sourceAccountId);
 
@@ -124,7 +127,8 @@ void main() {
     });
 
     group('destinationAsset', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds destination asset parameters for AlphaNum4', () {
         final builder = StrictReceivePathsRequestBuilder(mockClient, serverUri);
@@ -132,9 +136,15 @@ void main() {
         builder.destinationAsset(asset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['destination_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['destination_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['destination_asset_code'], equals('USD'));
-        expect(uri.queryParameters['destination_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['destination_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds destination asset parameters for native asset', () {
@@ -143,7 +153,10 @@ void main() {
         final uri = builder.buildUri();
 
         expect(uri.queryParameters['destination_asset_type'], equals('native'));
-        expect(uri.queryParameters.containsKey('destination_asset_code'), isFalse);
+        expect(
+          uri.queryParameters.containsKey('destination_asset_code'),
+          isFalse,
+        );
       });
 
       test('returns builder for method chaining', () {
@@ -155,8 +168,10 @@ void main() {
     });
 
     group('buildUri with combinations', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
-      final sourceAccountId = 'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final sourceAccountId =
+          'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
 
       test('builds complete URI with sourceAccount', () {
         final builder = StrictReceivePathsRequestBuilder(mockClient, serverUri);
@@ -174,7 +189,10 @@ void main() {
 
       test('builds complete URI with sourceAssets', () {
         final builder = StrictReceivePathsRequestBuilder(mockClient, serverUri);
-        final sourceAssets = [Asset.NATIVE, AssetTypeCreditAlphaNum4('EUR', issuerAccountId)];
+        final sourceAssets = [
+          Asset.NATIVE,
+          AssetTypeCreditAlphaNum4('EUR', issuerAccountId),
+        ];
         final destAsset = AssetTypeCreditAlphaNum4('USD', issuerAccountId);
         builder
           ..sourceAssets(sourceAssets)
@@ -195,7 +213,7 @@ void main() {
       test('returns a page of strict receive paths', () async {
         final page = {
           '_links': {
-            'self': {'href': 'x'}
+            'self': {'href': 'x'},
           },
           '_embedded': {
             'records': [
@@ -206,10 +224,10 @@ void main() {
                 'destination_asset_code': 'USD',
                 'destination_asset_issuer': issuerAccountId,
                 'destination_amount': '100.0000000',
-                'path': []
-              }
-            ]
-          }
+                'path': [],
+              },
+            ],
+          },
         };
 
         final client = MockClient((request) async {
@@ -228,8 +246,7 @@ void main() {
         expect(result.records.first, isA<PathResponse>());
         expect(result.records.first.destinationAmount, equals('100.0000000'));
         expect(result.records.first.sourceAmount, equals('50.0000000'));
-        expect(
-            result.records.first.destinationAssetCode, equals('USD'));
+        expect(result.records.first.destinationAssetCode, equals('USD'));
       });
     });
   });
@@ -270,14 +287,18 @@ void main() {
     });
 
     group('destinationAccount', () {
-      final destAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final destAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds destination_account query parameter', () {
         final builder = StrictSendPathsRequestBuilder(mockClient, serverUri);
         builder.destinationAccount(destAccountId);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['destination_account'], equals(destAccountId));
+        expect(
+          uri.queryParameters['destination_account'],
+          equals(destAccountId),
+        );
       });
 
       test('returns builder for method chaining', () {
@@ -299,7 +320,8 @@ void main() {
     });
 
     group('destinationAssets', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds destination_assets query parameter with single asset', () {
         final builder = StrictSendPathsRequestBuilder(mockClient, serverUri);
@@ -324,7 +346,8 @@ void main() {
       });
 
       test('throws exception when combined with destinationAccount', () {
-        final destAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+        final destAccountId =
+            'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
         final builder = StrictSendPathsRequestBuilder(mockClient, serverUri);
         builder.destinationAccount(destAccountId);
 
@@ -353,7 +376,8 @@ void main() {
     });
 
     group('sourceAsset', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds source asset parameters for AlphaNum4', () {
         final builder = StrictSendPathsRequestBuilder(mockClient, serverUri);
@@ -361,9 +385,15 @@ void main() {
         builder.sourceAsset(asset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['source_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['source_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['source_asset_code'], equals('USD'));
-        expect(uri.queryParameters['source_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['source_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds source asset parameters for native asset', () {
@@ -384,8 +414,10 @@ void main() {
     });
 
     group('buildUri with combinations', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
-      final destAccountId = 'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final destAccountId =
+          'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
 
       test('builds complete URI with destinationAccount', () {
         final builder = StrictSendPathsRequestBuilder(mockClient, serverUri);
@@ -396,14 +428,20 @@ void main() {
           ..sourceAsset(srcAsset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['destination_account'], equals(destAccountId));
+        expect(
+          uri.queryParameters['destination_account'],
+          equals(destAccountId),
+        );
         expect(uri.queryParameters['source_amount'], equals('100.0'));
         expect(uri.queryParameters['source_asset_code'], equals('USD'));
       });
 
       test('builds complete URI with destinationAssets', () {
         final builder = StrictSendPathsRequestBuilder(mockClient, serverUri);
-        final destAssets = [Asset.NATIVE, AssetTypeCreditAlphaNum4('EUR', issuerAccountId)];
+        final destAssets = [
+          Asset.NATIVE,
+          AssetTypeCreditAlphaNum4('EUR', issuerAccountId),
+        ];
         final srcAsset = AssetTypeCreditAlphaNum4('USD', issuerAccountId);
         builder
           ..destinationAssets(destAssets)
@@ -424,7 +462,7 @@ void main() {
       test('returns a page of strict send paths', () async {
         final page = {
           '_links': {
-            'self': {'href': 'x'}
+            'self': {'href': 'x'},
           },
           '_embedded': {
             'records': [
@@ -435,10 +473,10 @@ void main() {
                 'source_amount': '100.0000000',
                 'destination_asset_type': 'native',
                 'destination_amount': '95.0000000',
-                'path': []
-              }
-            ]
-          }
+                'path': [],
+              },
+            ],
+          },
         };
 
         final client = MockClient((request) async {

@@ -38,7 +38,9 @@ void main() {
 
     test('XdrTransaction with large sequence number', () {
       var sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
-      sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x01)));
+      sourceAccount.ed25519 = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0x01)),
+      );
 
       var fee = XdrUint32(100);
       var seqNum = XdrSequenceNumber(BigInt.parse('9223372036854775807'));
@@ -47,7 +49,15 @@ void main() {
       var operations = <XdrOperation>[];
       var ext = XdrTransactionExt(0);
 
-      var original = XdrTransaction(sourceAccount, fee, seqNum, cond, memo, operations, ext);
+      var original = XdrTransaction(
+        sourceAccount,
+        fee,
+        seqNum,
+        cond,
+        memo,
+        operations,
+        ext,
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransaction.encode(output, original);
@@ -56,13 +66,16 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrTransaction.decode(input);
 
-      expect(decoded.seqNum.sequenceNumber, equals(BigInt.parse('9223372036854775807')));
+      expect(
+        decoded.seqNum.sequenceNumber,
+        equals(BigInt.parse('9223372036854775807')),
+      );
     });
 
     test('XdrMuxedAccountMed25519 with max uint64 id', () {
       var original = XdrMuxedAccountMed25519(
         XdrUint64(BigInt.parse('18446744073709551615')),
-        XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xFF)))
+        XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xFF))),
       );
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -99,7 +112,10 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrSequenceNumber.decode(input);
 
-      expect(decoded.sequenceNumber, equals(BigInt.parse('9223372036854775807')));
+      expect(
+        decoded.sequenceNumber,
+        equals(BigInt.parse('9223372036854775807')),
+      );
     });
 
     test('XdrInt64 with negative and boundary values', () {
@@ -144,7 +160,10 @@ void main() {
       expect(XdrOperationType.PATH_PAYMENT_STRICT_SEND.value, equals(13));
       expect(XdrOperationType.CREATE_CLAIMABLE_BALANCE.value, equals(14));
       expect(XdrOperationType.CLAIM_CLAIMABLE_BALANCE.value, equals(15));
-      expect(XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES.value, equals(16));
+      expect(
+        XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES.value,
+        equals(16),
+      );
       expect(XdrOperationType.END_SPONSORING_FUTURE_RESERVES.value, equals(17));
       expect(XdrOperationType.REVOKE_SPONSORSHIP.value, equals(18));
       expect(XdrOperationType.CLAWBACK.value, equals(19));
@@ -205,7 +224,10 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       for (var originalMemo in memos) {
         var decoded = XdrMemo.decode(input);
-        expect(decoded.discriminant.value, equals(originalMemo.discriminant.value));
+        expect(
+          decoded.discriminant.value,
+          equals(originalMemo.discriminant.value),
+        );
       }
     });
   });

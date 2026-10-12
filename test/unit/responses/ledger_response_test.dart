@@ -7,10 +7,12 @@ void main() {
       test('parses complete ledger response with all fields', () {
         final json = {
           'sequence': 12345,
-          'hash': 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+          'hash':
+              'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
           'id': 'ledger-12345-id',
           'paging_token': '12345',
-          'prev_hash': '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+          'prev_hash':
+              '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
           'successful_transaction_count': 42,
           'failed_transaction_count': 3,
           'operation_count': 150,
@@ -38,10 +40,20 @@ void main() {
         final ledger = LedgerResponse.fromJson(json);
 
         expect(ledger.sequence, equals(12345));
-        expect(ledger.hash, equals('abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'));
+        expect(
+          ledger.hash,
+          equals(
+            'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+          ),
+        );
         expect(ledger.id, equals('ledger-12345-id'));
         expect(ledger.pagingToken, equals('12345'));
-        expect(ledger.prevHash, equals('1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'));
+        expect(
+          ledger.prevHash,
+          equals(
+            '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+          ),
+        );
         expect(ledger.successfulTransactionCount, equals(42));
         expect(ledger.failedTransactionCount, equals(3));
         expect(ledger.operationCount, equals(150));
@@ -53,7 +65,10 @@ void main() {
         expect(ledger.baseReserveInStroops, equals(5000000));
         expect(ledger.maxTxSetSize, equals(1000));
         expect(ledger.protocolVersion, equals(20));
-        expect(ledger.headerXdr, equals('AAAAFAAAAABjZW5kZXIgaGFzaCBoZXJlAAAAAAAAAAAAAAAAAAAA'));
+        expect(
+          ledger.headerXdr,
+          equals('AAAAFAAAAABjZW5kZXIgaGFzaCBoZXJlAAAAAAAAAAAAAAAAAAAA'),
+        );
         expect(ledger.rateLimitLimit, equals(200));
         expect(ledger.rateLimitRemaining, equals(150));
         expect(ledger.rateLimitReset, equals(1705315200));
@@ -62,7 +77,8 @@ void main() {
       test('parses ledger response with null prev_hash', () {
         final json = {
           'sequence': 1,
-          'hash': 'genesishash1234567890abcdef1234567890abcdef1234567890abcdef12345',
+          'hash':
+              'genesishash1234567890abcdef1234567890abcdef1234567890abcdef12345',
           'id': 'ledger-1-id',
           'paging_token': '1',
           'prev_hash': null,
@@ -98,10 +114,12 @@ void main() {
       test('parses ledger with high transaction counts', () {
         final json = {
           'sequence': 50000000,
-          'hash': 'busyledgerhash1234567890abcdef1234567890abcdef1234567890abcdef',
+          'hash':
+              'busyledgerhash1234567890abcdef1234567890abcdef1234567890abcdef',
           'id': 'ledger-50000000-id',
           'paging_token': '50000000',
-          'prev_hash': 'prevhash1234567890abcdef1234567890abcdef1234567890abcdef1234',
+          'prev_hash':
+              'prevhash1234567890abcdef1234567890abcdef1234567890abcdef1234',
           'successful_transaction_count': 999,
           'failed_transaction_count': 50,
           'operation_count': 5000,
@@ -258,7 +276,9 @@ void main() {
           'effects': {'href': '/ledgers/12345/effects?cursor=abc&limit=10'},
           'operations': {'href': '/ledgers/12345/operations?order=desc'},
           'self': {'href': '/ledgers/12345'},
-          'transactions': {'href': '/ledgers/12345/transactions?include_failed=true'},
+          'transactions': {
+            'href': '/ledgers/12345/transactions?include_failed=true',
+          },
           'payments': {'href': '/ledgers/12345/payments?cursor=xyz'},
         };
 
@@ -273,10 +293,19 @@ void main() {
       test('parses links with templated parameters', () {
         final json = {
           'effects': {'href': '/ledgers/{sequence}/effects', 'templated': true},
-          'operations': {'href': '/ledgers/{sequence}/operations', 'templated': true},
+          'operations': {
+            'href': '/ledgers/{sequence}/operations',
+            'templated': true,
+          },
           'self': {'href': '/ledgers/12345'},
-          'transactions': {'href': '/ledgers/{sequence}/transactions', 'templated': true},
-          'payments': {'href': '/ledgers/{sequence}/payments', 'templated': true},
+          'transactions': {
+            'href': '/ledgers/{sequence}/transactions',
+            'templated': true,
+          },
+          'payments': {
+            'href': '/ledgers/{sequence}/payments',
+            'templated': true,
+          },
         };
 
         final links = LedgerResponseLinks.fromJson(json);

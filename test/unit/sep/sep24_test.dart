@@ -32,9 +32,7 @@ void main() {
     });
 
     test('fromJson with minimal fields', () {
-      final json = {
-        'enabled': false,
-      };
+      final json = {'enabled': false};
 
       final asset = SEP24DepositAsset.fromJson(json);
 
@@ -89,11 +87,7 @@ void main() {
     });
 
     test('fromJson with disabled asset', () {
-      final json = {
-        'enabled': false,
-        'min_amount': 0.0,
-        'max_amount': 0.0,
-      };
+      final json = {'enabled': false, 'min_amount': 0.0, 'max_amount': 0.0};
 
       final asset = SEP24WithdrawAsset.fromJson(json);
 
@@ -103,10 +97,7 @@ void main() {
 
   group('FeeEndpointInfo', () {
     test('fromJson with authentication required', () {
-      final json = {
-        'enabled': true,
-        'authentication_required': true,
-      };
+      final json = {'enabled': true, 'authentication_required': true};
 
       final info = FeeEndpointInfo.fromJson(json);
 
@@ -115,10 +106,7 @@ void main() {
     });
 
     test('fromJson without authentication required', () {
-      final json = {
-        'enabled': true,
-        'authentication_required': false,
-      };
+      final json = {'enabled': true, 'authentication_required': false};
 
       final info = FeeEndpointInfo.fromJson(json);
 
@@ -127,9 +115,7 @@ void main() {
     });
 
     test('fromJson with null authentication required defaults to false', () {
-      final json = {
-        'enabled': true,
-      };
+      final json = {'enabled': true};
 
       final info = FeeEndpointInfo.fromJson(json);
 
@@ -138,10 +124,7 @@ void main() {
     });
 
     test('fromJson with disabled endpoint', () {
-      final json = {
-        'enabled': false,
-        'authentication_required': false,
-      };
+      final json = {'enabled': false, 'authentication_required': false};
 
       final info = FeeEndpointInfo.fromJson(json);
 
@@ -151,10 +134,7 @@ void main() {
 
   group('FeatureFlags', () {
     test('fromJson with both features enabled', () {
-      final json = {
-        'account_creation': true,
-        'claimable_balances': true,
-      };
+      final json = {'account_creation': true, 'claimable_balances': true};
 
       final flags = FeatureFlags.fromJson(json);
 
@@ -163,10 +143,7 @@ void main() {
     });
 
     test('fromJson with both features disabled', () {
-      final json = {
-        'account_creation': false,
-        'claimable_balances': false,
-      };
+      final json = {'account_creation': false, 'claimable_balances': false};
 
       final flags = FeatureFlags.fromJson(json);
 
@@ -184,9 +161,7 @@ void main() {
     });
 
     test('fromJson with partial fields', () {
-      final json = {
-        'account_creation': false,
-      };
+      final json = {'account_creation': false};
 
       final flags = FeatureFlags.fromJson(json);
 
@@ -199,30 +174,14 @@ void main() {
     test('fromJson with deposit and withdraw assets', () {
       final json = {
         'deposit': {
-          'USD': {
-            'enabled': true,
-            'min_amount': 10.0,
-            'max_amount': 1000.0,
-          },
-          'EUR': {
-            'enabled': false,
-          },
+          'USD': {'enabled': true, 'min_amount': 10.0, 'max_amount': 1000.0},
+          'EUR': {'enabled': false},
         },
         'withdraw': {
-          'USD': {
-            'enabled': true,
-            'min_amount': 20.0,
-            'max_amount': 500.0,
-          },
+          'USD': {'enabled': true, 'min_amount': 20.0, 'max_amount': 500.0},
         },
-        'fee': {
-          'enabled': true,
-          'authentication_required': true,
-        },
-        'features': {
-          'account_creation': true,
-          'claimable_balances': false,
-        },
+        'fee': {'enabled': true, 'authentication_required': true},
+        'features': {'account_creation': true, 'claimable_balances': false},
       };
 
       final response = SEP24InfoResponse.fromJson(json);
@@ -246,14 +205,10 @@ void main() {
     test('fromJson with no  assets', () {
       final json = {
         'deposit': {
-          'BTC': {
-            'enabled': true,
-          },
+          'BTC': {'enabled': true},
         },
         'withdraw': {
-          'BTC': {
-            'enabled': false,
-          },
+          'BTC': {'enabled': false},
         },
         'fee': null,
         'features': null,
@@ -270,9 +225,7 @@ void main() {
 
   group('SEP24FeeResponse', () {
     test('fromJson with fee amount', () {
-      final json = {
-        'fee': 5.50,
-      };
+      final json = {'fee': 5.50};
 
       final response = SEP24FeeResponse.fromJson(json);
 
@@ -280,9 +233,7 @@ void main() {
     });
 
     test('fromJson with zero fee', () {
-      final json = {
-        'fee': 0.0,
-      };
+      final json = {'fee': 0.0};
 
       final response = SEP24FeeResponse.fromJson(json);
 
@@ -290,9 +241,7 @@ void main() {
     });
 
     test('fromJson with null fee', () {
-      final json = {
-        'fee': null,
-      };
+      final json = {'fee': null};
 
       final response = SEP24FeeResponse.fromJson(json);
 
@@ -311,8 +260,7 @@ void main() {
       final response = SEP24InteractiveResponse.fromJson(json);
 
       expect(response.type, equals('interactive_customer_info_needed'));
-      expect(response.url,
-          equals('https://anchor.example.com/kyc?id=12345'));
+      expect(response.url, equals('https://anchor.example.com/kyc?id=12345'));
       expect(response.id, equals('transaction_12345'));
     });
 
@@ -393,7 +341,7 @@ void main() {
               'id_type': 'stellar',
               'amount': '95.0',
               'fee': '5.0',
-            }
+            },
           ],
         },
       };
@@ -439,8 +387,10 @@ void main() {
       final transaction = SEP24Transaction.fromJson(json);
 
       expect(transaction.kind, equals('withdrawal'));
-      expect(transaction.withdrawAnchorAccount,
-          equals('GAANCHOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+      expect(
+        transaction.withdrawAnchorAccount,
+        equals('GAANCHOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
       expect(transaction.withdrawMemo, equals('123456'));
       expect(transaction.withdrawMemoType, equals('id'));
     });
@@ -583,9 +533,7 @@ void main() {
     });
 
     test('fromJson with empty transactions list', () {
-      final json = {
-        'transactions': [],
-      };
+      final json = {'transactions': []};
 
       final response = SEP24TransactionsResponse.fromJson(json);
 
@@ -622,15 +570,19 @@ void main() {
     test('SEP24AuthenticationRequiredException has correct message', () {
       final exception = SEP24AuthenticationRequiredException();
 
-      expect(exception.toString(),
-          equals('The endpoint requires authentication.'));
+      expect(
+        exception.toString(),
+        equals('The endpoint requires authentication.'),
+      );
     });
 
     test('SEP24TransactionNotFoundException has correct message', () {
       final exception = SEP24TransactionNotFoundException();
 
-      expect(exception.toString(),
-          equals('The anchor could not find the transaction'));
+      expect(
+        exception.toString(),
+        equals('The anchor could not find the transaction'),
+      );
     });
   });
 
@@ -677,7 +629,9 @@ void main() {
         ..jwt = 'test_jwt'
         ..assetCode = 'USD'
         ..customFields = {'custom_field': 'custom_value'}
-        ..customFiles = {'document': Uint8List.fromList([1, 2, 3])};
+        ..customFiles = {
+          'document': Uint8List.fromList([1, 2, 3]),
+        };
 
       expect(request.customFields, isNotNull);
       expect(request.customFields!['custom_field'], equals('custom_value'));
@@ -736,101 +690,101 @@ void main() {
   });
 
   group('SEP-24 Info Endpoint', () {
-    test('parse info with all deposit and withdraw asset configurations', () async {
-      final mockClient = MockClient((request) async {
-        expect(request.url.path, endsWith('/info'));
-        expect(request.headers.containsKey('Authorization'), false);
+    test(
+      'parse info with all deposit and withdraw asset configurations',
+      () async {
+        final mockClient = MockClient((request) async {
+          expect(request.url.path, endsWith('/info'));
+          expect(request.headers.containsKey('Authorization'), false);
 
-        return http.Response(json.encode({
-          'deposit': {
-            'USD': {
-              'enabled': true,
-              'min_amount': 10.0,
-              'max_amount': 10000.0,
-              'fee_fixed': 5.0,
-              'fee_percent': 1.0,
-              'fee_minimum': 2.0
-            },
-            'BTC': {
-              'enabled': true,
-              'min_amount': 0.001,
-              'max_amount': 10.0,
-              'fee_fixed': 0.0001,
-              'fee_percent': 0.5,
-              'fee_minimum': 0.00005
-            }
-          },
-          'withdraw': {
-            'USD': {
-              'enabled': true,
-              'min_amount': 50.0,
-              'max_amount': 5000.0,
-              'fee_fixed': 10.0,
-              'fee_percent': 0.5,
-              'fee_minimum': 5.0
-            }
-          },
-          'fee': {
-            'enabled': true,
-            'authentication_required': false
-          },
-          'features': {
-            'account_creation': true,
-            'claimable_balances': true
-          }
-        }), 200);
-      });
+          return http.Response(
+            json.encode({
+              'deposit': {
+                'USD': {
+                  'enabled': true,
+                  'min_amount': 10.0,
+                  'max_amount': 10000.0,
+                  'fee_fixed': 5.0,
+                  'fee_percent': 1.0,
+                  'fee_minimum': 2.0,
+                },
+                'BTC': {
+                  'enabled': true,
+                  'min_amount': 0.001,
+                  'max_amount': 10.0,
+                  'fee_fixed': 0.0001,
+                  'fee_percent': 0.5,
+                  'fee_minimum': 0.00005,
+                },
+              },
+              'withdraw': {
+                'USD': {
+                  'enabled': true,
+                  'min_amount': 50.0,
+                  'max_amount': 5000.0,
+                  'fee_fixed': 10.0,
+                  'fee_percent': 0.5,
+                  'fee_minimum': 5.0,
+                },
+              },
+              'fee': {'enabled': true, 'authentication_required': false},
+              'features': {
+                'account_creation': true,
+                'claimable_balances': true,
+              },
+            }),
+            200,
+          );
+        });
 
-      final service = TransferServerSEP24Service(
-        'https://api.example.com',
-        httpClient: mockClient,
-      );
+        final service = TransferServerSEP24Service(
+          'https://api.example.com',
+          httpClient: mockClient,
+        );
 
-      final response = await service.info();
+        final response = await service.info();
 
-      expect(response.depositAssets, isNotNull);
-      expect(response.depositAssets!.length, 2);
+        expect(response.depositAssets, isNotNull);
+        expect(response.depositAssets!.length, 2);
 
-      final usdDeposit = response.depositAssets!['USD']!;
-      expect(usdDeposit.enabled, true);
-      expect(usdDeposit.minAmount, 10.0);
-      expect(usdDeposit.maxAmount, 10000.0);
-      expect(usdDeposit.feeFixed, 5.0);
-      expect(usdDeposit.feePercent, 1.0);
-      expect(usdDeposit.feeMinimum, 2.0);
+        final usdDeposit = response.depositAssets!['USD']!;
+        expect(usdDeposit.enabled, true);
+        expect(usdDeposit.minAmount, 10.0);
+        expect(usdDeposit.maxAmount, 10000.0);
+        expect(usdDeposit.feeFixed, 5.0);
+        expect(usdDeposit.feePercent, 1.0);
+        expect(usdDeposit.feeMinimum, 2.0);
 
-      final btcDeposit = response.depositAssets!['BTC']!;
-      expect(btcDeposit.enabled, true);
-      expect(btcDeposit.minAmount, 0.001);
-      expect(btcDeposit.feeFixed, 0.0001);
+        final btcDeposit = response.depositAssets!['BTC']!;
+        expect(btcDeposit.enabled, true);
+        expect(btcDeposit.minAmount, 0.001);
+        expect(btcDeposit.feeFixed, 0.0001);
 
-      expect(response.withdrawAssets, isNotNull);
-      expect(response.withdrawAssets!.length, 1);
+        expect(response.withdrawAssets, isNotNull);
+        expect(response.withdrawAssets!.length, 1);
 
-      final usdWithdraw = response.withdrawAssets!['USD']!;
-      expect(usdWithdraw.enabled, true);
-      expect(usdWithdraw.minAmount, 50.0);
-      expect(usdWithdraw.feeFixed, 10.0);
-      expect(usdWithdraw.feeMinimum, 5.0);
+        final usdWithdraw = response.withdrawAssets!['USD']!;
+        expect(usdWithdraw.enabled, true);
+        expect(usdWithdraw.minAmount, 50.0);
+        expect(usdWithdraw.feeFixed, 10.0);
+        expect(usdWithdraw.feeMinimum, 5.0);
 
-      expect(response.feeEndpointInfo, isNotNull);
-      expect(response.feeEndpointInfo!.enabled, true);
-      expect(response.feeEndpointInfo!.authenticationRequired, false);
+        expect(response.feeEndpointInfo, isNotNull);
+        expect(response.feeEndpointInfo!.enabled, true);
+        expect(response.feeEndpointInfo!.authenticationRequired, false);
 
-      expect(response.featureFlags, isNotNull);
-      expect(response.featureFlags!.accountCreation, true);
-      expect(response.featureFlags!.claimableBalances, true);
-    });
+        expect(response.featureFlags, isNotNull);
+        expect(response.featureFlags!.accountCreation, true);
+        expect(response.featureFlags!.claimableBalances, true);
+      },
+    );
 
     test('parse info with language parameter', () async {
       final mockClient = MockClient((request) async {
         expect(request.url.path, endsWith('/info'));
         expect(request.url.queryParameters['lang'], 'es');
 
-        return http.Response(json.encode({
-          'deposit': {},
-          'withdraw': {}
-        }), 200);
+        return http.Response(json.encode({'deposit': {}, 'withdraw': {}}), 200);
       });
 
       final service = TransferServerSEP24Service(
@@ -843,14 +797,14 @@ void main() {
 
     test('parse info with authentication required fee endpoint', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'deposit': {},
-          'withdraw': {},
-          'fee': {
-            'enabled': true,
-            'authentication_required': true
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'deposit': {},
+            'withdraw': {},
+            'fee': {'enabled': true, 'authentication_required': true},
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -870,12 +824,13 @@ void main() {
         expect(request.url.path, endsWith('/fee'));
         expect(request.url.queryParameters['operation'], 'deposit');
         expect(request.url.queryParameters['asset_code'], 'USD');
-        expect(request.url.queryParameters['amount'], anyOf(equals('100.0'), equals('100')));
+        expect(
+          request.url.queryParameters['amount'],
+          anyOf(equals('100.0'), equals('100')),
+        );
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'fee': 5.0
-        }), 200);
+        return http.Response(json.encode({'fee': 5.0}), 200);
       });
 
       final service = TransferServerSEP24Service(
@@ -902,9 +857,7 @@ void main() {
         expect(request.url.queryParameters['type'], 'SEPA');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'fee': 0.0005
-        }), 200);
+        return http.Response(json.encode({'fee': 0.0005}), 200);
       });
 
       final service = TransferServerSEP24Service(
@@ -925,9 +878,10 @@ void main() {
 
     test('fee endpoint throws authentication required exception', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'type': 'authentication_required'
-        }), 403);
+        return http.Response(
+          json.encode({'type': 'authentication_required'}),
+          403,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -948,9 +902,10 @@ void main() {
 
     test('fee endpoint throws request error exception', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Invalid asset_code parameter'
-        }), 400);
+        return http.Response(
+          json.encode({'error': 'Invalid asset_code parameter'}),
+          400,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -964,10 +919,7 @@ void main() {
         ..amount = 100.0
         ..jwt = 'test-jwt';
 
-      expect(
-        () => service.fee(request),
-        throwsA(isA<RequestErrorException>()),
-      );
+      expect(() => service.fee(request), throwsA(isA<RequestErrorException>()));
     });
   });
 
@@ -978,11 +930,14 @@ void main() {
         expect(request.method, 'POST');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'type': 'interactive_customer_info_needed',
-          'url': 'https://anchor.example.com/deposit/interactive?id=abc123',
-          'id': 'deposit-abc123'
-        }), 200);
+        return http.Response(
+          json.encode({
+            'type': 'interactive_customer_info_needed',
+            'url': 'https://anchor.example.com/deposit/interactive?id=abc123',
+            'id': 'deposit-abc123',
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -999,7 +954,10 @@ void main() {
       final response = await service.deposit(request);
 
       expect(response.type, 'interactive_customer_info_needed');
-      expect(response.url, 'https://anchor.example.com/deposit/interactive?id=abc123');
+      expect(
+        response.url,
+        'https://anchor.example.com/deposit/interactive?id=abc123',
+      );
       expect(response.id, 'deposit-abc123');
     });
 
@@ -1008,11 +966,14 @@ void main() {
         expect(request.url.path, endsWith('/transactions/deposit/interactive'));
         expect(request.method, 'POST');
 
-        return http.Response(json.encode({
-          'type': 'interactive_customer_info_needed',
-          'url': 'https://anchor.example.com/deposit/interactive',
-          'id': 'deposit-xyz789'
-        }), 200);
+        return http.Response(
+          json.encode({
+            'type': 'interactive_customer_info_needed',
+            'url': 'https://anchor.example.com/deposit/interactive',
+            'id': 'deposit-xyz789',
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1042,9 +1003,10 @@ void main() {
 
     test('deposit throws authentication required exception', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'type': 'authentication_required'
-        }), 403);
+        return http.Response(
+          json.encode({'type': 'authentication_required'}),
+          403,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1065,9 +1027,7 @@ void main() {
 
     test('deposit throws request error exception', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Unsupported asset'
-        }), 400);
+        return http.Response(json.encode({'error': 'Unsupported asset'}), 400);
       });
 
       final service = TransferServerSEP24Service(
@@ -1090,15 +1050,21 @@ void main() {
   group('SEP-24 Withdraw Endpoint', () {
     test('withdraw returns interactive URL with all fields', () async {
       final mockClient = MockClient((request) async {
-        expect(request.url.path, endsWith('/transactions/withdraw/interactive'));
+        expect(
+          request.url.path,
+          endsWith('/transactions/withdraw/interactive'),
+        );
         expect(request.method, 'POST');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'type': 'interactive_customer_info_needed',
-          'url': 'https://anchor.example.com/withdraw/interactive?id=def456',
-          'id': 'withdraw-def456'
-        }), 200);
+        return http.Response(
+          json.encode({
+            'type': 'interactive_customer_info_needed',
+            'url': 'https://anchor.example.com/withdraw/interactive?id=def456',
+            'id': 'withdraw-def456',
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1115,20 +1081,29 @@ void main() {
       final response = await service.withdraw(request);
 
       expect(response.type, 'interactive_customer_info_needed');
-      expect(response.url, 'https://anchor.example.com/withdraw/interactive?id=def456');
+      expect(
+        response.url,
+        'https://anchor.example.com/withdraw/interactive?id=def456',
+      );
       expect(response.id, 'withdraw-def456');
     });
 
     test('withdraw with all optional parameters', () async {
       final mockClient = MockClient((request) async {
-        expect(request.url.path, endsWith('/transactions/withdraw/interactive'));
+        expect(
+          request.url.path,
+          endsWith('/transactions/withdraw/interactive'),
+        );
         expect(request.method, 'POST');
 
-        return http.Response(json.encode({
-          'type': 'interactive_customer_info_needed',
-          'url': 'https://anchor.example.com/withdraw/interactive',
-          'id': 'withdraw-uvw123'
-        }), 200);
+        return http.Response(
+          json.encode({
+            'type': 'interactive_customer_info_needed',
+            'url': 'https://anchor.example.com/withdraw/interactive',
+            'id': 'withdraw-uvw123',
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1159,9 +1134,10 @@ void main() {
 
     test('withdraw throws authentication required exception', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'type': 'authentication_required'
-        }), 403);
+        return http.Response(
+          json.encode({'type': 'authentication_required'}),
+          403,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1182,9 +1158,10 @@ void main() {
 
     test('withdraw throws request error exception', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Amount exceeds maximum'
-        }), 400);
+        return http.Response(
+          json.encode({'error': 'Amount exceeds maximum'}),
+          400,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1211,41 +1188,44 @@ void main() {
         expect(request.url.queryParameters['asset_code'], 'USD');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'transactions': [
-            {
-              'id': 'tx-001',
-              'kind': 'deposit',
-              'status': 'completed',
-              'status_eta': 0,
-              'more_info_url': 'https://anchor.example.com/tx/tx-001',
-              'amount_in': '100.00',
-              'amount_in_asset': 'iso4217:USD',
-              'amount_out': '98.50',
-              'amount_out_asset': 'stellar:USD:GXXXXXXX',
-              'amount_fee': '1.50',
-              'amount_fee_asset': 'iso4217:USD',
-              'started_at': '2025-10-01T12:00:00Z',
-              'completed_at': '2025-10-01T13:00:00Z'
-            },
-            {
-              'id': 'tx-002',
-              'kind': 'deposit',
-              'status': 'pending_user_transfer_start',
-              'status_eta': 3600,
-              'more_info_url': 'https://anchor.example.com/tx/tx-002',
-              'started_at': '2025-10-02T10:00:00Z'
-            },
-            {
-              'id': 'tx-003',
-              'kind': 'withdrawal',
-              'status': 'pending_anchor',
-              'status_eta': 1800,
-              'more_info_url': 'https://anchor.example.com/tx/tx-003',
-              'started_at': '2025-10-02T11:00:00Z'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'transactions': [
+              {
+                'id': 'tx-001',
+                'kind': 'deposit',
+                'status': 'completed',
+                'status_eta': 0,
+                'more_info_url': 'https://anchor.example.com/tx/tx-001',
+                'amount_in': '100.00',
+                'amount_in_asset': 'iso4217:USD',
+                'amount_out': '98.50',
+                'amount_out_asset': 'stellar:USD:GXXXXXXX',
+                'amount_fee': '1.50',
+                'amount_fee_asset': 'iso4217:USD',
+                'started_at': '2025-10-01T12:00:00Z',
+                'completed_at': '2025-10-01T13:00:00Z',
+              },
+              {
+                'id': 'tx-002',
+                'kind': 'deposit',
+                'status': 'pending_user_transfer_start',
+                'status_eta': 3600,
+                'more_info_url': 'https://anchor.example.com/tx/tx-002',
+                'started_at': '2025-10-02T10:00:00Z',
+              },
+              {
+                'id': 'tx-003',
+                'kind': 'withdrawal',
+                'status': 'pending_anchor',
+                'status_eta': 1800,
+                'more_info_url': 'https://anchor.example.com/tx/tx-003',
+                'started_at': '2025-10-02T11:00:00Z',
+              },
+            ],
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1290,9 +1270,7 @@ void main() {
         expect(request.url.queryParameters['lang'], 'es');
         expect(request.url.queryParameters.containsKey('no_older_than'), true);
 
-        return http.Response(json.encode({
-          'transactions': []
-        }), 200);
+        return http.Response(json.encode({'transactions': []}), 200);
       });
 
       final service = TransferServerSEP24Service(
@@ -1314,19 +1292,22 @@ void main() {
 
     test('transactions with pending_stellar status', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'transactions': [
-            {
-              'id': 'tx-stellar-001',
-              'kind': 'deposit',
-              'status': 'pending_stellar',
-              'status_eta': 300,
-              'more_info_url': 'https://anchor.example.com/tx/tx-stellar-001',
-              'stellar_transaction_id': 'stellar-hash-123',
-              'started_at': '2025-10-03T10:00:00Z'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'transactions': [
+              {
+                'id': 'tx-stellar-001',
+                'kind': 'deposit',
+                'status': 'pending_stellar',
+                'status_eta': 300,
+                'more_info_url': 'https://anchor.example.com/tx/tx-stellar-001',
+                'stellar_transaction_id': 'stellar-hash-123',
+                'started_at': '2025-10-03T10:00:00Z',
+              },
+            ],
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1346,19 +1327,22 @@ void main() {
 
     test('transactions with error status', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'transactions': [
-            {
-              'id': 'tx-error-001',
-              'kind': 'deposit',
-              'status': 'error',
-              'status_eta': 0,
-              'more_info_url': 'https://anchor.example.com/tx/tx-error-001',
-              'message': 'Invalid bank account number',
-              'started_at': '2025-10-03T11:00:00Z'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'transactions': [
+              {
+                'id': 'tx-error-001',
+                'kind': 'deposit',
+                'status': 'error',
+                'status_eta': 0,
+                'more_info_url': 'https://anchor.example.com/tx/tx-error-001',
+                'message': 'Invalid bank account number',
+                'started_at': '2025-10-03T11:00:00Z',
+              },
+            ],
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1378,9 +1362,10 @@ void main() {
 
     test('transactions throws authentication required exception', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'type': 'authentication_required'
-        }), 403);
+        return http.Response(
+          json.encode({'type': 'authentication_required'}),
+          403,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1406,33 +1391,36 @@ void main() {
         expect(request.url.queryParameters['id'], 'tx-123');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'transaction': {
-            'id': 'tx-123',
-            'kind': 'deposit',
-            'status': 'completed',
-            'status_eta': 0,
-            'kyc_verified': true,
-            'more_info_url': 'https://anchor.example.com/tx/tx-123',
-            'amount_in': '1000.00',
-            'amount_in_asset': 'iso4217:USD',
-            'amount_out': '995.00',
-            'amount_out_asset': 'stellar:USD:GXXXXXXX',
-            'amount_fee': '5.00',
-            'amount_fee_asset': 'iso4217:USD',
-            'quote_id': 'quote-456',
-            'started_at': '2025-10-05T09:00:00Z',
-            'updated_at': '2025-10-05T10:00:00Z',
-            'completed_at': '2025-10-05T10:30:00Z',
-            'stellar_transaction_id': 'stellar-hash-abc',
-            'external_transaction_id': 'external-ref-123',
-            'message': 'Transaction completed successfully',
-            'from': 'bank-account-789',
-            'to': 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-            'deposit_memo': 'deposit-memo-123',
-            'deposit_memo_type': 'text'
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'transaction': {
+              'id': 'tx-123',
+              'kind': 'deposit',
+              'status': 'completed',
+              'status_eta': 0,
+              'kyc_verified': true,
+              'more_info_url': 'https://anchor.example.com/tx/tx-123',
+              'amount_in': '1000.00',
+              'amount_in_asset': 'iso4217:USD',
+              'amount_out': '995.00',
+              'amount_out_asset': 'stellar:USD:GXXXXXXX',
+              'amount_fee': '5.00',
+              'amount_fee_asset': 'iso4217:USD',
+              'quote_id': 'quote-456',
+              'started_at': '2025-10-05T09:00:00Z',
+              'updated_at': '2025-10-05T10:00:00Z',
+              'completed_at': '2025-10-05T10:30:00Z',
+              'stellar_transaction_id': 'stellar-hash-abc',
+              'external_transaction_id': 'external-ref-123',
+              'message': 'Transaction completed successfully',
+              'from': 'bank-account-789',
+              'to': 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+              'deposit_memo': 'deposit-memo-123',
+              'deposit_memo_type': 'text',
+            },
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1466,18 +1454,24 @@ void main() {
     test('get transaction by stellar_transaction_id', () async {
       final mockClient = MockClient((request) async {
         expect(request.url.path, endsWith('/transaction'));
-        expect(request.url.queryParameters['stellar_transaction_id'], 'stellar-hash-xyz');
+        expect(
+          request.url.queryParameters['stellar_transaction_id'],
+          'stellar-hash-xyz',
+        );
 
-        return http.Response(json.encode({
-          'transaction': {
-            'id': 'tx-456',
-            'kind': 'deposit',
-            'status': 'completed',
-            'more_info_url': 'https://anchor.example.com/tx/tx-456',
-            'stellar_transaction_id': 'stellar-hash-xyz',
-            'started_at': '2025-10-05T09:00:00Z'
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'transaction': {
+              'id': 'tx-456',
+              'kind': 'deposit',
+              'status': 'completed',
+              'more_info_url': 'https://anchor.example.com/tx/tx-456',
+              'stellar_transaction_id': 'stellar-hash-xyz',
+              'started_at': '2025-10-05T09:00:00Z',
+            },
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1496,18 +1490,24 @@ void main() {
     test('get transaction by external_transaction_id', () async {
       final mockClient = MockClient((request) async {
         expect(request.url.path, endsWith('/transaction'));
-        expect(request.url.queryParameters['external_transaction_id'], 'external-ref-789');
+        expect(
+          request.url.queryParameters['external_transaction_id'],
+          'external-ref-789',
+        );
 
-        return http.Response(json.encode({
-          'transaction': {
-            'id': 'tx-789',
-            'kind': 'withdrawal',
-            'status': 'completed',
-            'more_info_url': 'https://anchor.example.com/tx/tx-789',
-            'external_transaction_id': 'external-ref-789',
-            'started_at': '2025-10-05T09:00:00Z'
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'transaction': {
+              'id': 'tx-789',
+              'kind': 'withdrawal',
+              'status': 'completed',
+              'more_info_url': 'https://anchor.example.com/tx/tx-789',
+              'external_transaction_id': 'external-ref-789',
+              'started_at': '2025-10-05T09:00:00Z',
+            },
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1525,20 +1525,24 @@ void main() {
 
     test('get withdrawal transaction with withdraw fields', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'transaction': {
-            'id': 'withdraw-001',
-            'kind': 'withdrawal',
-            'status': 'pending_anchor',
-            'more_info_url': 'https://anchor.example.com/tx/withdraw-001',
-            'withdraw_anchor_account': 'GANCHORXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-            'withdraw_memo': 'withdraw-memo-001',
-            'withdraw_memo_type': 'hash',
-            'from': 'GUSERXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-            'to': 'bank-account-456',
-            'started_at': '2025-10-05T10:00:00Z'
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'transaction': {
+              'id': 'withdraw-001',
+              'kind': 'withdrawal',
+              'status': 'pending_anchor',
+              'more_info_url': 'https://anchor.example.com/tx/withdraw-001',
+              'withdraw_anchor_account':
+                  'GANCHORXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+              'withdraw_memo': 'withdraw-memo-001',
+              'withdraw_memo_type': 'hash',
+              'from': 'GUSERXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+              'to': 'bank-account-456',
+              'started_at': '2025-10-05T10:00:00Z',
+            },
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1553,34 +1557,40 @@ void main() {
       final response = await service.transaction(request);
 
       expect(response.transaction.kind, 'withdrawal');
-      expect(response.transaction.withdrawAnchorAccount, 'GANCHORXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+      expect(
+        response.transaction.withdrawAnchorAccount,
+        'GANCHORXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+      );
       expect(response.transaction.withdrawMemo, 'withdraw-memo-001');
       expect(response.transaction.withdrawMemoType, 'hash');
     });
 
     test('get transaction with refunds', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'transaction': {
-            'id': 'tx-refund-001',
-            'kind': 'deposit',
-            'status': 'refunded',
-            'more_info_url': 'https://anchor.example.com/tx/tx-refund-001',
-            'refunds': {
-              'amount_refunded': '95.00',
-              'amount_fee': '5.00',
-              'payments': [
-                {
-                  'id': 'refund-payment-001',
-                  'id_type': 'stellar',
-                  'amount': '95.00',
-                  'fee': '5.00'
-                }
-              ]
+        return http.Response(
+          json.encode({
+            'transaction': {
+              'id': 'tx-refund-001',
+              'kind': 'deposit',
+              'status': 'refunded',
+              'more_info_url': 'https://anchor.example.com/tx/tx-refund-001',
+              'refunds': {
+                'amount_refunded': '95.00',
+                'amount_fee': '5.00',
+                'payments': [
+                  {
+                    'id': 'refund-payment-001',
+                    'id_type': 'stellar',
+                    'amount': '95.00',
+                    'fee': '5.00',
+                  },
+                ],
+              },
+              'started_at': '2025-10-05T11:00:00Z',
             },
-            'started_at': '2025-10-05T11:00:00Z'
-          }
-        }), 200);
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1599,22 +1609,28 @@ void main() {
       expect(response.transaction.refunds!.amountRefunded, '95.00');
       expect(response.transaction.refunds!.amountFee, '5.00');
       expect(response.transaction.refunds!.payments.length, 1);
-      expect(response.transaction.refunds!.payments[0].id, 'refund-payment-001');
+      expect(
+        response.transaction.refunds!.payments[0].id,
+        'refund-payment-001',
+      );
       expect(response.transaction.refunds!.payments[0].idType, 'stellar');
     });
 
     test('get transaction with claimable_balance_id', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'transaction': {
-            'id': 'tx-cb-001',
-            'kind': 'deposit',
-            'status': 'completed',
-            'more_info_url': 'https://anchor.example.com/tx/tx-cb-001',
-            'claimable_balance_id': 'claimable-balance-id-123',
-            'started_at': '2025-10-05T12:00:00Z'
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'transaction': {
+              'id': 'tx-cb-001',
+              'kind': 'deposit',
+              'status': 'completed',
+              'more_info_url': 'https://anchor.example.com/tx/tx-cb-001',
+              'claimable_balance_id': 'claimable-balance-id-123',
+              'started_at': '2025-10-05T12:00:00Z',
+            },
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1627,22 +1643,28 @@ void main() {
         ..jwt = 'test-jwt';
 
       final response = await service.transaction(request);
-      expect(response.transaction.claimableBalanceId, 'claimable-balance-id-123');
+      expect(
+        response.transaction.claimableBalanceId,
+        'claimable-balance-id-123',
+      );
     });
 
     test('get transaction with language parameter', () async {
       final mockClient = MockClient((request) async {
         expect(request.url.queryParameters['lang'], 'fr');
 
-        return http.Response(json.encode({
-          'transaction': {
-            'id': 'tx-lang-001',
-            'kind': 'deposit',
-            'status': 'completed',
-            'more_info_url': 'https://anchor.example.com/tx/tx-lang-001',
-            'started_at': '2025-10-05T13:00:00Z'
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'transaction': {
+              'id': 'tx-lang-001',
+              'kind': 'deposit',
+              'status': 'completed',
+              'more_info_url': 'https://anchor.example.com/tx/tx-lang-001',
+              'started_at': '2025-10-05T13:00:00Z',
+            },
+          }),
+          200,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1660,9 +1682,10 @@ void main() {
 
     test('transaction throws not found exception', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Transaction not found'
-        }), 404);
+        return http.Response(
+          json.encode({'error': 'Transaction not found'}),
+          404,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1682,9 +1705,10 @@ void main() {
 
     test('transaction throws authentication required exception', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'type': 'authentication_required'
-        }), 403);
+        return http.Response(
+          json.encode({'type': 'authentication_required'}),
+          403,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1706,9 +1730,10 @@ void main() {
   group('SEP-24 Error Handling', () {
     test('handle 400 bad request with error message', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Invalid asset_code parameter'
-        }), 400);
+        return http.Response(
+          json.encode({'error': 'Invalid asset_code parameter'}),
+          400,
+        );
       });
 
       final service = TransferServerSEP24Service(
@@ -1728,9 +1753,7 @@ void main() {
 
     test('handle 403 with error message', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Account not found'
-        }), 400);
+        return http.Response(json.encode({'error': 'Account not found'}), 400);
       });
 
       final service = TransferServerSEP24Service(
@@ -1752,18 +1775,13 @@ void main() {
       final mockClient = MockClient((request) async {
         expect(request.headers['X-Custom-Header'], 'custom-value');
 
-        return http.Response(json.encode({
-          'deposit': {},
-          'withdraw': {}
-        }), 200);
+        return http.Response(json.encode({'deposit': {}, 'withdraw': {}}), 200);
       });
 
       final service = TransferServerSEP24Service(
         'https://api.example.com',
         httpClient: mockClient,
-        httpRequestHeaders: {
-          'X-Custom-Header': 'custom-value',
-        },
+        httpRequestHeaders: {'X-Custom-Header': 'custom-value'},
       );
 
       await service.info();

@@ -133,10 +133,12 @@ Uint8List _buildCoseKey(Uint8List x, Uint8List y) {
 }
 
 // Known test key material.
-final Uint8List _testX =
-    Uint8List.fromList(List<int>.generate(32, (i) => (i + 1) & 0xFF));
-final Uint8List _testY =
-    Uint8List.fromList(List<int>.generate(32, (i) => (i + 33) & 0xFF));
+final Uint8List _testX = Uint8List.fromList(
+  List<int>.generate(32, (i) => (i + 1) & 0xFF),
+);
+final Uint8List _testY = Uint8List.fromList(
+  List<int>.generate(32, (i) => (i + 33) & 0xFF),
+);
 
 void main() {
   // =========================================================================
@@ -146,32 +148,38 @@ void main() {
     test('test_extract_authenticator_data_auth_data_as_first_entry', () {
       final authData = _buildAuthenticatorData();
       final attestation = _buildAttestationObject(authData, fmtFirst: false);
-      final result =
-          WebAuthnCborParser.extractAuthenticatorDataFromAttestation(attestation);
+      final result = WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
+        attestation,
+      );
       expect(result, equals(authData));
     });
 
     test('test_extract_authenticator_data_auth_data_as_second_entry', () {
       final authData = _buildAuthenticatorData();
       final attestation = _buildAttestationObject(authData);
-      final result =
-          WebAuthnCborParser.extractAuthenticatorDataFromAttestation(attestation);
+      final result = WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
+        attestation,
+      );
       expect(result, equals(authData));
     });
 
     test('test_extract_authenticator_data_auth_data_as_third_entry', () {
       final authData = _buildAuthenticatorData();
-      final attestation =
-          _buildAttestationObject(authData, includeAttStmt: true);
-      final result =
-          WebAuthnCborParser.extractAuthenticatorDataFromAttestation(attestation);
+      final attestation = _buildAttestationObject(
+        authData,
+        includeAttStmt: true,
+      );
+      final result = WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
+        attestation,
+      );
       expect(result, equals(authData));
     });
 
     test('test_extract_authenticator_data_empty_input_returns_null', () {
       expect(
         WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
-            Uint8List(0)),
+          Uint8List(0),
+        ),
         isNull,
       );
     });
@@ -179,7 +187,8 @@ void main() {
     test('test_extract_authenticator_data_single_byte_input_returns_null', () {
       expect(
         WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
-            Uint8List.fromList(const [0x01])),
+          Uint8List.fromList(const [0x01]),
+        ),
         isNull,
       );
     });
@@ -193,89 +202,111 @@ void main() {
       );
     });
 
-    test('test_extract_authenticator_data_map_with_no_auth_data_key_returns_null',
-        () {
-      final data = _concat(<Uint8List>[
-        _buildCborHead(5, 1),
-        _buildCborTextString('fmt'),
-        _buildCborTextString('none'),
-      ]);
-      expect(
-        WebAuthnCborParser.extractAuthenticatorDataFromAttestation(data),
-        isNull,
-      );
-    });
+    test(
+      'test_extract_authenticator_data_map_with_no_auth_data_key_returns_null',
+      () {
+        final data = _concat(<Uint8List>[
+          _buildCborHead(5, 1),
+          _buildCborTextString('fmt'),
+          _buildCborTextString('none'),
+        ]);
+        expect(
+          WebAuthnCborParser.extractAuthenticatorDataFromAttestation(data),
+          isNull,
+        );
+      },
+    );
 
-    test('test_extract_authenticator_data_map_with_zero_entries_returns_null',
-        () {
-      final data = _buildCborHead(5, 0);
+    test(
+      'test_extract_authenticator_data_map_with_zero_entries_returns_null',
+      () {
+        final data = _buildCborHead(5, 0);
+        expect(
+          WebAuthnCborParser.extractAuthenticatorDataFromAttestation(data),
+          isNull,
+        );
+      },
+    );
+
+    test(
+      'test_extract_authenticator_data_truncated_byte_string_length_returns_null',
+      () {
+        final data = _concat(<Uint8List>[
+          _buildCborHead(5, 1),
+          _buildCborTextString('authData'),
+          Uint8List.fromList(const [0x58, 0x28, 0x01, 0x02]),
+        ]);
+        expect(
+          WebAuthnCborParser.extractAuthenticatorDataFromAttestation(data),
+          isNull,
+        );
+      },
+    );
+
+    test(
+      'test_extract_authenticator_data_auth_data_with_1byte_cbor_length',
+      () {
+        final authData = Uint8List.fromList(
+          List<int>.generate(100, (i) => i & 0xFF),
+        );
+        final attestation = _buildAttestationObject(authData);
+        expect(
+          WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
+            attestation,
+          ),
+          equals(authData),
+        );
+      },
+    );
+
+    test(
+      'test_extract_authenticator_data_auth_data_with_2byte_cbor_length',
+      () {
+        final authData = Uint8List.fromList(
+          List<int>.generate(300, (i) => i & 0xFF),
+        );
+        final attestation = _buildAttestationObject(authData);
+        expect(
+          WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
+            attestation,
+          ),
+          equals(authData),
+        );
+      },
+    );
+
+    test('test_extract_authenticator_data_auth_data_with_inline_length', () {
+      final authData = Uint8List.fromList(
+        List<int>.generate(20, (i) => i & 0xFF),
+      );
+      final attestation = _buildAttestationObject(authData);
       expect(
-        WebAuthnCborParser.extractAuthenticatorDataFromAttestation(data),
-        isNull,
+        WebAuthnCborParser.extractAuthenticatorDataFromAttestation(attestation),
+        equals(authData),
       );
     });
 
     test(
-        'test_extract_authenticator_data_truncated_byte_string_length_returns_null',
-        () {
-      final data = _concat(<Uint8List>[
-        _buildCborHead(5, 1),
-        _buildCborTextString('authData'),
-        Uint8List.fromList(const [0x58, 0x28, 0x01, 0x02]),
-      ]);
-      expect(
-        WebAuthnCborParser.extractAuthenticatorDataFromAttestation(data),
-        isNull,
-      );
-    });
-
-    test('test_extract_authenticator_data_auth_data_with_1byte_cbor_length',
-        () {
-      final authData =
-          Uint8List.fromList(List<int>.generate(100, (i) => i & 0xFF));
-      final attestation = _buildAttestationObject(authData);
-      expect(
-        WebAuthnCborParser.extractAuthenticatorDataFromAttestation(attestation),
-        equals(authData),
-      );
-    });
-
-    test('test_extract_authenticator_data_auth_data_with_2byte_cbor_length',
-        () {
-      final authData =
-          Uint8List.fromList(List<int>.generate(300, (i) => i & 0xFF));
-      final attestation = _buildAttestationObject(authData);
-      expect(
-        WebAuthnCborParser.extractAuthenticatorDataFromAttestation(attestation),
-        equals(authData),
-      );
-    });
-
-    test('test_extract_authenticator_data_auth_data_with_inline_length', () {
-      final authData =
-          Uint8List.fromList(List<int>.generate(20, (i) => i & 0xFF));
-      final attestation = _buildAttestationObject(authData);
-      expect(
-        WebAuthnCborParser.extractAuthenticatorDataFromAttestation(attestation),
-        equals(authData),
-      );
-    });
-
-    test('test_extract_authenticator_data_truncated_map_header_returns_null',
-        () {
-      expect(
-        WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
-            Uint8List.fromList(const [0xA1])),
-        isNull,
-      );
-    });
+      'test_extract_authenticator_data_truncated_map_header_returns_null',
+      () {
+        expect(
+          WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
+            Uint8List.fromList(const [0xA1]),
+          ),
+          isNull,
+        );
+      },
+    );
 
     test('test_extract_authenticator_data_real_attestation_object_bytes', () {
       final rpIdHash = Uint8List(32)..fillRange(0, 32, 0xAB);
       const flags = 0x41;
       final signCount = Uint8List.fromList(const [0x00, 0x00, 0x00, 0x05]);
-      final authData =
-          _concat(<Uint8List>[rpIdHash, Uint8List.fromList(<int>[flags]), signCount]);
+      final authData = _concat(<Uint8List>[
+        rpIdHash,
+        Uint8List.fromList(<int>[flags]),
+        signCount,
+      ]);
 
       final attestation = _concat(<Uint8List>[
         _buildCborHead(5, 2),
@@ -285,32 +316,36 @@ void main() {
         _buildCborByteString(authData),
       ]);
 
-      final result =
-          WebAuthnCborParser.extractAuthenticatorDataFromAttestation(attestation);
+      final result = WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
+        attestation,
+      );
       expect(result, equals(authData));
       expect(result!.length - 5, equals(32));
     });
 
     test(
-        'test_extract_authenticator_data_value_after_fmt_is_map_skipped_correctly',
-        () {
-      final authData = _buildAuthenticatorData();
-      final attestation = _concat(<Uint8List>[
-        _buildCborHead(5, 3),
-        _buildCborTextString('fmt'),
-        _buildCborTextString('packed'),
-        _buildCborTextString('attStmt'),
-        _buildCborHead(5, 1),
-        _buildCborTextString('x5c'),
-        _buildCborByteString(Uint8List(10)..fillRange(0, 10, 0xFF)),
-        _buildCborTextString('authData'),
-        _buildCborByteString(authData),
-      ]);
+      'test_extract_authenticator_data_value_after_fmt_is_map_skipped_correctly',
+      () {
+        final authData = _buildAuthenticatorData();
+        final attestation = _concat(<Uint8List>[
+          _buildCborHead(5, 3),
+          _buildCborTextString('fmt'),
+          _buildCborTextString('packed'),
+          _buildCborTextString('attStmt'),
+          _buildCborHead(5, 1),
+          _buildCborTextString('x5c'),
+          _buildCborByteString(Uint8List(10)..fillRange(0, 10, 0xFF)),
+          _buildCborTextString('authData'),
+          _buildCborByteString(authData),
+        ]);
 
-      final result =
-          WebAuthnCborParser.extractAuthenticatorDataFromAttestation(attestation);
-      expect(result, equals(authData));
-    });
+        final result =
+            WebAuthnCborParser.extractAuthenticatorDataFromAttestation(
+              attestation,
+            );
+        expect(result, equals(authData));
+      },
+    );
   });
 
   // =========================================================================
@@ -327,8 +362,9 @@ void main() {
     });
 
     test('test_read_cbor_byte_string_1byte_header_additional_info_24', () {
-      final payload =
-          Uint8List.fromList(List<int>.generate(30, (i) => i & 0xFF));
+      final payload = Uint8List.fromList(
+        List<int>.generate(30, (i) => i & 0xFF),
+      );
       final encoded = _buildCborByteString(payload);
       expect(encoded[0], equals(0x58));
       final result = WebAuthnCborParser.readCborByteString(encoded, 0);
@@ -337,8 +373,9 @@ void main() {
     });
 
     test('test_read_cbor_byte_string_2byte_header_additional_info_25', () {
-      final payload =
-          Uint8List.fromList(List<int>.generate(300, (i) => i & 0xFF));
+      final payload = Uint8List.fromList(
+        List<int>.generate(300, (i) => i & 0xFF),
+      );
       final encoded = _buildCborByteString(payload);
       expect(encoded[0], equals(0x59));
       final result = WebAuthnCborParser.readCborByteString(encoded, 0);
@@ -348,8 +385,7 @@ void main() {
 
     test('test_read_cbor_byte_string_4byte_header_additional_info_26', () {
       final content = Uint8List.fromList(const [0xAA, 0xBB, 0xCC, 0xDD, 0xEE]);
-      final header =
-          Uint8List.fromList(const [0x5A, 0x00, 0x00, 0x00, 0x05]);
+      final header = Uint8List.fromList(const [0x5A, 0x00, 0x00, 0x00, 0x05]);
       final encoded = _concat(<Uint8List>[header, content]);
       final result = WebAuthnCborParser.readCborByteString(encoded, 0);
       expect(result, isNotNull);
@@ -358,12 +394,19 @@ void main() {
     });
 
     test(
-        'test_read_cbor_byte_string_4byte_header_negative_int_overflow_returns_null',
-        () {
-      final encoded =
-          Uint8List.fromList(const [0x5A, 0x80, 0x00, 0x00, 0x00, 0x01]);
-      expect(WebAuthnCborParser.readCborByteString(encoded, 0), isNull);
-    });
+      'test_read_cbor_byte_string_4byte_header_negative_int_overflow_returns_null',
+      () {
+        final encoded = Uint8List.fromList(const [
+          0x5A,
+          0x80,
+          0x00,
+          0x00,
+          0x00,
+          0x01,
+        ]);
+        expect(WebAuthnCborParser.readCborByteString(encoded, 0), isNull);
+      },
+    );
 
     test('test_read_cbor_byte_string_empty_byte_string', () {
       final encoded = Uint8List.fromList(const [0x40]);
@@ -388,23 +431,31 @@ void main() {
       expect(WebAuthnCborParser.readCborByteString(encoded, 0), isNull);
     });
 
-    test('test_read_cbor_byte_string_1byte_header_truncated_length_returns_null',
-        () {
-      expect(
-        WebAuthnCborParser.readCborByteString(
-            Uint8List.fromList(const [0x58]), 0),
-        isNull,
-      );
-    });
+    test(
+      'test_read_cbor_byte_string_1byte_header_truncated_length_returns_null',
+      () {
+        expect(
+          WebAuthnCborParser.readCborByteString(
+            Uint8List.fromList(const [0x58]),
+            0,
+          ),
+          isNull,
+        );
+      },
+    );
 
-    test('test_read_cbor_byte_string_2byte_header_truncated_length_returns_null',
-        () {
-      expect(
-        WebAuthnCborParser.readCborByteString(
-            Uint8List.fromList(const [0x59, 0x01]), 0),
-        isNull,
-      );
-    });
+    test(
+      'test_read_cbor_byte_string_2byte_header_truncated_length_returns_null',
+      () {
+        expect(
+          WebAuthnCborParser.readCborByteString(
+            Uint8List.fromList(const [0x59, 0x01]),
+            0,
+          ),
+          isNull,
+        );
+      },
+    );
   });
 
   // =========================================================================
@@ -468,7 +519,9 @@ void main() {
   group('readCborLength', () {
     test('test_read_cbor_length_inline_length_0', () {
       final result = WebAuthnCborParser.readCborLength(
-          Uint8List.fromList(const [0x40]), 0);
+        Uint8List.fromList(const [0x40]),
+        0,
+      );
       expect(result, isNotNull);
       expect(result!.$1, equals(0));
       expect(result.$2, equals(1));
@@ -476,7 +529,9 @@ void main() {
 
     test('test_read_cbor_length_inline_length_23', () {
       final result = WebAuthnCborParser.readCborLength(
-          Uint8List.fromList(const [0x57]), 0);
+        Uint8List.fromList(const [0x57]),
+        0,
+      );
       expect(result, isNotNull);
       expect(result!.$1, equals(23));
       expect(result.$2, equals(1));
@@ -484,7 +539,9 @@ void main() {
 
     test('test_read_cbor_length_1byte_extended_additional_info_24', () {
       final result = WebAuthnCborParser.readCborLength(
-          Uint8List.fromList(const [0x58, 0x64]), 0);
+        Uint8List.fromList(const [0x58, 0x64]),
+        0,
+      );
       expect(result, isNotNull);
       expect(result!.$1, equals(100));
       expect(result.$2, equals(2));
@@ -492,7 +549,9 @@ void main() {
 
     test('test_read_cbor_length_2byte_extended_additional_info_25', () {
       final result = WebAuthnCborParser.readCborLength(
-          Uint8List.fromList(const [0x59, 0x01, 0x00]), 0);
+        Uint8List.fromList(const [0x59, 0x01, 0x00]),
+        0,
+      );
       expect(result, isNotNull);
       expect(result!.$1, equals(256));
       expect(result.$2, equals(3));
@@ -500,43 +559,56 @@ void main() {
 
     test('test_read_cbor_length_4byte_extended_additional_info_26', () {
       final result = WebAuthnCborParser.readCborLength(
-          Uint8List.fromList(const [0x5A, 0x00, 0x01, 0x00, 0x00]), 0);
+        Uint8List.fromList(const [0x5A, 0x00, 0x01, 0x00, 0x00]),
+        0,
+      );
       expect(result, isNotNull);
       expect(result!.$1, equals(65536));
       expect(result.$2, equals(5));
     });
 
-    test('test_read_cbor_length_4byte_extended_negative_overflow_returns_null',
-        () {
-      expect(
-        WebAuthnCborParser.readCborLength(
-            Uint8List.fromList(const [0x5A, 0x80, 0x00, 0x00, 0x00]), 0),
-        isNull,
-      );
-    });
+    test(
+      'test_read_cbor_length_4byte_extended_negative_overflow_returns_null',
+      () {
+        expect(
+          WebAuthnCborParser.readCborLength(
+            Uint8List.fromList(const [0x5A, 0x80, 0x00, 0x00, 0x00]),
+            0,
+          ),
+          isNull,
+        );
+      },
+    );
 
-    test('test_read_cbor_length_insufficient_data_1byte_extended_returns_null',
-        () {
-      expect(
-        WebAuthnCborParser.readCborLength(
-            Uint8List.fromList(const [0x58]), 0),
-        isNull,
-      );
-    });
+    test(
+      'test_read_cbor_length_insufficient_data_1byte_extended_returns_null',
+      () {
+        expect(
+          WebAuthnCborParser.readCborLength(
+            Uint8List.fromList(const [0x58]),
+            0,
+          ),
+          isNull,
+        );
+      },
+    );
 
-    test('test_read_cbor_length_insufficient_data_2byte_extended_returns_null',
-        () {
-      expect(
-        WebAuthnCborParser.readCborLength(
-            Uint8List.fromList(const [0x59, 0x01]), 0),
-        isNull,
-      );
-    });
+    test(
+      'test_read_cbor_length_insufficient_data_2byte_extended_returns_null',
+      () {
+        expect(
+          WebAuthnCborParser.readCborLength(
+            Uint8List.fromList(const [0x59, 0x01]),
+            0,
+          ),
+          isNull,
+        );
+      },
+    );
 
     test('test_read_cbor_length_offset_at_end_returns_null', () {
       expect(
-        WebAuthnCborParser.readCborLength(
-            Uint8List.fromList(const [0x01]), 1),
+        WebAuthnCborParser.readCborLength(Uint8List.fromList(const [0x01]), 1),
         isNull,
       );
     });
@@ -567,8 +639,9 @@ void main() {
     });
 
     test('test_skip_cbor_value_byte_string', () {
-      final encoded =
-          _buildCborByteString(Uint8List.fromList(const [0x01, 0x02, 0x03, 0x04]));
+      final encoded = _buildCborByteString(
+        Uint8List.fromList(const [0x01, 0x02, 0x03, 0x04]),
+      );
       final extra = Uint8List.fromList(const [0xFF]);
       final combined = _concat(<Uint8List>[encoded, extra]);
       expect(
@@ -597,10 +670,7 @@ void main() {
         Uint8List.fromList(const [0x81]),
         inner,
       ]);
-      expect(
-        WebAuthnCborParser.skipCborValue(outer, 0),
-        equals(outer.length),
-      );
+      expect(WebAuthnCborParser.skipCborValue(outer, 0), equals(outer.length));
     });
 
     test('test_skip_cbor_value_tagged_value', () {
@@ -614,8 +684,14 @@ void main() {
     });
 
     test('test_skip_cbor_value_float32', () {
-      final data =
-          Uint8List.fromList(const [0xFA, 0x3F, 0x80, 0x00, 0x00, 0xFF]);
+      final data = Uint8List.fromList(const [
+        0xFA,
+        0x3F,
+        0x80,
+        0x00,
+        0x00,
+        0xFF,
+      ]);
       expect(WebAuthnCborParser.skipCborValue(data, 0), equals(5));
     });
 
@@ -646,8 +722,7 @@ void main() {
 
     test('test_skip_cbor_value_offset_at_end_returns_null', () {
       expect(
-        WebAuthnCborParser.skipCborValue(
-            Uint8List.fromList(const [0x01]), 1),
+        WebAuthnCborParser.skipCborValue(Uint8List.fromList(const [0x01]), 1),
         isNull,
       );
     });
@@ -660,7 +735,9 @@ void main() {
     test('test_skip_cbor_head_inline_additional_info', () {
       expect(
         WebAuthnCborParser.skipCborHead(
-            Uint8List.fromList(const [0x05, 0xFF]), 0),
+          Uint8List.fromList(const [0x05, 0xFF]),
+          0,
+        ),
         equals(1),
       );
     });
@@ -668,7 +745,9 @@ void main() {
     test('test_skip_cbor_head_additional_info_24_2bytes', () {
       expect(
         WebAuthnCborParser.skipCborHead(
-            Uint8List.fromList(const [0x18, 0x64, 0xFF]), 0),
+          Uint8List.fromList(const [0x18, 0x64, 0xFF]),
+          0,
+        ),
         equals(2),
       );
     });
@@ -676,7 +755,9 @@ void main() {
     test('test_skip_cbor_head_additional_info_25_3bytes', () {
       expect(
         WebAuthnCborParser.skipCborHead(
-            Uint8List.fromList(const [0x19, 0x01, 0x00, 0xFF]), 0),
+          Uint8List.fromList(const [0x19, 0x01, 0x00, 0xFF]),
+          0,
+        ),
         equals(3),
       );
     });
@@ -684,7 +765,9 @@ void main() {
     test('test_skip_cbor_head_additional_info_26_5bytes', () {
       expect(
         WebAuthnCborParser.skipCborHead(
-            Uint8List.fromList(const [0x1A, 0x00, 0x01, 0x00, 0x00, 0xFF]), 0),
+          Uint8List.fromList(const [0x1A, 0x00, 0x01, 0x00, 0x00, 0xFF]),
+          0,
+        ),
         equals(5),
       );
     });
@@ -701,8 +784,7 @@ void main() {
 
     test('test_skip_cbor_head_additional_info_24_truncated_returns_null', () {
       expect(
-        WebAuthnCborParser.skipCborHead(
-            Uint8List.fromList(const [0x18]), 0),
+        WebAuthnCborParser.skipCborHead(Uint8List.fromList(const [0x18]), 0),
         isNull,
       );
     });
@@ -710,7 +792,9 @@ void main() {
     test('test_skip_cbor_head_additional_info_25_truncated_returns_null', () {
       expect(
         WebAuthnCborParser.skipCborHead(
-            Uint8List.fromList(const [0x19, 0x01]), 0),
+          Uint8List.fromList(const [0x19, 0x01]),
+          0,
+        ),
         isNull,
       );
     });
@@ -718,14 +802,24 @@ void main() {
     test('test_skip_cbor_head_additional_info_26_truncated_returns_null', () {
       expect(
         WebAuthnCborParser.skipCborHead(
-            Uint8List.fromList(const [0x1A, 0x00, 0x01, 0x00]), 0),
+          Uint8List.fromList(const [0x1A, 0x00, 0x01, 0x00]),
+          0,
+        ),
         isNull,
       );
     });
 
     test('test_skip_cbor_head_additional_info_27_truncated_returns_null', () {
-      final data = Uint8List.fromList(
-          const [0x1B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
+      final data = Uint8List.fromList(const [
+        0x1B,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+      ]);
       expect(WebAuthnCborParser.skipCborHead(data, 0), isNull);
     });
   });
@@ -763,77 +857,91 @@ void main() {
       expect(result.sublist(33, 65), equals(_testY));
     });
 
-    test('test_extract_public_key_from_cose_key_extra_entries_around_coordinates',
-        () {
-      final builder = BytesBuilder()
-        ..addByte(0xA7) // map(7)
-        ..add(<int>[0x01, 0x02])
-        ..add(<int>[0x03, 0x26])
-        ..add(<int>[0x20, 0x01])
-        ..add(<int>[0x04, 0x18, 0x63]) // extra entry: key 4 -> uint(99)
-        ..addByte(0x21)
-        ..add(_buildCborByteString(_testX))
-        ..addByte(0x22)
-        ..add(_buildCborByteString(_testY))
-        ..add(<int>[0x05, 0x01]); // extra trailing entry: key 5 -> uint(1)
-      final data = builder.toBytes();
+    test(
+      'test_extract_public_key_from_cose_key_extra_entries_around_coordinates',
+      () {
+        final builder = BytesBuilder()
+          ..addByte(0xA7) // map(7)
+          ..add(<int>[0x01, 0x02])
+          ..add(<int>[0x03, 0x26])
+          ..add(<int>[0x20, 0x01])
+          ..add(<int>[0x04, 0x18, 0x63]) // extra entry: key 4 -> uint(99)
+          ..addByte(0x21)
+          ..add(_buildCborByteString(_testX))
+          ..addByte(0x22)
+          ..add(_buildCborByteString(_testY))
+          ..add(<int>[0x05, 0x01]); // extra trailing entry: key 5 -> uint(1)
+        final data = builder.toBytes();
 
-      final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(data);
-      expect(result, isNotNull);
-      expect(result!.length, equals(65));
-    });
+        final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(data);
+        expect(result, isNotNull);
+        expect(result!.length, equals(65));
+      },
+    );
 
-    test('test_extract_public_key_from_cose_key_missing_x_coordinate_returns_null',
-        () {
-      final builder = BytesBuilder()
-        ..addByte(0xA2) // map(2)
-        ..add(<int>[0x01, 0x02])
-        ..addByte(0x22)
-        ..add(_buildCborByteString(_testY));
-      final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(
-          builder.toBytes());
-      expect(result, isNull);
-    });
+    test(
+      'test_extract_public_key_from_cose_key_missing_x_coordinate_returns_null',
+      () {
+        final builder = BytesBuilder()
+          ..addByte(0xA2) // map(2)
+          ..add(<int>[0x01, 0x02])
+          ..addByte(0x22)
+          ..add(_buildCborByteString(_testY));
+        final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(
+          builder.toBytes(),
+        );
+        expect(result, isNull);
+      },
+    );
 
-    test('test_extract_public_key_from_cose_key_missing_y_coordinate_returns_null',
-        () {
-      final builder = BytesBuilder()
-        ..addByte(0xA2)
-        ..add(<int>[0x01, 0x02])
-        ..addByte(0x21)
-        ..add(_buildCborByteString(_testX));
-      final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(
-          builder.toBytes());
-      expect(result, isNull);
-    });
+    test(
+      'test_extract_public_key_from_cose_key_missing_y_coordinate_returns_null',
+      () {
+        final builder = BytesBuilder()
+          ..addByte(0xA2)
+          ..add(<int>[0x01, 0x02])
+          ..addByte(0x21)
+          ..add(_buildCborByteString(_testX));
+        final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(
+          builder.toBytes(),
+        );
+        expect(result, isNull);
+      },
+    );
 
-    test('test_extract_public_key_from_cose_key_x_coordinate_wrong_size_returns_null',
-        () {
-      final shortX = Uint8List.fromList(const [0x01, 0x02, 0x03]);
-      final builder = BytesBuilder()
-        ..addByte(0xA2)
-        ..addByte(0x21)
-        ..add(_buildCborByteString(shortX))
-        ..addByte(0x22)
-        ..add(_buildCborByteString(_testY));
-      final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(
-          builder.toBytes());
-      expect(result, isNull);
-    });
+    test(
+      'test_extract_public_key_from_cose_key_x_coordinate_wrong_size_returns_null',
+      () {
+        final shortX = Uint8List.fromList(const [0x01, 0x02, 0x03]);
+        final builder = BytesBuilder()
+          ..addByte(0xA2)
+          ..addByte(0x21)
+          ..add(_buildCborByteString(shortX))
+          ..addByte(0x22)
+          ..add(_buildCborByteString(_testY));
+        final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(
+          builder.toBytes(),
+        );
+        expect(result, isNull);
+      },
+    );
 
-    test('test_extract_public_key_from_cose_key_y_coordinate_wrong_size_returns_null',
-        () {
-      final shortY = Uint8List.fromList(const [0x01, 0x02]);
-      final builder = BytesBuilder()
-        ..addByte(0xA2)
-        ..addByte(0x21)
-        ..add(_buildCborByteString(_testX))
-        ..addByte(0x22)
-        ..add(_buildCborByteString(shortY));
-      final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(
-          builder.toBytes());
-      expect(result, isNull);
-    });
+    test(
+      'test_extract_public_key_from_cose_key_y_coordinate_wrong_size_returns_null',
+      () {
+        final shortY = Uint8List.fromList(const [0x01, 0x02]);
+        final builder = BytesBuilder()
+          ..addByte(0xA2)
+          ..addByte(0x21)
+          ..add(_buildCborByteString(_testX))
+          ..addByte(0x22)
+          ..add(_buildCborByteString(shortY));
+        final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(
+          builder.toBytes(),
+        );
+        expect(result, isNull);
+      },
+    );
 
     test('test_extract_public_key_from_cose_key_empty_input_returns_null', () {
       expect(
@@ -843,74 +951,116 @@ void main() {
     });
 
     test(
-        'test_extract_public_key_from_cose_key_non_map_input_falls_back_to_pattern_matching',
-        () {
-      final prefix = Uint8List.fromList(
-          const [0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20]);
-      final yHeader = Uint8List.fromList(const [0x22, 0x58, 0x20]);
-      final rawData = _concat(<Uint8List>[prefix, _testX, yHeader, _testY]);
+      'test_extract_public_key_from_cose_key_non_map_input_falls_back_to_pattern_matching',
+      () {
+        final prefix = Uint8List.fromList(const [
+          0xA5,
+          0x01,
+          0x02,
+          0x03,
+          0x26,
+          0x20,
+          0x01,
+          0x21,
+          0x58,
+          0x20,
+        ]);
+        final yHeader = Uint8List.fromList(const [0x22, 0x58, 0x20]);
+        final rawData = _concat(<Uint8List>[prefix, _testX, yHeader, _testY]);
 
-      final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(rawData);
-      expect(result, isNotNull);
-      expect(result!.length, equals(65));
-      expect(result.sublist(1, 33), equals(_testX));
-      expect(result.sublist(33, 65), equals(_testY));
-    });
-
-    test(
-        'test_extract_public_key_from_cose_key_map_parsing_fails_then_pattern_succeeds',
-        () {
-      final prefix = Uint8List.fromList(
-          const [0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20]);
-      final yHeader = Uint8List.fromList(const [0x22, 0x58, 0x20]);
-      final fullData = _concat(<Uint8List>[prefix, _testX, yHeader, _testY]);
-      final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(fullData);
-      expect(result, isNotNull);
-      expect(result!.length, equals(65));
-    });
-
-    test(
-        'test_extract_public_key_pattern_fallback_accepts_valid_separator', () {
-      // A leading non-map byte forces the pattern-matching fallback (map
-      // iteration is skipped for a non-map major type), exercising the
-      // separator validation added to the fallback path.
-      final prefix = Uint8List.fromList(
-          const [0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20]);
-      final validSeparator = Uint8List.fromList(const [0x22, 0x58, 0x20]);
-      final data = _concat(<Uint8List>[
-        Uint8List.fromList(const [0x00]),
-        prefix,
-        _testX,
-        validSeparator,
-        _testY,
-      ]);
-      final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(data);
-      expect(result, isNotNull);
-      expect(result!.sublist(1, 33), equals(_testX));
-      expect(result.sublist(33, 65), equals(_testY));
-    });
+        final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(rawData);
+        expect(result, isNotNull);
+        expect(result!.length, equals(65));
+        expect(result.sublist(1, 33), equals(_testX));
+        expect(result.sublist(33, 65), equals(_testY));
+      },
+    );
 
     test(
-        'test_extract_public_key_pattern_fallback_rejects_corrupted_separator',
-        () {
-      // Same forced-fallback shape but with a corrupted Y-coordinate
-      // separator: the strict pattern fallback must return null rather than
-      // accept a coincidental prefix match.
-      final prefix = Uint8List.fromList(
-          const [0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20]);
-      final corruptedSeparator = Uint8List.fromList(const [0x99, 0x99, 0x99]);
-      final data = _concat(<Uint8List>[
-        Uint8List.fromList(const [0x00]),
-        prefix,
-        _testX,
-        corruptedSeparator,
-        _testY,
-      ]);
-      expect(
-        WebAuthnCborParser.extractPublicKeyFromCoseKey(data),
-        isNull,
-      );
-    });
+      'test_extract_public_key_from_cose_key_map_parsing_fails_then_pattern_succeeds',
+      () {
+        final prefix = Uint8List.fromList(const [
+          0xA5,
+          0x01,
+          0x02,
+          0x03,
+          0x26,
+          0x20,
+          0x01,
+          0x21,
+          0x58,
+          0x20,
+        ]);
+        final yHeader = Uint8List.fromList(const [0x22, 0x58, 0x20]);
+        final fullData = _concat(<Uint8List>[prefix, _testX, yHeader, _testY]);
+        final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(fullData);
+        expect(result, isNotNull);
+        expect(result!.length, equals(65));
+      },
+    );
+
+    test(
+      'test_extract_public_key_pattern_fallback_accepts_valid_separator',
+      () {
+        // A leading non-map byte forces the pattern-matching fallback (map
+        // iteration is skipped for a non-map major type), exercising the
+        // separator validation added to the fallback path.
+        final prefix = Uint8List.fromList(const [
+          0xA5,
+          0x01,
+          0x02,
+          0x03,
+          0x26,
+          0x20,
+          0x01,
+          0x21,
+          0x58,
+          0x20,
+        ]);
+        final validSeparator = Uint8List.fromList(const [0x22, 0x58, 0x20]);
+        final data = _concat(<Uint8List>[
+          Uint8List.fromList(const [0x00]),
+          prefix,
+          _testX,
+          validSeparator,
+          _testY,
+        ]);
+        final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(data);
+        expect(result, isNotNull);
+        expect(result!.sublist(1, 33), equals(_testX));
+        expect(result.sublist(33, 65), equals(_testY));
+      },
+    );
+
+    test(
+      'test_extract_public_key_pattern_fallback_rejects_corrupted_separator',
+      () {
+        // Same forced-fallback shape but with a corrupted Y-coordinate
+        // separator: the strict pattern fallback must return null rather than
+        // accept a coincidental prefix match.
+        final prefix = Uint8List.fromList(const [
+          0xA5,
+          0x01,
+          0x02,
+          0x03,
+          0x26,
+          0x20,
+          0x01,
+          0x21,
+          0x58,
+          0x20,
+        ]);
+        final corruptedSeparator = Uint8List.fromList(const [0x99, 0x99, 0x99]);
+        final data = _concat(<Uint8List>[
+          Uint8List.fromList(const [0x00]),
+          prefix,
+          _testX,
+          corruptedSeparator,
+          _testY,
+        ]);
+        expect(WebAuthnCborParser.extractPublicKeyFromCoseKey(data), isNull);
+      },
+    );
   });
 
   // =========================================================================
@@ -929,8 +1079,7 @@ void main() {
       expect(result, equals(spki));
     });
 
-    test('test_extract_public_key_from_spki_91byte_spki_with_prefix_at_26',
-        () {
+    test('test_extract_public_key_from_spki_91byte_spki_with_prefix_at_26', () {
       final header = Uint8List(26)..fillRange(0, 26, 0x30);
       final keyBytes = _concat(<Uint8List>[
         Uint8List.fromList(const [0x04]),
@@ -945,48 +1094,52 @@ void main() {
     });
 
     test(
-        'test_extract_public_key_from_spki_larger_than_91bytes_with_prefix_at_correct_position',
-        () {
-      final spki = Uint8List(100);
-      spki[35] = 0x04;
-      final result = WebAuthnCborParser.extractPublicKeyFromSpki(spki);
-      expect(result, isNotNull);
-      expect(result!.length, equals(65));
-      expect(result[0], equals(0x04));
-    });
+      'test_extract_public_key_from_spki_larger_than_91bytes_with_prefix_at_correct_position',
+      () {
+        final spki = Uint8List(100);
+        spki[35] = 0x04;
+        final result = WebAuthnCborParser.extractPublicKeyFromSpki(spki);
+        expect(result, isNotNull);
+        expect(result!.length, equals(65));
+        expect(result[0], equals(0x04));
+      },
+    );
 
-    test('test_extract_public_key_from_spki_shorter_than_65bytes_returns_null',
-        () {
-      final spki = Uint8List(64)..fillRange(0, 64, 0x01);
-      expect(WebAuthnCborParser.extractPublicKeyFromSpki(spki), isNull);
-    });
+    test(
+      'test_extract_public_key_from_spki_shorter_than_65bytes_returns_null',
+      () {
+        final spki = Uint8List(64)..fillRange(0, 64, 0x01);
+        expect(WebAuthnCborParser.extractPublicKeyFromSpki(spki), isNull);
+      },
+    );
 
     test('test_extract_public_key_from_spki_empty_input_returns_null', () {
-      expect(
-        WebAuthnCborParser.extractPublicKeyFromSpki(Uint8List(0)),
-        isNull,
-      );
+      expect(WebAuthnCborParser.extractPublicKeyFromSpki(Uint8List(0)), isNull);
     });
 
-    test('test_extract_public_key_from_spki_65bytes_without_prefix_returns_null',
-        () {
-      final spki = Uint8List(65)..fillRange(0, 65, 0x01);
-      spki[0] = 0x03;
-      expect(WebAuthnCborParser.extractPublicKeyFromSpki(spki), isNull);
-    });
+    test(
+      'test_extract_public_key_from_spki_65bytes_without_prefix_returns_null',
+      () {
+        final spki = Uint8List(65)..fillRange(0, 65, 0x01);
+        spki[0] = 0x03;
+        expect(WebAuthnCborParser.extractPublicKeyFromSpki(spki), isNull);
+      },
+    );
 
     test('test_extract_public_key_from_spki_exactly_64bytes_returns_null', () {
       final spki = Uint8List(64)..fillRange(0, 64, 0x04);
       expect(WebAuthnCborParser.extractPublicKeyFromSpki(spki), isNull);
     });
 
-    test('test_extract_public_key_from_spki_91bytes_with_wrong_prefix_byte_returns_null',
-        () {
-      expect(
-        WebAuthnCborParser.extractPublicKeyFromSpki(Uint8List(91)),
-        isNull,
-      );
-    });
+    test(
+      'test_extract_public_key_from_spki_91bytes_with_wrong_prefix_byte_returns_null',
+      () {
+        expect(
+          WebAuthnCborParser.extractPublicKeyFromSpki(Uint8List(91)),
+          isNull,
+        );
+      },
+    );
   });
 
   // =========================================================================
@@ -1011,30 +1164,36 @@ void main() {
       expect(flags.backedUp, isNull);
     });
 
-    test('test_parse_authenticator_flags_exactly_min_length_33bytes_parses_correctly',
-        () {
-      final data = Uint8List(33);
-      data[32] = 0x00;
-      final flags = WebAuthnCborParser.parseAuthenticatorFlags(data);
-      expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeSingle));
-      expect(flags.backedUp, isFalse);
-    });
+    test(
+      'test_parse_authenticator_flags_exactly_min_length_33bytes_parses_correctly',
+      () {
+        final data = Uint8List(33);
+        data[32] = 0x00;
+        final flags = WebAuthnCborParser.parseAuthenticatorFlags(data);
+        expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeSingle));
+        expect(flags.backedUp, isFalse);
+      },
+    );
 
-    test('test_parse_authenticator_flags_be0_bs0_single_device_not_backed_up',
-        () {
-      final data = _buildAuthenticatorData(0x00);
-      final flags = WebAuthnCborParser.parseAuthenticatorFlags(data);
-      expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeSingle));
-      expect(flags.backedUp, isFalse);
-    });
+    test(
+      'test_parse_authenticator_flags_be0_bs0_single_device_not_backed_up',
+      () {
+        final data = _buildAuthenticatorData(0x00);
+        final flags = WebAuthnCborParser.parseAuthenticatorFlags(data);
+        expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeSingle));
+        expect(flags.backedUp, isFalse);
+      },
+    );
 
-    test('test_parse_authenticator_flags_be1_bs0_multi_device_not_backed_up',
-        () {
-      final data = _buildAuthenticatorData(0x08);
-      final flags = WebAuthnCborParser.parseAuthenticatorFlags(data);
-      expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeMulti));
-      expect(flags.backedUp, isFalse);
-    });
+    test(
+      'test_parse_authenticator_flags_be1_bs0_multi_device_not_backed_up',
+      () {
+        final data = _buildAuthenticatorData(0x08);
+        final flags = WebAuthnCborParser.parseAuthenticatorFlags(data);
+        expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeMulti));
+        expect(flags.backedUp, isFalse);
+      },
+    );
 
     test('test_parse_authenticator_flags_be0_bs1_single_device_backed_up', () {
       final data = _buildAuthenticatorData(0x10);
@@ -1050,31 +1209,36 @@ void main() {
       expect(flags.backedUp, isTrue);
     });
 
-    test('test_parse_authenticator_flags_other_flag_bits_do_not_affect_result',
-        () {
-      final allFlags = (0x01 | 0x04 | 0x08 | 0x10 | 0x40) & 0xFF;
-      final data = _buildAuthenticatorData(allFlags);
-      final flags = WebAuthnCborParser.parseAuthenticatorFlags(data);
-      expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeMulti));
-      expect(flags.backedUp, isTrue);
-    });
+    test(
+      'test_parse_authenticator_flags_other_flag_bits_do_not_affect_result',
+      () {
+        final allFlags = (0x01 | 0x04 | 0x08 | 0x10 | 0x40) & 0xFF;
+        final data = _buildAuthenticatorData(allFlags);
+        final flags = WebAuthnCborParser.parseAuthenticatorFlags(data);
+        expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeMulti));
+        expect(flags.backedUp, isTrue);
+      },
+    );
 
-    test('test_parse_authenticator_flags_37byte_typical_auth_data_parses_correctly',
-        () {
-      final data = _buildAuthenticatorData(0x08);
-      expect(data.length, equals(37));
-      final flags = WebAuthnCborParser.parseAuthenticatorFlags(data);
-      expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeMulti));
-      expect(flags.backedUp, isFalse);
-    });
+    test(
+      'test_parse_authenticator_flags_37byte_typical_auth_data_parses_correctly',
+      () {
+        final data = _buildAuthenticatorData(0x08);
+        expect(data.length, equals(37));
+        final flags = WebAuthnCborParser.parseAuthenticatorFlags(data);
+        expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeMulti));
+        expect(flags.backedUp, isFalse);
+      },
+    );
 
-    test('test_parse_authenticator_flags_device_type_single_constant_value',
-        () {
-      expect(WebAuthnCborParser.deviceTypeSingle, equals('singleDevice'));
-    });
+    test(
+      'test_parse_authenticator_flags_device_type_single_constant_value',
+      () {
+        expect(WebAuthnCborParser.deviceTypeSingle, equals('singleDevice'));
+      },
+    );
 
-    test('test_parse_authenticator_flags_device_type_multi_constant_value',
-        () {
+    test('test_parse_authenticator_flags_device_type_multi_constant_value', () {
       expect(WebAuthnCborParser.deviceTypeMulti, equals('multiDevice'));
     });
   });
@@ -1110,8 +1274,7 @@ void main() {
 
     test('test_cbor_decode_uint_four_bytes', () {
       // Major type 0, additional info 26, value 0x12345678.
-      final data =
-          Uint8List.fromList(const [0x1A, 0x12, 0x34, 0x56, 0x78]);
+      final data = Uint8List.fromList(const [0x1A, 0x12, 0x34, 0x56, 0x78]);
       final length = WebAuthnCborParser.readCborLength(data, 0);
       expect(length, isNotNull);
       expect(length!.$1, equals(0x12345678));
@@ -1120,8 +1283,17 @@ void main() {
     test('test_cbor_decode_uint_eight_bytes', () {
       // Additional info 27 is not supported by readCborLength (overflows
       // signed 32-bit Int range); the parser must return null.
-      final data = Uint8List.fromList(
-          const [0x1B, 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF]);
+      final data = Uint8List.fromList(const [
+        0x1B,
+        0x12,
+        0x34,
+        0x56,
+        0x78,
+        0x90,
+        0xAB,
+        0xCD,
+        0xEF,
+      ]);
       expect(WebAuthnCborParser.readCborLength(data, 0), isNull);
     });
 
@@ -1237,32 +1409,46 @@ void main() {
 
     test('testAuthenticatorFlags_equalInstances', () {
       final a = AuthenticatorFlags(
-          deviceType: WebAuthnCborParser.deviceTypeMulti, backedUp: true);
+        deviceType: WebAuthnCborParser.deviceTypeMulti,
+        backedUp: true,
+      );
       final b = AuthenticatorFlags(
-          deviceType: WebAuthnCborParser.deviceTypeMulti, backedUp: true);
+        deviceType: WebAuthnCborParser.deviceTypeMulti,
+        backedUp: true,
+      );
       expect(a == b, isTrue);
       expect(a.hashCode, b.hashCode);
     });
 
     test('testAuthenticatorFlags_differentDeviceType_notEqual', () {
       final a = AuthenticatorFlags(
-          deviceType: WebAuthnCborParser.deviceTypeSingle, backedUp: false);
+        deviceType: WebAuthnCborParser.deviceTypeSingle,
+        backedUp: false,
+      );
       final b = AuthenticatorFlags(
-          deviceType: WebAuthnCborParser.deviceTypeMulti, backedUp: false);
+        deviceType: WebAuthnCborParser.deviceTypeMulti,
+        backedUp: false,
+      );
       expect(a == b, isFalse);
     });
 
     test('testAuthenticatorFlags_differentBackedUp_notEqual', () {
       final a = AuthenticatorFlags(
-          deviceType: WebAuthnCborParser.deviceTypeMulti, backedUp: true);
+        deviceType: WebAuthnCborParser.deviceTypeMulti,
+        backedUp: true,
+      );
       final b = AuthenticatorFlags(
-          deviceType: WebAuthnCborParser.deviceTypeMulti, backedUp: false);
+        deviceType: WebAuthnCborParser.deviceTypeMulti,
+        backedUp: false,
+      );
       expect(a == b, isFalse);
     });
 
     test('testAuthenticatorFlags_notEqualToOtherType', () {
       final a = AuthenticatorFlags(
-          deviceType: WebAuthnCborParser.deviceTypeSingle, backedUp: false);
+        deviceType: WebAuthnCborParser.deviceTypeSingle,
+        backedUp: false,
+      );
       expect(a == 'not-flags', isFalse);
     });
 

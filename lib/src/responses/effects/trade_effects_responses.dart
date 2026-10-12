@@ -35,8 +35,15 @@ import '../../asset_type_native.dart';
 /// - [Stellar developer docs](https://developers.stellar.org)
 class OfferCreatedEffectResponse extends EffectResponse {
   /// Creates an [OfferCreatedEffectResponse] with effect details.
-  OfferCreatedEffectResponse(super.id, super.type_i, super.type,
-      super.createdAt, super.pagingToken, super.account, super.links);
+  OfferCreatedEffectResponse(
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates an offer created effect from Horizon API JSON response.
   factory OfferCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
@@ -47,7 +54,8 @@ class OfferCreatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -81,8 +89,15 @@ class OfferCreatedEffectResponse extends EffectResponse {
 /// - [Stellar developer docs](https://developers.stellar.org)
 class OfferRemovedEffectResponse extends EffectResponse {
   /// Creates an [OfferRemovedEffectResponse] with effect details.
-  OfferRemovedEffectResponse(super.id, super.type_i, super.type,
-      super.createdAt, super.pagingToken, super.account, super.links);
+  OfferRemovedEffectResponse(
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates an offer removed effect from Horizon API JSON response.
   factory OfferRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
@@ -93,7 +108,8 @@ class OfferRemovedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -127,8 +143,15 @@ class OfferRemovedEffectResponse extends EffectResponse {
 /// - [Stellar developer docs](https://developers.stellar.org)
 class OfferUpdatedEffectResponse extends EffectResponse {
   /// Creates an [OfferUpdatedEffectResponse] with effect details.
-  OfferUpdatedEffectResponse(super.id, super.type_i, super.type,
-      super.createdAt, super.pagingToken, super.account, super.links);
+  OfferUpdatedEffectResponse(
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates an offer updated effect from Horizon API JSON response.
   factory OfferUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
@@ -139,7 +162,8 @@ class OfferUpdatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -206,25 +230,26 @@ class TradeEffectResponse extends EffectResponse {
 
   /// Creates a [TradeEffectResponse] with seller, offer ID, sold and bought asset details.
   TradeEffectResponse(
-      this.seller,
-      this.sellerMuxed,
-      this.sellerMuxedId,
-      this.offerId,
-      this.soldAmount,
-      this.soldAssetType,
-      this.soldAssetCode,
-      this.soldAssetIssuer,
-      this.boughtAmount,
-      this.boughtAssetType,
-      this.boughtAssetCode,
-      this.boughtAssetIssuer,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.seller,
+    this.sellerMuxed,
+    this.sellerMuxedId,
+    this.offerId,
+    this.soldAmount,
+    this.soldAssetType,
+    this.soldAssetCode,
+    this.soldAssetIssuer,
+    this.boughtAmount,
+    this.boughtAssetType,
+    this.boughtAssetCode,
+    this.boughtAssetIssuer,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Returns the sold asset as an Asset object.
   ///
@@ -269,7 +294,8 @@ class TradeEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }

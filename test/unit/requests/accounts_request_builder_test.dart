@@ -20,25 +20,56 @@ void main() {
     test('execute returns Page<AccountResponse>', () async {
       final mockResponse = {
         '_links': {
-          'self': {'href': 'https://horizon-testnet.stellar.org/accounts?limit=10'},
-          'next': {'href': 'https://horizon-testnet.stellar.org/accounts?cursor=next'},
-          'prev': {'href': 'https://horizon-testnet.stellar.org/accounts?cursor=prev'}
+          'self': {
+            'href': 'https://horizon-testnet.stellar.org/accounts?limit=10',
+          },
+          'next': {
+            'href': 'https://horizon-testnet.stellar.org/accounts?cursor=next',
+          },
+          'prev': {
+            'href': 'https://horizon-testnet.stellar.org/accounts?cursor=prev',
+          },
         },
         '_embedded': {
           'records': [
             {
               '_links': {
-                'self': {'href': 'https://horizon-testnet.stellar.org/accounts/GABC'},
-                'transactions': {'href': 'https://horizon-testnet.stellar.org/accounts/GABC/transactions'},
-                'operations': {'href': 'https://horizon-testnet.stellar.org/accounts/GABC/operations'},
-                'payments': {'href': 'https://horizon-testnet.stellar.org/accounts/GABC/payments'},
-                'effects': {'href': 'https://horizon-testnet.stellar.org/accounts/GABC/effects'},
-                'offers': {'href': 'https://horizon-testnet.stellar.org/accounts/GABC/offers'},
-                'trades': {'href': 'https://horizon-testnet.stellar.org/accounts/GABC/trades'},
-                'data': {'href': 'https://horizon-testnet.stellar.org/accounts/GABC/data/{key}', 'templated': true}
+                'self': {
+                  'href': 'https://horizon-testnet.stellar.org/accounts/GABC',
+                },
+                'transactions': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/accounts/GABC/transactions',
+                },
+                'operations': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/accounts/GABC/operations',
+                },
+                'payments': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/accounts/GABC/payments',
+                },
+                'effects': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/accounts/GABC/effects',
+                },
+                'offers': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/accounts/GABC/offers',
+                },
+                'trades': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/accounts/GABC/trades',
+                },
+                'data': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/accounts/GABC/data/{key}',
+                  'templated': true,
+                },
               },
               'id': 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
-              'account_id': 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
+              'account_id':
+                  'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
               'sequence': '123456789',
               'subentry_count': 0,
               'last_modified_ledger': 12345,
@@ -46,36 +77,38 @@ void main() {
               'thresholds': {
                 'low_threshold': 0,
                 'med_threshold': 0,
-                'high_threshold': 0
+                'high_threshold': 0,
               },
               'flags': {
                 'auth_required': false,
                 'auth_revocable': false,
                 'auth_immutable': false,
-                'auth_clawback_enabled': false
+                'auth_clawback_enabled': false,
               },
               'balances': [
                 {
                   'balance': '1000.0000000',
                   'buying_liabilities': '0.0000000',
                   'selling_liabilities': '0.0000000',
-                  'asset_type': 'native'
-                }
+                  'asset_type': 'native',
+                },
               ],
               'signers': [
                 {
                   'weight': 1,
-                  'key': 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
-                  'type': 'ed25519_public_key'
-                }
+                  'key':
+                      'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
+                  'type': 'ed25519_public_key',
+                },
               ],
               'data': {},
               'num_sponsoring': 0,
               'num_sponsored': 0,
-              'paging_token': 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B'
-            }
-          ]
-        }
+              'paging_token':
+                  'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
+            },
+          ],
+        },
       };
 
       final mockClient = MockClient((request) async {
@@ -87,7 +120,10 @@ void main() {
 
       expect(page.records.length, equals(1));
       expect(page.records[0], isA<AccountResponse>());
-      expect(page.records[0].accountId, equals('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B'));
+      expect(
+        page.records[0].accountId,
+        equals('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B'),
+      );
       expect(page.links, isNotNull);
     });
 
@@ -96,7 +132,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final accountId = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+      final accountId =
+          'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
       final builder = AccountsRequestBuilder(mockClient, serverUri);
       builder.forSigner(accountId);
       final uri = builder.buildUri();
@@ -121,7 +158,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final issuerId = 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
+      final issuerId =
+          'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
       final asset = AssetTypeCreditAlphaNum4('USD', issuerId);
       final builder = AccountsRequestBuilder(mockClient, serverUri);
       builder.forAsset(asset);
@@ -135,7 +173,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final sponsorId = 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
+      final sponsorId =
+          'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
       final builder = AccountsRequestBuilder(mockClient, serverUri);
       builder.forSponsor(sponsorId);
       final uri = builder.buildUri();
@@ -148,7 +187,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final signerId = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+      final signerId =
+          'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
       final builder = AccountsRequestBuilder(mockClient, serverUri);
       builder
           .forSigner(signerId)
@@ -165,9 +205,12 @@ void main() {
 
     test('stream returns Stream<AccountResponse>', () {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          '_embedded': {'records': []}
-        }), 200);
+        return http.Response(
+          json.encode({
+            '_embedded': {'records': []},
+          }),
+          200,
+        );
       });
 
       final builder = AccountsRequestBuilder(mockClient, serverUri);
@@ -183,20 +226,25 @@ void main() {
     test('forLiquidityPool converts L strkey id to hex', () {
       final poolHexId =
           '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
-      final strKeyId =
-          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+      final strKeyId = StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
 
-      final builder =
-          AccountsRequestBuilder(http.Client(), serverUri).forLiquidityPool(strKeyId);
+      final builder = AccountsRequestBuilder(
+        http.Client(),
+        serverUri,
+      ).forLiquidityPool(strKeyId);
 
-      expect(builder.buildUri().queryParameters['liquidity_pool'],
-          equals(poolHexId));
+      expect(
+        builder.buildUri().queryParameters['liquidity_pool'],
+        equals(poolHexId),
+      );
     });
 
     test('forLiquidityPool throws on invalid L-prefixed id', () {
       expect(
-        () => AccountsRequestBuilder(http.Client(), serverUri)
-            .forLiquidityPool('LINVALIDPOOLID'),
+        () => AccountsRequestBuilder(
+          http.Client(),
+          serverUri,
+        ).forLiquidityPool('LINVALIDPOOLID'),
         throwsArgumentError,
       );
     });
@@ -215,7 +263,7 @@ void main() {
         'effects': {'href': 'x'},
         'offers': {'href': 'x'},
         'trades': {'href': 'x'},
-        'data': {'href': 'x'}
+        'data': {'href': 'x'},
       },
       'id': accountId,
       'account_id': accountId,
@@ -226,29 +274,29 @@ void main() {
       'thresholds': {
         'low_threshold': 0,
         'med_threshold': 0,
-        'high_threshold': 0
+        'high_threshold': 0,
       },
       'flags': {
         'auth_required': false,
         'auth_revocable': false,
         'auth_immutable': false,
-        'auth_clawback_enabled': false
+        'auth_clawback_enabled': false,
       },
       'balances': [
         {
           'balance': '1000.0000000',
           'buying_liabilities': '0.0000000',
           'selling_liabilities': '0.0000000',
-          'asset_type': 'native'
-        }
+          'asset_type': 'native',
+        },
       ],
       'signers': [
-        {'weight': 1, 'key': accountId, 'type': 'ed25519_public_key'}
+        {'weight': 1, 'key': accountId, 'type': 'ed25519_public_key'},
       ],
       'data': {},
       'num_sponsoring': 0,
       'num_sponsored': 0,
-      'paging_token': accountId
+      'paging_token': accountId,
     };
 
     test('stream parses an SSE data frame into a typed account', () async {
@@ -256,8 +304,11 @@ void main() {
         final controller = StreamController<List<int>>();
         controller.add(utf8.encode('event: open\ndata: "hello"\n\n'));
         controller.add(utf8.encode('data: ${json.encode(accountRecord)}\n\n'));
-        return http.StreamedResponse(controller.stream, 200,
-            headers: {'content-type': 'text/event-stream'});
+        return http.StreamedResponse(
+          controller.stream,
+          200,
+          headers: {'content-type': 'text/event-stream'},
+        );
       });
 
       final builder = AccountsRequestBuilder(mockClient, serverUri);
@@ -277,5 +328,4 @@ void main() {
       expect(event.subentryCount, equals(3));
     });
   });
-
 }

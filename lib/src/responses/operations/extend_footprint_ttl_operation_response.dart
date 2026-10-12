@@ -41,39 +41,41 @@ class ExtendFootprintTTLOperationResponse extends OperationResponse {
   /// - [transaction] Full parent transaction
   /// - [sponsor] Account sponsoring the operation (if applicable)
   ExtendFootprintTTLOperationResponse(
-      this.extendTo,
-      super.links,
-      super.id,
-      super.pagingToken,
-      super.transactionSuccessful,
-      super.sourceAccount,
-      super.sourceAccountMuxed,
-      super.sourceAccountMuxedId,
-      super.type,
-      super.type_i,
-      super.createdAt,
-      super.transactionHash,
-      super.transaction,
-      super.sponsor);
+    this.extendTo,
+    super.links,
+    super.id,
+    super.pagingToken,
+    super.transactionSuccessful,
+    super.sourceAccount,
+    super.sourceAccountMuxed,
+    super.sourceAccountMuxedId,
+    super.type,
+    super.type_i,
+    super.createdAt,
+    super.transactionHash,
+    super.transaction,
+    super.sponsor,
+  );
 
   /// Deserializes an extend footprint TTL operation response from JSON.
   factory ExtendFootprintTTLOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
-      ExtendFootprintTTLOperationResponse(
-          convertInt(json['extend_to'])!,
-          OperationResponseLinks.fromJson(json['_links']),
-          json['id'],
-          json['paging_token'],
-          json['transaction_successful'],
-          json['source_account'],
-          json['source_account_muxed'],
-          json['source_account_muxed_id'],
-          json['type'],
-          json['type_i'],
-          json['created_at'],
-          json['transaction_hash'],
-          json['transaction'] == null
-              ? null
-              : TransactionResponse.fromJson(json['transaction']),
-          json['sponsor']);
+    Map<String, dynamic> json,
+  ) => ExtendFootprintTTLOperationResponse(
+    convertInt(json['extend_to'])!,
+    OperationResponseLinks.fromJson(json['_links']),
+    json['id'],
+    json['paging_token'],
+    json['transaction_successful'],
+    json['source_account'],
+    json['source_account_muxed'],
+    json['source_account_muxed_id'],
+    json['type'],
+    json['type_i'],
+    json['created_at'],
+    json['transaction_hash'],
+    json['transaction'] == null
+        ? null
+        : TransactionResponse.fromJson(json['transaction']),
+    json['sponsor'],
+  );
 }

@@ -114,7 +114,9 @@ class MuxedAccount {
   /// print(muxed.ed25519AccountId); // "GDJK..."
   /// ```
   static MuxedAccount fromMed25519AccountId(String med25519AccountId) {
-    XdrMuxedAccount xdrMuxAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519);
+    XdrMuxedAccount xdrMuxAccount = XdrMuxedAccount(
+      XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519,
+    );
     Uint8List bytes = StrKey.decodeStellarMuxedAccountId(med25519AccountId);
     XdrMuxedAccountMed25519 muxMed25519 =
         XdrMuxedAccountMed25519.decodeInverted(XdrDataInputStream(bytes));
@@ -153,7 +155,9 @@ class MuxedAccount {
           XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519) {
         XdrDataOutputStream xdrOutputStream = new XdrDataOutputStream();
         XdrMuxedAccountMed25519.encodeInverted(
-            xdrOutputStream, xdrMuxedAccount.med25519!);
+          xdrOutputStream,
+          xdrMuxedAccount.med25519!,
+        );
         Uint8List bytes = Uint8List.fromList(xdrOutputStream.bytes);
         _accountId = StrKey.encodeStellarMuxedAccountId(bytes);
       } else if (xdrMuxedAccount.discriminant ==
@@ -171,10 +175,17 @@ class MuxedAccount {
     if (_id == null) {
       return KeyPair.fromAccountId(_ed25519AccountId).xdrMuxedAccount;
     } else {
-      XdrMuxedAccount xdrMuxAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519);
-      XdrUint256 uint256 = new XdrUint256(StrKey.decodeStellarAccountId(_ed25519AccountId));
+      XdrMuxedAccount xdrMuxAccount = XdrMuxedAccount(
+        XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519,
+      );
+      XdrUint256 uint256 = new XdrUint256(
+        StrKey.decodeStellarAccountId(_ed25519AccountId),
+      );
       XdrUint64 id64 = XdrUint64(_id!);
-      XdrMuxedAccountMed25519 muxMed25519 = XdrMuxedAccountMed25519(id64, uint256);
+      XdrMuxedAccountMed25519 muxMed25519 = XdrMuxedAccountMed25519(
+        id64,
+        uint256,
+      );
       xdrMuxAccount.med25519 = muxMed25519;
       return xdrMuxAccount;
     }
@@ -192,12 +203,14 @@ class MuxedAccount {
     if (xdrMuxedAccount.discriminant ==
         XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519) {
       ed25519AccountId = StrKey.encodeStellarAccountId(
-          xdrMuxedAccount.med25519!.ed25519.uint256);
+        xdrMuxedAccount.med25519!.ed25519.uint256,
+      );
       id = xdrMuxedAccount.med25519!.id.uint64;
     } else if (xdrMuxedAccount.discriminant ==
         XdrCryptoKeyType.KEY_TYPE_ED25519) {
-      ed25519AccountId =
-          StrKey.encodeStellarAccountId(xdrMuxedAccount.ed25519!.uint256);
+      ed25519AccountId = StrKey.encodeStellarAccountId(
+        xdrMuxedAccount.ed25519!.uint256,
+      );
     }
     return MuxedAccount(ed25519AccountId!, id);
   }

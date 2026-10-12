@@ -40,7 +40,8 @@ void main() {
     });
 
     group('forSponsor', () {
-      final sponsorAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final sponsorAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds sponsor query parameter', () {
         final builder = ClaimableBalancesRequestBuilder(mockClient, serverUri);
@@ -72,7 +73,8 @@ void main() {
     });
 
     group('forClaimant', () {
-      final claimantAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final claimantAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds claimant query parameter', () {
         final builder = ClaimableBalancesRequestBuilder(mockClient, serverUri);
@@ -103,7 +105,8 @@ void main() {
       });
 
       test('can be combined with forSponsor', () {
-        final sponsorAccountId = 'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
+        final sponsorAccountId =
+            'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
         final builder = ClaimableBalancesRequestBuilder(mockClient, serverUri);
         builder
           ..forClaimant(claimantAccountId)
@@ -116,7 +119,8 @@ void main() {
     });
 
     group('forAsset', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds asset parameter for AlphaNum4', () {
         final builder = ClaimableBalancesRequestBuilder(mockClient, serverUri);
@@ -133,7 +137,10 @@ void main() {
         builder.forAsset(asset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['asset'], equals('LONGASSET:$issuerAccountId'));
+        expect(
+          uri.queryParameters['asset'],
+          equals('LONGASSET:$issuerAccountId'),
+        );
       });
 
       test('adds asset parameter for native asset', () {
@@ -153,7 +160,8 @@ void main() {
       });
 
       test('can be combined with forClaimant', () {
-        final claimantAccountId = 'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
+        final claimantAccountId =
+            'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
         final builder = ClaimableBalancesRequestBuilder(mockClient, serverUri);
         final asset = AssetTypeCreditAlphaNum4('EUR', issuerAccountId);
         builder
@@ -208,9 +216,12 @@ void main() {
     });
 
     group('buildUri with combinations', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
-      final claimantAccountId = 'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
-      final sponsorAccountId = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final claimantAccountId =
+          'GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI';
+      final sponsorAccountId =
+          'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
 
       test('builds URI with forClaimant and pagination', () {
         final builder = ClaimableBalancesRequestBuilder(mockClient, serverUri);
@@ -284,7 +295,10 @@ void main() {
 
       test('handles server URI with port', () {
         final uriWithPort = Uri.parse('https://localhost:8000');
-        final builder = ClaimableBalancesRequestBuilder(mockClient, uriWithPort);
+        final builder = ClaimableBalancesRequestBuilder(
+          mockClient,
+          uriWithPort,
+        );
         final uri = builder.buildUri();
 
         expect(uri.port, equals(8000));
@@ -346,7 +360,10 @@ void main() {
         builder.cursor('cursor+with/special=chars');
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['cursor'], equals('cursor+with/special=chars'));
+        expect(
+          uri.queryParameters['cursor'],
+          equals('cursor+with/special=chars'),
+        );
       });
     });
   });
@@ -356,8 +373,10 @@ void main() {
 
     test('forBalanceId throws on invalid B-prefixed id', () {
       expect(
-        () => ClaimableBalancesRequestBuilder(http.Client(), serverUri)
-            .forBalanceId('BINVALIDBALANCEID'),
+        () => ClaimableBalancesRequestBuilder(
+          http.Client(),
+          serverUri,
+        ).forBalanceId('BINVALIDBALANCEID'),
         throwsArgumentError,
       );
     });
@@ -368,11 +387,10 @@ void main() {
     final balanceId =
         '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
     final issuer = 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
-    final claimant =
-        'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+    final claimant = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
     final balanceRecord = {
       '_links': {
-        'self': {'href': 'x'}
+        'self': {'href': 'x'},
       },
       'id': balanceId,
       'asset': 'USD:$issuer',
@@ -383,10 +401,10 @@ void main() {
       'claimants': [
         {
           'destination': claimant,
-          'predicate': {'unconditional': true}
-        }
+          'predicate': {'unconditional': true},
+        },
       ],
-      'flags': {'clawback_enabled': false}
+      'flags': {'clawback_enabled': false},
     };
 
     test('forBalanceId fetches a single claimable balance', () async {
@@ -408,8 +426,9 @@ void main() {
     test('forBalanceId requests the Horizon form for a B strkey id', () async {
       // The path must carry the hex of the XDR encoding, the four byte type
       // discriminant ahead of the hash, which is the id Horizon serves.
-      final strKeyId =
-          StrKey.encodeClaimableBalanceIdHex(balanceId.substring(8));
+      final strKeyId = StrKey.encodeClaimableBalanceIdHex(
+        balanceId.substring(8),
+      );
       final mockClient = MockClient((request) async {
         expect(request.url.path, contains('/claimable_balances/$balanceId'));
         return http.Response(json.encode(balanceRecord), 200);
@@ -422,34 +441,36 @@ void main() {
       expect(balance.balanceId, equals(balanceId));
     });
 
-    test('forBalanceId requests the Horizon form for a one byte tagged id',
-        () async {
-      // The single discriminant byte is the width the strkey payload carries.
-      // It names the same balance as the four byte XDR union discriminant, and
-      // the path must carry the four byte form either way.
-      final taggedId = '00${balanceId.substring(8)}';
-      final mockClient = MockClient((request) async {
-        expect(request.url.path, contains('/claimable_balances/$balanceId'));
-        return http.Response(json.encode(balanceRecord), 200);
-      });
+    test(
+      'forBalanceId requests the Horizon form for a one byte tagged id',
+      () async {
+        // The single discriminant byte is the width the strkey payload carries.
+        // It names the same balance as the four byte XDR union discriminant, and
+        // the path must carry the four byte form either way.
+        final taggedId = '00${balanceId.substring(8)}';
+        final mockClient = MockClient((request) async {
+          expect(request.url.path, contains('/claimable_balances/$balanceId'));
+          return http.Response(json.encode(balanceRecord), 200);
+        });
 
-      final builder = ClaimableBalancesRequestBuilder(mockClient, serverUri);
-      final balance = await builder.forBalanceId(taggedId);
+        final builder = ClaimableBalancesRequestBuilder(mockClient, serverUri);
+        final balance = await builder.forBalanceId(taggedId);
 
-      expect(balance, isA<ClaimableBalanceResponse>());
-      expect(balance.balanceId, equals(balanceId));
-    });
+        expect(balance, isA<ClaimableBalanceResponse>());
+        expect(balance.balanceId, equals(balanceId));
+      },
+    );
 
     test('execute returns a page of claimable balances', () async {
       final page = {
         '_links': {
           'self': {'href': 'x'},
           'next': {'href': 'x'},
-          'prev': {'href': 'x'}
+          'prev': {'href': 'x'},
         },
         '_embedded': {
-          'records': [balanceRecord]
-        }
+          'records': [balanceRecord],
+        },
       };
 
       final mockClient = MockClient((request) async {
@@ -464,5 +485,4 @@ void main() {
       expect(result.records.first.amount, equals('100.0000000'));
     });
   });
-
 }

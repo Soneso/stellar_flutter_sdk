@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -10,8 +9,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 void main() {
   final recoveryServer = "http://recovery.example.com";
 
-  final addressA =
-      "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP";
+  final addressA = "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP";
 
   final signingAddress =
       "GDRUPBJM7YIJ2NUNAIQJDJ2DQ2JDERY5SJVJVMM6MGE4UBDAMXBHARIA";
@@ -96,12 +94,18 @@ void main() {
     );
 
     // Single identity with role "owner"
-    final ownerIdentity =
-        SEP30RequestIdentity("owner", [emailAuth, phoneAuth, stellarAuth]);
+    final ownerIdentity = SEP30RequestIdentity("owner", [
+      emailAuth,
+      phoneAuth,
+      stellarAuth,
+    ]);
     final request = SEP30Request([ownerIdentity]);
 
-    SEP30AccountResponse response =
-        await service.registerAccount(addressA, request, jwtToken);
+    SEP30AccountResponse response = await service.registerAccount(
+      addressA,
+      request,
+      jwtToken,
+    );
 
     expect(response.address, addressA);
     expect(response.signers.length, 1);
@@ -109,45 +113,54 @@ void main() {
     expect(response.identities.length, 2);
   });
 
-  test('sep-30: Registering with multiple identities (sender + receiver)',
-      () async {
-    // Snippet from sep-30.md "Registering an Account" (multiple identities)
-    final service = SEP30RecoveryService(recoveryServer);
-    service.httpClient = MockClient((request) async {
-      String authHeader = request.headers["Authorization"]!;
-      if (request.method == "POST" &&
-          request.url.toString().contains("accounts") &&
-          authHeader.contains(jwtToken)) {
-        var identities = json.decode(request.body)["identities"];
-        expect(identities.length, 2);
-        expect(identities[0]["role"], "sender");
-        expect(identities[1]["role"], "receiver");
+  test(
+    'sep-30: Registering with multiple identities (sender + receiver)',
+    () async {
+      // Snippet from sep-30.md "Registering an Account" (multiple identities)
+      final service = SEP30RecoveryService(recoveryServer);
+      service.httpClient = MockClient((request) async {
+        String authHeader = request.headers["Authorization"]!;
+        if (request.method == "POST" &&
+            request.url.toString().contains("accounts") &&
+            authHeader.contains(jwtToken)) {
+          var identities = json.decode(request.body)["identities"];
+          expect(identities.length, 2);
+          expect(identities[0]["role"], "sender");
+          expect(identities[1]["role"], "receiver");
 
-        return http.Response(requestRegisterSuccess(), 200);
-      }
-      return http.Response(json.encode({'error': "Bad request"}), 400);
-    });
+          return http.Response(requestRegisterSuccess(), 200);
+        }
+        return http.Response(json.encode({'error': "Bad request"}), 400);
+      });
 
-    final senderIdentity = SEP30RequestIdentity("sender", [
-      SEP30AuthMethod("stellar_address",
-          "GBUCAAMD7DYS7226CWUUOZ5Y2QF4JBJWIYU3UWJAFDGJVCR6EU5NJM5H"),
-      SEP30AuthMethod("phone_number", "+10000000001"),
-      SEP30AuthMethod("email", "person1@example.com"),
-    ]);
-    final receiverIdentity = SEP30RequestIdentity("receiver", [
-      SEP30AuthMethod("stellar_address",
-          "GDIL76BC2XGDWLDPXCZVYB3AIZX4MYBN6JUBQPAX5OHRWPSNX3XMLNCS"),
-      SEP30AuthMethod("phone_number", "+10000000002"),
-      SEP30AuthMethod("email", "person2@example.com"),
-    ]);
+      final senderIdentity = SEP30RequestIdentity("sender", [
+        SEP30AuthMethod(
+          "stellar_address",
+          "GBUCAAMD7DYS7226CWUUOZ5Y2QF4JBJWIYU3UWJAFDGJVCR6EU5NJM5H",
+        ),
+        SEP30AuthMethod("phone_number", "+10000000001"),
+        SEP30AuthMethod("email", "person1@example.com"),
+      ]);
+      final receiverIdentity = SEP30RequestIdentity("receiver", [
+        SEP30AuthMethod(
+          "stellar_address",
+          "GDIL76BC2XGDWLDPXCZVYB3AIZX4MYBN6JUBQPAX5OHRWPSNX3XMLNCS",
+        ),
+        SEP30AuthMethod("phone_number", "+10000000002"),
+        SEP30AuthMethod("email", "person2@example.com"),
+      ]);
 
-    final request = SEP30Request([senderIdentity, receiverIdentity]);
-    SEP30AccountResponse response =
-        await service.registerAccount(addressA, request, jwtToken);
+      final request = SEP30Request([senderIdentity, receiverIdentity]);
+      SEP30AccountResponse response = await service.registerAccount(
+        addressA,
+        request,
+        jwtToken,
+      );
 
-    expect(response.address, addressA);
-    expect(response.identities.length, 2);
-  });
+      expect(response.address, addressA);
+      expect(response.identities.length, 2);
+    },
+  );
 
   // -- Section: Signing a Recovery Transaction --
 
@@ -187,8 +200,7 @@ void main() {
     });
 
     // Step 1: Find the signing address
-    final accountDetails =
-        await service.accountDetails(addressA, jwtToken);
+    final accountDetails = await service.accountDetails(addressA, jwtToken);
     final signingAddr = accountDetails.signers[0].key;
     expect(signingAddr, signingAddress);
 
@@ -204,17 +216,23 @@ void main() {
       jwtToken,
     );
 
-    expect(signatureResponse.signature,
-        "YpVelqPYVKxb8pH08s5AKsYTPwQhbaeSlgcktqwAKsYTPwQhbaeS");
-    expect(signatureResponse.networkPassphrase,
-        "Test SDF Network ; September 2015");
+    expect(
+      signatureResponse.signature,
+      "YpVelqPYVKxb8pH08s5AKsYTPwQhbaeSlgcktqwAKsYTPwQhbaeS",
+    );
+    expect(
+      signatureResponse.networkPassphrase,
+      "Test SDF Network ; September 2015",
+    );
 
     // Step 4: Attach signature (verify the API for creating decorated signatures)
     final signerKeyPair = KeyPair.fromAccountId(signingAddr);
     final hint = signerKeyPair.signatureHint;
     final signatureBytes = base64Decode(signatureResponse.signature);
-    final decoratedSignature =
-        XdrDecoratedSignature(hint, XdrSignature(signatureBytes));
+    final decoratedSignature = XdrDecoratedSignature(
+      hint,
+      XdrSignature(signatureBytes),
+    );
     expect(decoratedSignature, isNotNull);
     expect(hint.signatureHint.length, 4);
 
@@ -237,8 +255,10 @@ void main() {
         expect(identities[0]["role"], "owner");
         expect(identities[0]["auth_methods"].length, 2);
         expect(identities[0]["auth_methods"][0]["type"], "email");
-        expect(identities[0]["auth_methods"][0]["value"],
-            "newemail@example.com");
+        expect(
+          identities[0]["auth_methods"][0]["value"],
+          "newemail@example.com",
+        );
 
         return http.Response(requestRegisterSuccess(), 200);
       }
@@ -250,8 +270,11 @@ void main() {
     final ownerIdentity = SEP30RequestIdentity("owner", [newEmail, newPhone]);
 
     final request = SEP30Request([ownerIdentity]);
-    SEP30AccountResponse response =
-        await service.updateIdentitiesForAccount(addressA, request, jwtToken);
+    SEP30AccountResponse response = await service.updateIdentitiesForAccount(
+      addressA,
+      request,
+      jwtToken,
+    );
 
     expect(response.address, addressA);
     expect(response.identities.length, 2);
@@ -273,16 +296,19 @@ void main() {
       return http.Response(json.encode({'error': "Bad request"}), 400);
     });
 
-    SEP30AccountResponse response =
-        await service.accountDetails(addressA, jwtToken);
+    SEP30AccountResponse response = await service.accountDetails(
+      addressA,
+      jwtToken,
+    );
 
     expect(response.address, addressA);
     expect(response.identities.length, 2);
     expect(response.signers.length, 1);
 
     // Check authenticated field (bool?)
-    final authStatus =
-        response.identities[0].authenticated == true ? " (authenticated)" : "";
+    final authStatus = response.identities[0].authenticated == true
+        ? " (authenticated)"
+        : "";
     expect(authStatus, " (authenticated)");
     expect(response.identities[0].role, "sender");
 
@@ -310,8 +336,10 @@ void main() {
     SEP30AccountsResponse response = await service.accounts(jwtToken);
 
     expect(response.accounts.length, 2);
-    expect(response.accounts[0].address,
-        "GBND3FJRQBNFJ4ACERGEXUXU4RKK3ZV2N3FRRFU3ONYU6SJUN6EZXPTD");
+    expect(
+      response.accounts[0].address,
+      "GBND3FJRQBNFJ4ACERGEXUXU4RKK3ZV2N3FRRFU3ONYU6SJUN6EZXPTD",
+    );
 
     // Check identities on first account
     expect(response.accounts[0].identities.length, 1);
@@ -342,8 +370,10 @@ void main() {
 
     // Next page: pass the last account address as cursor
     final lastAddress = response.accounts.last.address;
-    SEP30AccountsResponse nextPage =
-        await service.accounts(jwtToken, after: lastAddress);
+    SEP30AccountsResponse nextPage = await service.accounts(
+      jwtToken,
+      after: lastAddress,
+    );
     expect(nextPage.accounts.length, 0);
   });
 
@@ -375,8 +405,10 @@ void main() {
     expect(signerToRemove, signingAddress);
 
     // Delete from recovery server
-    SEP30AccountResponse response =
-        await service.deleteAccount(addressA, jwtToken);
+    SEP30AccountResponse response = await service.deleteAccount(
+      addressA,
+      jwtToken,
+    );
     expect(response.address, addressA);
     expect(response.identities.length, 2);
     expect(response.signers.length, 1);
@@ -388,8 +420,7 @@ void main() {
     // Snippet from sep-30.md "Error Handling"
     final service = SEP30RecoveryService(recoveryServer);
     service.httpClient = MockClient((request) async {
-      return http.Response(
-          json.encode({'error': "Invalid request data"}), 400);
+      return http.Response(json.encode({'error': "Invalid request data"}), 400);
     });
 
     final emailAuth = SEP30AuthMethod("email", "user@example.com");
@@ -408,8 +439,7 @@ void main() {
     // Snippet from sep-30.md "Error Handling"
     final service = SEP30RecoveryService(recoveryServer);
     service.httpClient = MockClient((request) async {
-      return http.Response(
-          json.encode({'error': "JWT token expired"}), 401);
+      return http.Response(json.encode({'error': "JWT token expired"}), 401);
     });
 
     final emailAuth = SEP30AuthMethod("email", "user@example.com");
@@ -429,7 +459,9 @@ void main() {
     final service = SEP30RecoveryService(recoveryServer);
     service.httpClient = MockClient((request) async {
       return http.Response(
-          json.encode({'error': "Account not registered"}), 404);
+        json.encode({'error': "Account not registered"}),
+        404,
+      );
     });
 
     final emailAuth = SEP30AuthMethod("email", "user@example.com");
@@ -449,7 +481,9 @@ void main() {
     final service = SEP30RecoveryService(recoveryServer);
     service.httpClient = MockClient((request) async {
       return http.Response(
-          json.encode({'error': "Account already registered"}), 409);
+        json.encode({'error': "Account already registered"}),
+        409,
+      );
     });
 
     final emailAuth = SEP30AuthMethod("email", "user@example.com");
@@ -490,16 +524,20 @@ void main() {
     // Snippet from sep-30.md "Request and Response Objects"
     final emailAuth = SEP30AuthMethod("email", "person@example.com");
     final phoneAuth = SEP30AuthMethod("phone_number", "+10000000001");
-    final stellarAuth = SEP30AuthMethod("stellar_address",
-        "GBUCAAMD7DYS7226CWUUOZ5Y2QF4JBJWIYU3UWJAFDGJVCR6EU5NJM5H");
+    final stellarAuth = SEP30AuthMethod(
+      "stellar_address",
+      "GBUCAAMD7DYS7226CWUUOZ5Y2QF4JBJWIYU3UWJAFDGJVCR6EU5NJM5H",
+    );
 
     expect(emailAuth.type, "email");
     expect(emailAuth.value, "person@example.com");
     expect(phoneAuth.type, "phone_number");
     expect(phoneAuth.value, "+10000000001");
     expect(stellarAuth.type, "stellar_address");
-    expect(stellarAuth.value,
-        "GBUCAAMD7DYS7226CWUUOZ5Y2QF4JBJWIYU3UWJAFDGJVCR6EU5NJM5H");
+    expect(
+      stellarAuth.value,
+      "GBUCAAMD7DYS7226CWUUOZ5Y2QF4JBJWIYU3UWJAFDGJVCR6EU5NJM5H",
+    );
   });
 
   test('sep-30: SEP30RequestIdentity construction', () {
@@ -530,7 +568,9 @@ void main() {
     service.httpClient = MockClient((request) async {
       if (request.method == "POST") {
         return http.Response(
-            json.encode({'error': "Account already registered"}), 409);
+          json.encode({'error': "Account already registered"}),
+          409,
+        );
       }
       if (request.method == "PUT") {
         return http.Response(requestRegisterSuccess(), 200);
@@ -551,8 +591,11 @@ void main() {
     }
 
     // CORRECT: use updateIdentitiesForAccount
-    SEP30AccountResponse response =
-        await service.updateIdentitiesForAccount(addressA, request, jwtToken);
+    SEP30AccountResponse response = await service.updateIdentitiesForAccount(
+      addressA,
+      request,
+      jwtToken,
+    );
     expect(response.address, addressA);
   });
 
@@ -564,9 +607,12 @@ void main() {
 
     // Verify the signature can be constructed
     final signatureBytes = base64Decode(
-        "YpVelqPYVKxb8pH08s5AKsYTPwQhbaeSlgcktqwAKsYTPwQhbaeS");
-    final decoratedSig =
-        XdrDecoratedSignature(hint, XdrSignature(signatureBytes));
+      "YpVelqPYVKxb8pH08s5AKsYTPwQhbaeSlgcktqwAKsYTPwQhbaeS",
+    );
+    final decoratedSig = XdrDecoratedSignature(
+      hint,
+      XdrSignature(signatureBytes),
+    );
     expect(decoratedSig, isNotNull);
   });
 
@@ -588,8 +634,10 @@ void main() {
       return http.Response(json.encode({'error': "Bad request"}), 400);
     });
 
-    SEP30AccountResponse response =
-        await service.accountDetails(addressA, jwtToken);
+    SEP30AccountResponse response = await service.accountDetails(
+      addressA,
+      jwtToken,
+    );
 
     // CORRECT: explicit comparison with bool?
     if (response.identities[0].authenticated == true) {

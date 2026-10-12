@@ -42,7 +42,11 @@ SorobanAuthorizationEntry _makeEntry(SorobanCredentials creds) {
 SorobanAuthorizationEntry _makeLegacyEntry(String accountId) {
   final address = Address.forAccountId(accountId);
   final inner = SorobanAddressCredentials(
-      address, BigInt.parse('123456789101112'), _kExpiration, XdrSCVal.forVoid());
+    address,
+    BigInt.parse('123456789101112'),
+    _kExpiration,
+    XdrSCVal.forVoid(),
+  );
   return _makeEntry(SorobanCredentials.forAddressCredentialsLegacy(inner));
 }
 
@@ -50,14 +54,20 @@ SorobanAuthorizationEntry _makeLegacyEntry(String accountId) {
 SorobanAuthorizationEntry _makeV2Entry(String accountId) {
   final address = Address.forAccountId(accountId);
   final inner = SorobanAddressCredentials(
-      address, BigInt.parse('123456789101112'), _kExpiration, XdrSCVal.forVoid());
+    address,
+    BigInt.parse('123456789101112'),
+    _kExpiration,
+    XdrSCVal.forVoid(),
+  );
   return _makeEntry(SorobanCredentials.forAddressV2(inner));
 }
 
 /// Builds a WITH_DELEGATES entry whose top-level is [topAccountId] and with a
 /// single delegate at [delegateAccountId]. Both signatures start void.
 SorobanAuthorizationEntry _makeWithDelegatesEntry(
-    String topAccountId, String delegateAccountId) {
+  String topAccountId,
+  String delegateAccountId,
+) {
   // Build the base V2 entry first, then promote to WITH_DELEGATES.
   final base = _makeV2Entry(topAccountId);
   final desc = SorobanDelegateDescriptor(delegateAccountId);
@@ -67,12 +77,19 @@ SorobanAuthorizationEntry _makeWithDelegatesEntry(
 /// Returns true when a signature in the vector [signature] verifies for
 /// [signer] against the payload hash of [entry]'s current preimage.
 bool _signatureVerifies(
-    SorobanAuthorizationEntry entry, XdrSCVal signature, KeyPair signer) {
+  SorobanAuthorizationEntry entry,
+  XdrSCVal signature,
+  KeyPair signer,
+) {
   final out = XdrDataOutputStream();
   XdrHashIDPreimage.encode(out, entry.buildPreimage(Network.TESTNET));
   final payload = Util.hash(Uint8List.fromList(out.bytes));
-  return signature.vec!.any((sig) => signer.verify(payload,
-      sig.map!.firstWhere((e) => e.key.sym == 'signature').val.bytes!.sCBytes));
+  return signature.vec!.any(
+    (sig) => signer.verify(
+      payload,
+      sig.map!.firstWhere((e) => e.key.sym == 'signature').val.bytes!.sCBytes,
+    ),
+  );
 }
 
 /// Encodes a [SorobanAuthorizationEntry] to base64 XDR (for mock responses).
@@ -82,8 +99,9 @@ String _entryToBase64(SorobanAuthorizationEntry entry) =>
 /// Encodes a minimal [XdrAccountEntry] for [accountId] with [seqNum] to base64
 /// so the mock getLedgerEntries response can satisfy [SorobanServer.getAccount].
 String _buildAccountLedgerEntryXdr(String accountId, BigInt seqNum) {
-  final xdrAccountId =
-      XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
+  final xdrAccountId = XdrAccountID(
+    KeyPair.fromAccountId(accountId).xdrPublicKey,
+  );
   final accountEntry = XdrAccountEntry(
     xdrAccountId,
     XdrInt64(BigInt.from(100000000)),
@@ -150,15 +168,16 @@ Future<(HttpServer, Map<String, dynamic>)> _startMockRpcServer({
               'key': 'AAAAAAAAAA==',
               'xdr': accountXdr,
               'lastModifiedLedgerSeq': 100,
-            }
+            },
           ],
           'latestLedger': 1000,
-        }
+        },
       });
     } else if (method == 'simulateTransaction') {
       // Capture request params for assertion.
       capturedRequest.addAll(
-          (parsed['params'] as Map<String, dynamic>).cast<String, dynamic>());
+        (parsed['params'] as Map<String, dynamic>).cast<String, dynamic>(),
+      );
       final authBase64 = (authEntries ?? [])
           .map((e) => _entryToBase64(e))
           .toList();
@@ -167,19 +186,19 @@ Future<(HttpServer, Map<String, dynamic>)> _startMockRpcServer({
         'id': parsed['id'],
         'result': {
           'results': [
-            {
-              'xdr': 'AAAAAA==',
-              'auth': authBase64,
-            }
+            {'xdr': 'AAAAAA==', 'auth': authBase64},
           ],
           'transactionData': sorobanDataXdr,
           'minResourceFee': '100',
           'latestLedger': 1000,
-        }
+        },
       });
     } else if (method == 'getLatestLedger') {
-      capturedRequest.update('getLatestLedgerCalls', (n) => n + 1,
-          ifAbsent: () => 1);
+      capturedRequest.update(
+        'getLatestLedgerCalls',
+        (n) => n + 1,
+        ifAbsent: () => 1,
+      );
       responseJson = json.encode({
         'jsonrpc': '2.0',
         'id': parsed['id'],
@@ -209,11 +228,11 @@ Future<(HttpServer, Map<String, dynamic>)> _startMockRpcServer({
 /// [simulate] controls whether auto-simulation runs during build.
 /// [useUpgradedAuth] null means "leave MethodOptions on its default".
 Future<AssembledTransaction> _buildAssembledTx(
-    String rpcUrl,
-    String accountId,
-    KeyPair kp, {
-    bool simulate = false,
-    bool? useUpgradedAuth,
+  String rpcUrl,
+  String accountId,
+  KeyPair kp, {
+  bool simulate = false,
+  bool? useUpgradedAuth,
 }) async {
   final clientOptions = ClientOptions(
     sourceAccountKeyPair: kp,
@@ -246,64 +265,101 @@ void main() {
 
     setUp(() {
       sourceAccount = Account(
-          'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
-          BigInt.from(100));
+        'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+        BigInt.from(100),
+      );
     });
 
-    Transaction _buildTx() => TransactionBuilder(sourceAccount)
-        .addOperation(BumpSequenceOperation(BigInt.from(110)))
-        .build();
+    Transaction _buildTx() => TransactionBuilder(
+      sourceAccount,
+    ).addOperation(BumpSequenceOperation(BigInt.from(110))).build();
 
     test('useUpgradedAuth key is present as boolean true by default', () {
       final req = SimulateTransactionRequest(_buildTx());
       final args = req.getRequestArgs();
 
-      expect(args.containsKey('useUpgradedAuth'), isTrue,
-          reason: '"useUpgradedAuth" must always be emitted');
-      expect(args['useUpgradedAuth'], equals(true),
-          reason: '"useUpgradedAuth" must default to boolean true');
+      expect(
+        args.containsKey('useUpgradedAuth'),
+        isTrue,
+        reason: '"useUpgradedAuth" must always be emitted',
+      );
+      expect(
+        args['useUpgradedAuth'],
+        equals(true),
+        reason: '"useUpgradedAuth" must default to boolean true',
+      );
       expect(args['useUpgradedAuth'], isA<bool>());
     });
 
-    test('useUpgradedAuth key is present as boolean false when explicitly false',
-        () {
-      final req = SimulateTransactionRequest(_buildTx(), useUpgradedAuth: false);
-      final args = req.getRequestArgs();
+    test(
+      'useUpgradedAuth key is present as boolean false when explicitly false',
+      () {
+        final req = SimulateTransactionRequest(
+          _buildTx(),
+          useUpgradedAuth: false,
+        );
+        final args = req.getRequestArgs();
 
-      expect(args.containsKey('useUpgradedAuth'), isTrue,
-          reason: '"useUpgradedAuth" must always be emitted');
-      expect(args['useUpgradedAuth'], equals(false),
-          reason: '"useUpgradedAuth: false" must be emitted as boolean false');
-      expect(args['useUpgradedAuth'], isA<bool>());
-    });
+        expect(
+          args.containsKey('useUpgradedAuth'),
+          isTrue,
+          reason: '"useUpgradedAuth" must always be emitted',
+        );
+        expect(
+          args['useUpgradedAuth'],
+          equals(false),
+          reason: '"useUpgradedAuth: false" must be emitted as boolean false',
+        );
+        expect(args['useUpgradedAuth'], isA<bool>());
+      },
+    );
 
-    test('useUpgradedAuth key is present as boolean true when explicitly true',
-        () {
-      final req = SimulateTransactionRequest(_buildTx(), useUpgradedAuth: true);
-      final args = req.getRequestArgs();
+    test(
+      'useUpgradedAuth key is present as boolean true when explicitly true',
+      () {
+        final req = SimulateTransactionRequest(
+          _buildTx(),
+          useUpgradedAuth: true,
+        );
+        final args = req.getRequestArgs();
 
-      expect(args['useUpgradedAuth'], equals(true),
-          reason: '"useUpgradedAuth" must be boolean true when set to true');
-    });
+        expect(
+          args['useUpgradedAuth'],
+          equals(true),
+          reason: '"useUpgradedAuth" must be boolean true when set to true',
+        );
+      },
+    );
 
-    test('existing params (transaction, resourceConfig, authMode) unaffected', () {
-      final tx = _buildTx();
-      final rc = ResourceConfig(12345);
-      final req = SimulateTransactionRequest(tx,
-          resourceConfig: rc, authMode: 'record', useUpgradedAuth: true);
-      final args = req.getRequestArgs();
+    test(
+      'existing params (transaction, resourceConfig, authMode) unaffected',
+      () {
+        final tx = _buildTx();
+        final rc = ResourceConfig(12345);
+        final req = SimulateTransactionRequest(
+          tx,
+          resourceConfig: rc,
+          authMode: 'record',
+          useUpgradedAuth: true,
+        );
+        final args = req.getRequestArgs();
 
-      expect(args.containsKey('transaction'), isTrue);
-      expect(args['resourceConfig']['instructionLeeway'], equals(12345));
-      expect(args['authMode'], equals('record'));
-      expect(args['useUpgradedAuth'], equals(true));
-    });
+        expect(args.containsKey('transaction'), isTrue);
+        expect(args['resourceConfig']['instructionLeeway'], equals(12345));
+        expect(args['authMode'], equals('record'));
+        expect(args['useUpgradedAuth'], equals(true));
+      },
+    );
 
     test('existing params unaffected when useUpgradedAuth false', () {
       final tx = _buildTx();
       final rc = ResourceConfig(999);
-      final req = SimulateTransactionRequest(tx,
-          resourceConfig: rc, authMode: 'enforce', useUpgradedAuth: false);
+      final req = SimulateTransactionRequest(
+        tx,
+        resourceConfig: rc,
+        authMode: 'enforce',
+        useUpgradedAuth: false,
+      );
       final args = req.getRequestArgs();
 
       expect(args['useUpgradedAuth'], equals(false));
@@ -328,7 +384,11 @@ void main() {
 
     test('existing fields unaffected when useUpgradedAuth added', () {
       final opts = MethodOptions(
-          fee: 500, timeoutInSeconds: 120, simulate: false, restore: true);
+        fee: 500,
+        timeoutInSeconds: 120,
+        simulate: false,
+        restore: true,
+      );
       expect(opts.fee, equals(500));
       expect(opts.timeoutInSeconds, equals(120));
       expect(opts.simulate, isFalse);
@@ -341,128 +401,186 @@ void main() {
   // GROUP 3: MethodOptions.useUpgradedAuth threads into AssembledTransaction.simulate()
   // -------------------------------------------------------------------------
   group('MethodOptions.useUpgradedAuth threads into simulate() request body', () {
-    test('useUpgradedAuth: true produces "useUpgradedAuth": true in the wire request', () async {
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final (server, captured) = await _startMockRpcServer(
-          accountId: kp.accountId, seqNum: BigInt.from(100));
+    test(
+      'useUpgradedAuth: true produces "useUpgradedAuth": true in the wire request',
+      () async {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final (server, captured) = await _startMockRpcServer(
+          accountId: kp.accountId,
+          seqNum: BigInt.from(100),
+        );
 
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        await _buildAssembledTx(rpcUrl, kp.accountId, kp,
-            simulate: true, useUpgradedAuth: true);
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          await _buildAssembledTx(
+            rpcUrl,
+            kp.accountId,
+            kp,
+            simulate: true,
+            useUpgradedAuth: true,
+          );
 
-        expect(captured['useUpgradedAuth'], equals(true),
-            reason: '"useUpgradedAuth": true must appear in the simulate request params');
-      } finally {
-        await server.close();
-      }
-    });
+          expect(
+            captured['useUpgradedAuth'],
+            equals(true),
+            reason:
+                '"useUpgradedAuth": true must appear in the simulate request params',
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
 
-    test('default MethodOptions() sends "useUpgradedAuth": true in the wire request', () async {
+    test(
+      'default MethodOptions() sends "useUpgradedAuth": true in the wire request',
+      () async {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final (server, captured) = await _startMockRpcServer(
+          accountId: kp.accountId,
+          seqNum: BigInt.from(100),
+        );
 
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final (server, captured) = await _startMockRpcServer(
-          accountId: kp.accountId, seqNum: BigInt.from(100));
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          await _buildAssembledTx(rpcUrl, kp.accountId, kp, simulate: true);
 
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        await _buildAssembledTx(rpcUrl, kp.accountId, kp, simulate: true);
+          expect(
+            captured.containsKey('transaction'),
+            isTrue,
+            reason: 'The simulate request must have reached the mock server',
+          );
+          expect(
+            captured['useUpgradedAuth'],
+            equals(true),
+            reason:
+                '"useUpgradedAuth": true must appear in the simulate '
+                'request params by default',
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
 
-        expect(captured.containsKey('transaction'), isTrue,
-            reason: 'The simulate request must have reached the mock server');
-        expect(captured['useUpgradedAuth'], equals(true),
-            reason: '"useUpgradedAuth": true must appear in the simulate '
-                'request params by default');
-      } finally {
-        await server.close();
-      }
-    });
+    test(
+      'useUpgradedAuth: false produces "useUpgradedAuth": false in the wire request',
+      () async {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final (server, captured) = await _startMockRpcServer(
+          accountId: kp.accountId,
+          seqNum: BigInt.from(100),
+        );
 
-    test('useUpgradedAuth: false produces "useUpgradedAuth": false in the wire request', () async {
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          await _buildAssembledTx(
+            rpcUrl,
+            kp.accountId,
+            kp,
+            simulate: true,
+            useUpgradedAuth: false,
+          );
 
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final (server, captured) = await _startMockRpcServer(
-          accountId: kp.accountId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        await _buildAssembledTx(rpcUrl, kp.accountId, kp,
-            simulate: true, useUpgradedAuth: false);
-
-        expect(captured.containsKey('transaction'), isTrue,
-            reason: 'The simulate request must have reached the mock server');
-        expect(captured['useUpgradedAuth'], equals(false),
-            reason: '"useUpgradedAuth": false must appear in the simulate '
-                'request params when opted out');
-      } finally {
-        await server.close();
-      }
-    });
+          expect(
+            captured.containsKey('transaction'),
+            isTrue,
+            reason: 'The simulate request must have reached the mock server',
+          );
+          expect(
+            captured['useUpgradedAuth'],
+            equals(false),
+            reason:
+                '"useUpgradedAuth": false must appear in the simulate '
+                'request params when opted out',
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
   // GROUP 4: needsNonInvokerSigningBy — all arm types
   // -------------------------------------------------------------------------
   group('needsNonInvokerSigningBy', () {
-    test('ADDRESS entry: reports void top-level, omits signed top-level',
-        () async {
+    test(
+      'ADDRESS entry: reports void top-level, omits signed top-level',
+      () async {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final accountId = kp.accountId;
+        final (server, _) = await _startMockRpcServer(
+          accountId: accountId,
+          seqNum: BigInt.from(100),
+        );
 
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            accountId,
+            kp,
+            simulate: false,
+          );
+
+          // Inject a tx with a legacy ADDRESS entry (void signature).
+          final legacyEntry = _makeLegacyEntry(accountId);
+          final account = Account(accountId, BigInt.from(100));
+          final invokeOp = InvokeContractHostFunction(
+            _kContractId,
+            'hello',
+            arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+          );
+          final opBuilder = InvokeHostFuncOpBuilder(invokeOp);
+          assembled.tx = TransactionBuilder(
+            account,
+          ).addOperation(opBuilder.build()).build();
+          assembled.tx!.setSorobanAuth([legacyEntry]);
+
+          final needed = assembled.needsNonInvokerSigningBy();
+          expect(needed, contains(accountId));
+
+          // After signing, should no longer appear.
+          final signed = assembled.needsNonInvokerSigningBy(
+            includeAlreadySigned: false,
+          );
+          // Note: we haven't signed yet — just confirm it's listed above.
+          expect(needed.length, equals(1));
+          expect(signed.length, equals(1));
+        } finally {
+          await server.close();
+        }
+      },
+    );
+
+    test('ADDRESS_V2 entry: reports void top-level', () async {
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
       final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
+        accountId: accountId,
+        seqNum: BigInt.from(100),
+      );
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
         final assembled = await _buildAssembledTx(
-            rpcUrl, accountId, kp,
-            simulate: false);
-
-        // Inject a tx with a legacy ADDRESS entry (void signature).
-        final legacyEntry = _makeLegacyEntry(accountId);
-        final account = Account(accountId, BigInt.from(100));
-        final invokeOp = InvokeContractHostFunction(
-            _kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        final opBuilder = InvokeHostFuncOpBuilder(invokeOp);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(opBuilder.build())
-            .build();
-        assembled.tx!.setSorobanAuth([legacyEntry]);
-
-        final needed = assembled.needsNonInvokerSigningBy();
-        expect(needed, contains(accountId));
-
-        // After signing, should no longer appear.
-        final signed = assembled.needsNonInvokerSigningBy(includeAlreadySigned: false);
-        // Note: we haven't signed yet — just confirm it's listed above.
-        expect(needed.length, equals(1));
-        expect(signed.length, equals(1));
-      } finally {
-        await server.close();
-      }
-    });
-
-    test('ADDRESS_V2 entry: reports void top-level', () async {
-
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final accountId = kp.accountId;
-      final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
+          rpcUrl,
+          accountId,
+          kp,
+          simulate: false,
+        );
 
         final v2Entry = _makeV2Entry(accountId);
         final account = Account(accountId, BigInt.from(100));
         final invokeOp = InvokeContractHostFunction(
-            _kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-            .build();
+          _kContractId,
+          'hello',
+          arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+        );
+        assembled.tx = TransactionBuilder(
+          account,
+        ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
         assembled.tx!.setSorobanAuth([v2Entry]);
 
         final needed = assembled.needsNonInvokerSigningBy();
@@ -473,106 +591,127 @@ void main() {
       }
     });
 
-    test('WITH_DELEGATES entry: reports void top-level AND unsigned delegate',
-        () async {
+    test(
+      'WITH_DELEGATES entry: reports void top-level AND unsigned delegate',
+      () async {
+        final topKp = KeyPair.fromSecretSeed(_kSeed);
+        final delegateKp = KeyPair.random();
+        final topId = topKp.accountId;
+        final delegateId = delegateKp.accountId;
 
-      final topKp = KeyPair.fromSecretSeed(_kSeed);
-      final delegateKp = KeyPair.random();
-      final topId = topKp.accountId;
-      final delegateId = delegateKp.accountId;
+        // Ensure addresses are distinct.
+        expect(topId, isNot(equals(delegateId)));
 
-      // Ensure addresses are distinct.
-      expect(topId, isNot(equals(delegateId)));
+        final (server, _) = await _startMockRpcServer(
+          accountId: topId,
+          seqNum: BigInt.from(100),
+        );
 
-      final (server, _) = await _startMockRpcServer(
-          accountId: topId, seqNum: BigInt.from(100));
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            topId,
+            topKp,
+            simulate: false,
+          );
 
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, topId, topKp, simulate: false);
+          final wdEntry = _makeWithDelegatesEntry(topId, delegateId);
+          final account = Account(topId, BigInt.from(100));
+          final invokeOp = InvokeContractHostFunction(
+            _kContractId,
+            'hello',
+            arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+          );
+          assembled.tx = TransactionBuilder(
+            account,
+          ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
+          assembled.tx!.setSorobanAuth([wdEntry]);
 
-        final wdEntry = _makeWithDelegatesEntry(topId, delegateId);
-        final account = Account(topId, BigInt.from(100));
-        final invokeOp = InvokeContractHostFunction(
-            _kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-            .build();
-        assembled.tx!.setSorobanAuth([wdEntry]);
-
-        final needed = assembled.needsNonInvokerSigningBy();
-        // Both the void top-level and the unsigned delegate must be reported.
-        expect(needed, contains(topId));
-        expect(needed, contains(delegateId));
-        expect(needed.length, equals(2));
-      } finally {
-        await server.close();
-      }
-    });
+          final needed = assembled.needsNonInvokerSigningBy();
+          // Both the void top-level and the unsigned delegate must be reported.
+          expect(needed, contains(topId));
+          expect(needed, contains(delegateId));
+          expect(needed.length, equals(2));
+        } finally {
+          await server.close();
+        }
+      },
+    );
 
     test(
-        'WITH_DELEGATES entry: omits signed delegate from unsigned-only report',
-        () async {
+      'WITH_DELEGATES entry: omits signed delegate from unsigned-only report',
+      () async {
+        final topKp = KeyPair.fromSecretSeed(_kSeed);
+        final delegateKp = KeyPair.random();
+        final topId = topKp.accountId;
+        final delegateId = delegateKp.accountId;
 
-      final topKp = KeyPair.fromSecretSeed(_kSeed);
-      final delegateKp = KeyPair.random();
-      final topId = topKp.accountId;
-      final delegateId = delegateKp.accountId;
+        final (server, _) = await _startMockRpcServer(
+          accountId: topId,
+          seqNum: BigInt.from(100),
+        );
 
-      final (server, _) = await _startMockRpcServer(
-          accountId: topId, seqNum: BigInt.from(100));
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            topId,
+            topKp,
+            simulate: false,
+          );
 
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, topId, topKp, simulate: false);
+          final wdEntry = _makeWithDelegatesEntry(topId, delegateId);
+          // Sign the delegate node; leave top-level void.
+          wdEntry.sign(delegateKp, Network.TESTNET, forAddress: delegateId);
 
-        final wdEntry = _makeWithDelegatesEntry(topId, delegateId);
-        // Sign the delegate node; leave top-level void.
-        wdEntry.sign(delegateKp, Network.TESTNET, forAddress: delegateId);
+          final account = Account(topId, BigInt.from(100));
+          final invokeOp = InvokeContractHostFunction(
+            _kContractId,
+            'hello',
+            arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+          );
+          assembled.tx = TransactionBuilder(
+            account,
+          ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
+          assembled.tx!.setSorobanAuth([wdEntry]);
 
-        final account = Account(topId, BigInt.from(100));
-        final invokeOp = InvokeContractHostFunction(
-            _kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-            .build();
-        assembled.tx!.setSorobanAuth([wdEntry]);
-
-        final needed = assembled.needsNonInvokerSigningBy();
-        // Top-level is still void, so it appears.
-        expect(needed, contains(topId));
-        // Delegate is signed, so it should NOT appear.
-        expect(needed, isNot(contains(delegateId)));
-      } finally {
-        await server.close();
-      }
-    });
+          final needed = assembled.needsNonInvokerSigningBy();
+          // Top-level is still void, so it appears.
+          expect(needed, contains(topId));
+          // Delegate is signed, so it should NOT appear.
+          expect(needed, isNot(contains(delegateId)));
+        } finally {
+          await server.close();
+        }
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
   // GROUP 5: Send precheck — WITH_DELEGATES delegates-only pattern
   // -------------------------------------------------------------------------
   group('sign() precheck — delegates-only pattern does not block', () {
-    test(
-        'WITH_DELEGATES entry with all delegates signed passes sign() despite '
+    test('WITH_DELEGATES entry with all delegates signed passes sign() despite '
         'void top-level', () async {
-
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final delegateKp = KeyPair.random();
       final topId = topKp.accountId;
       final delegateId = delegateKp.accountId;
 
       final (server, _) = await _startMockRpcServer(
-          accountId: topId, seqNum: BigInt.from(100));
+        accountId: topId,
+        seqNum: BigInt.from(100),
+      );
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, topId, topKp, simulate: false);
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          topId,
+          topKp,
+          simulate: false,
+        );
 
         final wdEntry = _makeWithDelegatesEntry(topId, delegateId);
         // Sign the delegate node; top-level intentionally left void.
@@ -580,11 +719,13 @@ void main() {
 
         final account = Account(topId, BigInt.from(100));
         final invokeOp = InvokeContractHostFunction(
-            _kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-            .build();
+          _kContractId,
+          'hello',
+          arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+        );
+        assembled.tx = TransactionBuilder(
+          account,
+        ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
         assembled.tx!.setSorobanAuth([wdEntry]);
 
         // sign() with force:true bypasses the read-call check so we can
@@ -593,63 +734,72 @@ void main() {
         // every delegate is signed (delegates-only pattern), and it must
         // actually produce a signed transaction.
         assembled.sign(sourceAccountKeyPair: topKp, force: true);
-        expect(assembled.signed, isNotNull,
-            reason:
-                'delegates-only pattern must not block sign() and must produce '
-                'a signed transaction');
+        expect(
+          assembled.signed,
+          isNotNull,
+          reason:
+              'delegates-only pattern must not block sign() and must produce '
+              'a signed transaction',
+        );
       } finally {
         await server.close();
       }
     });
 
     test(
-        'WITH_DELEGATES entry with an unsigned delegate DOES block sign()',
-        () async {
+      'WITH_DELEGATES entry with an unsigned delegate DOES block sign()',
+      () async {
+        final topKp = KeyPair.fromSecretSeed(_kSeed);
+        final delegateKp = KeyPair.random();
+        final topId = topKp.accountId;
+        final delegateId = delegateKp.accountId;
 
-      final topKp = KeyPair.fromSecretSeed(_kSeed);
-      final delegateKp = KeyPair.random();
-      final topId = topKp.accountId;
-      final delegateId = delegateKp.accountId;
-
-      final (server, _) = await _startMockRpcServer(
-          accountId: topId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, topId, topKp, simulate: false);
-
-        // Leave both top-level and delegate unsigned.
-        final wdEntry = _makeWithDelegatesEntry(topId, delegateId);
-
-        final account = Account(topId, BigInt.from(100));
-        final invokeOp = InvokeContractHostFunction(
-            _kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-            .build();
-        assembled.tx!.setSorobanAuth([wdEntry]);
-
-        expect(
-          () => assembled.sign(sourceAccountKeyPair: topKp, force: true),
-          throwsA(isA<Exception>()),
-          reason: 'unsigned delegates must block sign()',
+        final (server, _) = await _startMockRpcServer(
+          accountId: topId,
+          seqNum: BigInt.from(100),
         );
-      } finally {
-        await server.close();
-      }
-    });
+
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            topId,
+            topKp,
+            simulate: false,
+          );
+
+          // Leave both top-level and delegate unsigned.
+          final wdEntry = _makeWithDelegatesEntry(topId, delegateId);
+
+          final account = Account(topId, BigInt.from(100));
+          final invokeOp = InvokeContractHostFunction(
+            _kContractId,
+            'hello',
+            arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+          );
+          assembled.tx = TransactionBuilder(
+            account,
+          ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
+          assembled.tx!.setSorobanAuth([wdEntry]);
+
+          expect(
+            () => assembled.sign(sourceAccountKeyPair: topKp, force: true),
+            throwsA(isA<Exception>()),
+            reason: 'unsigned delegates must block sign()',
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
   // GROUP 6: signAuthEntries — delegate node matching
   // -------------------------------------------------------------------------
   group('signAuthEntries — delegate and top-level matching', () {
-    test(
-        'signs delegate node when signer matches delegate address; '
+    test('signs delegate node when signer matches delegate address; '
         'top-level stays void', () async {
-
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final delegateKp = KeyPair.random();
       final topId = topKp.accountId;
@@ -659,21 +809,29 @@ void main() {
       expect(topId, isNot(equals(delegateId)));
 
       final (server, _) = await _startMockRpcServer(
-          accountId: topId, seqNum: BigInt.from(100));
+        accountId: topId,
+        seqNum: BigInt.from(100),
+      );
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, topId, topKp, simulate: false);
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          topId,
+          topKp,
+          simulate: false,
+        );
 
         final wdEntry = _makeWithDelegatesEntry(topId, delegateId);
         final account = Account(topId, BigInt.from(100));
         final invokeOp = InvokeContractHostFunction(
-            _kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-            .build();
+          _kContractId,
+          'hello',
+          arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+        );
+        assembled.tx = TransactionBuilder(
+          account,
+        ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
         assembled.tx!.setSorobanAuth([wdEntry]);
 
         // Sign as the delegate (private key provided, valid until fixed ledger).
@@ -705,7 +863,8 @@ void main() {
         expect(
           topInner.signature.discriminant,
           equals(XdrSCValType.SCV_VOID),
-          reason: 'top-level signature must remain void when only delegate signed',
+          reason:
+              'top-level signature must remain void when only delegate signed',
         );
       } finally {
         await server.close();
@@ -713,26 +872,33 @@ void main() {
     });
 
     test('signs top-level when signer matches top-level address', () async {
-
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final topId = topKp.accountId;
 
       final (server, _) = await _startMockRpcServer(
-          accountId: topId, seqNum: BigInt.from(100));
+        accountId: topId,
+        seqNum: BigInt.from(100),
+      );
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, topId, topKp, simulate: false);
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          topId,
+          topKp,
+          simulate: false,
+        );
 
         final legacyEntry = _makeLegacyEntry(topId);
         final account = Account(topId, BigInt.from(100));
         final invokeOp = InvokeContractHostFunction(
-            _kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-            .build();
+          _kContractId,
+          'hello',
+          arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+        );
+        assembled.tx = TransactionBuilder(
+          account,
+        ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
         assembled.tx!.setSorobanAuth([legacyEntry]);
 
         await assembled.signAuthEntries(
@@ -758,20 +924,24 @@ void main() {
     // Regression: same address as top-level and as a delegate must produce
     // exactly one signature on the top-level and one on the delegate node —
     // not two on the top-level (which the host rejects due to duplicate-key order).
-    test(
-        'same address as top-level and delegate: exactly one signature each, '
+    test('same address as top-level and delegate: exactly one signature each, '
         'no duplicate top-level', () async {
-
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
 
       final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
+        accountId: accountId,
+        seqNum: BigInt.from(100),
+      );
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          accountId,
+          kp,
+          simulate: false,
+        );
 
         // Build a WITH_DELEGATES entry where both the top-level credential address
         // and the sole delegate address are the same key (kp / accountId).
@@ -779,11 +949,13 @@ void main() {
 
         final account = Account(accountId, BigInt.from(100));
         final invokeOp = InvokeContractHostFunction(
-            _kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-            .build();
+          _kContractId,
+          'hello',
+          arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+        );
+        assembled.tx = TransactionBuilder(
+          account,
+        ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
         assembled.tx!.setSorobanAuth([wdEntry]);
 
         await assembled.signAuthEntries(
@@ -813,7 +985,8 @@ void main() {
         expect(
           topInner.signature.vec!.length,
           equals(1),
-          reason: 'top-level must carry exactly one signature, not two '
+          reason:
+              'top-level must carry exactly one signature, not two '
               '(duplicate would violate ascending-key-order constraint)',
         );
 
@@ -836,27 +1009,34 @@ void main() {
     });
 
     test('signAuthEntries with no private key throws', () async {
-
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final topId = topKp.accountId;
       final pubOnlyKp = KeyPair.fromAccountId(topId);
 
       final (server, _) = await _startMockRpcServer(
-          accountId: topId, seqNum: BigInt.from(100));
+        accountId: topId,
+        seqNum: BigInt.from(100),
+      );
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, topId, topKp, simulate: false);
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          topId,
+          topKp,
+          simulate: false,
+        );
 
         final legacyEntry = _makeLegacyEntry(topId);
         final account = Account(topId, BigInt.from(100));
         final invokeOp = InvokeContractHostFunction(
-            _kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-            .build();
+          _kContractId,
+          'hello',
+          arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+        );
+        assembled.tx = TransactionBuilder(
+          account,
+        ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
         assembled.tx!.setSorobanAuth([legacyEntry]);
 
         expect(
@@ -878,26 +1058,33 @@ void main() {
   // -------------------------------------------------------------------------
   group('Arm preservation through signAuthEntries', () {
     test('V2 entry stays V2 after signing via signAuthEntries', () async {
-
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
 
       final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
+        accountId: accountId,
+        seqNum: BigInt.from(100),
+      );
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          accountId,
+          kp,
+          simulate: false,
+        );
 
         final v2Entry = _makeV2Entry(accountId);
         final account = Account(accountId, BigInt.from(100));
         final invokeOp = InvokeContractHostFunction(
-            _kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-            .build();
+          _kContractId,
+          'hello',
+          arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+        );
+        assembled.tx = TransactionBuilder(
+          account,
+        ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
         assembled.tx!.setSorobanAuth([v2Entry]);
 
         await assembled.signAuthEntries(
@@ -920,60 +1107,76 @@ void main() {
 
         // Signature must be non-void.
         final inner = signedEntry.credentials.innerAddressCredentials!;
-        expect(inner.signature.discriminant,
-            isNot(equals(XdrSCValType.SCV_VOID)));
+        expect(
+          inner.signature.discriminant,
+          isNot(equals(XdrSCValType.SCV_VOID)),
+        );
       } finally {
         await server.close();
       }
     });
 
-    test('WITH_DELEGATES arm is preserved after signing the delegate node',
-        () async {
+    test(
+      'WITH_DELEGATES arm is preserved after signing the delegate node',
+      () async {
+        final topKp = KeyPair.fromSecretSeed(_kSeed);
+        final delegateKp = KeyPair.random();
+        final topId = topKp.accountId;
+        final delegateId = delegateKp.accountId;
 
-      final topKp = KeyPair.fromSecretSeed(_kSeed);
-      final delegateKp = KeyPair.random();
-      final topId = topKp.accountId;
-      final delegateId = delegateKp.accountId;
-
-      final (server, _) = await _startMockRpcServer(
-          accountId: topId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, topId, topKp, simulate: false);
-
-        final wdEntry = _makeWithDelegatesEntry(topId, delegateId);
-        final account = Account(topId, BigInt.from(100));
-        final invokeOp = InvokeContractHostFunction(
-            _kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-            .build();
-        assembled.tx!.setSorobanAuth([wdEntry]);
-
-        await assembled.signAuthEntries(
-          signerKeyPair: delegateKp,
-          validUntilLedgerSeq: _kExpiration + 100,
+        final (server, _) = await _startMockRpcServer(
+          accountId: topId,
+          seqNum: BigInt.from(100),
         );
 
-        final ops = assembled.tx!.operations;
-        final signedEntry =
-            (ops.first as InvokeHostFunctionOperation).auth.first;
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            topId,
+            topKp,
+            simulate: false,
+          );
 
-        expect(
-          signedEntry.credentials.arm,
-          equals(XdrSorobanCredentialsType
-              .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES),
-          reason: 'WITH_DELEGATES arm must be preserved after signing delegate',
-        );
-        expect(
-            signedEntry.credentials.addressWithDelegatesCredentials, isNotNull);
-      } finally {
-        await server.close();
-      }
-    });
+          final wdEntry = _makeWithDelegatesEntry(topId, delegateId);
+          final account = Account(topId, BigInt.from(100));
+          final invokeOp = InvokeContractHostFunction(
+            _kContractId,
+            'hello',
+            arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+          );
+          assembled.tx = TransactionBuilder(
+            account,
+          ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
+          assembled.tx!.setSorobanAuth([wdEntry]);
+
+          await assembled.signAuthEntries(
+            signerKeyPair: delegateKp,
+            validUntilLedgerSeq: _kExpiration + 100,
+          );
+
+          final ops = assembled.tx!.operations;
+          final signedEntry =
+              (ops.first as InvokeHostFunctionOperation).auth.first;
+
+          expect(
+            signedEntry.credentials.arm,
+            equals(
+              XdrSorobanCredentialsType
+                  .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+            ),
+            reason:
+                'WITH_DELEGATES arm must be preserved after signing delegate',
+          );
+          expect(
+            signedEntry.credentials.addressWithDelegatesCredentials,
+            isNotNull,
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -981,7 +1184,6 @@ void main() {
   // -------------------------------------------------------------------------
   group('simulate() wires returned auth entries into tx', () {
     test('ADDRESS entry from simulate response appears in tx auth', () async {
-
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
       final legacyEntry = _makeLegacyEntry(accountId);
@@ -994,8 +1196,12 @@ void main() {
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: true);
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          accountId,
+          kp,
+          simulate: true,
+        );
 
         final ops = assembled.tx!.operations;
         final invokeOp = ops.first as InvokeHostFunctionOperation;
@@ -1009,34 +1215,40 @@ void main() {
       }
     });
 
-    test('ADDRESS_V2 entry from simulate response appears in tx auth', () async {
+    test(
+      'ADDRESS_V2 entry from simulate response appears in tx auth',
+      () async {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final accountId = kp.accountId;
+        final v2Entry = _makeV2Entry(accountId);
 
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final accountId = kp.accountId;
-      final v2Entry = _makeV2Entry(accountId);
-
-      final (server, _) = await _startMockRpcServer(
-        accountId: accountId,
-        seqNum: BigInt.from(100),
-        authEntries: [v2Entry],
-      );
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: true);
-
-        final ops = assembled.tx!.operations;
-        final invokeOp = ops.first as InvokeHostFunctionOperation;
-        expect(invokeOp.auth.length, equals(1));
-        expect(
-          invokeOp.auth.first.credentials.arm,
-          equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2),
+        final (server, _) = await _startMockRpcServer(
+          accountId: accountId,
+          seqNum: BigInt.from(100),
+          authEntries: [v2Entry],
         );
-      } finally {
-        await server.close();
-      }
-    });
+
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            accountId,
+            kp,
+            simulate: true,
+          );
+
+          final ops = assembled.tx!.operations;
+          final invokeOp = ops.first as InvokeHostFunctionOperation;
+          expect(invokeOp.auth.length, equals(1));
+          expect(
+            invokeOp.auth.first.credentials.arm,
+            equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2),
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -1047,54 +1259,65 @@ void main() {
   // not unit-testable.)
   // -------------------------------------------------------------------------
   group('SOURCE_ACCOUNT handling', () {
-    test('SOURCE_ACCOUNT credentials are parsed and skipped by needsNonInvokerSigningBy',
-        () async {
+    test(
+      'SOURCE_ACCOUNT credentials are parsed and skipped by needsNonInvokerSigningBy',
+      () async {
+        final topKp = KeyPair.fromSecretSeed(_kSeed);
+        final topId = topKp.accountId;
 
-      final topKp = KeyPair.fromSecretSeed(_kSeed);
-      final topId = topKp.accountId;
-
-      final (server, _) = await _startMockRpcServer(
-          accountId: topId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, topId, topKp, simulate: false);
-
-        // SOURCE_ACCOUNT credentials carry no address and need no explicit
-        // signature: fromXdr parses them and needsNonInvokerSigningBy skips
-        // them.
-        final rawCreds = XdrSorobanCredentials(
-            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
-        // fromXdr of SOURCE_ACCOUNT: no exception — that's the correct path.
-        final parsed = SorobanCredentials.fromXdr(rawCreds);
-        expect(
-          parsed.arm,
-          equals(
-              XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT),
+        final (server, _) = await _startMockRpcServer(
+          accountId: topId,
+          seqNum: BigInt.from(100),
         );
 
-        // Verify that SOURCE_ACCOUNT is silently skipped (not thrown) by
-        // needsNonInvokerSigningBy.
-        final sourceCreds = SorobanCredentials.forSourceAccount();
-        final sourceEntry = _makeEntry(sourceCreds);
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            topId,
+            topKp,
+            simulate: false,
+          );
 
-        final account = Account(topId, BigInt.from(100));
-        final invokeOp = InvokeContractHostFunction(
-            _kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-            .build();
-        assembled.tx!.setSorobanAuth([sourceEntry]);
+          // SOURCE_ACCOUNT credentials carry no address and need no explicit
+          // signature: fromXdr parses them and needsNonInvokerSigningBy skips
+          // them.
+          final rawCreds = XdrSorobanCredentials(
+            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
+          );
+          // fromXdr of SOURCE_ACCOUNT: no exception — that's the correct path.
+          final parsed = SorobanCredentials.fromXdr(rawCreds);
+          expect(
+            parsed.arm,
+            equals(
+              XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
+            ),
+          );
 
-        // SOURCE_ACCOUNT is skipped, not reported.
-        final needed = assembled.needsNonInvokerSigningBy();
-        expect(needed, isEmpty);
-      } finally {
-        await server.close();
-      }
-    });
+          // Verify that SOURCE_ACCOUNT is silently skipped (not thrown) by
+          // needsNonInvokerSigningBy.
+          final sourceCreds = SorobanCredentials.forSourceAccount();
+          final sourceEntry = _makeEntry(sourceCreds);
+
+          final account = Account(topId, BigInt.from(100));
+          final invokeOp = InvokeContractHostFunction(
+            _kContractId,
+            'hello',
+            arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+          );
+          assembled.tx = TransactionBuilder(
+            account,
+          ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
+          assembled.tx!.setSorobanAuth([sourceEntry]);
+
+          // SOURCE_ACCOUNT is skipped, not reported.
+          final needed = assembled.needsNonInvokerSigningBy();
+          expect(needed, isEmpty);
+        } finally {
+          await server.close();
+        }
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -1110,21 +1333,30 @@ void main() {
     late Map<String, dynamic> captured;
 
     setUp(() async {
-      (server, captured) =
-          await _startMockRpcServer(accountId: topId, seqNum: BigInt.from(100));
+      (server, captured) = await _startMockRpcServer(
+        accountId: topId,
+        seqNum: BigInt.from(100),
+      );
     });
     tearDown(() async => server.close());
 
     Future<AssembledTransaction> withAuth(
-        List<SorobanAuthorizationEntry> entries,
-        {HttpServer? rpcServer}) async {
+      List<SorobanAuthorizationEntry> entries, {
+      HttpServer? rpcServer,
+    }) async {
       final assembled = await _buildAssembledTx(
-          'http://127.0.0.1:${(rpcServer ?? server).port}', topId, topKp);
-      final invokeOp = InvokeContractHostFunction(_kContractId, 'hello',
-          arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-      assembled.tx = TransactionBuilder(Account(topId, BigInt.from(100)))
-          .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-          .build();
+        'http://127.0.0.1:${(rpcServer ?? server).port}',
+        topId,
+        topKp,
+      );
+      final invokeOp = InvokeContractHostFunction(
+        _kContractId,
+        'hello',
+        arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+      );
+      assembled.tx = TransactionBuilder(
+        Account(topId, BigInt.from(100)),
+      ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
       assembled.tx!.setSorobanAuth(entries);
       return assembled;
     }
@@ -1136,19 +1368,28 @@ void main() {
     /// delegate nodes; the first node is [delegateId], the leaf carries
     /// [leafSignature].
     SorobanAuthorizationEntry delegateChainEntry(
-        int depth, XdrSCVal leafSignature) {
+      int depth,
+      XdrSCVal leafSignature,
+    ) {
       final nestedId = KeyPair.random().accountId;
       var node = SorobanDelegateSignature(
-          XdrSCAddress.forAccountId(nestedId), leafSignature, []);
+        XdrSCAddress.forAccountId(nestedId),
+        leafSignature,
+        [],
+      );
       for (var level = depth - 2; level >= 0; level--) {
         node = SorobanDelegateSignature(
-            XdrSCAddress.forAccountId(level == 0 ? delegateId : nestedId),
-            XdrSCVal.forVoid(),
-            [node]);
+          XdrSCAddress.forAccountId(level == 0 ? delegateId : nestedId),
+          XdrSCVal.forVoid(),
+          [node],
+        );
       }
       final inner = _makeV2Entry(topId).credentials.innerAddressCredentials!;
-      return _makeEntry(SorobanCredentials.forAddressWithDelegates(
-          SorobanAddressCredentialsWithDelegates(inner, [node])));
+      return _makeEntry(
+        SorobanCredentials.forAddressWithDelegates(
+          SorobanAddressCredentialsWithDelegates(inner, [node]),
+        ),
+      );
     }
 
     /// WITH_DELEGATES entry whose delegate node is signed at [_kExpiration].
@@ -1158,85 +1399,125 @@ void main() {
       return entry;
     }
 
-    test('second signer keeps the stored expiration; both signatures verify',
-        () async {
-      final assembled =
-          await withAuth([_makeWithDelegatesEntry(topId, delegateId)]);
-      await assembled.signAuthEntries(
-          signerKeyPair: topKp, validUntilLedgerSeq: 5000);
-      await assembled.signAuthEntries(signerKeyPair: delegateKp);
-
-      final entry = authOf(assembled).single;
-      final inner = entry.credentials.innerAddressCredentials!;
-      final delegate =
-          entry.credentials.addressWithDelegatesCredentials!.delegates.single;
-      expect(inner.signatureExpirationLedger, equals(5000));
-      expect(captured['getLatestLedgerCalls'], isNull,
-          reason: 'a stored expiration needs no latest-ledger fetch');
-      expect(_signatureVerifies(entry, inner.signature, topKp), isTrue);
-      expect(_signatureVerifies(entry, delegate.signature, delegateKp), isTrue);
-    });
-
-    test('conflicting explicit expiration throws and leaves the entry intact',
-        () async {
-      final assembled = await withAuth([delegateSignedEntry()]);
-      final before = authOf(assembled).single.toBase64EncodedXdrString();
-
-      await expectLater(
-        assembled.signAuthEntries(
-            signerKeyPair: topKp, validUntilLedgerSeq: 5000),
-        throwsA(isA<ArgumentError>().having((e) => e.toString(), 'message',
-            allOf(contains('5000'), contains('$_kExpiration')))),
-      );
-      expect(authOf(assembled).single.toBase64EncodedXdrString(),
-          equals(before));
-    });
-
-    test('a failing entry leaves earlier entries of the same call unsigned',
-        () async {
-      final assembled =
-          await withAuth([_makeV2Entry(topId), delegateSignedEntry()]);
-      final before =
-          authOf(assembled).map((e) => e.toBase64EncodedXdrString()).toList();
-
-      await expectLater(
-        assembled.signAuthEntries(
-            signerKeyPair: topKp, validUntilLedgerSeq: 5000),
-        throwsA(isA<ArgumentError>()),
-      );
-      expect(authOf(assembled).map((e) => e.toBase64EncodedXdrString()),
-          orderedEquals(before));
-    });
-
-    test('a callback failing on the second entry leaves every entry intact',
-        () async {
-      final assembled =
-          await withAuth([_makeV2Entry(topId), _makeLegacyEntry(topId)]);
-      final before =
-          authOf(assembled).map((e) => e.toBase64EncodedXdrString()).toList();
-      var calls = 0;
-
-      await expectLater(
-        assembled.signAuthEntries(
-          signerKeyPair: KeyPair.fromAccountId(topId),
+    test(
+      'second signer keeps the stored expiration; both signatures verify',
+      () async {
+        final assembled = await withAuth([
+          _makeWithDelegatesEntry(topId, delegateId),
+        ]);
+        await assembled.signAuthEntries(
+          signerKeyPair: topKp,
           validUntilLedgerSeq: 5000,
-          authorizeEntryDelegate: (entry, network) async {
-            if (++calls == 2) throw StateError('remote signer unavailable');
-            entry.sign(topKp, network);
-            return entry;
-          },
-        ),
-        throwsA(isA<StateError>()),
-      );
-      expect(calls, equals(2));
-      expect(authOf(assembled).map((e) => e.toBase64EncodedXdrString()),
-          orderedEquals(before));
-    });
+        );
+        await assembled.signAuthEntries(signerKeyPair: delegateKp);
+
+        final entry = authOf(assembled).single;
+        final inner = entry.credentials.innerAddressCredentials!;
+        final delegate =
+            entry.credentials.addressWithDelegatesCredentials!.delegates.single;
+        expect(inner.signatureExpirationLedger, equals(5000));
+        expect(
+          captured['getLatestLedgerCalls'],
+          isNull,
+          reason: 'a stored expiration needs no latest-ledger fetch',
+        );
+        expect(_signatureVerifies(entry, inner.signature, topKp), isTrue);
+        expect(
+          _signatureVerifies(entry, delegate.signature, delegateKp),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'conflicting explicit expiration throws and leaves the entry intact',
+      () async {
+        final assembled = await withAuth([delegateSignedEntry()]);
+        final before = authOf(assembled).single.toBase64EncodedXdrString();
+
+        await expectLater(
+          assembled.signAuthEntries(
+            signerKeyPair: topKp,
+            validUntilLedgerSeq: 5000,
+          ),
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.toString(),
+              'message',
+              allOf(contains('5000'), contains('$_kExpiration')),
+            ),
+          ),
+        );
+        expect(
+          authOf(assembled).single.toBase64EncodedXdrString(),
+          equals(before),
+        );
+      },
+    );
+
+    test(
+      'a failing entry leaves earlier entries of the same call unsigned',
+      () async {
+        final assembled = await withAuth([
+          _makeV2Entry(topId),
+          delegateSignedEntry(),
+        ]);
+        final before = authOf(
+          assembled,
+        ).map((e) => e.toBase64EncodedXdrString()).toList();
+
+        await expectLater(
+          assembled.signAuthEntries(
+            signerKeyPair: topKp,
+            validUntilLedgerSeq: 5000,
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+        expect(
+          authOf(assembled).map((e) => e.toBase64EncodedXdrString()),
+          orderedEquals(before),
+        );
+      },
+    );
+
+    test(
+      'a callback failing on the second entry leaves every entry intact',
+      () async {
+        final assembled = await withAuth([
+          _makeV2Entry(topId),
+          _makeLegacyEntry(topId),
+        ]);
+        final before = authOf(
+          assembled,
+        ).map((e) => e.toBase64EncodedXdrString()).toList();
+        var calls = 0;
+
+        await expectLater(
+          assembled.signAuthEntries(
+            signerKeyPair: KeyPair.fromAccountId(topId),
+            validUntilLedgerSeq: 5000,
+            authorizeEntryDelegate: (entry, network) async {
+              if (++calls == 2) throw StateError('remote signer unavailable');
+              entry.sign(topKp, network);
+              return entry;
+            },
+          ),
+          throwsA(isA<StateError>()),
+        );
+        expect(calls, equals(2));
+        expect(
+          authOf(assembled).map((e) => e.toBase64EncodedXdrString()),
+          orderedEquals(before),
+        );
+      },
+    );
 
     test('explicit expiration equal to the stored one signs', () async {
       final assembled = await withAuth([delegateSignedEntry()]);
       await assembled.signAuthEntries(
-          signerKeyPair: topKp, validUntilLedgerSeq: _kExpiration);
+        signerKeyPair: topKp,
+        validUntilLedgerSeq: _kExpiration,
+      );
 
       final entry = authOf(assembled).single;
       final inner = entry.credentials.innerAddressCredentials!;
@@ -1247,80 +1528,108 @@ void main() {
       expect(_signatureVerifies(entry, delegate.signature, delegateKp), isTrue);
     });
 
-    test('a cosigner of a signed multisig node keeps the stored expiration',
-        () async {
-      final cosigner1 = KeyPair.random();
-      final cosigner2 = KeyPair.random();
-      final entry = _makeV2Entry(topId)..sign(cosigner1, Network.TESTNET);
-      final assembled = await withAuth([entry]);
-      Future<SorobanAuthorizationEntry> remote(
-          SorobanAuthorizationEntry e, Network network) async {
-        e.sign(cosigner2, network);
-        return e;
-      }
-
-      await expectLater(
-        assembled.signAuthEntries(
-            signerKeyPair: KeyPair.fromAccountId(topId),
-            authorizeEntryDelegate: remote,
-            validUntilLedgerSeq: 5000),
-        throwsA(isA<ArgumentError>()),
-      );
-      await assembled.signAuthEntries(
-          signerKeyPair: KeyPair.fromAccountId(topId),
-          authorizeEntryDelegate: remote);
-
-      final signed = authOf(assembled).single;
-      final inner = signed.credentials.innerAddressCredentials!;
-      expect(inner.signatureExpirationLedger, equals(_kExpiration));
-      expect(inner.signature.vec!.length, equals(2));
-      expect(_signatureVerifies(signed, inner.signature, cosigner1), isTrue);
-      expect(_signatureVerifies(signed, inner.signature, cosigner2), isTrue);
-    });
-
-    test('a latest-ledger response without sequence throws, entries intact',
-        () async {
-      final (noSequenceServer, _) = await _startMockRpcServer(
-          accountId: topId,
-          seqNum: BigInt.from(100),
-          latestLedgerSequence: null);
-      try {
-        final assembled = await withAuth([_makeV2Entry(topId)],
-            rpcServer: noSequenceServer);
-        final before = authOf(assembled).single.toBase64EncodedXdrString();
+    test(
+      'a cosigner of a signed multisig node keeps the stored expiration',
+      () async {
+        final cosigner1 = KeyPair.random();
+        final cosigner2 = KeyPair.random();
+        final entry = _makeV2Entry(topId)..sign(cosigner1, Network.TESTNET);
+        final assembled = await withAuth([entry]);
+        Future<SorobanAuthorizationEntry> remote(
+          SorobanAuthorizationEntry e,
+          Network network,
+        ) async {
+          e.sign(cosigner2, network);
+          return e;
+        }
 
         await expectLater(
-          assembled.signAuthEntries(signerKeyPair: topKp),
-          throwsA(isA<Exception>().having((e) => e.toString(), 'message',
-              contains('Could not fetch latest ledger sequence from server'))),
+          assembled.signAuthEntries(
+            signerKeyPair: KeyPair.fromAccountId(topId),
+            authorizeEntryDelegate: remote,
+            validUntilLedgerSeq: 5000,
+          ),
+          throwsA(isA<ArgumentError>()),
         );
-        expect(authOf(assembled).single.toBase64EncodedXdrString(),
-            equals(before));
-      } finally {
-        await noSequenceServer.close();
-      }
-    });
+        await assembled.signAuthEntries(
+          signerKeyPair: KeyPair.fromAccountId(topId),
+          authorizeEntryDelegate: remote,
+        );
 
-    test('a delegate chain deeper than 128 levels throws, entries intact',
-        () async {
-      final assembled =
-          await withAuth([delegateChainEntry(129, XdrSCVal.forVoid())]);
-      final before = authOf(assembled).single.toBase64EncodedXdrString();
-      await expectLater(
-        assembled.signAuthEntries(
-          signerKeyPair: KeyPair.fromAccountId(delegateId),
-          authorizeEntryDelegate: (entry, network) async => entry,
-        ),
-        throwsA(isA<Exception>().having((e) => e.toString(), 'message',
-            contains('XDR decode depth limit exceeded (128)'))),
-      );
-      expect(authOf(assembled).single.toBase64EncodedXdrString(),
-          equals(before));
-    });
+        final signed = authOf(assembled).single;
+        final inner = signed.credentials.innerAddressCredentials!;
+        expect(inner.signatureExpirationLedger, equals(_kExpiration));
+        expect(inner.signature.vec!.length, equals(2));
+        expect(_signatureVerifies(signed, inner.signature, cosigner1), isTrue);
+        expect(_signatureVerifies(signed, inner.signature, cosigner2), isTrue);
+      },
+    );
+
+    test(
+      'a latest-ledger response without sequence throws, entries intact',
+      () async {
+        final (noSequenceServer, _) = await _startMockRpcServer(
+          accountId: topId,
+          seqNum: BigInt.from(100),
+          latestLedgerSequence: null,
+        );
+        try {
+          final assembled = await withAuth([
+            _makeV2Entry(topId),
+          ], rpcServer: noSequenceServer);
+          final before = authOf(assembled).single.toBase64EncodedXdrString();
+
+          await expectLater(
+            assembled.signAuthEntries(signerKeyPair: topKp),
+            throwsA(
+              isA<Exception>().having(
+                (e) => e.toString(),
+                'message',
+                contains('Could not fetch latest ledger sequence from server'),
+              ),
+            ),
+          );
+          expect(
+            authOf(assembled).single.toBase64EncodedXdrString(),
+            equals(before),
+          );
+        } finally {
+          await noSequenceServer.close();
+        }
+      },
+    );
+
+    test(
+      'a delegate chain deeper than 128 levels throws, entries intact',
+      () async {
+        final assembled = await withAuth([
+          delegateChainEntry(129, XdrSCVal.forVoid()),
+        ]);
+        final before = authOf(assembled).single.toBase64EncodedXdrString();
+        await expectLater(
+          assembled.signAuthEntries(
+            signerKeyPair: KeyPair.fromAccountId(delegateId),
+            authorizeEntryDelegate: (entry, network) async => entry,
+          ),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('XDR decode depth limit exceeded (128)'),
+            ),
+          ),
+        );
+        expect(
+          authOf(assembled).single.toBase64EncodedXdrString(),
+          equals(before),
+        );
+      },
+    );
 
     test('a signed leaf at depth 128 keeps the stored expiration', () async {
-      final assembled = await withAuth(
-          [delegateChainEntry(128, XdrSCVal.forBytes(Uint8List(64)))]);
+      final assembled = await withAuth([
+        delegateChainEntry(128, XdrSCVal.forBytes(Uint8List(64))),
+      ]);
       await assembled.signAuthEntries(signerKeyPair: topKp);
 
       final entry = authOf(assembled).single;
@@ -1333,7 +1642,9 @@ void main() {
     test('unsigned entries get the explicit expiration', () async {
       final assembled = await withAuth([_makeV2Entry(topId)]);
       await assembled.signAuthEntries(
-          signerKeyPair: topKp, validUntilLedgerSeq: 5000);
+        signerKeyPair: topKp,
+        validUntilLedgerSeq: 5000,
+      );
 
       final entry = authOf(assembled).single;
       final inner = entry.credentials.innerAddressCredentials!;
@@ -1342,18 +1653,22 @@ void main() {
       expect(captured['getLatestLedgerCalls'], isNull);
     });
 
-    test('unsigned entries get the default from one latest-ledger fetch',
-        () async {
-      final assembled =
-          await withAuth([_makeV2Entry(topId), _makeLegacyEntry(topId)]);
-      await assembled.signAuthEntries(signerKeyPair: topKp);
+    test(
+      'unsigned entries get the default from one latest-ledger fetch',
+      () async {
+        final assembled = await withAuth([
+          _makeV2Entry(topId),
+          _makeLegacyEntry(topId),
+        ]);
+        await assembled.signAuthEntries(signerKeyPair: topKp);
 
-      for (final entry in authOf(assembled)) {
-        final inner = entry.credentials.innerAddressCredentials!;
-        expect(inner.signatureExpirationLedger, equals(1000 + 100));
-        expect(_signatureVerifies(entry, inner.signature, topKp), isTrue);
-      }
-      expect(captured['getLatestLedgerCalls'], equals(1));
-    });
+        for (final entry in authOf(assembled)) {
+          final inner = entry.credentials.innerAddressCredentials!;
+          expect(inner.signatureExpirationLedger, equals(1000 + 100));
+          expect(_signatureVerifies(entry, inner.signature, topKp), isTrue);
+        }
+        expect(captured['getLatestLedgerCalls'], equals(1));
+      },
+    );
   });
 }

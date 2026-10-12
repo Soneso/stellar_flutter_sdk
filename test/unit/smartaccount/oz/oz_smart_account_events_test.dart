@@ -16,7 +16,6 @@ Uint8List _publicKeyBytes() {
   return bytes;
 }
 
-
 void main() {
   group('addListener', () {
     test('testAddListener_receivesAllEventTypes', () {
@@ -25,17 +24,23 @@ void main() {
 
       emitter.addListener(received.add);
 
-      emitter.emit(OZSmartAccountEventWalletConnected(
-        contractId: 'CABC1234${'A' * 48}',
-        credentialId: 'cred-1',
-      ));
-      emitter.emit(const OZSmartAccountEventTransactionSubmitted(
-        hash: 'tx-hash-123',
-        success: true,
-      ));
-      emitter.emit(OZSmartAccountEventWalletDisconnected(
-        contractId: 'CABC1234${'A' * 48}',
-      ));
+      emitter.emit(
+        OZSmartAccountEventWalletConnected(
+          contractId: 'CABC1234${'A' * 48}',
+          credentialId: 'cred-1',
+        ),
+      );
+      emitter.emit(
+        const OZSmartAccountEventTransactionSubmitted(
+          hash: 'tx-hash-123',
+          success: true,
+        ),
+      );
+      emitter.emit(
+        OZSmartAccountEventWalletDisconnected(
+          contractId: 'CABC1234${'A' * 48}',
+        ),
+      );
 
       expect(received, hasLength(3));
       expect(received[0], isA<OZSmartAccountEventWalletConnected>());
@@ -50,14 +55,20 @@ void main() {
       final unsubscribe = emitter.addListener((_) => callCount++);
 
       emitter.emit(
-          const OZSmartAccountEventWalletDisconnected(contractId: 'C1234'));
+        const OZSmartAccountEventWalletDisconnected(contractId: 'C1234'),
+      );
       expect(callCount, 1);
 
       unsubscribe();
 
       emitter.emit(
-          const OZSmartAccountEventWalletDisconnected(contractId: 'C5678'));
-      expect(callCount, 1, reason: 'Should not receive events after unsubscribe');
+        const OZSmartAccountEventWalletDisconnected(contractId: 'C5678'),
+      );
+      expect(
+        callCount,
+        1,
+        reason: 'Should not receive events after unsubscribe',
+      );
     });
 
     test('testAddListener_multipleGlobalListenersAllReceive', () {
@@ -70,10 +81,12 @@ void main() {
       emitter.addListener((_) => count2++);
       emitter.addListener((_) => count3++);
 
-      emitter.emit(const OZSmartAccountEventWalletConnected(
-        contractId: 'CONTRACT',
-        credentialId: 'cred',
-      ));
+      emitter.emit(
+        const OZSmartAccountEventWalletConnected(
+          contractId: 'CONTRACT',
+          credentialId: 'cred',
+        ),
+      );
 
       expect(count1, 1);
       expect(count2, 1);
@@ -96,12 +109,19 @@ void main() {
       emitter.setErrorHandler((_, __, ___) {});
 
       emitter.emit(
-          const OZSmartAccountEventWalletDisconnected(contractId: 'CONTRACT'));
+        const OZSmartAccountEventWalletDisconnected(contractId: 'CONTRACT'),
+      );
 
-      expect(listener1Called, isTrue,
-          reason: 'First listener should have been called');
-      expect(listener3Called, isTrue,
-          reason: 'Third listener should still be called despite second failing');
+      expect(
+        listener1Called,
+        isTrue,
+        reason: 'First listener should have been called',
+      );
+      expect(
+        listener3Called,
+        isTrue,
+        reason: 'Third listener should still be called despite second failing',
+      );
     });
 
     test('testSetErrorHandler_capturesEventAndError', () {
@@ -142,8 +162,9 @@ void main() {
         throw StateError('Boom');
       });
 
-      emitter
-          .emit(const OZSmartAccountEventWalletDisconnected(contractId: 'C'));
+      emitter.emit(
+        const OZSmartAccountEventWalletDisconnected(contractId: 'C'),
+      );
       expect(handlerCalled, isFalse);
     });
   });
@@ -183,19 +204,26 @@ void main() {
       var txSubmittedCount = 0;
 
       emitter.on<OZSmartAccountEventWalletConnected>(
-          (_) => walletConnectedCount++);
+        (_) => walletConnectedCount++,
+      );
       emitter.on<OZSmartAccountEventTransactionSubmitted>(
-          (_) => txSubmittedCount++);
+        (_) => txSubmittedCount++,
+      );
 
-      emitter.emit(const OZSmartAccountEventWalletConnected(
-        contractId: 'CONTRACT',
-        credentialId: 'cred',
-      ));
+      emitter.emit(
+        const OZSmartAccountEventWalletConnected(
+          contractId: 'CONTRACT',
+          credentialId: 'cred',
+        ),
+      );
 
       expect(walletConnectedCount, 1);
-      expect(txSubmittedCount, 0,
-          reason:
-              'TransactionSubmitted listener should not receive WalletConnected events');
+      expect(
+        txSubmittedCount,
+        0,
+        reason:
+            'TransactionSubmitted listener should not receive WalletConnected events',
+      );
     });
 
     test('testEmitIsolation_globalAndTypedMixed', () {
@@ -206,12 +234,20 @@ void main() {
       emitter.addListener((_) => globalCount++);
       emitter.on<OZSmartAccountEventCredentialCreated>((_) => typedCount++);
 
-      emitter
-          .emit(const OZSmartAccountEventWalletDisconnected(contractId: 'C'));
+      emitter.emit(
+        const OZSmartAccountEventWalletDisconnected(contractId: 'C'),
+      );
 
-      expect(globalCount, 1, reason: 'Global listener should receive all events');
-      expect(typedCount, 0,
-          reason: 'Typed listener should not receive unmatched events');
+      expect(
+        globalCount,
+        1,
+        reason: 'Global listener should receive all events',
+      );
+      expect(
+        typedCount,
+        0,
+        reason: 'Typed listener should not receive unmatched events',
+      );
 
       final credential = OZStoredCredential(
         credentialId: 'cred-1',
@@ -219,7 +255,8 @@ void main() {
         createdAt: 1700000000000,
       );
       emitter.emit(
-          OZSmartAccountEventCredentialCreated(credential: credential));
+        OZSmartAccountEventCredentialCreated(credential: credential),
+      );
 
       expect(globalCount, 2, reason: 'Global should now have 2 calls');
       expect(typedCount, 1, reason: 'Typed should now have 1 call');
@@ -232,22 +269,31 @@ void main() {
       var walletCount = 0;
       var txCount = 0;
 
-      emitter
-          .on<OZSmartAccountEventWalletConnected>((_) => walletCount++);
-      emitter
-          .on<OZSmartAccountEventTransactionSubmitted>((_) => txCount++);
+      emitter.on<OZSmartAccountEventWalletConnected>((_) => walletCount++);
+      emitter.on<OZSmartAccountEventTransactionSubmitted>((_) => txCount++);
 
       emitter.removeAllListeners('WalletConnected');
 
-      emitter.emit(const OZSmartAccountEventWalletConnected(
-          contractId: 'C', credentialId: 'c'));
-      emitter.emit(const OZSmartAccountEventTransactionSubmitted(
-          hash: 'h', success: true));
+      emitter.emit(
+        const OZSmartAccountEventWalletConnected(
+          contractId: 'C',
+          credentialId: 'c',
+        ),
+      );
+      emitter.emit(
+        const OZSmartAccountEventTransactionSubmitted(hash: 'h', success: true),
+      );
 
-      expect(walletCount, 0,
-          reason: 'WalletConnected listener should have been removed');
-      expect(txCount, 1,
-          reason: 'TransactionSubmitted listener should still work');
+      expect(
+        walletCount,
+        0,
+        reason: 'WalletConnected listener should have been removed',
+      );
+      expect(
+        txCount,
+        1,
+        reason: 'TransactionSubmitted listener should still work',
+      );
     });
 
     test('testRemoveAllListeners_allTypesAndGlobal', () {
@@ -260,13 +306,21 @@ void main() {
 
       emitter.removeAllListeners();
 
-      emitter.emit(const OZSmartAccountEventWalletConnected(
-          contractId: 'C', credentialId: 'c'));
-      emitter.emit(const OZSmartAccountEventTransactionSubmitted(
-          hash: 'h', success: true));
+      emitter.emit(
+        const OZSmartAccountEventWalletConnected(
+          contractId: 'C',
+          credentialId: 'c',
+        ),
+      );
+      emitter.emit(
+        const OZSmartAccountEventTransactionSubmitted(hash: 'h', success: true),
+      );
 
-      expect(count, 0,
-          reason: 'No listeners should remain after removeAllListeners()');
+      expect(
+        count,
+        0,
+        reason: 'No listeners should remain after removeAllListeners()',
+      );
     });
   });
 
@@ -275,17 +329,26 @@ void main() {
       final emitter = OZSmartAccountEventEmitter();
       var count = 0;
 
-      final unsubscribe =
-          emitter.on<OZSmartAccountEventSessionExpired>((_) => count++);
+      final unsubscribe = emitter.on<OZSmartAccountEventSessionExpired>(
+        (_) => count++,
+      );
 
-      emitter.emit(const OZSmartAccountEventSessionExpired(
-          contractId: 'C', credentialId: 'c'));
+      emitter.emit(
+        const OZSmartAccountEventSessionExpired(
+          contractId: 'C',
+          credentialId: 'c',
+        ),
+      );
       expect(count, 1);
 
       unsubscribe();
 
-      emitter.emit(const OZSmartAccountEventSessionExpired(
-          contractId: 'C2', credentialId: 'c2'));
+      emitter.emit(
+        const OZSmartAccountEventSessionExpired(
+          contractId: 'C2',
+          credentialId: 'c2',
+        ),
+      );
       expect(count, 1, reason: 'Should not receive after unsubscribe');
     });
   });
@@ -306,8 +369,9 @@ void main() {
     });
 
     test('testCredentialDeletedEvent', () {
-      const event =
-          OZSmartAccountEventCredentialDeleted(credentialId: 'del-cred');
+      const event = OZSmartAccountEventCredentialDeleted(
+        credentialId: 'del-cred',
+      );
       expect(event.credentialId, 'del-cred');
     });
 
@@ -357,8 +421,9 @@ void main() {
         createdAt: 1700000000000,
         nickname: 'Test Key',
       );
-      final event =
-          OZSmartAccountEventCredentialCreated(credential: credential);
+      final event = OZSmartAccountEventCredentialCreated(
+        credential: credential,
+      );
       expect(event.credential.credentialId, 'new-cred');
       expect(event.credential.nickname, 'Test Key');
     });
@@ -402,35 +467,50 @@ void main() {
       emitter.once<OZSmartAccountEventWalletConnected>(received.add);
 
       const event1 = OZSmartAccountEventWalletConnected(
-          contractId: 'C1', credentialId: 'cr1');
+        contractId: 'C1',
+        credentialId: 'cr1',
+      );
       const event2 = OZSmartAccountEventWalletConnected(
-          contractId: 'C2', credentialId: 'cr2');
+        contractId: 'C2',
+        credentialId: 'cr2',
+      );
 
       emitter.emit(event1);
       emitter.emit(event2);
 
-      expect(received, hasLength(1),
-          reason: 'once listener should fire exactly once');
-      expect(received[0].contractId, 'C1',
-          reason: 'once listener should receive the first event');
+      expect(
+        received,
+        hasLength(1),
+        reason: 'once listener should fire exactly once',
+      );
+      expect(
+        received[0].contractId,
+        'C1',
+        reason: 'once listener should receive the first event',
+      );
     });
 
     test('testOnce_unsubscribeBeforeEventFiresCancels', () {
       final emitter = OZSmartAccountEventEmitter();
       var callCount = 0;
 
-      final unsubscribe =
-          emitter.once<OZSmartAccountEventWalletDisconnected>((_) {
+      final unsubscribe = emitter.once<OZSmartAccountEventWalletDisconnected>((
+        _,
+      ) {
         callCount++;
       });
 
       unsubscribe();
 
-      emitter
-          .emit(const OZSmartAccountEventWalletDisconnected(contractId: 'C'));
+      emitter.emit(
+        const OZSmartAccountEventWalletDisconnected(contractId: 'C'),
+      );
 
-      expect(callCount, 0,
-          reason: 'once listener cancelled before firing should never fire');
+      expect(
+        callCount,
+        0,
+        reason: 'once listener cancelled before firing should never fire',
+      );
     });
 
     test('testOnce_listenerCountDecrementsAfterFiring', () {
@@ -440,12 +520,16 @@ void main() {
 
       expect(emitter.listenerCount('TransactionSubmitted'), 1);
 
-      emitter.emit(const OZSmartAccountEventTransactionSubmitted(
-          hash: 'h', success: true));
+      emitter.emit(
+        const OZSmartAccountEventTransactionSubmitted(hash: 'h', success: true),
+      );
 
-      expect(emitter.listenerCount('TransactionSubmitted'), 0,
-          reason:
-              'Listener count should decrement after once listener auto-unsubscribes');
+      expect(
+        emitter.listenerCount('TransactionSubmitted'),
+        0,
+        reason:
+            'Listener count should decrement after once listener auto-unsubscribes',
+      );
     });
 
     test('testOnce_multipleOnceListenersForSameType', () {
@@ -458,20 +542,30 @@ void main() {
 
       expect(emitter.listenerCount('SessionExpired'), 2);
 
-      emitter.emit(const OZSmartAccountEventSessionExpired(
-          contractId: 'C', credentialId: 'cr'));
+      emitter.emit(
+        const OZSmartAccountEventSessionExpired(
+          contractId: 'C',
+          credentialId: 'cr',
+        ),
+      );
 
       expect(count1, 1, reason: 'First once listener should fire once');
       expect(count2, 1, reason: 'Second once listener should fire once');
 
-      emitter.emit(const OZSmartAccountEventSessionExpired(
-          contractId: 'C2', credentialId: 'cr2'));
+      emitter.emit(
+        const OZSmartAccountEventSessionExpired(
+          contractId: 'C2',
+          credentialId: 'cr2',
+        ),
+      );
 
       expect(count1, 1, reason: 'First once listener should not fire again');
       expect(count2, 1, reason: 'Second once listener should not fire again');
-      expect(emitter.listenerCount('SessionExpired'), 0,
-          reason:
-              'All once listeners should be removed after firing');
+      expect(
+        emitter.listenerCount('SessionExpired'),
+        0,
+        reason: 'All once listeners should be removed after firing',
+      );
     });
 
     test('testOnce_doesNotAffectOtherEventTypes', () {
@@ -481,18 +575,28 @@ void main() {
 
       emitter.once<OZSmartAccountEventWalletConnected>((_) => onceCount++);
       emitter.on<OZSmartAccountEventWalletDisconnected>(
-          (_) => permanentCount++);
+        (_) => permanentCount++,
+      );
 
-      emitter.emit(const OZSmartAccountEventWalletConnected(
-          contractId: 'C', credentialId: 'cr'));
-      emitter
-          .emit(const OZSmartAccountEventWalletDisconnected(contractId: 'C'));
       emitter.emit(
-          const OZSmartAccountEventWalletDisconnected(contractId: 'C2'));
+        const OZSmartAccountEventWalletConnected(
+          contractId: 'C',
+          credentialId: 'cr',
+        ),
+      );
+      emitter.emit(
+        const OZSmartAccountEventWalletDisconnected(contractId: 'C'),
+      );
+      emitter.emit(
+        const OZSmartAccountEventWalletDisconnected(contractId: 'C2'),
+      );
 
       expect(onceCount, 1);
-      expect(permanentCount, 2,
-          reason: 'Permanent listener should still receive all events');
+      expect(
+        permanentCount,
+        2,
+        reason: 'Permanent listener should still receive all events',
+      );
     });
 
     test('testOnce_listenerThrowsOnFirstEvent_errorHandlerCalled', () {
@@ -509,13 +613,22 @@ void main() {
         throw StateError('Listener failure on first event');
       });
 
-      emitter.emit(const OZSmartAccountEventTransactionSubmitted(
-          hash: 'h1', success: true));
+      emitter.emit(
+        const OZSmartAccountEventTransactionSubmitted(
+          hash: 'h1',
+          success: true,
+        ),
+      );
 
-      expect(errorHandlerCalled, isTrue,
-          reason: 'Error handler should be called when once listener throws');
-      expect(capturedError.toString(),
-          contains('Listener failure on first event'));
+      expect(
+        errorHandlerCalled,
+        isTrue,
+        reason: 'Error handler should be called when once listener throws',
+      );
+      expect(
+        capturedError.toString(),
+        contains('Listener failure on first event'),
+      );
     });
 
     test('testOnce_listenerThrowsOnFirstEvent_stillAutoUnsubscribes', () {
@@ -529,21 +642,28 @@ void main() {
         throw StateError('Boom');
       });
 
-      emitter
-          .emit(const OZSmartAccountEventWalletDisconnected(contractId: 'C1'));
-      emitter
-          .emit(const OZSmartAccountEventWalletDisconnected(contractId: 'C2'));
+      emitter.emit(
+        const OZSmartAccountEventWalletDisconnected(contractId: 'C1'),
+      );
+      emitter.emit(
+        const OZSmartAccountEventWalletDisconnected(contractId: 'C2'),
+      );
 
-      expect(callCount, 1,
-          reason: 'once listener should fire exactly once even when it throws');
-      expect(emitter.listenerCount('WalletDisconnected'), 0,
-          reason: 'once listener should be removed even when it throws');
+      expect(
+        callCount,
+        1,
+        reason: 'once listener should fire exactly once even when it throws',
+      );
+      expect(
+        emitter.listenerCount('WalletDisconnected'),
+        0,
+        reason: 'once listener should be removed even when it throws',
+      );
     });
   });
 
   group('error handler with typed listeners', () {
-    test('testErrorHandler_failingTypedListenerDoesNotAffectGlobalListener',
-        () {
+    test('testErrorHandler_failingTypedListenerDoesNotAffectGlobalListener', () {
       final emitter = OZSmartAccountEventEmitter();
       var globalCalled = false;
 
@@ -554,17 +674,24 @@ void main() {
       });
       emitter.addListener((_) => globalCalled = true);
 
-      emitter.emit(const OZSmartAccountEventWalletConnected(
-          contractId: 'C', credentialId: 'cr'));
+      emitter.emit(
+        const OZSmartAccountEventWalletConnected(
+          contractId: 'C',
+          credentialId: 'cr',
+        ),
+      );
 
-      expect(globalCalled, isTrue,
-          reason: 'Global listener should still be called when typed listener throws');
+      expect(
+        globalCalled,
+        isTrue,
+        reason:
+            'Global listener should still be called when typed listener throws',
+      );
     });
   });
 
   group('removeAllListeners(eventType) does not remove global listeners', () {
-    test('testRemoveAllListeners_specificType_doesNotRemoveGlobalListeners',
-        () {
+    test('testRemoveAllListeners_specificType_doesNotRemoveGlobalListeners', () {
       final emitter = OZSmartAccountEventEmitter();
       var globalCount = 0;
       var typedCount = 0;
@@ -574,18 +701,23 @@ void main() {
 
       emitter.removeAllListeners('WalletConnected');
 
-      emitter.emit(const OZSmartAccountEventWalletConnected(
-          contractId: 'C', credentialId: 'cr'));
+      emitter.emit(
+        const OZSmartAccountEventWalletConnected(
+          contractId: 'C',
+          credentialId: 'cr',
+        ),
+      );
 
       expect(typedCount, 0, reason: 'Typed listener should have been removed');
-      expect(globalCount, 1,
-          reason:
-              'Global listener should NOT be removed by removeAllListeners(eventType)');
+      expect(
+        globalCount,
+        1,
+        reason:
+            'Global listener should NOT be removed by removeAllListeners(eventType)',
+      );
     });
 
-    test(
-        'testRemoveAllListeners_specificType_globalListenerCountUnchanged',
-        () {
+    test('testRemoveAllListeners_specificType_globalListenerCountUnchanged', () {
       final emitter = OZSmartAccountEventEmitter();
 
       emitter.addListener((_) {});
@@ -595,9 +727,12 @@ void main() {
 
       emitter.removeAllListeners('WalletConnected');
 
-      expect(emitter.listenerCount('WalletConnected'), 1,
-          reason:
-              'Global listener should still be counted after removeAllListeners(eventType)');
+      expect(
+        emitter.listenerCount('WalletConnected'),
+        1,
+        reason:
+            'Global listener should still be counted after removeAllListeners(eventType)',
+      );
     });
   });
 
@@ -605,18 +740,33 @@ void main() {
     test('testEmit_withNoListeners_doesNotThrow', () {
       final emitter = OZSmartAccountEventEmitter();
 
-      emitter.emit(const OZSmartAccountEventWalletConnected(
-          contractId: 'C', credentialId: 'cr'));
-      emitter.emit(const OZSmartAccountEventTransactionSubmitted(
-          hash: 'h', success: true));
       emitter.emit(
-          const OZSmartAccountEventCredentialDeleted(credentialId: 'cr'));
-      emitter.emit(const OZSmartAccountEventSessionExpired(
-          contractId: 'C', credentialId: 'cr'));
-      emitter.emit(const OZSmartAccountEventTransactionSigned(
-          contractId: 'C', credentialId: null));
+        const OZSmartAccountEventWalletConnected(
+          contractId: 'C',
+          credentialId: 'cr',
+        ),
+      );
       emitter.emit(
-          const OZSmartAccountEventWalletDisconnected(contractId: 'C'));
+        const OZSmartAccountEventTransactionSubmitted(hash: 'h', success: true),
+      );
+      emitter.emit(
+        const OZSmartAccountEventCredentialDeleted(credentialId: 'cr'),
+      );
+      emitter.emit(
+        const OZSmartAccountEventSessionExpired(
+          contractId: 'C',
+          credentialId: 'cr',
+        ),
+      );
+      emitter.emit(
+        const OZSmartAccountEventTransactionSigned(
+          contractId: 'C',
+          credentialId: null,
+        ),
+      );
+      emitter.emit(
+        const OZSmartAccountEventWalletDisconnected(contractId: 'C'),
+      );
 
       final credential = OZStoredCredential(
         credentialId: 'cr',
@@ -624,7 +774,8 @@ void main() {
         createdAt: 1700000000000,
       );
       emitter.emit(
-          OZSmartAccountEventCredentialCreated(credential: credential));
+        OZSmartAccountEventCredentialCreated(credential: credential),
+      );
 
       expect(true, isTrue);
     });
@@ -642,8 +793,9 @@ void main() {
     test('testUnsubscribe_calledMultipleTimes_doesNotThrow', () {
       final emitter = OZSmartAccountEventEmitter();
 
-      final unsubscribe =
-          emitter.on<OZSmartAccountEventWalletConnected>((_) {});
+      final unsubscribe = emitter.on<OZSmartAccountEventWalletConnected>(
+        (_) {},
+      );
 
       unsubscribe();
       unsubscribe();
@@ -674,15 +826,22 @@ void main() {
 
       const count = 100;
       for (var i = 0; i < count; i++) {
-        emitter.emit(OZSmartAccountEventTransactionSubmitted(
-            hash: 'tx-$i', success: true));
+        emitter.emit(
+          OZSmartAccountEventTransactionSubmitted(hash: 'tx-$i', success: true),
+        );
       }
 
-      expect(receivedHashes, hasLength(count),
-          reason: 'All $count events should be delivered');
+      expect(
+        receivedHashes,
+        hasLength(count),
+        reason: 'All $count events should be delivered',
+      );
       for (var i = 0; i < count; i++) {
-        expect(receivedHashes[i], 'tx-$i',
-            reason: 'Events should arrive in emission order');
+        expect(
+          receivedHashes[i],
+          'tx-$i',
+          reason: 'Events should arrive in emission order',
+        );
       }
     });
 
@@ -693,18 +852,31 @@ void main() {
       emitter.addListener(allEvents.add);
 
       for (var i = 0; i < 50; i++) {
-        emitter.emit(OZSmartAccountEventWalletConnected(
-            contractId: 'C$i', credentialId: 'cr$i'));
-        emitter.emit(OZSmartAccountEventTransactionSubmitted(
-            hash: 'tx-$i', success: i % 2 == 0));
+        emitter.emit(
+          OZSmartAccountEventWalletConnected(
+            contractId: 'C$i',
+            credentialId: 'cr$i',
+          ),
+        );
+        emitter.emit(
+          OZSmartAccountEventTransactionSubmitted(
+            hash: 'tx-$i',
+            success: i % 2 == 0,
+          ),
+        );
       }
 
-      expect(allEvents, hasLength(100),
-          reason: 'All 100 mixed events should be delivered');
+      expect(
+        allEvents,
+        hasLength(100),
+        reason: 'All 100 mixed events should be delivered',
+      );
       for (var i = 0; i < 50; i++) {
         expect(allEvents[i * 2], isA<OZSmartAccountEventWalletConnected>());
-        expect(allEvents[i * 2 + 1],
-            isA<OZSmartAccountEventTransactionSubmitted>());
+        expect(
+          allEvents[i * 2 + 1],
+          isA<OZSmartAccountEventTransactionSubmitted>(),
+        );
       }
     });
   });
@@ -712,18 +884,26 @@ void main() {
   group('data class equality and copy', () {
     test('testWalletConnected_equalityAndCopy', () {
       const event1 = OZSmartAccountEventWalletConnected(
-          contractId: 'C1', credentialId: 'cr1');
+        contractId: 'C1',
+        credentialId: 'cr1',
+      );
       const event2 = OZSmartAccountEventWalletConnected(
-          contractId: 'C1', credentialId: 'cr1');
+        contractId: 'C1',
+        credentialId: 'cr1',
+      );
       const event3 = OZSmartAccountEventWalletConnected(
-          contractId: 'C2', credentialId: 'cr1');
+        contractId: 'C2',
+        credentialId: 'cr1',
+      );
 
       expect(event1, equals(event2));
       expect(event1.hashCode, equals(event2.hashCode));
       expect(event1, isNot(equals(event3)));
 
       const copied = OZSmartAccountEventWalletConnected(
-          contractId: 'C1', credentialId: 'cr-new');
+        contractId: 'C1',
+        credentialId: 'cr-new',
+      );
       expect(copied.contractId, 'C1');
       expect(copied.credentialId, 'cr-new');
     });
@@ -731,20 +911,28 @@ void main() {
     test('testHeadlessConnected_equalityAndHashCode', () {
       // Non-const instances so the identical() short-circuit in operator== does
       // not fire and the contractId field comparison is exercised.
-      final event1 =
-          OZSmartAccountEventHeadlessConnected(contractId: 'C-HEADLESS');
-      final event2 =
-          OZSmartAccountEventHeadlessConnected(contractId: 'C-HEADLESS');
-      final event3 =
-          OZSmartAccountEventHeadlessConnected(contractId: 'C-OTHER');
+      final event1 = OZSmartAccountEventHeadlessConnected(
+        contractId: 'C-HEADLESS',
+      );
+      final event2 = OZSmartAccountEventHeadlessConnected(
+        contractId: 'C-HEADLESS',
+      );
+      final event3 = OZSmartAccountEventHeadlessConnected(
+        contractId: 'C-OTHER',
+      );
 
-      expect(event1, equals(event2),
-          reason: 'Same contractId must be equal');
+      expect(event1, equals(event2), reason: 'Same contractId must be equal');
       expect(event1.hashCode, equals(event2.hashCode));
-      expect(event1, isNot(equals(event3)),
-          reason: 'Different contractId must not be equal');
-      expect(event1, equals(event1),
-          reason: 'Identical instance short-circuits to equal');
+      expect(
+        event1,
+        isNot(equals(event3)),
+        reason: 'Different contractId must not be equal',
+      );
+      expect(
+        event1,
+        equals(event1),
+        reason: 'Identical instance short-circuits to equal',
+      );
       expect(event1 == 'not-an-event', isFalse);
       expect(event1.eventTypeName, 'HeadlessConnected');
     });
@@ -764,48 +952,77 @@ void main() {
 
     test('testTransactionSubmitted_equalityAndCopy', () {
       const event1 = OZSmartAccountEventTransactionSubmitted(
-          hash: 'h1', success: true);
+        hash: 'h1',
+        success: true,
+      );
       const event2 = OZSmartAccountEventTransactionSubmitted(
-          hash: 'h1', success: true);
+        hash: 'h1',
+        success: true,
+      );
       const event3 = OZSmartAccountEventTransactionSubmitted(
-          hash: 'h1', success: false);
+        hash: 'h1',
+        success: false,
+      );
 
       expect(event1, equals(event2));
       expect(event1.hashCode, equals(event2.hashCode));
-      expect(event1, isNot(equals(event3)),
-          reason: 'Different success value should not be equal');
+      expect(
+        event1,
+        isNot(equals(event3)),
+        reason: 'Different success value should not be equal',
+      );
 
       const copied = OZSmartAccountEventTransactionSubmitted(
-          hash: 'h1', success: false);
+        hash: 'h1',
+        success: false,
+      );
       expect(copied.hash, 'h1');
       expect(copied.success, isFalse);
     });
 
     test('testTransactionSigned_equalityWithNullCredential', () {
       const event1 = OZSmartAccountEventTransactionSigned(
-          contractId: 'C1', credentialId: null);
+        contractId: 'C1',
+        credentialId: null,
+      );
       const event2 = OZSmartAccountEventTransactionSigned(
-          contractId: 'C1', credentialId: null);
+        contractId: 'C1',
+        credentialId: null,
+      );
       const event3 = OZSmartAccountEventTransactionSigned(
-          contractId: 'C1', credentialId: 'cr');
+        contractId: 'C1',
+        credentialId: 'cr',
+      );
 
-      expect(event1, equals(event2),
-          reason: 'Both with null credentialId should be equal');
-      expect(event1, isNot(equals(event3)),
-          reason: 'Null vs non-null credentialId should not be equal');
+      expect(
+        event1,
+        equals(event2),
+        reason: 'Both with null credentialId should be equal',
+      );
+      expect(
+        event1,
+        isNot(equals(event3)),
+        reason: 'Null vs non-null credentialId should not be equal',
+      );
     });
 
     test('testSessionExpired_equalityAndCopy', () {
       const event1 = OZSmartAccountEventSessionExpired(
-          contractId: 'C1', credentialId: 'cr1');
+        contractId: 'C1',
+        credentialId: 'cr1',
+      );
       const event2 = OZSmartAccountEventSessionExpired(
-          contractId: 'C1', credentialId: 'cr1');
+        contractId: 'C1',
+        credentialId: 'cr1',
+      );
 
       expect(event1, equals(event2));
       expect(event1.hashCode, equals(event2.hashCode));
 
       const copied = OZSmartAccountEventSessionExpired(
-          contractId: 'C-new', credentialId: 'cr1');
+        contractId: 'C-new',
+        credentialId: 'cr1',
+      );
       expect(copied.contractId, 'C-new');
       expect(copied.credentialId, 'cr1');
     });
@@ -818,8 +1035,9 @@ void main() {
       expect(event1, equals(event2));
       expect(event1, isNot(equals(event3)));
 
-      const copied =
-          OZSmartAccountEventCredentialDeleted(credentialId: 'cr-new');
+      const copied = OZSmartAccountEventCredentialDeleted(
+        credentialId: 'cr-new',
+      );
       expect(copied.credentialId, 'cr-new');
     });
 
@@ -893,17 +1111,28 @@ void main() {
 
     test('testDifferentEventTypes_areNeverEqual', () {
       const connected = OZSmartAccountEventWalletConnected(
-          contractId: 'C', credentialId: 'cr');
-      const disconnected =
-          OZSmartAccountEventWalletDisconnected(contractId: 'C');
+        contractId: 'C',
+        credentialId: 'cr',
+      );
+      const disconnected = OZSmartAccountEventWalletDisconnected(
+        contractId: 'C',
+      );
       const expired = OZSmartAccountEventSessionExpired(
-          contractId: 'C', credentialId: 'cr');
+        contractId: 'C',
+        credentialId: 'cr',
+      );
 
-      expect(connected, isNot(equals(disconnected)),
-          reason: 'Different event types should never be equal');
-      expect(connected, isNot(equals(expired)),
-          reason:
-              'Different event types should never be equal even with same properties');
+      expect(
+        connected,
+        isNot(equals(disconnected)),
+        reason: 'Different event types should never be equal',
+      );
+      expect(
+        connected,
+        isNot(equals(expired)),
+        reason:
+            'Different event types should never be equal even with same properties',
+      );
     });
   });
 
@@ -918,14 +1147,19 @@ void main() {
         unsub();
       });
 
-      emitter
-          .emit(const OZSmartAccountEventWalletDisconnected(contractId: 'C1'));
-      emitter
-          .emit(const OZSmartAccountEventWalletDisconnected(contractId: 'C2'));
+      emitter.emit(
+        const OZSmartAccountEventWalletDisconnected(contractId: 'C1'),
+      );
+      emitter.emit(
+        const OZSmartAccountEventWalletDisconnected(contractId: 'C2'),
+      );
 
-      expect(callCount, 1,
-          reason:
-              'Listener that unsubscribes itself during emission should fire once');
+      expect(
+        callCount,
+        1,
+        reason:
+            'Listener that unsubscribes itself during emission should fire once',
+      );
     });
 
     test('testOnce_combinedWithPermanentListener', () {
@@ -933,21 +1167,36 @@ void main() {
       var onceCount = 0;
       var permanentCount = 0;
 
-      emitter
-          .once<OZSmartAccountEventTransactionSubmitted>((_) => onceCount++);
-      emitter
-          .on<OZSmartAccountEventTransactionSubmitted>((_) => permanentCount++);
+      emitter.once<OZSmartAccountEventTransactionSubmitted>((_) => onceCount++);
+      emitter.on<OZSmartAccountEventTransactionSubmitted>(
+        (_) => permanentCount++,
+      );
 
-      emitter.emit(const OZSmartAccountEventTransactionSubmitted(
-          hash: 'tx1', success: true));
-      emitter.emit(const OZSmartAccountEventTransactionSubmitted(
-          hash: 'tx2', success: true));
-      emitter.emit(const OZSmartAccountEventTransactionSubmitted(
-          hash: 'tx3', success: true));
+      emitter.emit(
+        const OZSmartAccountEventTransactionSubmitted(
+          hash: 'tx1',
+          success: true,
+        ),
+      );
+      emitter.emit(
+        const OZSmartAccountEventTransactionSubmitted(
+          hash: 'tx2',
+          success: true,
+        ),
+      );
+      emitter.emit(
+        const OZSmartAccountEventTransactionSubmitted(
+          hash: 'tx3',
+          success: true,
+        ),
+      );
 
       expect(onceCount, 1, reason: 'once listener should fire exactly once');
-      expect(permanentCount, 3,
-          reason: 'Permanent listener should fire for all events');
+      expect(
+        permanentCount,
+        3,
+        reason: 'Permanent listener should fire for all events',
+      );
     });
   });
 
@@ -967,8 +1216,11 @@ void main() {
         contractId: 'CONTRACT-A',
         credentialId: 'cred-2',
       );
-      expect(a == b, isFalse,
-          reason: 'Different credentialId must produce inequality');
+      expect(
+        a == b,
+        isFalse,
+        reason: 'Different credentialId must produce inequality',
+      );
       // Also exercise the equal path so hashCode is hit.
       final c = OZSmartAccountEventWalletConnected(
         contractId: 'CONTRACT-A',
@@ -1008,6 +1260,5 @@ void main() {
       expect(a == c, isTrue);
       expect(a.hashCode, c.hashCode);
     });
-
   });
 }

@@ -25,8 +25,10 @@ void main() {
     });
 
     test('throws Exception when value is null', () {
-      expect(() => checkNotNull(null, 'Value cannot be null'),
-          throwsA(isA<Exception>()));
+      expect(
+        () => checkNotNull(null, 'Value cannot be null'),
+        throwsA(isA<Exception>()),
+      );
     });
 
     test('includes error message in exception', () {
@@ -47,8 +49,10 @@ void main() {
     });
 
     test('throws Exception when expression is false', () {
-      expect(() => checkArgument(false, 'Argument is invalid'),
-          throwsA(isA<Exception>()));
+      expect(
+        () => checkArgument(false, 'Argument is invalid'),
+        throwsA(isA<Exception>()),
+      );
     });
 
     test('throws Exception with correct message', () {
@@ -62,8 +66,10 @@ void main() {
 
     test('evaluates complex expressions', () {
       expect(() => checkArgument(10 > 5 && 3 < 7, 'Error'), returnsNormally);
-      expect(() => checkArgument(10 < 5 || 3 > 7, 'Invalid'),
-          throwsA(isA<Exception>()));
+      expect(
+        () => checkArgument(10 < 5 || 3 > 7, 'Invalid'),
+        throwsA(isA<Exception>()),
+      );
     });
   });
 
@@ -147,7 +153,8 @@ void main() {
 
   group('addressFromId', () {
     test('creates address from valid account ID', () {
-      final accountId = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
+      final accountId =
+          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
       final address = addressFromId(accountId);
 
       expect(address, isNotNull);
@@ -164,7 +171,8 @@ void main() {
     });
 
     test('creates address from contract ID', () {
-      final contractId = 'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA';
+      final contractId =
+          'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA';
       final address = addressFromId(contractId);
 
       expect(address, isNotNull);
@@ -406,7 +414,8 @@ void main() {
 
   group('Util.hexIdToXdrHash', () {
     test('converts hex string to XdrHash', () {
-      final hexId = 'a1b2c3d4e5f678901234567890abcdef1234567890abcdef1234567890abcdef';
+      final hexId =
+          'a1b2c3d4e5f678901234567890abcdef1234567890abcdef1234567890abcdef';
       final xdrHash = Util.hexIdToXdrHash(hexId, 'Liquidity pool id');
 
       expect(Util.bytesToHex(xdrHash.hash), equals(hexId));
@@ -414,19 +423,32 @@ void main() {
 
     test('rejects short IDs rather than padding them', () {
       expect(
-          () => Util.hexIdToXdrHash('a1b2c3', 'Liquidity pool id'),
-          throwsA(isA<FormatException>().having((e) => e.message, 'message',
-              'Liquidity pool id must be hex of a 32 byte hash; 3 bytes given')));
+        () => Util.hexIdToXdrHash('a1b2c3', 'Liquidity pool id'),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            'Liquidity pool id must be hex of a 32 byte hash; 3 bytes given',
+          ),
+        ),
+      );
     });
 
     test('rejects long IDs rather than truncating them', () {
-      final longId = 'a1b2c3d4e5f678901234567890abcdef1234567890abcdef1234567890abcdef' +
+      final longId =
+          'a1b2c3d4e5f678901234567890abcdef1234567890abcdef1234567890abcdef' +
           'aabbccdd';
 
       expect(
-          () => Util.hexIdToXdrHash(longId, 'Liquidity pool id'),
-          throwsA(isA<FormatException>().having((e) => e.message, 'message',
-              'Liquidity pool id must be hex of a 32 byte hash; 36 bytes given')));
+        () => Util.hexIdToXdrHash(longId, 'Liquidity pool id'),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            'Liquidity pool id must be hex of a 32 byte hash; 36 bytes given',
+          ),
+        ),
+      );
     });
   });
 
@@ -470,8 +492,13 @@ void main() {
 
     test('appends multiple path segments', () {
       final url = Util.appendEndpointToUrl(
-          'https://api.example.com', 'sep24/transactions');
-      expect(url.toString(), equals('https://api.example.com/sep24/transactions'));
+        'https://api.example.com',
+        'sep24/transactions',
+      );
+      expect(
+        url.toString(),
+        equals('https://api.example.com/sep24/transactions'),
+      );
     });
 
     test('removes trailing slash before appending', () {
@@ -512,8 +539,10 @@ void main() {
     });
 
     test('throws on too many decimal places', () {
-      expect(() => Util.decimalStringToStroops('1.12345678'),
-          throwsA(isA<Exception>()));
+      expect(
+        () => Util.decimalStringToStroops('1.12345678'),
+        throwsA(isA<Exception>()),
+      );
     });
 
     test('converts negative decimal to negative stroops', () {
@@ -532,10 +561,14 @@ void main() {
     });
 
     test('accepts the int64 boundary amounts', () {
-      expect(Util.decimalStringToStroops('922337203685.4775807'),
-          equals(BigInt.parse('9223372036854775807')));
-      expect(Util.decimalStringToStroops('-922337203685.4775808'),
-          equals(BigInt.parse('-9223372036854775808')));
+      expect(
+        Util.decimalStringToStroops('922337203685.4775807'),
+        equals(BigInt.parse('9223372036854775807')),
+      );
+      expect(
+        Util.decimalStringToStroops('-922337203685.4775808'),
+        equals(BigInt.parse('-9223372036854775808')),
+      );
     });
 
     test('throws on an amount past the int64 boundaries', () {
@@ -549,11 +582,16 @@ void main() {
         '-99999999999999999999',
       ]) {
         expect(
-            () => Util.decimalStringToStroops(value),
-            throwsA(predicate((e) =>
-                e is Exception &&
-                e.toString().contains('Amount out of range'))),
-            reason: 'expected "$value" to be refused');
+          () => Util.decimalStringToStroops(value),
+          throwsA(
+            predicate(
+              (e) =>
+                  e is Exception &&
+                  e.toString().contains('Amount out of range'),
+            ),
+          ),
+          reason: 'expected "$value" to be refused',
+        );
       }
     });
   });
@@ -618,14 +656,18 @@ void main() {
   group('deprecated amount helpers delegate to the new methods', () {
     test('toXdrInt64Amount delegates to decimalStringToStroops', () {
       // ignore: deprecated_member_use_from_same_package
-      expect(Util.toXdrInt64Amount('100.5'),
-          equals(Util.decimalStringToStroops('100.5')));
+      expect(
+        Util.toXdrInt64Amount('100.5'),
+        equals(Util.decimalStringToStroops('100.5')),
+      );
     });
 
     test('fromXdrInt64Amount delegates to stroopsToDecimalString', () {
       // ignore: deprecated_member_use_from_same_package
-      expect(Util.fromXdrInt64Amount(BigInt.from(1005000000)),
-          equals(Util.stroopsToDecimalString(BigInt.from(1005000000))));
+      expect(
+        Util.fromXdrInt64Amount(BigInt.from(1005000000)),
+        equals(Util.stroopsToDecimalString(BigInt.from(1005000000))),
+      );
     });
   });
 

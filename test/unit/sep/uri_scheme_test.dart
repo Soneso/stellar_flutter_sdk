@@ -14,9 +14,16 @@ void main() {
   late URIScheme uriScheme;
 
   setUp(() {
-    sourceKeyPair = KeyPair.fromSecretSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
-    sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(2908908335136768));
-    destinationKeyPair = KeyPair.fromSecretSeed('SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
+    sourceKeyPair = KeyPair.fromSecretSeed(
+      'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+    );
+    sourceAccount = Account(
+      sourceKeyPair.accountId,
+      BigInt.from(2908908335136768),
+    );
+    destinationKeyPair = KeyPair.fromSecretSeed(
+      'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+    );
     signerKeyPair = KeyPair.random();
     testNetwork = Network.TESTNET;
     uriScheme = URIScheme();
@@ -27,12 +34,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
@@ -49,19 +56,19 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final uri = uriScheme.generateSignTransactionURI(
         xdr,
-        callback: 'url:https://example.com/callback'
+        callback: 'url:https://example.com/callback',
       );
 
       expect(uri, contains('callback='));
@@ -72,19 +79,19 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final uri = uriScheme.generateSignTransactionURI(
         xdr,
-        message: 'Please sign this transaction'
+        message: 'Please sign this transaction',
       );
 
       expect(uri, contains('msg='));
@@ -94,19 +101,19 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final uri = uriScheme.generateSignTransactionURI(
         xdr,
-        networkPassphrase: Network.TESTNET.networkPassphrase
+        networkPassphrase: Network.TESTNET.networkPassphrase,
       );
 
       expect(uri, contains('network_passphrase='));
@@ -116,19 +123,19 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final uri = uriScheme.generateSignTransactionURI(
         xdr,
-        originDomain: 'example.com'
+        originDomain: 'example.com',
       );
 
       expect(uri, contains('origin_domain='));
@@ -139,12 +146,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
@@ -154,7 +161,7 @@ void main() {
         callback: 'url:https://example.com/callback',
         message: 'Sign this payment',
         networkPassphrase: Network.TESTNET.networkPassphrase,
-        originDomain: 'example.com'
+        originDomain: 'example.com',
       );
 
       expect(uri, contains('xdr='));
@@ -168,12 +175,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
@@ -189,7 +196,7 @@ void main() {
   group('URIScheme - Payment URI Generation', () {
     test('generates basic pay URI with destination only', () {
       final uri = uriScheme.generatePayOperationURI(
-        destinationKeyPair.accountId
+        destinationKeyPair.accountId,
       );
 
       expect(uri, startsWith('web+stellar:pay?'));
@@ -200,7 +207,7 @@ void main() {
     test('generates pay URI with amount', () {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
-        amount: '100.50'
+        amount: '100.50',
       );
 
       expect(uri, contains('amount='));
@@ -214,7 +221,7 @@ void main() {
         destinationKeyPair.accountId,
         amount: '100',
         assetCode: 'USD',
-        assetIssuer: issuerKeyPair.accountId
+        assetIssuer: issuerKeyPair.accountId,
       );
 
       expect(uri, contains('asset_code='));
@@ -228,7 +235,7 @@ void main() {
         destinationKeyPair.accountId,
         amount: '100',
         memo: 'Invoice #12345',
-        memoType: 'MEMO_TEXT'
+        memoType: 'MEMO_TEXT',
       );
 
       expect(uri, contains('memo='));
@@ -241,7 +248,7 @@ void main() {
         destinationKeyPair.accountId,
         amount: '100',
         memo: '9876543210',
-        memoType: 'MEMO_ID'
+        memoType: 'MEMO_ID',
       );
 
       expect(uri, contains('memo='));
@@ -257,7 +264,7 @@ void main() {
         destinationKeyPair.accountId,
         amount: '100',
         memo: hash,
-        memoType: 'MEMO_HASH'
+        memoType: 'MEMO_HASH',
       );
 
       expect(uri, contains('memo='));
@@ -269,7 +276,7 @@ void main() {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
         amount: '100',
-        callback: 'url:https://example.com/payment-callback'
+        callback: 'url:https://example.com/payment-callback',
       );
 
       expect(uri, contains('callback='));
@@ -280,7 +287,7 @@ void main() {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
         amount: '100',
-        message: 'Payment for premium subscription'
+        message: 'Payment for premium subscription',
       );
 
       expect(uri, contains('msg='));
@@ -299,7 +306,7 @@ void main() {
         callback: 'url:https://example.com/callback',
         message: 'Complete your order',
         networkPassphrase: Network.TESTNET.networkPassphrase,
-        originDomain: 'example.com'
+        originDomain: 'example.com',
       );
 
       expect(uri, contains('destination='));
@@ -319,7 +326,7 @@ void main() {
         destinationKeyPair.accountId,
         amount: '100.50',
         memo: 'Test memo with spaces',
-        memoType: 'MEMO_TEXT'
+        memoType: 'MEMO_TEXT',
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
@@ -333,12 +340,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
@@ -354,14 +361,17 @@ void main() {
     test('parses valid pay URI', () {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
-        amount: '100'
+        amount: '100',
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
 
       expect(parsed, isNotNull);
       expect(parsed!.operationType, equals('pay'));
-      expect(parsed.queryParameters['destination'], equals(destinationKeyPair.accountId));
+      expect(
+        parsed.queryParameters['destination'],
+        equals(destinationKeyPair.accountId),
+      );
       expect(parsed.queryParameters['amount'], equals('100'));
     });
 
@@ -371,7 +381,7 @@ void main() {
         amount: '100',
         memo: 'Test memo',
         memoType: 'MEMO_TEXT',
-        message: 'Payment request'
+        message: 'Payment request',
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
@@ -400,12 +410,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
@@ -418,7 +428,7 @@ void main() {
     test('validates correct pay URI', () {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
-        amount: '100'
+        amount: '100',
       );
 
       final result = uriScheme.isValidSep7Url(uri);
@@ -446,12 +456,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
@@ -467,19 +477,22 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
       final uri = uriScheme.generateSignTransactionURI(xdr);
       final signedUri = uriScheme.addSignature(uri, signerKeyPair);
 
-      final isValid = uriScheme.verifySignature(signedUri, signerKeyPair.accountId);
+      final isValid = uriScheme.verifySignature(
+        signedUri,
+        signerKeyPair.accountId,
+      );
       expect(isValid, isTrue);
     });
 
@@ -487,12 +500,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
@@ -500,7 +513,10 @@ void main() {
       final signedUri = uriScheme.addSignature(uri, signerKeyPair);
 
       final differentKeyPair = KeyPair.random();
-      final isValid = uriScheme.verifySignature(signedUri, differentKeyPair.accountId);
+      final isValid = uriScheme.verifySignature(
+        signedUri,
+        differentKeyPair.accountId,
+      );
       expect(isValid, isFalse);
     });
 
@@ -508,12 +524,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
@@ -527,12 +543,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
@@ -541,7 +557,7 @@ void main() {
 
       expect(
         () => uriScheme.addSignature(signedUri, signerKeyPair),
-        throwsArgumentError
+        throwsArgumentError,
       );
     });
 
@@ -549,14 +565,17 @@ void main() {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
         amount: '100',
-        originDomain: 'example.com'
+        originDomain: 'example.com',
       );
 
       final signedUri = uriScheme.addSignature(uri, signerKeyPair);
 
       expect(signedUri, contains('signature='));
 
-      final isValid = uriScheme.verifySignature(signedUri, signerKeyPair.accountId);
+      final isValid = uriScheme.verifySignature(
+        signedUri,
+        signerKeyPair.accountId,
+      );
       expect(isValid, isTrue);
     });
   });
@@ -567,18 +586,21 @@ void main() {
         destinationKeyPair.accountId,
         amount: '100',
         memo: 'Test: special @#\$% chars',
-        memoType: 'MEMO_TEXT'
+        memoType: 'MEMO_TEXT',
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
       expect(parsed, isNotNull);
-      expect(parsed!.queryParameters['memo'], equals('Test: special @#\$% chars'));
+      expect(
+        parsed!.queryParameters['memo'],
+        equals('Test: special @#\$% chars'),
+      );
     });
 
     test('handles URI with very large amount', () {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
-        amount: '922337203685.4775807'
+        amount: '922337203685.4775807',
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
@@ -589,7 +611,7 @@ void main() {
     test('handles URI with zero amount', () {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
-        amount: '0'
+        amount: '0',
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
@@ -599,7 +621,7 @@ void main() {
 
     test('handles pay URI without amount', () {
       final uri = uriScheme.generatePayOperationURI(
-        destinationKeyPair.accountId
+        destinationKeyPair.accountId,
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
@@ -614,7 +636,7 @@ void main() {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
         amount: '100',
-        message: longMessage
+        message: longMessage,
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
@@ -625,7 +647,7 @@ void main() {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
         amount: '100',
-        callback: 'url:https://example.com/callback?session=abc123&user=test'
+        callback: 'url:https://example.com/callback?session=abc123&user=test',
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
@@ -634,11 +656,12 @@ void main() {
     });
 
     test('handles muxed account as destination', () {
-      final muxedAccountId = 'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6';
+      final muxedAccountId =
+          'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6';
 
       final uri = uriScheme.generatePayOperationURI(
         muxedAccountId,
-        amount: '100'
+        amount: '100',
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
@@ -653,7 +676,7 @@ void main() {
         destinationKeyPair.accountId,
         amount: '100',
         assetCode: 'LONGASSET123',
-        assetIssuer: issuerKeyPair.accountId
+        assetIssuer: issuerKeyPair.accountId,
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
@@ -665,7 +688,7 @@ void main() {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
         amount: '100',
-        networkPassphrase: Network.PUBLIC.networkPassphrase
+        networkPassphrase: Network.PUBLIC.networkPassphrase,
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
@@ -678,23 +701,26 @@ void main() {
     test('extracts destination from pay URI', () {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
-        amount: '100'
+        amount: '100',
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
-      expect(parsed!.queryParameters['destination'], equals(destinationKeyPair.accountId));
+      expect(
+        parsed!.queryParameters['destination'],
+        equals(destinationKeyPair.accountId),
+      );
     });
 
     test('extracts XDR from tx URI', () {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
@@ -704,7 +730,7 @@ void main() {
       expect(parsed!.queryParameters['xdr'], equals(xdr));
 
       final reconstructedTx = AbstractTransaction.fromEnvelopeXdrString(
-        parsed.queryParameters['xdr']!
+        parsed.queryParameters['xdr']!,
       );
       expect(reconstructedTx, isNotNull);
     });
@@ -716,12 +742,15 @@ void main() {
         destinationKeyPair.accountId,
         amount: '100',
         assetCode: 'USD',
-        assetIssuer: issuerKeyPair.accountId
+        assetIssuer: issuerKeyPair.accountId,
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
       expect(parsed!.queryParameters['asset_code'], equals('USD'));
-      expect(parsed.queryParameters['asset_issuer'], equals(issuerKeyPair.accountId));
+      expect(
+        parsed.queryParameters['asset_issuer'],
+        equals(issuerKeyPair.accountId),
+      );
     });
 
     test('extracts memo parameters from pay URI', () {
@@ -729,7 +758,7 @@ void main() {
         destinationKeyPair.accountId,
         amount: '100',
         memo: 'Invoice #12345',
-        memoType: 'MEMO_TEXT'
+        memoType: 'MEMO_TEXT',
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
@@ -741,7 +770,7 @@ void main() {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
         amount: '100',
-        originDomain: 'example.com'
+        originDomain: 'example.com',
       );
 
       final parsed = uriScheme.tryParseSep7Url(uri);
@@ -751,7 +780,7 @@ void main() {
     test('extracts signature from signed URI', () {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
-        amount: '100'
+        amount: '100',
       );
 
       final signedUri = uriScheme.addSignature(uri, signerKeyPair);
@@ -764,13 +793,17 @@ void main() {
 
   group('URIScheme - Advanced Validation Tests', () {
     test('rejects tx URI missing xdr parameter', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:tx?callback=url:https://example.com');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:tx?callback=url:https://example.com',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('xdr'));
     });
 
     test('rejects tx URI with invalid xdr', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:tx?xdr=invalid_xdr_data');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:tx?xdr=invalid_xdr_data',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('transaction envelope'));
     });
@@ -782,13 +815,17 @@ void main() {
     });
 
     test('rejects pay URI with invalid destination', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=INVALID_ADDRESS');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=INVALID_ADDRESS',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Stellar address'));
     });
 
     test('rejects URI with xdr parameter in pay operation', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&xdr=test');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&xdr=test',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
@@ -797,23 +834,27 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
-      final result = uriScheme.isValidSep7Url('web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&destination=${destinationKeyPair.accountId}');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&destination=${destinationKeyPair.accountId}',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
 
     test('rejects URI with replace parameter in pay operation', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&replace=test');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&replace=test',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
@@ -822,17 +863,19 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
-      final result = uriScheme.isValidSep7Url('web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&amount=100');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&amount=100',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
@@ -841,17 +884,19 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
-      final result = uriScheme.isValidSep7Url('web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&asset_code=USD');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&asset_code=USD',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
@@ -860,35 +905,43 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
-      final result = uriScheme.isValidSep7Url('web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&asset_issuer=${destinationKeyPair.accountId}');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&asset_issuer=${destinationKeyPair.accountId}',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
 
     test('rejects URI with asset code longer than 12 characters', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&asset_code=VERYLONGASSET');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&asset_code=VERYLONGASSET',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('asset code'));
     });
 
     test('rejects URI with invalid asset issuer', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&asset_code=USD&asset_issuer=INVALID');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&asset_code=USD&asset_issuer=INVALID',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('asset_issuer'));
     });
 
     test('rejects URI with pubkey parameter in pay operation', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&pubkey=${sourceKeyPair.accountId}');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&pubkey=${sourceKeyPair.accountId}',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
@@ -897,24 +950,28 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
-      final result = uriScheme.isValidSep7Url('web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&pubkey=INVALID_KEY');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&pubkey=INVALID_KEY',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('public key'));
     });
 
     test('rejects URI with message longer than 300 characters', () {
       final longMessage = 'A' * 301;
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&msg=${Uri.encodeComponent(longMessage)}');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&msg=${Uri.encodeComponent(longMessage)}',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('300 characters'));
     });
@@ -923,17 +980,19 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
-      final result = uriScheme.isValidSep7Url('web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&memo_type=MEMO_TEXT');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&memo_type=MEMO_TEXT',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
@@ -942,100 +1001,134 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
-      final result = uriScheme.isValidSep7Url('web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&memo=test');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&memo=test',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
 
     test('rejects URI with invalid memo type', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=test&memo_type=MEMO_INVALID');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=test&memo_type=MEMO_INVALID',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('memo_type'));
     });
 
     test('rejects URI with MEMO_TEXT that is too long', () {
       final longMemo = 'A' * 29; // MemoText max is 28 bytes
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=${Uri.encodeComponent(longMemo)}&memo_type=MEMO_TEXT');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=${Uri.encodeComponent(longMemo)}&memo_type=MEMO_TEXT',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('too long'));
     });
 
     test('rejects URI with MEMO_ID with invalid value', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=invalid_id&memo_type=MEMO_ID');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=invalid_id&memo_type=MEMO_ID',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('invalid value'));
     });
 
     test('rejects URI with MEMO_HASH with non-base64 value', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=not_base64!&memo_type=MEMO_HASH');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=not_base64!&memo_type=MEMO_HASH',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('base64'));
     });
 
     test('rejects URI with MEMO_RETURN with non-base64 value', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=not_base64!&memo_type=MEMO_RETURN');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=not_base64!&memo_type=MEMO_RETURN',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('base64'));
     });
 
     test('accepts URI with MEMO_HASH with shorter hash (auto-padded)', () {
-      final shortHash = base64Encode(Uint8List.fromList(List<int>.filled(16, 1))); // Will be padded to 32 bytes
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=$shortHash&memo_type=MEMO_HASH');
+      final shortHash = base64Encode(
+        Uint8List.fromList(List<int>.filled(16, 1)),
+      ); // Will be padded to 32 bytes
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=$shortHash&memo_type=MEMO_HASH',
+      );
       expect(result.result, isTrue);
     });
 
     test('accepts URI with MEMO_RETURN with shorter hash (auto-padded)', () {
-      final shortHash = base64Encode(Uint8List.fromList(List<int>.filled(16, 1))); // Will be padded to 32 bytes
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=$shortHash&memo_type=MEMO_RETURN');
+      final shortHash = base64Encode(
+        Uint8List.fromList(List<int>.filled(16, 1)),
+      ); // Will be padded to 32 bytes
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=$shortHash&memo_type=MEMO_RETURN',
+      );
       expect(result.result, isTrue);
     });
 
     test('accepts URI with valid MEMO_HASH', () {
       final hash = base64Encode(Uint8List.fromList(List<int>.filled(32, 1)));
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=$hash&memo_type=MEMO_HASH');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=$hash&memo_type=MEMO_HASH',
+      );
       expect(result.result, isTrue);
     });
 
     test('accepts URI with valid MEMO_RETURN', () {
       final hash = base64Encode(Uint8List.fromList(List<int>.filled(32, 1)));
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=$hash&memo_type=MEMO_RETURN');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=$hash&memo_type=MEMO_RETURN',
+      );
       expect(result.result, isTrue);
     });
 
     test('accepts URI with valid MEMO_ID', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=12345&memo_type=MEMO_ID');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=12345&memo_type=MEMO_ID',
+      );
       expect(result.result, isTrue);
     });
 
     test('rejects URI with invalid origin domain format', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&origin_domain=invalid_domain_!@#');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&origin_domain=invalid_domain_!@#',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('domain name'));
     });
 
     test('accepts URI with valid fully qualified domain name', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&origin_domain=example.com');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&origin_domain=example.com',
+      );
       expect(result.result, isTrue);
     });
 
     test('rejects URI with chain parameter in pay operation', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=${destinationKeyPair.accountId}&chain=test');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&chain=test',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
 
     test('rejects URI with unsupported operation type', () {
-      final result = uriScheme.isValidSep7Url('web+stellar:unsupported?test=value');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:unsupported?test=value',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('not supported'));
     });
@@ -1047,8 +1140,11 @@ void main() {
     });
 
     test('validates contract ID as destination', () {
-      final contractId = 'CAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQC526';
-      final result = uriScheme.isValidSep7Url('web+stellar:pay?destination=$contractId');
+      final contractId =
+          'CAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQC526';
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=$contractId',
+      );
       expect(result.result, isTrue);
     });
 
@@ -1056,19 +1152,19 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final uri = uriScheme.generateSignTransactionURI(
         xdr,
-        replace: 'sourceAccount:X;X:source account'
+        replace: 'sourceAccount:X;X:source account',
       );
 
       final result = uriScheme.isValidSep7Url(uri);
@@ -1079,19 +1175,19 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final uri = uriScheme.generateSignTransactionURI(
         xdr,
-        publicKey: sourceKeyPair.accountId
+        publicKey: sourceKeyPair.accountId,
       );
 
       final result = uriScheme.isValidSep7Url(uri);
@@ -1102,21 +1198,18 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final chainUri = uriScheme.generateSignTransactionURI(xdr);
-      final uri = uriScheme.generateSignTransactionURI(
-        xdr,
-        chain: chainUri
-      );
+      final uri = uriScheme.generateSignTransactionURI(xdr, chain: chainUri);
 
       final result = uriScheme.isValidSep7Url(uri);
       expect(result.result, isTrue);
@@ -1126,12 +1219,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
@@ -1153,12 +1246,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       final xdr = transaction.toEnvelopeXdrBase64();
@@ -1178,7 +1271,11 @@ void main() {
     test('converts replacement objects to string format', () {
       final replacements = [
         UriSchemeReplacement('X', 'sourceAccount', 'account paying fees'),
-        UriSchemeReplacement('Y', 'operations[0].destination', 'receiving account'),
+        UriSchemeReplacement(
+          'Y',
+          'operations[0].destination',
+          'receiving account',
+        ),
       ];
 
       final result = uriScheme.uriSchemeReplacementsToString(replacements);
@@ -1190,9 +1287,12 @@ void main() {
     });
 
     test('parses replacement string into objects', () {
-      final replaceString = 'sourceAccount:X,operations[0].destination:Y;X:account paying fees,Y:receiving account';
+      final replaceString =
+          'sourceAccount:X,operations[0].destination:Y;X:account paying fees,Y:receiving account';
 
-      final replacements = uriScheme.uriSchemeReplacementsFromString(replaceString);
+      final replacements = uriScheme.uriSchemeReplacementsFromString(
+        replaceString,
+      );
 
       expect(replacements.length, equals(2));
       expect(replacements[0].path, equals('sourceAccount'));
@@ -1251,14 +1351,14 @@ void main() {
     test('addSignature throws on invalid URI', () {
       expect(
         () => uriScheme.addSignature('https://example.com', signerKeyPair),
-        throwsArgumentError
+        throwsArgumentError,
       );
     });
 
     test('verifySignature returns false for invalid public key', () {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
-        amount: '100'
+        amount: '100',
       );
       final signedUri = uriScheme.addSignature(uri, signerKeyPair);
 
@@ -1267,26 +1367,38 @@ void main() {
     });
 
     test('verifySignature returns false for unparseable URI', () {
-      final isValid = uriScheme.verifySignature('not a uri', signerKeyPair.accountId);
+      final isValid = uriScheme.verifySignature(
+        'not a uri',
+        signerKeyPair.accountId,
+      );
       expect(isValid, isFalse);
     });
 
     test('verifySignature returns false for invalid sep7 URL', () {
-      final isValid = uriScheme.verifySignature('https://example.com', signerKeyPair.accountId);
+      final isValid = uriScheme.verifySignature(
+        'https://example.com',
+        signerKeyPair.accountId,
+      );
       expect(isValid, isFalse);
     });
 
     test('verifySignature returns false for URI with modified signature', () {
       final uri = uriScheme.generatePayOperationURI(
         destinationKeyPair.accountId,
-        amount: '100'
+        amount: '100',
       );
       final signedUri = uriScheme.addSignature(uri, signerKeyPair);
 
       // Modify the signature
-      final modifiedUri = signedUri.replaceAll(RegExp(r'signature=[^&]+'), 'signature=AAAA');
+      final modifiedUri = signedUri.replaceAll(
+        RegExp(r'signature=[^&]+'),
+        'signature=AAAA',
+      );
 
-      final isValid = uriScheme.verifySignature(modifiedUri, signerKeyPair.accountId);
+      final isValid = uriScheme.verifySignature(
+        modifiedUri,
+        signerKeyPair.accountId,
+      );
       expect(isValid, isFalse);
     });
   });
@@ -1299,7 +1411,7 @@ void main() {
         destinationKeyPair.accountId,
         amount: '100',
         memo: hash,
-        memoType: 'MEMO_RETURN'
+        memoType: 'MEMO_RETURN',
       );
 
       expect(uri, contains('memo='));
@@ -1314,37 +1426,41 @@ void main() {
 
   group('URI Validation Edge Cases', () {
     test('isValidSep7Url rejects URI with invalid XDR transaction', () {
-      final result = uriScheme
-          .isValidSep7Url('web+stellar:tx?xdr=notvalidxdr');
+      final result = uriScheme.isValidSep7Url('web+stellar:tx?xdr=notvalidxdr');
       expect(result.result, isFalse);
       expect(result.reason, contains('transaction envelope'));
     });
 
     test('isValidSep7Url validates URI with contract ID as destination', () {
-      final contractId = 'CAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQC526';
-      final result = uriScheme
-          .isValidSep7Url('web+stellar:pay?destination=$contractId');
+      final contractId =
+          'CAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQC526';
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=$contractId',
+      );
       expect(result.result, isTrue);
     });
 
     test('isValidSep7Url validates URI with muxed account destination', () {
       final muxedAccountId =
           'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6';
-      final result = uriScheme
-          .isValidSep7Url('web+stellar:pay?destination=$muxedAccountId');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:pay?destination=$muxedAccountId',
+      );
       expect(result.result, isTrue);
     });
 
     test('isValidSep7Url rejects URI with too many path segments', () {
-      final result =
-          uriScheme.isValidSep7Url('web+stellar:tx/extra/segments?xdr=test');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:tx/extra/segments?xdr=test',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('path segments'));
     });
 
     test('isValidSep7Url rejects pay URI with xdr parameter', () {
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&xdr=test');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&xdr=test',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
@@ -1355,13 +1471,15 @@ void main() {
         Asset.NATIVE,
         "100.0",
       ).build();
-      final transaction =
-          TransactionBuilder(sourceAccount).addOperation(paymentOp).build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
       transaction.sign(sourceKeyPair, Network.TESTNET);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&destination=${destinationKeyPair.accountId}');
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&destination=${destinationKeyPair.accountId}',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
@@ -1372,13 +1490,15 @@ void main() {
         Asset.NATIVE,
         "100.0",
       ).build();
-      final transaction =
-          TransactionBuilder(sourceAccount).addOperation(paymentOp).build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
       transaction.sign(sourceKeyPair, Network.TESTNET);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&amount=100');
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&amount=100',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
@@ -1389,13 +1509,15 @@ void main() {
         Asset.NATIVE,
         "100.0",
       ).build();
-      final transaction =
-          TransactionBuilder(sourceAccount).addOperation(paymentOp).build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
       transaction.sign(sourceKeyPair, Network.TESTNET);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&asset_code=USD');
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&asset_code=USD',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
@@ -1406,34 +1528,39 @@ void main() {
         Asset.NATIVE,
         "100.0",
       ).build();
-      final transaction =
-          TransactionBuilder(sourceAccount).addOperation(paymentOp).build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
       transaction.sign(sourceKeyPair, Network.TESTNET);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&asset_issuer=${destinationKeyPair.accountId}');
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&asset_issuer=${destinationKeyPair.accountId}',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
 
     test('isValidSep7Url rejects pay URI with asset code longer than 12', () {
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&asset_code=VERYLONGASSET');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&asset_code=VERYLONGASSET',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('asset code'));
     });
 
     test('isValidSep7Url rejects pay URI with invalid asset issuer', () {
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&asset_code=USD&asset_issuer=INVALID');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&asset_code=USD&asset_issuer=INVALID',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('asset_issuer'));
     });
 
     test('isValidSep7Url rejects pay URI with pubkey parameter', () {
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&pubkey=${sourceKeyPair.accountId}');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&pubkey=${sourceKeyPair.accountId}',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
@@ -1444,13 +1571,15 @@ void main() {
         Asset.NATIVE,
         "100.0",
       ).build();
-      final transaction =
-          TransactionBuilder(sourceAccount).addOperation(paymentOp).build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
       transaction.sign(sourceKeyPair, Network.TESTNET);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&pubkey=INVALID_KEY');
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&pubkey=INVALID_KEY',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('public key'));
     });
@@ -1458,7 +1587,8 @@ void main() {
     test('isValidSep7Url rejects URI with message longer than 300 chars', () {
       final longMessage = 'A' * 301;
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&msg=${Uri.encodeComponent(longMessage)}');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&msg=${Uri.encodeComponent(longMessage)}',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('300 characters'));
     });
@@ -1466,7 +1596,8 @@ void main() {
     test('isValidSep7Url accepts URI with message exactly 300 chars', () {
       final message300 = 'A' * 300;
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&msg=${Uri.encodeComponent(message300)}');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&msg=${Uri.encodeComponent(message300)}',
+      );
       expect(result.result, isTrue);
     });
 
@@ -1476,13 +1607,15 @@ void main() {
         Asset.NATIVE,
         "100.0",
       ).build();
-      final transaction =
-          TransactionBuilder(sourceAccount).addOperation(paymentOp).build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
       transaction.sign(sourceKeyPair, Network.TESTNET);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&memo_type=MEMO_TEXT');
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&memo_type=MEMO_TEXT',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
@@ -1493,29 +1626,32 @@ void main() {
         Asset.NATIVE,
         "100.0",
       ).build();
-      final transaction =
-          TransactionBuilder(sourceAccount).addOperation(paymentOp).build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
       transaction.sign(sourceKeyPair, Network.TESTNET);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&memo=test');
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}&memo=test',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
 
     test('isValidSep7Url rejects pay URI with invalid memo type', () {
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=test&memo_type=MEMO_INVALID');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=test&memo_type=MEMO_INVALID',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('memo_type'));
     });
 
-    test('isValidSep7Url rejects pay URI with MEMO_TEXT that is too long',
-        () {
+    test('isValidSep7Url rejects pay URI with MEMO_TEXT that is too long', () {
       final longMemo = 'A' * 29; // MemoText max is 28 bytes
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=${Uri.encodeComponent(longMemo)}&memo_type=MEMO_TEXT');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=${Uri.encodeComponent(longMemo)}&memo_type=MEMO_TEXT',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('too long'));
     });
@@ -1523,26 +1659,30 @@ void main() {
     test('isValidSep7Url accepts pay URI with MEMO_TEXT at max length', () {
       final memo28 = 'A' * 28;
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=${Uri.encodeComponent(memo28)}&memo_type=MEMO_TEXT');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=${Uri.encodeComponent(memo28)}&memo_type=MEMO_TEXT',
+      );
       expect(result.result, isTrue);
     });
 
     test('isValidSep7Url rejects pay URI with MEMO_ID with invalid value', () {
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=invalid_id&memo_type=MEMO_ID');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=invalid_id&memo_type=MEMO_ID',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('invalid value'));
     });
 
     test('isValidSep7Url accepts pay URI with valid MEMO_ID', () {
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=12345&memo_type=MEMO_ID');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=12345&memo_type=MEMO_ID',
+      );
       expect(result.result, isTrue);
     });
 
     test('isValidSep7Url rejects pay URI with MEMO_HASH with non-base64', () {
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=not_base64!&memo_type=MEMO_HASH');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=not_base64!&memo_type=MEMO_HASH',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('base64'));
     });
@@ -1550,14 +1690,15 @@ void main() {
     test('isValidSep7Url accepts pay URI with valid MEMO_HASH', () {
       final hash = base64Encode(Uint8List.fromList(List<int>.filled(32, 1)));
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=$hash&memo_type=MEMO_HASH');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=$hash&memo_type=MEMO_HASH',
+      );
       expect(result.result, isTrue);
     });
 
-    test('isValidSep7Url rejects pay URI with MEMO_RETURN with non-base64',
-        () {
+    test('isValidSep7Url rejects pay URI with MEMO_RETURN with non-base64', () {
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=not_base64!&memo_type=MEMO_RETURN');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=not_base64!&memo_type=MEMO_RETURN',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('base64'));
     });
@@ -1565,33 +1706,38 @@ void main() {
     test('isValidSep7Url accepts pay URI with valid MEMO_RETURN', () {
       final hash = base64Encode(Uint8List.fromList(List<int>.filled(32, 2)));
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=$hash&memo_type=MEMO_RETURN');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=$hash&memo_type=MEMO_RETURN',
+      );
       expect(result.result, isTrue);
     });
 
     test('isValidSep7Url rejects pay URI with invalid origin domain', () {
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&origin_domain=invalid_domain_!@#');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&origin_domain=invalid_domain_!@#',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('domain name'));
     });
 
     test('isValidSep7Url accepts pay URI with valid origin domain', () {
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&origin_domain=example.com');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&origin_domain=example.com',
+      );
       expect(result.result, isTrue);
     });
 
     test('isValidSep7Url rejects pay URI with chain parameter', () {
       final result = uriScheme.isValidSep7Url(
-          'web+stellar:pay?destination=${destinationKeyPair.accountId}&chain=test');
+        'web+stellar:pay?destination=${destinationKeyPair.accountId}&chain=test',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('Unsupported parameter'));
     });
 
     test('isValidSep7Url rejects URI with unsupported operation type', () {
-      final result =
-          uriScheme.isValidSep7Url('web+stellar:unsupported?test=value');
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:unsupported?test=value',
+      );
       expect(result.result, isFalse);
       expect(result.reason, contains('not supported'));
     });
@@ -1602,14 +1748,14 @@ void main() {
         Asset.NATIVE,
         "100.0",
       ).build();
-      final transaction =
-          TransactionBuilder(sourceAccount).addOperation(paymentOp).build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
       transaction.sign(sourceKeyPair, Network.TESTNET);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final chainUri = uriScheme.generateSignTransactionURI(xdr);
-      final uri =
-          uriScheme.generateSignTransactionURI(xdr, chain: chainUri);
+      final uri = uriScheme.generateSignTransactionURI(xdr, chain: chainUri);
 
       final result = uriScheme.isValidSep7Url(uri);
       expect(result.result, isTrue);
@@ -1621,15 +1767,15 @@ void main() {
         Asset.NATIVE,
         "100.0",
       ).build();
-      final transaction =
-          TransactionBuilder(sourceAccount).addOperation(paymentOp).build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
       transaction.sign(sourceKeyPair, Network.TESTNET);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       String chainUri = uriScheme.generateSignTransactionURI(xdr);
       for (int i = 0; i < 9; i++) {
-        chainUri =
-            uriScheme.generateSignTransactionURI(xdr, chain: chainUri);
+        chainUri = uriScheme.generateSignTransactionURI(xdr, chain: chainUri);
       }
 
       final result = uriScheme.isValidSep7Url(chainUri);
@@ -1654,7 +1800,10 @@ void main() {
       final replacements = [
         UriSchemeReplacement('X', 'sourceAccount', 'account paying fees'),
         UriSchemeReplacement(
-            'Y', 'operations[0].destination', 'receiving account'),
+          'Y',
+          'operations[0].destination',
+          'receiving account',
+        ),
       ];
 
       final result = uriScheme.uriSchemeReplacementsToString(replacements);
@@ -1665,20 +1814,22 @@ void main() {
       expect(result, contains('Y:receiving account'));
     });
 
-    test('uriSchemeReplacementsToString with duplicate IDs deduplicates hints',
-        () {
-      final replacements = [
-        UriSchemeReplacement('X', 'operations[0].destination', 'account'),
-        UriSchemeReplacement('X', 'operations[1].destination', 'account'),
-      ];
+    test(
+      'uriSchemeReplacementsToString with duplicate IDs deduplicates hints',
+      () {
+        final replacements = [
+          UriSchemeReplacement('X', 'operations[0].destination', 'account'),
+          UriSchemeReplacement('X', 'operations[1].destination', 'account'),
+        ];
 
-      final result = uriScheme.uriSchemeReplacementsToString(replacements);
+        final result = uriScheme.uriSchemeReplacementsToString(replacements);
 
-      expect(result, contains('operations[0].destination:X'));
-      expect(result, contains('operations[1].destination:X'));
-      final hintCount = 'X:account'.allMatches(result).length;
-      expect(hintCount, equals(1));
-    });
+        expect(result, contains('operations[0].destination:X'));
+        expect(result, contains('operations[1].destination:X'));
+        final hintCount = 'X:account'.allMatches(result).length;
+        expect(hintCount, equals(1));
+      },
+    );
 
     test('uriSchemeReplacementsToString with empty list', () {
       final result = uriScheme.uriSchemeReplacementsToString([]);
@@ -1688,8 +1839,9 @@ void main() {
     test('uriSchemeReplacementsFromString parses single replacement', () {
       final replaceString = 'sourceAccount:X;X:account paying fees';
 
-      final replacements =
-          uriScheme.uriSchemeReplacementsFromString(replaceString);
+      final replacements = uriScheme.uriSchemeReplacementsFromString(
+        replaceString,
+      );
 
       expect(replacements.length, equals(1));
       expect(replacements[0].path, equals('sourceAccount'));
@@ -1701,8 +1853,9 @@ void main() {
       final replaceString =
           'sourceAccount:X,operations[0].destination:Y;X:account paying fees,Y:receiving account';
 
-      final replacements =
-          uriScheme.uriSchemeReplacementsFromString(replaceString);
+      final replacements = uriScheme.uriSchemeReplacementsFromString(
+        replaceString,
+      );
 
       expect(replacements.length, equals(2));
       expect(replacements[0].path, equals('sourceAccount'));
@@ -1720,8 +1873,9 @@ void main() {
       final replaceString =
           'operations[0].destination:X,operations[1].destination:X;X:same account';
 
-      final replacements =
-          uriScheme.uriSchemeReplacementsFromString(replaceString);
+      final replacements = uriScheme.uriSchemeReplacementsFromString(
+        replaceString,
+      );
 
       expect(replacements.length, equals(2));
       expect(replacements[0].id, equals('X'));
@@ -1762,14 +1916,18 @@ void main() {
     });
 
     test('verifySignature returns false for unparseable URI', () {
-      final isValid =
-          uriScheme.verifySignature('not a uri', signerKeyPair.accountId);
+      final isValid = uriScheme.verifySignature(
+        'not a uri',
+        signerKeyPair.accountId,
+      );
       expect(isValid, isFalse);
     });
 
     test('verifySignature returns false for invalid sep7 URL', () {
       final isValid = uriScheme.verifySignature(
-          'https://example.com', signerKeyPair.accountId);
+        'https://example.com',
+        signerKeyPair.accountId,
+      );
       expect(isValid, isFalse);
     });
 
@@ -1790,11 +1948,15 @@ void main() {
       );
       final signedUri = uriScheme.addSignature(uri, signerKeyPair);
 
-      final modifiedUri =
-          signedUri.replaceAll(RegExp(r'signature=[^&]+'), 'signature=AAAA');
+      final modifiedUri = signedUri.replaceAll(
+        RegExp(r'signature=[^&]+'),
+        'signature=AAAA',
+      );
 
-      final isValid =
-          uriScheme.verifySignature(modifiedUri, signerKeyPair.accountId);
+      final isValid = uriScheme.verifySignature(
+        modifiedUri,
+        signerKeyPair.accountId,
+      );
       expect(isValid, isFalse);
     });
 
@@ -1849,12 +2011,16 @@ void main() {
 
       final parsed = uriScheme.tryParseSep7Url(uri);
       expect(parsed, isNotNull);
-      expect(parsed!.queryParameters['destination'],
-          equals(destinationKeyPair.accountId));
+      expect(
+        parsed!.queryParameters['destination'],
+        equals(destinationKeyPair.accountId),
+      );
       expect(parsed.queryParameters['amount'], equals('100.50'));
       expect(parsed.queryParameters['asset_code'], equals('USD'));
-      expect(parsed.queryParameters['asset_issuer'],
-          equals(issuerKeyPair.accountId));
+      expect(
+        parsed.queryParameters['asset_issuer'],
+        equals(issuerKeyPair.accountId),
+      );
       expect(parsed.queryParameters['memo'], equals('Order #123'));
       expect(parsed.queryParameters['memo_type'], equals('MEMO_TEXT'));
     });
@@ -1881,8 +2047,9 @@ void main() {
         Asset.NATIVE,
         "100.0",
       ).build();
-      final transaction =
-          TransactionBuilder(sourceAccount).addOperation(paymentOp).build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
       transaction.sign(sourceKeyPair, Network.TESTNET);
       final xdr = transaction.toEnvelopeXdrBase64();
 
@@ -1918,14 +2085,14 @@ void main() {
         Asset.NATIVE,
         "100.0",
       ).build();
-      final transaction =
-          TransactionBuilder(sourceAccount).addOperation(paymentOp).build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
       transaction.sign(sourceKeyPair, Network.TESTNET);
       final xdr = transaction.toEnvelopeXdrBase64();
 
       final chainUri = uriScheme.generateSignTransactionURI(xdr);
-      final uri =
-          uriScheme.generateSignTransactionURI(xdr, chain: chainUri);
+      final uri = uriScheme.generateSignTransactionURI(xdr, chain: chainUri);
 
       expect(uri, contains('chain='));
       final parsed = uriScheme.tryParseSep7Url(uri);
@@ -1946,7 +2113,8 @@ void main() {
         final invalidUrl = 'web+stellar:pay?destination=GABC';
 
         expect(
-          () async => await uriScheme.signAndSubmitTransaction(invalidUrl, testKeyPair),
+          () async =>
+              await uriScheme.signAndSubmitTransaction(invalidUrl, testKeyPair),
           throwsA(isA<ArgumentError>()),
         );
       });
@@ -1955,7 +2123,10 @@ void main() {
         final urlWithoutXdr = 'web+stellar:tx?callback=url:https://example.com';
 
         expect(
-          () async => await uriScheme.signAndSubmitTransaction(urlWithoutXdr, testKeyPair),
+          () async => await uriScheme.signAndSubmitTransaction(
+            urlWithoutXdr,
+            testKeyPair,
+          ),
           throwsA(isA<ArgumentError>()),
         );
       });
@@ -1964,13 +2135,19 @@ void main() {
         final urlWithInvalidXdr = 'web+stellar:tx?xdr=invalid_xdr_data';
 
         expect(
-          () async => await uriScheme.signAndSubmitTransaction(urlWithInvalidXdr, testKeyPair),
+          () async => await uriScheme.signAndSubmitTransaction(
+            urlWithInvalidXdr,
+            testKeyPair,
+          ),
           throwsA(isA<ArgumentError>()),
         );
       });
 
       test('submits transaction via callback URL', () async {
-        final localSourceAccount = Account(testKeyPair.accountId, BigInt.from(100));
+        final localSourceAccount = Account(
+          testKeyPair.accountId,
+          BigInt.from(100),
+        );
         final transaction = TransactionBuilder(localSourceAccount)
             .addOperation(
               PaymentOperationBuilder(
@@ -1992,7 +2169,10 @@ void main() {
         final mockClient = MockClient((request) async {
           expect(request.url.toString(), 'https://example.com/callback');
           expect(request.method, 'POST');
-          expect(request.headers['Content-Type'], 'application/x-www-form-urlencoded');
+          expect(
+            request.headers['Content-Type'],
+            'application/x-www-form-urlencoded',
+          );
           return http.Response('{"status":"pending"}', 200);
         });
 
@@ -2009,7 +2189,10 @@ void main() {
       });
 
       test('submits transaction to network when no callback', () async {
-        final localSourceAccount = Account(testKeyPair.accountId, BigInt.from(100));
+        final localSourceAccount = Account(
+          testKeyPair.accountId,
+          BigInt.from(100),
+        );
         final transaction = TransactionBuilder(localSourceAccount)
             .addOperation(
               PaymentOperationBuilder(
@@ -2029,7 +2212,10 @@ void main() {
       });
 
       test('handles callback with HTTP request headers', () async {
-        final localSourceAccount = Account(testKeyPair.accountId, BigInt.from(100));
+        final localSourceAccount = Account(
+          testKeyPair.accountId,
+          BigInt.from(100),
+        );
         final transaction = TransactionBuilder(localSourceAccount)
             .addOperation(
               PaymentOperationBuilder(
@@ -2326,7 +2512,11 @@ void main() {
         );
 
         final fakeSignature = base64Encode(List.filled(64, 0));
-        final result = uriScheme.verify(payUrl, Uri.encodeComponent(fakeSignature), signerKeyPair);
+        final result = uriScheme.verify(
+          payUrl,
+          Uri.encodeComponent(fakeSignature),
+          signerKeyPair,
+        );
 
         expect(result, false);
       });
@@ -2357,9 +2547,7 @@ void main() {
       });
 
       test('getParameterValue returns null for missing parameter', () {
-        final payUrl = uriScheme.generatePayOperationURI(
-          testKeyPair.accountId,
-        );
+        final payUrl = uriScheme.generatePayOperationURI(testKeyPair.accountId);
 
         final amount = uriScheme.getParameterValue('amount', payUrl);
         expect(amount, isNull);
@@ -2406,7 +2594,10 @@ void main() {
 
     group('isValidSep7Url Tests - Additional Edge Cases', () {
       test('handles chain parameter validation', () {
-        final localSourceAccount = Account(testKeyPair.accountId, BigInt.from(100));
+        final localSourceAccount = Account(
+          testKeyPair.accountId,
+          BigInt.from(100),
+        );
         final transaction = TransactionBuilder(localSourceAccount)
             .addOperation(
               PaymentOperationBuilder(
@@ -2446,7 +2637,10 @@ void main() {
       });
 
       test('verifySignature returns false for unparseable URL', () {
-        final result = uriScheme.verifySignature('not_a_url', signerKeyPair.accountId);
+        final result = uriScheme.verifySignature(
+          'not_a_url',
+          signerKeyPair.accountId,
+        );
         expect(result, false);
       });
 
@@ -2464,7 +2658,10 @@ void main() {
           amount: '100',
         );
 
-        final result = uriScheme.verifySignature(payUrl, signerKeyPair.accountId);
+        final result = uriScheme.verifySignature(
+          payUrl,
+          signerKeyPair.accountId,
+        );
         expect(result, false);
       });
 
@@ -2475,7 +2672,10 @@ void main() {
         );
         final signedUrl = uriScheme.addSignature(payUrl, signerKeyPair);
 
-        final result = uriScheme.verifySignature(signedUrl, signerKeyPair.accountId);
+        final result = uriScheme.verifySignature(
+          signedUrl,
+          signerKeyPair.accountId,
+        );
         expect(result, true);
       });
     });

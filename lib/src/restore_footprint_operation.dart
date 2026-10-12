@@ -76,8 +76,9 @@ class RestoreFootprintOperation extends Operation {
   /// Returns: XDR operation body for the footprint restoration.
   @override
   XdrOperationBody toOperationBody() {
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.RESTORE_FOOTPRINT);
+    XdrOperationBody body = XdrOperationBody(
+      XdrOperationType.RESTORE_FOOTPRINT,
+    );
     body.restoreFootprintOp = XdrRestoreFootprintOp(XdrExtensionPoint(0));
     return body;
   }

@@ -59,7 +59,7 @@ class OffersRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   OffersRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["offers"]);
+    : super(httpClient, serverURI, ["offers"]);
 
   /// Requests specific [uri] and returns OfferResponse.
   /// This method is helpful for getting the links.
@@ -95,8 +95,9 @@ class OffersRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"buying_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"buying_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({
+        "buying_asset_issuer": creditAlphaNumAsset.issuerId,
+      });
     }
     return this;
   }
@@ -108,8 +109,9 @@ class OffersRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"selling_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"selling_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({
+        "selling_asset_issuer": creditAlphaNumAsset.issuerId,
+      });
     }
     return this;
   }
@@ -134,7 +136,9 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Requests specific uri and returns Page of OfferResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<OfferResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<OfferResponse>>(httpClient, uri);
   }
 
@@ -162,7 +166,9 @@ class OffersRequestBuilder extends RequestBuilder {
   /// ```
   Future<Page<OfferResponse>> execute() {
     return OffersRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Sets the cursor for pagination to start returning records from a specific point.

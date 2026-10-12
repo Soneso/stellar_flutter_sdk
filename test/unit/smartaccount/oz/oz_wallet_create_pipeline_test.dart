@@ -98,14 +98,16 @@ Future<SimulateTransactionRequest> _runCreateWalletSimulation({
   final deployer = KeyPair.random();
   final mock = MockSorobanServer();
   final provider = RecordingWebAuthnProvider();
-  provider.registerResponses.add(WebAuthnRegistrationResult(
-    credentialId: base64Url.decode(base64Url.normalize(_credentialIdB64)),
-    publicKey: _validSecp256r1PublicKey(),
-    attestationObject: _bytes(37, 0xAA),
-    transports: <String>['internal'],
-    deviceType: 'multiDevice',
-    backedUp: true,
-  ));
+  provider.registerResponses.add(
+    WebAuthnRegistrationResult(
+      credentialId: base64Url.decode(base64Url.normalize(_credentialIdB64)),
+      publicKey: _validSecp256r1PublicKey(),
+      attestationObject: _bytes(37, 0xAA),
+      transports: <String>['internal'],
+      deviceType: 'multiDevice',
+      backedUp: true,
+    ),
+  );
   mock.getAccountResponses.add(_deployerAccount(deployer));
   mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 500));
 
@@ -184,63 +186,74 @@ void main() {
     test('createWallet_optOutConfig_simulateRequestsLegacyEntries', () async {
       final request = await _runCreateWalletSimulation(useUpgradedAuth: false);
 
-      expect(request.getRequestArgs()['useUpgradedAuth'], isFalse,
-          reason: 'the deployment simulation must follow the config flag');
-    });
-
-    test('createWallet_defaultConfig_simulateRequestsUpgradedEntries',
-        () async {
-      final request = await _runCreateWalletSimulation(useUpgradedAuth: true);
-
-      expect(request.getRequestArgs()['useUpgradedAuth'], isTrue);
-    });
-
-    test('createWallet_registrationThrowsNonWebAuthnException_wrapsAsRegistrationFailed', () async {
-      // When registration throws a non-WebAuthnException, it wraps as
-      // WebAuthnRegistrationFailed (lines 461-463 in oz_wallet_operations.dart).
-      final provider = RecordingWebAuthnProvider();
-      // Throw a plain Exception (not a WebAuthnException).
-      provider.registerResponses.add(Exception('generic registration error'));
-
-      final config = OZSmartAccountConfig(
-        rpcUrl: 'https://soroban-testnet.stellar.org',
-        networkPassphrase: Network.TESTNET.networkPassphrase,
-        accountWasmHash: '0' * 64,
-        webauthnVerifierAddress: _contractA,
-        webauthnProvider: provider,
-      );
-      final kit = FakePipelineKit(config: config);
-      final ops = OZWalletOperations(kit);
-
-      await expectLater(
-        () => ops.createWallet(),
-        throwsA(isA<WebAuthnRegistrationFailed>()),
+      expect(
+        request.getRequestArgs()['useUpgradedAuth'],
+        isFalse,
+        reason: 'the deployment simulation must follow the config flag',
       );
     });
 
-    test('createWallet_autoFundWithoutToken_withProvider_throwsInvalidInput', () async {
-      // When webauthnProvider IS configured and autoFund=true but
-      // nativeTokenContract=null, validation guard fires.
-      final provider = RecordingWebAuthnProvider();
-      final config = OZSmartAccountConfig(
-        rpcUrl: 'https://soroban-testnet.stellar.org',
-        networkPassphrase: Network.TESTNET.networkPassphrase,
-        accountWasmHash: '0' * 64,
-        webauthnVerifierAddress: _contractA,
-        webauthnProvider: provider,
-      );
-      final kit = FakePipelineKit(config: config);
-      final ops = OZWalletOperations(kit);
+    test(
+      'createWallet_defaultConfig_simulateRequestsUpgradedEntries',
+      () async {
+        final request = await _runCreateWalletSimulation(useUpgradedAuth: true);
 
-      await expectLater(
-        () => ops.createWallet(
-          autoSubmit: true,
-          autoFund: true,
-          nativeTokenContract: null, // missing
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+        expect(request.getRequestArgs()['useUpgradedAuth'], isTrue);
+      },
+    );
+
+    test(
+      'createWallet_registrationThrowsNonWebAuthnException_wrapsAsRegistrationFailed',
+      () async {
+        // When registration throws a non-WebAuthnException, it wraps as
+        // WebAuthnRegistrationFailed (lines 461-463 in oz_wallet_operations.dart).
+        final provider = RecordingWebAuthnProvider();
+        // Throw a plain Exception (not a WebAuthnException).
+        provider.registerResponses.add(Exception('generic registration error'));
+
+        final config = OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress: _contractA,
+          webauthnProvider: provider,
+        );
+        final kit = FakePipelineKit(config: config);
+        final ops = OZWalletOperations(kit);
+
+        await expectLater(
+          () => ops.createWallet(),
+          throwsA(isA<WebAuthnRegistrationFailed>()),
+        );
+      },
+    );
+
+    test(
+      'createWallet_autoFundWithoutToken_withProvider_throwsInvalidInput',
+      () async {
+        // When webauthnProvider IS configured and autoFund=true but
+        // nativeTokenContract=null, validation guard fires.
+        final provider = RecordingWebAuthnProvider();
+        final config = OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress: _contractA,
+          webauthnProvider: provider,
+        );
+        final kit = FakePipelineKit(config: config);
+        final ops = OZWalletOperations(kit);
+
+        await expectLater(
+          () => ops.createWallet(
+            autoSubmit: true,
+            autoFund: true,
+            nativeTokenContract: null, // missing
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
 
     test('createWallet_autoSubmit_sendFails_throwsSubmissionFailed', () async {
       final deployer = KeyPair.random();
@@ -251,11 +264,13 @@ void main() {
       );
       final pubKey = _validSecp256r1PublicKey();
 
-      provider.registerResponses.add(WebAuthnRegistrationResult(
-        credentialId: credIdBytes,
-        publicKey: pubKey,
-        attestationObject: _bytes(37, 0xBB),
-      ));
+      provider.registerResponses.add(
+        WebAuthnRegistrationResult(
+          credentialId: credIdBytes,
+          publicKey: pubKey,
+          attestationObject: _bytes(37, 0xBB),
+        ),
+      );
 
       mock.getAccountResponses.add(_deployerAccount(deployer));
       mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 500));
@@ -282,104 +297,116 @@ void main() {
       );
     });
 
-    test('createWallet_autoSubmit_sendErrorStatus_throwsSubmissionFailed', () async {
-      // createWallet with autoSubmit=true → _submitDeployTransaction →
-      // sendTransaction returns ERROR status → throws submissionFailed.
-      final deployer = KeyPair.random();
-      final mock = MockSorobanServer();
-      final provider = RecordingWebAuthnProvider();
-      final credIdBytes = base64Url.decode(
-        base64Url.normalize(_credentialIdB64),
-      );
-      final pubKey = _validSecp256r1PublicKey();
+    test(
+      'createWallet_autoSubmit_sendErrorStatus_throwsSubmissionFailed',
+      () async {
+        // createWallet with autoSubmit=true → _submitDeployTransaction →
+        // sendTransaction returns ERROR status → throws submissionFailed.
+        final deployer = KeyPair.random();
+        final mock = MockSorobanServer();
+        final provider = RecordingWebAuthnProvider();
+        final credIdBytes = base64Url.decode(
+          base64Url.normalize(_credentialIdB64),
+        );
+        final pubKey = _validSecp256r1PublicKey();
 
-      provider.registerResponses.add(WebAuthnRegistrationResult(
-        credentialId: credIdBytes,
-        publicKey: pubKey,
-        attestationObject: _bytes(37, 0xCC),
-      ));
+        provider.registerResponses.add(
+          WebAuthnRegistrationResult(
+            credentialId: credIdBytes,
+            publicKey: pubKey,
+            attestationObject: _bytes(37, 0xCC),
+          ),
+        );
 
-      mock.getAccountResponses.add(_deployerAccount(deployer));
-      mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 500));
+        mock.getAccountResponses.add(_deployerAccount(deployer));
+        mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 500));
 
-      // sendTransaction returns ERROR status.
-      final sendResp = SendTransactionResponse(<String, dynamic>{});
-      sendResp.hash = 'err-hash';
-      sendResp.status = SendTransactionResponse.STATUS_ERROR;
-      sendResp.errorResultXdr = 'base64-error-xdr';
-      mock.sendResponses.add(sendResp);
+        // sendTransaction returns ERROR status.
+        final sendResp = SendTransactionResponse(<String, dynamic>{});
+        sendResp.hash = 'err-hash';
+        sendResp.status = SendTransactionResponse.STATUS_ERROR;
+        sendResp.errorResultXdr = 'base64-error-xdr';
+        mock.sendResponses.add(sendResp);
 
-      final config = OZSmartAccountConfig(
-        rpcUrl: 'https://soroban-testnet.stellar.org',
-        networkPassphrase: Network.TESTNET.networkPassphrase,
-        accountWasmHash: '0' * 64,
-        webauthnVerifierAddress: _contractA,
-        webauthnProvider: provider,
-      );
-      final kit = FakePipelineKit(
-        config: config,
-        sorobanServer: mock,
-        deployer: deployer,
-      );
+        final config = OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress: _contractA,
+          webauthnProvider: provider,
+        );
+        final kit = FakePipelineKit(
+          config: config,
+          sorobanServer: mock,
+          deployer: deployer,
+        );
 
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.createWallet(autoSubmit: true),
-        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
-      );
-    });
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.createWallet(autoSubmit: true),
+          throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
+        );
+      },
+    );
 
-    test('createWallet_autoSubmit_sendTryAgainLater_throwsSubmissionFailed',
-        () async {
-      // createWallet with autoSubmit=true → _submitDeployTransaction →
-      // sendTransaction returns TRY_AGAIN_LATER, a status the network did
-      // not queue → throws submissionFailed without polling. No
-      // getTransaction responses are queued: polling instead would end in
-      // a timeout exception, failing the type assertion below.
-      final deployer = KeyPair.random();
-      final mock = MockSorobanServer();
-      final provider = RecordingWebAuthnProvider();
-      final credIdBytes = base64Url.decode(
-        base64Url.normalize(_credentialIdB64),
-      );
-      final pubKey = _validSecp256r1PublicKey();
+    test(
+      'createWallet_autoSubmit_sendTryAgainLater_throwsSubmissionFailed',
+      () async {
+        // createWallet with autoSubmit=true → _submitDeployTransaction →
+        // sendTransaction returns TRY_AGAIN_LATER, a status the network did
+        // not queue → throws submissionFailed without polling. No
+        // getTransaction responses are queued: polling instead would end in
+        // a timeout exception, failing the type assertion below.
+        final deployer = KeyPair.random();
+        final mock = MockSorobanServer();
+        final provider = RecordingWebAuthnProvider();
+        final credIdBytes = base64Url.decode(
+          base64Url.normalize(_credentialIdB64),
+        );
+        final pubKey = _validSecp256r1PublicKey();
 
-      provider.registerResponses.add(WebAuthnRegistrationResult(
-        credentialId: credIdBytes,
-        publicKey: pubKey,
-        attestationObject: _bytes(37, 0xCE),
-      ));
+        provider.registerResponses.add(
+          WebAuthnRegistrationResult(
+            credentialId: credIdBytes,
+            publicKey: pubKey,
+            attestationObject: _bytes(37, 0xCE),
+          ),
+        );
 
-      mock.getAccountResponses.add(_deployerAccount(deployer));
-      mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 500));
+        mock.getAccountResponses.add(_deployerAccount(deployer));
+        mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 500));
 
-      final sendResp = SendTransactionResponse(<String, dynamic>{});
-      sendResp.hash = 'busy-hash';
-      sendResp.status = SendTransactionResponse.STATUS_TRY_AGAIN_LATER;
-      mock.sendResponses.add(sendResp);
+        final sendResp = SendTransactionResponse(<String, dynamic>{});
+        sendResp.hash = 'busy-hash';
+        sendResp.status = SendTransactionResponse.STATUS_TRY_AGAIN_LATER;
+        mock.sendResponses.add(sendResp);
 
-      final config = OZSmartAccountConfig(
-        rpcUrl: 'https://soroban-testnet.stellar.org',
-        networkPassphrase: Network.TESTNET.networkPassphrase,
-        accountWasmHash: '0' * 64,
-        webauthnVerifierAddress: _contractA,
-        webauthnProvider: provider,
-      );
-      final kit = FakePipelineKit(
-        config: config,
-        sorobanServer: mock,
-        deployer: deployer,
-      );
+        final config = OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress: _contractA,
+          webauthnProvider: provider,
+        );
+        final kit = FakePipelineKit(
+          config: config,
+          sorobanServer: mock,
+          deployer: deployer,
+        );
 
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.createWallet(autoSubmit: true),
-        throwsA(isA<SmartAccountTransactionSubmissionFailed>().having(
-            (e) => e.toString(),
-            'message',
-            contains('TRY_AGAIN_LATER'))),
-      );
-    });
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.createWallet(autoSubmit: true),
+          throwsA(
+            isA<SmartAccountTransactionSubmissionFailed>().having(
+              (e) => e.toString(),
+              'message',
+              contains('TRY_AGAIN_LATER'),
+            ),
+          ),
+        );
+      },
+    );
 
     test('createWallet_autoSubmit_relayerPath_success', () async {
       // createWallet with autoSubmit=true and relayer configured → uses relayer.
@@ -393,18 +420,21 @@ void main() {
       );
       final pubKey = _validSecp256r1PublicKey();
 
-      provider.registerResponses.add(WebAuthnRegistrationResult(
-        credentialId: credIdBytes,
-        publicKey: pubKey,
-        attestationObject: _bytes(37, 0xDD),
-      ));
+      provider.registerResponses.add(
+        WebAuthnRegistrationResult(
+          credentialId: credIdBytes,
+          publicKey: pubKey,
+          attestationObject: _bytes(37, 0xDD),
+        ),
+      );
 
       mock.getAccountResponses.add(_deployerAccount(deployer));
       mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 500));
 
       // Use relayer harness that returns failure response.
       final relayerHarness = buildRelayerHarness(
-        responseBody: '{"success":false,"error":"relayer error","hash":null,"status":"FAILED"}',
+        responseBody:
+            '{"success":false,"error":"relayer error","hash":null,"status":"FAILED"}',
       );
 
       final config = OZSmartAccountConfig(
@@ -429,45 +459,50 @@ void main() {
       );
     });
 
-    test('createWallet_buildDeployTransactionSimulationError_throwsException', () async {
-      final deployer = KeyPair.random();
-      final mock = MockSorobanServer();
-      final provider = RecordingWebAuthnProvider();
+    test(
+      'createWallet_buildDeployTransactionSimulationError_throwsException',
+      () async {
+        final deployer = KeyPair.random();
+        final mock = MockSorobanServer();
+        final provider = RecordingWebAuthnProvider();
 
-      final credIdBytes = base64Url.decode(
-        base64Url.normalize(_credentialIdB64),
-      );
-      final pubKey = _validSecp256r1PublicKey();
+        final credIdBytes = base64Url.decode(
+          base64Url.normalize(_credentialIdB64),
+        );
+        final pubKey = _validSecp256r1PublicKey();
 
-      provider.registerResponses.add(WebAuthnRegistrationResult(
-        credentialId: credIdBytes,
-        publicKey: pubKey,
-        attestationObject: _bytes(37, 0xAA),
-      ));
+        provider.registerResponses.add(
+          WebAuthnRegistrationResult(
+            credentialId: credIdBytes,
+            publicKey: pubKey,
+            attestationObject: _bytes(37, 0xAA),
+          ),
+        );
 
-      mock.getAccountResponses.add(_deployerAccount(deployer));
-      // Simulation returns an error string.
-      mock.simulateResponses.add(_simResponseError('contract error'));
+        mock.getAccountResponses.add(_deployerAccount(deployer));
+        // Simulation returns an error string.
+        mock.simulateResponses.add(_simResponseError('contract error'));
 
-      final config = OZSmartAccountConfig(
-        rpcUrl: 'https://soroban-testnet.stellar.org',
-        networkPassphrase: Network.TESTNET.networkPassphrase,
-        accountWasmHash: '0' * 64,
-        webauthnVerifierAddress: _contractA,
-        webauthnProvider: provider,
-      );
-      final kit = FakePipelineKit(
-        config: config,
-        sorobanServer: mock,
-        deployer: deployer,
-      );
+        final config = OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress: _contractA,
+          webauthnProvider: provider,
+        );
+        final kit = FakePipelineKit(
+          config: config,
+          sorobanServer: mock,
+          deployer: deployer,
+        );
 
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.createWallet(autoSubmit: false),
-        throwsA(isA<SmartAccountException>()),
-      );
-    });
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.createWallet(autoSubmit: false),
+          throwsA(isA<SmartAccountException>()),
+        );
+      },
+    );
 
     test('createWallet_buildDeployTransactionThrows_throwsException', () async {
       final deployer = KeyPair.random();
@@ -479,11 +514,13 @@ void main() {
       );
       final pubKey = _validSecp256r1PublicKey();
 
-      provider.registerResponses.add(WebAuthnRegistrationResult(
-        credentialId: credIdBytes,
-        publicKey: pubKey,
-        attestationObject: _bytes(37, 0xAA),
-      ));
+      provider.registerResponses.add(
+        WebAuthnRegistrationResult(
+          credentialId: credIdBytes,
+          publicKey: pubKey,
+          attestationObject: _bytes(37, 0xAA),
+        ),
+      );
 
       // getAccount throws (RPC error during build).
       mock.getAccountResponses.add(Exception('network error'));
@@ -524,11 +561,13 @@ void main() {
       );
       final pubKey = _validSecp256r1PublicKey();
 
-      provider.registerResponses.add(WebAuthnRegistrationResult(
-        credentialId: credIdBytes,
-        publicKey: pubKey,
-        attestationObject: _bytes(37, 0xCC),
-      ));
+      provider.registerResponses.add(
+        WebAuthnRegistrationResult(
+          credentialId: credIdBytes,
+          publicKey: pubKey,
+          attestationObject: _bytes(37, 0xCC),
+        ),
+      );
 
       // _buildDeployTransaction: getAccount + simulate.
       mock.getAccountResponses.add(_deployerAccount(deployer));
@@ -571,12 +610,17 @@ void main() {
         probedCall.key.discriminant,
         equals(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE),
       );
-      expect(probedCall.durability, equals(XdrContractDataDurability.PERSISTENT));
+      expect(
+        probedCall.durability,
+        equals(XdrContractDataDurability.PERSISTENT),
+      );
 
       // fundWallet was reached exactly once, after the visibility poll resolved.
       expect(mockTxOps.fundWalletCalls, hasLength(1));
-      expect(mockTxOps.fundWalletCalls.single.nativeTokenContract,
-          equals(_contractA));
+      expect(
+        mockTxOps.fundWalletCalls.single.nativeTokenContract,
+        equals(_contractA),
+      );
     });
   });
 
@@ -595,11 +639,13 @@ void main() {
       // createWallet(autoSubmit: false)): it carries the smart-account contract
       // address and a valid P-256 public key, the two fields
       // deployPendingCredential requires before it will build the deploy.
-      credentialManager.inject(OZStoredCredential(
-        credentialId: _credentialIdB64,
-        publicKey: _validSecp256r1PublicKey(),
-        contractId: _contractA,
-      ));
+      credentialManager.inject(
+        OZStoredCredential(
+          credentialId: _credentialIdB64,
+          publicKey: _validSecp256r1PublicKey(),
+          contractId: _contractA,
+        ),
+      );
 
       // _buildDeployTransaction: getAccount + simulate.
       mock.getAccountResponses.add(_deployerAccount(deployer));
@@ -644,12 +690,17 @@ void main() {
         probedCall.key.discriminant,
         equals(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE),
       );
-      expect(probedCall.durability, equals(XdrContractDataDurability.PERSISTENT));
+      expect(
+        probedCall.durability,
+        equals(XdrContractDataDurability.PERSISTENT),
+      );
 
       // fundWallet was reached exactly once, after the visibility poll resolved.
       expect(mockTxOps.fundWalletCalls, hasLength(1));
-      expect(mockTxOps.fundWalletCalls.single.nativeTokenContract,
-          equals(_contractA));
+      expect(
+        mockTxOps.fundWalletCalls.single.nativeTokenContract,
+        equals(_contractA),
+      );
     });
   });
 }

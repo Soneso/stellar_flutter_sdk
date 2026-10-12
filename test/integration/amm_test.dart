@@ -7,58 +7,82 @@ import '../tests_util.dart';
 
 void main() {
   String testOn = 'testnet'; //'futurenet';
-  StellarSDK sdk =
-      testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+  StellarSDK sdk = testOn == 'testnet'
+      ? StellarSDK.TESTNET
+      : StellarSDK.FUTURENET;
   Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
   KeyPair testAccountKeyPair = KeyPair.random();
   String seed = testAccountKeyPair.secretSeed;
   KeyPair assetAIssueAccountKeyPair = KeyPair.random();
   KeyPair assetBIssueAccountKeyPair = KeyPair.random();
-  Asset assetA =
-      AssetTypeCreditAlphaNum4("SDK", assetAIssueAccountKeyPair.accountId);
-  Asset assetB =
-      AssetTypeCreditAlphaNum12("FLUTTER", assetBIssueAccountKeyPair.accountId);
+  Asset assetA = AssetTypeCreditAlphaNum4(
+    "SDK",
+    assetAIssueAccountKeyPair.accountId,
+  );
+  Asset assetB = AssetTypeCreditAlphaNum12(
+    "FLUTTER",
+    assetBIssueAccountKeyPair.accountId,
+  );
   Asset assetNative = AssetTypeNative();
   String nonNativeLiquidityPoolId = "";
   String nativeLiquidityPoolId = "";
 
   setUp(() async {
-    await fundTestAccountAndAwaitVisibility(testAccountKeyPair.accountId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndAwaitVisibility(assetAIssueAccountKeyPair.accountId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndAwaitVisibility(assetBIssueAccountKeyPair.accountId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      testAccountKeyPair.accountId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
+    await fundTestAccountAndAwaitVisibility(
+      assetAIssueAccountKeyPair.accountId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
+    await fundTestAccountAndAwaitVisibility(
+      assetBIssueAccountKeyPair.accountId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
 
     String sourceAccountId = testAccountKeyPair.accountId;
     AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
     ChangeTrustOperationBuilder ctOpB1 = ChangeTrustOperationBuilder(
-        assetA, ChangeTrustOperationBuilder.MAX_LIMIT);
+      assetA,
+      ChangeTrustOperationBuilder.MAX_LIMIT,
+    );
     ChangeTrustOperationBuilder ctOpB2 = ChangeTrustOperationBuilder(
-        assetB, ChangeTrustOperationBuilder.MAX_LIMIT);
-    Transaction transaction = TransactionBuilder(sourceAccount)
-        .addOperation(ctOpB1.build())
-        .addOperation(ctOpB2.build())
-        .build();
+      assetB,
+      ChangeTrustOperationBuilder.MAX_LIMIT,
+    );
+    Transaction transaction = TransactionBuilder(
+      sourceAccount,
+    ).addOperation(ctOpB1.build()).addOperation(ctOpB2.build()).build();
     transaction.sign(testAccountKeyPair, network);
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     assert(response.success);
 
-    PaymentOperationBuilder pop1 =
-        PaymentOperationBuilder(sourceAccountId, assetA, "19999191");
+    PaymentOperationBuilder pop1 = PaymentOperationBuilder(
+      sourceAccountId,
+      assetA,
+      "19999191",
+    );
     pop1.setSourceAccount(assetAIssueAccountKeyPair.accountId);
-    PaymentOperationBuilder pop2 =
-        PaymentOperationBuilder(sourceAccountId, assetB, "19999191");
+    PaymentOperationBuilder pop2 = PaymentOperationBuilder(
+      sourceAccountId,
+      assetB,
+      "19999191",
+    );
     pop2.setSourceAccount(assetBIssueAccountKeyPair.accountId);
 
-    sourceAccount =
-        await sdk.accounts.account(assetAIssueAccountKeyPair.accountId);
-    transaction = TransactionBuilder(sourceAccount)
-        .addOperation(pop1.build())
-        .addOperation(pop2.build())
-        .build();
+    sourceAccount = await sdk.accounts.account(
+      assetAIssueAccountKeyPair.accountId,
+    );
+    transaction = TransactionBuilder(
+      sourceAccount,
+    ).addOperation(pop1.build()).addOperation(pop2.build()).build();
     transaction.sign(assetAIssueAccountKeyPair, network);
     transaction.sign(assetBIssueAccountKeyPair, network);
     await sdk.submitTransaction(transaction);
@@ -79,15 +103,21 @@ void main() {
   group('all tests', () {
     test('create pool share trustline non native', () async {
       String sourceAccountId = testAccountKeyPair.accountId;
-      AccountResponse sourceAccount =
-          await sdk.accounts.account(sourceAccountId);
+      AccountResponse sourceAccount = await sdk.accounts.account(
+        sourceAccountId,
+      );
 
-      AssetTypePoolShare poolShareAsset =
-          AssetTypePoolShare(assetA: assetA, assetB: assetB);
+      AssetTypePoolShare poolShareAsset = AssetTypePoolShare(
+        assetA: assetA,
+        assetB: assetB,
+      );
       ChangeTrustOperationBuilder chOp = ChangeTrustOperationBuilder(
-          poolShareAsset, ChangeTrustOperationBuilder.MAX_LIMIT);
-      Transaction transaction =
-          TransactionBuilder(sourceAccount).addOperation(chOp.build()).build();
+        poolShareAsset,
+        ChangeTrustOperationBuilder.MAX_LIMIT,
+      );
+      Transaction transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(chOp.build()).build();
 
       transaction.sign(testAccountKeyPair, network);
 
@@ -97,8 +127,9 @@ void main() {
           XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
       assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
 
-      SubmitTransactionResponse response =
-          await sdk.submitTransaction(transaction);
+      SubmitTransactionResponse response = await sdk.submitTransaction(
+        transaction,
+      );
       assert(response.success);
       TestUtils.resultDeAndEncodingTest(transaction, response);
 
@@ -111,14 +142,16 @@ void main() {
       nonNativeLiquidityPoolId = pools.first.poolId;
       print("NNPID: " + nonNativeLiquidityPoolId);
       if (!nonNativeLiquidityPoolId.startsWith("L")) {
-        final strKey =
-            StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        final strKey = StrKey.encodeLiquidityPoolIdHex(
+          nonNativeLiquidityPoolId,
+        );
         print("NNPID StrKey: " + strKey);
       }
 
       // test operation & effects responses can be parsed
-      var operationsPage =
-          await sdk.operations.forAccount(sourceAccountId).execute();
+      var operationsPage = await sdk.operations
+          .forAccount(sourceAccountId)
+          .execute();
       assert(operationsPage.records.isNotEmpty);
       var effectsPage = await sdk.effects.forAccount(sourceAccountId).execute();
       assert(effectsPage.records.isNotEmpty);
@@ -128,15 +161,21 @@ void main() {
       KeyPair sourceAccountKeyPair = KeyPair.fromSecretSeed(seed);
       String sourceAccountId = sourceAccountKeyPair.accountId;
 
-      AssetTypePoolShare poolShareAsset =
-          AssetTypePoolShare(assetA: assetNative, assetB: assetB);
+      AssetTypePoolShare poolShareAsset = AssetTypePoolShare(
+        assetA: assetNative,
+        assetB: assetB,
+      );
       ChangeTrustOperationBuilder chOp = ChangeTrustOperationBuilder(
-          poolShareAsset, ChangeTrustOperationBuilder.MAX_LIMIT);
+        poolShareAsset,
+        ChangeTrustOperationBuilder.MAX_LIMIT,
+      );
 
-      AccountResponse sourceAccount =
-          await sdk.accounts.account(sourceAccountId);
-      Transaction transaction =
-          TransactionBuilder(sourceAccount).addOperation(chOp.build()).build();
+      AccountResponse sourceAccount = await sdk.accounts.account(
+        sourceAccountId,
+      );
+      Transaction transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(chOp.build()).build();
 
       transaction.sign(sourceAccountKeyPair, network);
 
@@ -146,8 +185,9 @@ void main() {
           XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
       assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
 
-      SubmitTransactionResponse response =
-          await sdk.submitTransaction(transaction);
+      SubmitTransactionResponse response = await sdk.submitTransaction(
+        transaction,
+      );
       assert(response.success);
       TestUtils.resultDeAndEncodingTest(transaction, response);
 
@@ -165,8 +205,9 @@ void main() {
       }
 
       // test operation & effects responses can be parsed
-      var operationsPage =
-          await sdk.operations.forAccount(sourceAccountId).execute();
+      var operationsPage = await sdk.operations
+          .forAccount(sourceAccountId)
+          .execute();
       assert(operationsPage.records.isNotEmpty);
       var effectsPage = await sdk.effects.forAccount(sourceAccountId).execute();
       assert(effectsPage.records.isNotEmpty);
@@ -179,16 +220,19 @@ void main() {
 
       LiquidityPoolDepositOperationBuilder op =
           LiquidityPoolDepositOperationBuilder(
-              liquidityPoolId: nonNativeLiquidityPoolId,
-              maxAmountA: "250.0",
-              maxAmountB: "250.0",
-              minPrice: "1.0",
-              maxPrice: "2.0");
+            liquidityPoolId: nonNativeLiquidityPoolId,
+            maxAmountA: "250.0",
+            maxAmountB: "250.0",
+            minPrice: "1.0",
+            maxPrice: "2.0",
+          );
 
-      AccountResponse sourceAccount =
-          await sdk.accounts.account(sourceAccountId);
-      Transaction transaction =
-          TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+      AccountResponse sourceAccount = await sdk.accounts.account(
+        sourceAccountId,
+      );
+      Transaction transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(op.build()).build();
 
       transaction.sign(sourceAccountKeyPair, network);
 
@@ -197,31 +241,36 @@ void main() {
           XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
       assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
 
-      SubmitTransactionResponse response =
-          await sdk.submitTransaction(transaction);
+      SubmitTransactionResponse response = await sdk.submitTransaction(
+        transaction,
+      );
       assert(response.success);
       TestUtils.resultDeAndEncodingTest(transaction, response);
 
       // test operation & effects responses can be parsed
-      var operationsPage =
-          await sdk.operations.forAccount(sourceAccountId).execute();
+      var operationsPage = await sdk.operations
+          .forAccount(sourceAccountId)
+          .execute();
       assert(operationsPage.records.isNotEmpty);
       var effectsPage = await sdk.effects.forAccount(sourceAccountId).execute();
       assert(effectsPage.records.isNotEmpty);
 
       if (!nonNativeLiquidityPoolId.startsWith("L")) {
-        final strKey =
-            StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        final strKey = StrKey.encodeLiquidityPoolIdHex(
+          nonNativeLiquidityPoolId,
+        );
         op = LiquidityPoolDepositOperationBuilder(
-            liquidityPoolId: strKey,
-            maxAmountA: "10.0",
-            maxAmountB: "10.0",
-            minPrice: "1.0",
-            maxPrice: "2.0");
+          liquidityPoolId: strKey,
+          maxAmountA: "10.0",
+          maxAmountB: "10.0",
+          minPrice: "1.0",
+          maxPrice: "2.0",
+        );
 
         sourceAccount = await sdk.accounts.account(sourceAccountId);
-        transaction =
-            TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+        transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(op.build()).build();
         transaction.sign(sourceAccountKeyPair, network);
         response = await sdk.submitTransaction(transaction);
         assert(response.success);
@@ -233,16 +282,19 @@ void main() {
 
       LiquidityPoolDepositOperationBuilder op =
           LiquidityPoolDepositOperationBuilder(
-              liquidityPoolId: nativeLiquidityPoolId,
-              maxAmountA: "250.0",
-              maxAmountB: "250.0",
-              minPrice: "1.0",
-              maxPrice: "2.0");
+            liquidityPoolId: nativeLiquidityPoolId,
+            maxAmountA: "250.0",
+            maxAmountB: "250.0",
+            minPrice: "1.0",
+            maxPrice: "2.0",
+          );
 
-      AccountResponse sourceAccount =
-          await sdk.accounts.account(sourceAccountId);
-      Transaction transaction =
-          TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+      AccountResponse sourceAccount = await sdk.accounts.account(
+        sourceAccountId,
+      );
+      Transaction transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(op.build()).build();
 
       transaction.sign(sourceAccountKeyPair, network);
 
@@ -251,14 +303,16 @@ void main() {
           XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
       assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
 
-      SubmitTransactionResponse response =
-          await sdk.submitTransaction(transaction);
+      SubmitTransactionResponse response = await sdk.submitTransaction(
+        transaction,
+      );
       assert(response.success);
       TestUtils.resultDeAndEncodingTest(transaction, response);
 
       // test operation & effects responses can be parsed
-      var operationsPage =
-          await sdk.operations.forAccount(sourceAccountId).execute();
+      var operationsPage = await sdk.operations
+          .forAccount(sourceAccountId)
+          .execute();
       assert(operationsPage.records.isNotEmpty);
       var effectsPage = await sdk.effects.forAccount(sourceAccountId).execute();
       assert(effectsPage.records.isNotEmpty);
@@ -266,15 +320,17 @@ void main() {
       if (!nativeLiquidityPoolId.startsWith("L")) {
         final strKey = StrKey.encodeLiquidityPoolIdHex(nativeLiquidityPoolId);
         op = LiquidityPoolDepositOperationBuilder(
-            liquidityPoolId: strKey,
-            maxAmountA: "250.0",
-            maxAmountB: "250.0",
-            minPrice: "1.0",
-            maxPrice: "2.0");
+          liquidityPoolId: strKey,
+          maxAmountA: "250.0",
+          maxAmountB: "250.0",
+          minPrice: "1.0",
+          maxPrice: "2.0",
+        );
 
         sourceAccount = await sdk.accounts.account(sourceAccountId);
-        transaction =
-            TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+        transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(op.build()).build();
 
         transaction.sign(sourceAccountKeyPair, network);
         response = await sdk.submitTransaction(transaction);
@@ -288,15 +344,18 @@ void main() {
 
       LiquidityPoolWithdrawOperationBuilder op =
           LiquidityPoolWithdrawOperationBuilder(
-              liquidityPoolId: nonNativeLiquidityPoolId,
-              amount: "100",
-              minAmountA: "100",
-              minAmountB: "100");
+            liquidityPoolId: nonNativeLiquidityPoolId,
+            amount: "100",
+            minAmountA: "100",
+            minAmountB: "100",
+          );
 
-      AccountResponse sourceAccount =
-          await sdk.accounts.account(sourceAccountId);
-      Transaction transaction =
-          TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+      AccountResponse sourceAccount = await sdk.accounts.account(
+        sourceAccountId,
+      );
+      Transaction transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(op.build()).build();
 
       transaction.sign(sourceAccountKeyPair, network);
 
@@ -305,30 +364,35 @@ void main() {
           XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
       assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
 
-      SubmitTransactionResponse response =
-          await sdk.submitTransaction(transaction);
+      SubmitTransactionResponse response = await sdk.submitTransaction(
+        transaction,
+      );
       assert(response.success);
       TestUtils.resultDeAndEncodingTest(transaction, response);
 
       // test operation & effects responses can be parsed
-      var operationsPage =
-          await sdk.operations.forAccount(sourceAccountId).execute();
+      var operationsPage = await sdk.operations
+          .forAccount(sourceAccountId)
+          .execute();
       assert(operationsPage.records.isNotEmpty);
       var effectsPage = await sdk.effects.forAccount(sourceAccountId).execute();
       assert(effectsPage.records.isNotEmpty);
 
       if (!nonNativeLiquidityPoolId.startsWith("L")) {
-        final strKey =
-            StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        final strKey = StrKey.encodeLiquidityPoolIdHex(
+          nonNativeLiquidityPoolId,
+        );
         op = LiquidityPoolWithdrawOperationBuilder(
-            liquidityPoolId: strKey,
-            amount: "100",
-            minAmountA: "100",
-            minAmountB: "100");
+          liquidityPoolId: strKey,
+          amount: "100",
+          minAmountA: "100",
+          minAmountB: "100",
+        );
 
         sourceAccount = await sdk.accounts.account(sourceAccountId);
-        transaction =
-            TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+        transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(op.build()).build();
 
         transaction.sign(sourceAccountKeyPair, network);
         response = await sdk.submitTransaction(transaction);
@@ -342,15 +406,18 @@ void main() {
 
       LiquidityPoolWithdrawOperationBuilder op =
           LiquidityPoolWithdrawOperationBuilder(
-              liquidityPoolId: nativeLiquidityPoolId,
-              amount: "1",
-              minAmountA: "1",
-              minAmountB: "1");
+            liquidityPoolId: nativeLiquidityPoolId,
+            amount: "1",
+            minAmountA: "1",
+            minAmountB: "1",
+          );
 
-      AccountResponse sourceAccount =
-          await sdk.accounts.account(sourceAccountId);
-      Transaction transaction =
-          TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+      AccountResponse sourceAccount = await sdk.accounts.account(
+        sourceAccountId,
+      );
+      Transaction transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(op.build()).build();
 
       transaction.sign(sourceAccountKeyPair, network);
 
@@ -359,14 +426,16 @@ void main() {
           XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
       assert(envelope == envelopeXdr.toEnvelopeXdrBase64());
 
-      SubmitTransactionResponse response =
-          await sdk.submitTransaction(transaction);
+      SubmitTransactionResponse response = await sdk.submitTransaction(
+        transaction,
+      );
       assert(response.success);
       TestUtils.resultDeAndEncodingTest(transaction, response);
 
       // test operation & effects responses can be parsed
-      var operationsPage =
-          await sdk.operations.forAccount(sourceAccountId).execute();
+      var operationsPage = await sdk.operations
+          .forAccount(sourceAccountId)
+          .execute();
       assert(operationsPage.records.isNotEmpty);
       var effectsPage = await sdk.effects.forAccount(sourceAccountId).execute();
       assert(effectsPage.records.isNotEmpty);
@@ -374,14 +443,16 @@ void main() {
       if (!nativeLiquidityPoolId.startsWith("L")) {
         final strKey = StrKey.encodeLiquidityPoolIdHex(nativeLiquidityPoolId);
         op = LiquidityPoolWithdrawOperationBuilder(
-            liquidityPoolId: strKey,
-            amount: "1",
-            minAmountA: "1",
-            minAmountB: "1");
+          liquidityPoolId: strKey,
+          amount: "1",
+          minAmountA: "1",
+          minAmountB: "1",
+        );
 
         sourceAccount = await sdk.accounts.account(sourceAccountId);
-        transaction =
-            TransactionBuilder(sourceAccount).addOperation(op.build()).build();
+        transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(op.build()).build();
 
         transaction.sign(sourceAccountKeyPair, network);
         response = await sdk.submitTransaction(transaction);
@@ -440,14 +511,15 @@ void main() {
       List<LiquidityPoolResponse> pools = poolsPage.records;
       assert(pools.length == 4);
 
-      LiquidityPoolResponse nonNativeLiquidityPool =
-          await sdk.liquidityPools.forPoolId(nonNativeLiquidityPoolId);
+      LiquidityPoolResponse nonNativeLiquidityPool = await sdk.liquidityPools
+          .forPoolId(nonNativeLiquidityPoolId);
       assert(nonNativeLiquidityPool.fee == 30);
       assert(nonNativeLiquidityPool.poolId == nonNativeLiquidityPoolId);
 
       if (!nonNativeLiquidityPoolId.startsWith("L")) {
-        final strKey =
-            StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        final strKey = StrKey.encodeLiquidityPoolIdHex(
+          nonNativeLiquidityPoolId,
+        );
         nonNativeLiquidityPool = await sdk.liquidityPools.forPoolId(strKey);
         assert(nonNativeLiquidityPool.fee == 30);
         assert(nonNativeLiquidityPool.poolId == nonNativeLiquidityPoolId);
@@ -466,34 +538,47 @@ void main() {
       KeyPair accYKp = KeyPair.random();
       String accYId = accYKp.accountId;
 
-      await fundTestAccountAndAwaitVisibility(accXId,
-          horizon: sdk, useFuturenet: testOn != 'testnet');
-      await fundTestAccountAndAwaitVisibility(accYId,
-          horizon: sdk, useFuturenet: testOn != 'testnet');
+      await fundTestAccountAndAwaitVisibility(
+        accXId,
+        horizon: sdk,
+        useFuturenet: testOn != 'testnet',
+      );
+      await fundTestAccountAndAwaitVisibility(
+        accYId,
+        horizon: sdk,
+        useFuturenet: testOn != 'testnet',
+      );
 
       AccountResponse accX = await sdk.accounts.account(accXId);
       ChangeTrustOperationBuilder ctOpB1 = ChangeTrustOperationBuilder(
-          assetA, ChangeTrustOperationBuilder.MAX_LIMIT);
+        assetA,
+        ChangeTrustOperationBuilder.MAX_LIMIT,
+      );
       ctOpB1.setSourceAccount(accXId);
       ChangeTrustOperationBuilder ctOpB2 = ChangeTrustOperationBuilder(
-          assetB, ChangeTrustOperationBuilder.MAX_LIMIT);
+        assetB,
+        ChangeTrustOperationBuilder.MAX_LIMIT,
+      );
       ctOpB2.setSourceAccount(accYId);
-      Transaction tx = TransactionBuilder(accX)
-          .addOperation(ctOpB1.build())
-          .addOperation(ctOpB2.build())
-          .build();
+      Transaction tx = TransactionBuilder(
+        accX,
+      ).addOperation(ctOpB1.build()).addOperation(ctOpB2.build()).build();
       tx.sign(accXKp, network);
       tx.sign(accYKp, network);
       SubmitTransactionResponse response = await sdk.submitTransaction(tx);
       assert(response.success);
       TestUtils.resultDeAndEncodingTest(tx, response);
 
-      PaymentOperationBuilder pop1 =
-          PaymentOperationBuilder(accXId, assetA, "19999191");
+      PaymentOperationBuilder pop1 = PaymentOperationBuilder(
+        accXId,
+        assetA,
+        "19999191",
+      );
       pop1.setSourceAccount(assetAIssueAccountKeyPair.accountId);
 
-      AccountResponse sc =
-          await sdk.accounts.account(assetAIssueAccountKeyPair.accountId);
+      AccountResponse sc = await sdk.accounts.account(
+        assetAIssueAccountKeyPair.accountId,
+      );
       tx = TransactionBuilder(sc).addOperation(pop1.build()).build();
       tx.sign(assetAIssueAccountKeyPair, network);
       await sdk.submitTransaction(tx);
@@ -502,7 +587,12 @@ void main() {
 
       PathPaymentStrictSendOperationBuilder opb =
           PathPaymentStrictSendOperationBuilder(
-              assetA, "10", accYId, assetB, "1");
+            assetA,
+            "10",
+            accYId,
+            assetB,
+            "1",
+          );
       accX = await sdk.accounts.account(accXId);
       tx = TransactionBuilder(accX).addOperation(opb.build()).build();
       tx.sign(accXKp, network);
@@ -519,8 +609,9 @@ void main() {
       assert(trades.first.baseLiquidityPoolId == nonNativeLiquidityPoolId);
 
       if (!nonNativeLiquidityPoolId.startsWith("L")) {
-        final strKey =
-            StrKey.encodeLiquidityPoolIdHex(nonNativeLiquidityPoolId);
+        final strKey = StrKey.encodeLiquidityPoolIdHex(
+          nonNativeLiquidityPoolId,
+        );
         tradesPage = await sdk.trades
             .liquidityPoolId(strKey)
             .order(RequestBuilderOrder.ASC)
@@ -547,14 +638,16 @@ void main() {
 
     test("parse liquidity pool resultXdr", () {
       final input = XdrDataInputStream(
-          base64Decode("AAAAAAAAAGT/////AAAAAQAAAAAAAAAW/////AAAAAA="));
+        base64Decode("AAAAAAAAAGT/////AAAAAQAAAAAAAAAW/////AAAAAA="),
+      );
       final result = XdrTransactionResult.decode(input);
       final operationResult =
-          result.result.results!.first
-              .tr!
-              .liquidityPoolDepositResult;
-      assert(operationResult!.discriminant ==
-          XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED);
+          result.result.results!.first.tr!.liquidityPoolDepositResult;
+      assert(
+        operationResult!.discriminant ==
+            XdrLiquidityPoolDepositResultCode
+                .LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED,
+      );
     });
 
     test('test forAccount query parameter', () async {
@@ -580,9 +673,14 @@ void main() {
       // The request should succeed even if there are no pools for this account
       // If there are pools, verify they contain our created pools
       if (poolsPage.records.isNotEmpty) {
-        List<String> poolIds = poolsPage.records.map((pool) => pool.poolId).toList();
+        List<String> poolIds = poolsPage.records
+            .map((pool) => pool.poolId)
+            .toList();
         // At least one of the pools we created should be in the results
-        assert(poolIds.contains(nonNativeLiquidityPoolId) || poolIds.contains(nativeLiquidityPoolId));
+        assert(
+          poolIds.contains(nonNativeLiquidityPoolId) ||
+              poolIds.contains(nativeLiquidityPoolId),
+        );
       }
     });
   });

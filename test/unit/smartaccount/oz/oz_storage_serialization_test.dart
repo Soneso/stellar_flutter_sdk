@@ -119,7 +119,8 @@ void main() {
   group('SerializableSession.fromJson nullable helpers', () {
     test('session_missingCredentialId_throwsFormatException', () {
       final json = <String, dynamic>{
-        'contractId': 'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM',
+        'contractId':
+            'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM',
         'connectedAt': 1700000000000,
         'expiresAt': 1700604800000,
       };
@@ -144,7 +145,8 @@ void main() {
     test('session_missingConnectedAt_throwsFormatException', () {
       final json = <String, dynamic>{
         'credentialId': 'cred-001',
-        'contractId': 'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM',
+        'contractId':
+            'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM',
         'expiresAt': 1700604800000,
       };
       expect(
@@ -156,7 +158,8 @@ void main() {
     test('session_missingExpiresAt_throwsFormatException', () {
       final json = <String, dynamic>{
         'credentialId': 'cred-001',
-        'contractId': 'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM',
+        'contractId':
+            'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM',
         'connectedAt': 1700000000000,
       };
       expect(
@@ -197,7 +200,9 @@ void main() {
     });
 
     test('emptyList_succeeds', () {
-      final index = CredentialIndex.fromJson(<String, dynamic>{'ids': <dynamic>[]});
+      final index = CredentialIndex.fromJson(<String, dynamic>{
+        'ids': <dynamic>[],
+      });
       expect(index.ids, isEmpty);
     });
 

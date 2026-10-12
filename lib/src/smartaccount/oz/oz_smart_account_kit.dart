@@ -84,8 +84,8 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
     required this.indexerClient,
     required OZExternalSignerManager externalSigners,
     required this.sorobanServer,
-  })  : _storage = storage,
-        _externalSigners = externalSigners;
+  }) : _storage = storage,
+       _externalSigners = externalSigners;
 
   /// Test-only constructor; production consumers use [create].
   @visibleForTesting
@@ -97,13 +97,13 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
     required OZExternalSignerManager externalSigners,
     required SorobanServer sorobanServer,
   }) : this._(
-          config: config,
-          storage: storage,
-          relayerClient: relayerClient,
-          indexerClient: indexerClient,
-          externalSigners: externalSigners,
-          sorobanServer: sorobanServer,
-        );
+         config: config,
+         storage: storage,
+         relayerClient: relayerClient,
+         indexerClient: indexerClient,
+         externalSigners: externalSigners,
+         sorobanServer: sorobanServer,
+       );
 
   // Configuration and held resources
 
@@ -163,8 +163,9 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
 
   /// Context-rule management (rules linking signers and policies).
   @override
-  late final OZContextRuleManager contextRuleManager =
-      OZContextRuleManager(this);
+  late final OZContextRuleManager contextRuleManager = OZContextRuleManager(
+    this,
+  );
 
   /// Policy management (installable signature policies).
   late final OZPolicyManager policyManager = OZPolicyManager(this);
@@ -175,8 +176,9 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
 
   /// Multi-signer authorisation flow.
   @override
-  late final OZMultiSignerManager multiSignerManager =
-      OZMultiSignerManager(this);
+  late final OZMultiSignerManager multiSignerManager = OZMultiSignerManager(
+    this,
+  );
 
   /// The unified external-signer manager, constructed by the kit from the
   /// supplied configuration. Provides in-memory keypair registration and

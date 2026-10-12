@@ -82,11 +82,9 @@ XdrSorobanAuthorizationEntry _buildLegacyGoldenEntry() {
     XdrSorobanAuthorizedFunctionType
         .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
   );
-  fn.contractFn = XdrInvokeContractArgs(
-    contractAddr,
-    'hello',
-    <XdrSCVal>[XdrSCVal.forU64(BigInt.from(1234))],
-  );
+  fn.contractFn = XdrInvokeContractArgs(contractAddr, 'hello', <XdrSCVal>[
+    XdrSCVal.forU64(BigInt.from(1234)),
+  ]);
   final invocation = XdrSorobanAuthorizedInvocation(
     fn,
     <XdrSorobanAuthorizedInvocation>[],
@@ -119,11 +117,9 @@ XdrSorobanAuthorizationEntry _buildV2GoldenEntry() {
     XdrSorobanAuthorizedFunctionType
         .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
   );
-  fn.contractFn = XdrInvokeContractArgs(
-    contractAddr,
-    'hello',
-    <XdrSCVal>[XdrSCVal.forU64(BigInt.from(1234))],
-  );
+  fn.contractFn = XdrInvokeContractArgs(contractAddr, 'hello', <XdrSCVal>[
+    XdrSCVal.forU64(BigInt.from(1234)),
+  ]);
   final invocation = XdrSorobanAuthorizedInvocation(
     fn,
     <XdrSorobanAuthorizedInvocation>[],
@@ -154,11 +150,9 @@ XdrSorobanAuthorizationEntry _buildGoldenEntry({
     XdrSorobanAuthorizedFunctionType
         .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
   );
-  fn.contractFn = XdrInvokeContractArgs(
-    contractAddr,
-    'hello',
-    <XdrSCVal>[XdrSCVal.forU64(BigInt.from(1234))],
-  );
+  fn.contractFn = XdrInvokeContractArgs(contractAddr, 'hello', <XdrSCVal>[
+    XdrSCVal.forU64(BigInt.from(1234)),
+  ]);
   final invocation = XdrSorobanAuthorizedInvocation(
     fn,
     <XdrSorobanAuthorizedInvocation>[],
@@ -193,11 +187,9 @@ XdrSorobanAuthorizationEntry _buildWithDelegatesEntry() {
     XdrSorobanAuthorizedFunctionType
         .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
   );
-  fn.contractFn = XdrInvokeContractArgs(
-    contractAddr,
-    'hello',
-    <XdrSCVal>[XdrSCVal.forU64(BigInt.from(1234))],
-  );
+  fn.contractFn = XdrInvokeContractArgs(contractAddr, 'hello', <XdrSCVal>[
+    XdrSCVal.forU64(BigInt.from(1234)),
+  ]);
   final invocation = XdrSorobanAuthorizedInvocation(
     fn,
     <XdrSorobanAuthorizedInvocation>[],
@@ -230,9 +222,7 @@ Uint8List _buildPayloadHashDirect(
   final preimage = entry.buildPreimage(Network(networkPassphrase));
   final out = XdrDataOutputStream();
   XdrHashIDPreimage.encode(out, preimage);
-  return Uint8List.fromList(
-    crypto.sha256.convert(out.bytes).bytes,
-  );
+  return Uint8List.fromList(crypto.sha256.convert(out.bytes).bytes);
 }
 
 // ---------------------------------------------------------------------------
@@ -245,9 +235,7 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('golden-vector: legacy ADDRESS payload hash', () {
-    test(
-        'buildAuthPayloadHash_legacyEntry_matchesGoldenSha256',
-        () async {
+    test('buildAuthPayloadHash_legacyEntry_matchesGoldenSha256', () async {
       final entry = _buildLegacyGoldenEntry();
 
       final hash = await OZSmartAccountAuth.buildAuthPayloadHash(
@@ -257,34 +245,40 @@ void main() {
       );
 
       final actualHex = _bytesToHex(hash);
-      expect(actualHex, _kLegacyPayloadSha256,
-          reason: 'Legacy ADDRESS payload hash must match the golden sha256 '
-              'derived from the cross-SDK preimage vector. Actual: $actualHex');
+      expect(
+        actualHex,
+        _kLegacyPayloadSha256,
+        reason:
+            'Legacy ADDRESS payload hash must match the golden sha256 '
+            'derived from the cross-SDK preimage vector. Actual: $actualHex',
+      );
     });
 
     test(
-        'buildAuthPayloadHash_legacyEntry_matchesSharedPreimageBuilder',
-        () async {
-      final entry = _buildLegacyGoldenEntry();
+      'buildAuthPayloadHash_legacyEntry_matchesSharedPreimageBuilder',
+      () async {
+        final entry = _buildLegacyGoldenEntry();
 
-      final ozHash = await OZSmartAccountAuth.buildAuthPayloadHash(
-        entry,
-        _kExpiration,
-        _kNetworkPassphrase,
-      );
-      final batchBHash = _buildPayloadHashDirect(entry, _kNetworkPassphrase);
+        final ozHash = await OZSmartAccountAuth.buildAuthPayloadHash(
+          entry,
+          _kExpiration,
+          _kNetworkPassphrase,
+        );
+        final batchBHash = _buildPayloadHashDirect(entry, _kNetworkPassphrase);
 
-      expect(ozHash, batchBHash,
-          reason: 'OZ hash must equal the shared preimage builder output');
-    });
+        expect(
+          ozHash,
+          batchBHash,
+          reason: 'OZ hash must equal the shared preimage builder output',
+        );
+      },
+    );
   });
 
   group('golden-vector: ADDRESS_V2 payload hash', () {
     // The V2 golden vector uses the signer's account as the credential
     // address (section 8.1: "credential address = the signer account").
-    test(
-        'buildAuthPayloadHash_v2Entry_matchesGoldenSha256',
-        () async {
+    test('buildAuthPayloadHash_v2Entry_matchesGoldenSha256', () async {
       final entry = _buildV2GoldenEntry();
 
       final hash = await OZSmartAccountAuth.buildAuthPayloadHash(
@@ -294,14 +288,16 @@ void main() {
       );
 
       final actualHex = _bytesToHex(hash);
-      expect(actualHex, _kV2PayloadSha256,
-          reason: 'ADDRESS_V2 payload hash must match the golden sha256 '
-              'derived from the cross-SDK preimage vector. Actual: $actualHex');
+      expect(
+        actualHex,
+        _kV2PayloadSha256,
+        reason:
+            'ADDRESS_V2 payload hash must match the golden sha256 '
+            'derived from the cross-SDK preimage vector. Actual: $actualHex',
+      );
     });
 
-    test(
-        'v2PayloadHash_differsFromLegacyForIdenticalBodyFields',
-        () async {
+    test('v2PayloadHash_differsFromLegacyForIdenticalBodyFields', () async {
       // Both entries use the same body fields (same nonce, expiration,
       // invocation, credential address). The only difference is the arm
       // discriminant. The hashes must differ because the preimage type
@@ -325,10 +321,14 @@ void main() {
         _kNetworkPassphrase,
       );
 
-      expect(legacyHash, isNot(v2Hash),
-          reason: 'Legacy and V2 preimage hashes must differ even when all '
-              'credential body fields are identical, because the preimage '
-              'discriminant changes.');
+      expect(
+        legacyHash,
+        isNot(v2Hash),
+        reason:
+            'Legacy and V2 preimage hashes must differ even when all '
+            'credential body fields are identical, because the preimage '
+            'discriminant changes.',
+      );
     });
   });
 
@@ -337,9 +337,7 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('ADDRESS_V2: signing path and arm preservation', () {
-    test(
-        'signAuthEntry_v2Entry_armPreservedAfterSigning',
-        () async {
+    test('signAuthEntry_v2Entry_armPreservedAfterSigning', () async {
       final entry = _buildGoldenEntry(
         arm: XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
       );
@@ -366,9 +364,7 @@ void main() {
       );
     });
 
-    test(
-        'signAuthEntry_v2Entry_signaturePayloadDiffersFromLegacy',
-        () async {
+    test('signAuthEntry_v2Entry_signaturePayloadDiffersFromLegacy', () async {
       // The signed auth-payload hash is derived from the preimage hash, so
       // two entries with the same fields but different arms produce different
       // payloads. Verify that signing a V2 entry does not silently use a
@@ -394,9 +390,7 @@ void main() {
       expect(legacyHash, isNot(v2Hash));
     });
 
-    test(
-        'addRawSignatureMapEntry_v2Entry_armPreservedAfterWriteBack',
-        () {
+    test('addRawSignatureMapEntry_v2Entry_armPreservedAfterWriteBack', () {
       final entry = _buildGoldenEntry(
         arm: XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
       );
@@ -423,9 +417,7 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('expiration stamping preserves arm', () {
-    test(
-        'buildAuthPayloadHash_v2Entry_stampingPreservesV2Arm',
-        () async {
+    test('buildAuthPayloadHash_v2Entry_stampingPreservesV2Arm', () async {
       // buildAuthPayloadHash stamps expiration before building the preimage.
       // The hash must equal the V2 golden vector (not the legacy golden),
       // proving the stamping step did not silently convert the arm.
@@ -441,22 +433,21 @@ void main() {
     });
 
     test(
-        'buildAuthPayloadHash_legacyEntry_stampingPreservesLegacyArm',
-        () async {
-      final entry = _buildLegacyGoldenEntry();
+      'buildAuthPayloadHash_legacyEntry_stampingPreservesLegacyArm',
+      () async {
+        final entry = _buildLegacyGoldenEntry();
 
-      final hash = await OZSmartAccountAuth.buildAuthPayloadHash(
-        entry,
-        _kExpiration,
-        _kNetworkPassphrase,
-      );
+        final hash = await OZSmartAccountAuth.buildAuthPayloadHash(
+          entry,
+          _kExpiration,
+          _kNetworkPassphrase,
+        );
 
-      expect(_bytesToHex(hash), _kLegacyPayloadSha256);
-    });
+        expect(_bytesToHex(hash), _kLegacyPayloadSha256);
+      },
+    );
 
-    test(
-        'signAuthEntry_v2Entry_expirationSetOnV2Credentials',
-        () async {
+    test('signAuthEntry_v2Entry_expirationSetOnV2Credentials', () async {
       final entry = _buildGoldenEntry(
         arm: XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
       );
@@ -476,10 +467,14 @@ void main() {
       );
 
       // The expiration must be stamped on the V2 credentials.
-      expect(signed.credentials.addressV2?.signatureExpirationLedger.uint32,
-          newExpiration);
-      expect(signed.credentials.discriminant,
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2);
+      expect(
+        signed.credentials.addressV2?.signatureExpirationLedger.uint32,
+        newExpiration,
+      );
+      expect(
+        signed.credentials.discriminant,
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
+      );
     });
   });
 
@@ -489,27 +484,28 @@ void main() {
 
   group('ADDRESS_WITH_DELEGATES: auto-sign flow throws descriptive error', () {
     test(
-        'buildAuthPayloadHash_withDelegatesEntry_throwsDescriptiveError',
-        () async {
-      final entry = _buildWithDelegatesEntry();
+      'buildAuthPayloadHash_withDelegatesEntry_throwsDescriptiveError',
+      () async {
+        final entry = _buildWithDelegatesEntry();
 
-      await expectLater(
-        OZSmartAccountAuth.buildAuthPayloadHash(
-          entry,
-          _kExpiration,
-          _kNetworkPassphrase,
-        ),
-        throwsA(isA<SmartAccountTransactionSigningFailed>().having(
-          (e) => e.message,
-          'message',
-          contains('ADDRESS_WITH_DELEGATES'),
-        )),
-      );
-    });
+        await expectLater(
+          OZSmartAccountAuth.buildAuthPayloadHash(
+            entry,
+            _kExpiration,
+            _kNetworkPassphrase,
+          ),
+          throwsA(
+            isA<SmartAccountTransactionSigningFailed>().having(
+              (e) => e.message,
+              'message',
+              contains('ADDRESS_WITH_DELEGATES'),
+            ),
+          ),
+        );
+      },
+    );
 
-    test(
-        'signAuthEntry_withDelegatesEntry_throwsDescriptiveError',
-        () async {
+    test('signAuthEntry_withDelegatesEntry_throwsDescriptiveError', () async {
       final entry = _buildWithDelegatesEntry();
 
       await expectLater(
@@ -525,41 +521,46 @@ void main() {
           ),
           expirationLedger: _kExpiration,
         ),
-        throwsA(isA<SmartAccountTransactionSigningFailed>().having(
-          (e) => e.message,
-          'message',
-          allOf(
-            contains('ADDRESS_WITH_DELEGATES'),
-            contains('SorobanAuthorizationEntry.sign'),
+        throwsA(
+          isA<SmartAccountTransactionSigningFailed>().having(
+            (e) => e.message,
+            'message',
+            allOf(
+              contains('ADDRESS_WITH_DELEGATES'),
+              contains('SorobanAuthorizationEntry.sign'),
+            ),
           ),
-        )),
+        ),
       );
     });
 
     test(
-        'addRawSignatureMapEntry_withDelegatesEntry_throwsDescriptiveError',
-        () {
-      final entry = _buildWithDelegatesEntry();
-      final signer = OZDelegatedSigner(
-        'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
-      );
+      'addRawSignatureMapEntry_withDelegatesEntry_throwsDescriptiveError',
+      () {
+        final entry = _buildWithDelegatesEntry();
+        final signer = OZDelegatedSigner(
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+        );
 
-      expect(
-        () => OZSmartAccountAuth.addRawSignatureMapEntry(
-          entry: entry,
-          signerKey: signer.toScVal(),
-          signatureValue: XdrSCVal.forBytes(Uint8List(0)),
-        ),
-        throwsA(isA<SmartAccountTransactionSigningFailed>().having(
-          (e) => e.message,
-          'message',
-          allOf(
-            contains('ADDRESS_WITH_DELEGATES'),
-            contains('SorobanAuthorizationEntry.sign'),
+        expect(
+          () => OZSmartAccountAuth.addRawSignatureMapEntry(
+            entry: entry,
+            signerKey: signer.toScVal(),
+            signatureValue: XdrSCVal.forBytes(Uint8List(0)),
           ),
-        )),
-      );
-    });
+          throwsA(
+            isA<SmartAccountTransactionSigningFailed>().having(
+              (e) => e.message,
+              'message',
+              allOf(
+                contains('ADDRESS_WITH_DELEGATES'),
+                contains('SorobanAuthorizationEntry.sign'),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -624,9 +625,9 @@ void main() {
       expect(
         () => OZSmartAccountAuth.addRawSignatureMapEntry(
           entry: entry,
-          signerKey:
-              OZDelegatedSigner('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX')
-                  .toScVal(),
+          signerKey: OZDelegatedSigner(
+            'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+          ).toScVal(),
           signatureValue: XdrSCVal.forBytes(Uint8List(0)),
         ),
         throwsA(isA<SmartAccountTransactionSigningFailed>()),
@@ -638,37 +639,36 @@ void main() {
   // Preimage byte-identity: refactored path == shared preimage builder
   // -------------------------------------------------------------------------
 
-  group('preimage byte-identity: refactored path matches shared preimage builder', () {
-    test(
-        'legacyEntry_ozHashMatchesSharedBuilderOutput',
-        () async {
-      final entry = _buildLegacyGoldenEntry();
+  group(
+    'preimage byte-identity: refactored path matches shared preimage builder',
+    () {
+      test('legacyEntry_ozHashMatchesSharedBuilderOutput', () async {
+        final entry = _buildLegacyGoldenEntry();
 
-      final ozHash = await OZSmartAccountAuth.buildAuthPayloadHash(
-        entry,
-        _kExpiration,
-        _kNetworkPassphrase,
-      );
-      final batchBHash = _buildPayloadHashDirect(entry, _kNetworkPassphrase);
+        final ozHash = await OZSmartAccountAuth.buildAuthPayloadHash(
+          entry,
+          _kExpiration,
+          _kNetworkPassphrase,
+        );
+        final batchBHash = _buildPayloadHashDirect(entry, _kNetworkPassphrase);
 
-      expect(ozHash, batchBHash);
-    });
+        expect(ozHash, batchBHash);
+      });
 
-    test(
-        'v2Entry_ozHashMatchesSharedBuilderOutput',
-        () async {
-      final entry = _buildV2GoldenEntry();
+      test('v2Entry_ozHashMatchesSharedBuilderOutput', () async {
+        final entry = _buildV2GoldenEntry();
 
-      final ozHash = await OZSmartAccountAuth.buildAuthPayloadHash(
-        entry,
-        _kExpiration,
-        _kNetworkPassphrase,
-      );
-      final batchBHash = _buildPayloadHashDirect(entry, _kNetworkPassphrase);
+        final ozHash = await OZSmartAccountAuth.buildAuthPayloadHash(
+          entry,
+          _kExpiration,
+          _kNetworkPassphrase,
+        );
+        final batchBHash = _buildPayloadHashDirect(entry, _kNetworkPassphrase);
 
-      expect(ozHash, batchBHash);
-    });
-  });
+        expect(ozHash, batchBHash);
+      });
+    },
+  );
 
   // -------------------------------------------------------------------------
   // buildSourceAccountAuthPayloadHash binds the address (regression guard)
@@ -676,121 +676,129 @@ void main() {
 
   group('buildSourceAccountAuthPayloadHash produces WITH_ADDRESS preimage', () {
     test(
-        'buildSourceAccountAuthPayloadHash_matchesManualWithAddressPreimage',
-        () async {
-      final contractAddr = XdrSCAddress.forContractId(_kContractId);
-      final fn = XdrSorobanAuthorizedFunction(
-        XdrSorobanAuthorizedFunctionType
-            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
-      );
-      fn.contractFn = XdrInvokeContractArgs(
-        contractAddr,
-        'hello',
-        <XdrSCVal>[XdrSCVal.forU64(BigInt.from(1234))],
-      );
-      final invocation = XdrSorobanAuthorizedInvocation(
-        fn,
-        <XdrSorobanAuthorizedInvocation>[],
-      );
-      final entry = XdrSorobanAuthorizationEntry(
-        XdrSorobanCredentials.forSourceAccount(),
-        invocation,
-      );
-      final nonce = XdrInt64(_kNonce);
-      final tempAddress = XdrSCAddress.forAccountId(_kV2SignerAccount);
+      'buildSourceAccountAuthPayloadHash_matchesManualWithAddressPreimage',
+      () async {
+        final contractAddr = XdrSCAddress.forContractId(_kContractId);
+        final fn = XdrSorobanAuthorizedFunction(
+          XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
+        );
+        fn.contractFn = XdrInvokeContractArgs(contractAddr, 'hello', <XdrSCVal>[
+          XdrSCVal.forU64(BigInt.from(1234)),
+        ]);
+        final invocation = XdrSorobanAuthorizedInvocation(
+          fn,
+          <XdrSorobanAuthorizedInvocation>[],
+        );
+        final entry = XdrSorobanAuthorizationEntry(
+          XdrSorobanCredentials.forSourceAccount(),
+          invocation,
+        );
+        final nonce = XdrInt64(_kNonce);
+        final tempAddress = XdrSCAddress.forAccountId(_kV2SignerAccount);
 
-      final ozHash = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
-        entry,
-        tempAddress,
-        nonce,
-        _kExpiration,
-        _kNetworkPassphrase,
-      );
+        final ozHash =
+            await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+              entry,
+              tempAddress,
+              nonce,
+              _kExpiration,
+              _kNetworkPassphrase,
+            );
 
-      // Manual construction of the address-bound preimage.
-      final networkId = Uint8List.fromList(
-        crypto.sha256.convert(utf8.encode(_kNetworkPassphrase)).bytes,
-      );
-      final authPreimage = XdrHashIDPreimageSorobanAuthorizationWithAddress(
-        XdrHash(networkId),
-        nonce,
-        XdrUint32(_kExpiration),
-        tempAddress,
-        invocation,
-      );
-      final preimage = XdrHashIDPreimage(
-        XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS,
-      );
-      preimage.sorobanAuthorizationWithAddress = authPreimage;
-      final stream = XdrDataOutputStream();
-      XdrHashIDPreimage.encode(stream, preimage);
-      final expectedHash = Uint8List.fromList(
-        crypto.sha256.convert(stream.bytes).bytes,
-      );
+        // Manual construction of the address-bound preimage.
+        final networkId = Uint8List.fromList(
+          crypto.sha256.convert(utf8.encode(_kNetworkPassphrase)).bytes,
+        );
+        final authPreimage = XdrHashIDPreimageSorobanAuthorizationWithAddress(
+          XdrHash(networkId),
+          nonce,
+          XdrUint32(_kExpiration),
+          tempAddress,
+          invocation,
+        );
+        final preimage = XdrHashIDPreimage(
+          XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS,
+        );
+        preimage.sorobanAuthorizationWithAddress = authPreimage;
+        final stream = XdrDataOutputStream();
+        XdrHashIDPreimage.encode(stream, preimage);
+        final expectedHash = Uint8List.fromList(
+          crypto.sha256.convert(stream.bytes).bytes,
+        );
 
-      expect(ozHash, expectedHash,
-          reason: 'buildSourceAccountAuthPayloadHash must produce a '
+        expect(
+          ozHash,
+          expectedHash,
+          reason:
+              'buildSourceAccountAuthPayloadHash must produce a '
               'byte-identical result to the manual WITH_ADDRESS preimage '
-              'construction');
-    });
+              'construction',
+        );
+      },
+    );
 
     test(
-        'buildSourceAccountAuthPayloadHash_optOut_matchesManualLegacyPreimage',
-        () async {
-      final contractAddr = XdrSCAddress.forContractId(_kContractId);
-      final fn = XdrSorobanAuthorizedFunction(
-        XdrSorobanAuthorizedFunctionType
-            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
-      );
-      fn.contractFn = XdrInvokeContractArgs(
-        contractAddr,
-        'hello',
-        <XdrSCVal>[XdrSCVal.forU64(BigInt.from(1234))],
-      );
-      final invocation = XdrSorobanAuthorizedInvocation(
-        fn,
-        <XdrSorobanAuthorizedInvocation>[],
-      );
-      final entry = XdrSorobanAuthorizationEntry(
-        XdrSorobanCredentials.forSourceAccount(),
-        invocation,
-      );
-      final nonce = XdrInt64(_kNonce);
-      final tempAddress = XdrSCAddress.forAccountId(_kV2SignerAccount);
+      'buildSourceAccountAuthPayloadHash_optOut_matchesManualLegacyPreimage',
+      () async {
+        final contractAddr = XdrSCAddress.forContractId(_kContractId);
+        final fn = XdrSorobanAuthorizedFunction(
+          XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
+        );
+        fn.contractFn = XdrInvokeContractArgs(contractAddr, 'hello', <XdrSCVal>[
+          XdrSCVal.forU64(BigInt.from(1234)),
+        ]);
+        final invocation = XdrSorobanAuthorizedInvocation(
+          fn,
+          <XdrSorobanAuthorizedInvocation>[],
+        );
+        final entry = XdrSorobanAuthorizationEntry(
+          XdrSorobanCredentials.forSourceAccount(),
+          invocation,
+        );
+        final nonce = XdrInt64(_kNonce);
+        final tempAddress = XdrSCAddress.forAccountId(_kV2SignerAccount);
 
-      final ozHash = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
-        entry,
-        tempAddress,
-        nonce,
-        _kExpiration,
-        _kNetworkPassphrase,
-        useUpgradedAuth: false,
-      );
+        final ozHash =
+            await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+              entry,
+              tempAddress,
+              nonce,
+              _kExpiration,
+              _kNetworkPassphrase,
+              useUpgradedAuth: false,
+            );
 
-      // Manual construction of the legacy preimage, which does not cover the
-      // address.
-      final networkId = Uint8List.fromList(
-        crypto.sha256.convert(utf8.encode(_kNetworkPassphrase)).bytes,
-      );
-      final preimage = XdrHashIDPreimage(
-        XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
-      );
-      preimage.sorobanAuthorization = XdrHashIDPreimageSorobanAuthorization(
-        XdrHash(networkId),
-        nonce,
-        XdrUint32(_kExpiration),
-        invocation,
-      );
-      final stream = XdrDataOutputStream();
-      XdrHashIDPreimage.encode(stream, preimage);
-      final expectedHash = Uint8List.fromList(
-        crypto.sha256.convert(stream.bytes).bytes,
-      );
+        // Manual construction of the legacy preimage, which does not cover the
+        // address.
+        final networkId = Uint8List.fromList(
+          crypto.sha256.convert(utf8.encode(_kNetworkPassphrase)).bytes,
+        );
+        final preimage = XdrHashIDPreimage(
+          XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
+        );
+        preimage.sorobanAuthorization = XdrHashIDPreimageSorobanAuthorization(
+          XdrHash(networkId),
+          nonce,
+          XdrUint32(_kExpiration),
+          invocation,
+        );
+        final stream = XdrDataOutputStream();
+        XdrHashIDPreimage.encode(stream, preimage);
+        final expectedHash = Uint8List.fromList(
+          crypto.sha256.convert(stream.bytes).bytes,
+        );
 
-      expect(ozHash, expectedHash,
-          reason: 'the opt-out arm must produce a byte-identical result to '
-              'the manual legacy preimage construction');
-    });
+        expect(
+          ozHash,
+          expectedHash,
+          reason:
+              'the opt-out arm must produce a byte-identical result to '
+              'the manual legacy preimage construction',
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------

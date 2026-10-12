@@ -14,10 +14,14 @@ SIGNING_KEY="GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP"
         final stellarToml = StellarToml(toml);
 
         expect(stellarToml.generalInformation.version, equals('2.7.0'));
-        expect(stellarToml.generalInformation.networkPassphrase,
-            equals('Public Global Stellar Network ; September 2015'));
-        expect(stellarToml.generalInformation.signingKey,
-            equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'));
+        expect(
+          stellarToml.generalInformation.networkPassphrase,
+          equals('Public Global Stellar Network ; September 2015'),
+        );
+        expect(
+          stellarToml.generalInformation.signingKey,
+          equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'),
+        );
       });
 
       test('parses all general information fields', () {
@@ -43,25 +47,37 @@ WEB_AUTH_CONTRACT_ID="CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         final info = stellarToml.generalInformation;
 
         expect(info.version, equals('2.7.0'));
-        expect(info.networkPassphrase,
-            equals('Public Global Stellar Network ; September 2015'));
+        expect(
+          info.networkPassphrase,
+          equals('Public Global Stellar Network ; September 2015'),
+        );
         expect(info.federationServer, equals('https://example.com/federation'));
         expect(info.authServer, equals('https://example.com/auth'));
         expect(info.transferServer, equals('https://example.com/transfer'));
         expect(info.transferServerSep24, equals('https://example.com/sep24'));
         expect(info.kYCServer, equals('https://example.com/kyc'));
         expect(info.webAuthEndpoint, equals('https://example.com/webauth'));
-        expect(info.signingKey,
-            equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'));
+        expect(
+          info.signingKey,
+          equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'),
+        );
         expect(info.horizonUrl, equals('https://horizon.example.com'));
-        expect(info.uriRequestSigningKey,
-            equals('GCKJZ2YVECFGLUDJ5T7RDWAYQSP35ZFVCODPRLL4PYBLQ3FYZBZ2D7IZ'));
+        expect(
+          info.uriRequestSigningKey,
+          equals('GCKJZ2YVECFGLUDJ5T7RDWAYQSP35ZFVCODPRLL4PYBLQ3FYZBZ2D7IZ'),
+        );
         expect(info.directPaymentServer, equals('https://example.com/sep31'));
         expect(info.anchorQuoteServer, equals('https://example.com/sep38'));
-        expect(info.webAuthForContractsEndpoint,
-            equals('https://example.com/contracts/auth'));
-        expect(info.webAuthContractId,
-            equals('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'));
+        expect(
+          info.webAuthForContractsEndpoint,
+          equals('https://example.com/contracts/auth'),
+        );
+        expect(
+          info.webAuthContractId,
+          equals(
+            'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC',
+          ),
+        );
       });
 
       test('parses ACCOUNTS array', () {
@@ -77,12 +93,18 @@ ACCOUNTS=[
         final stellarToml = StellarToml(toml);
 
         expect(stellarToml.generalInformation.accounts.length, equals(3));
-        expect(stellarToml.generalInformation.accounts[0],
-            equals('GD5DJQDDBKGAYNEAXU562HYGOOSYAEOO6AS53PZXBOZGCP5M2OPGMZV3'));
-        expect(stellarToml.generalInformation.accounts[1],
-            equals('GAENZLGHJGJRCMX5VCHOLHQXU3EMCU5XWDNU4BGGJFNLI2EL354IVBK7'));
-        expect(stellarToml.generalInformation.accounts[2],
-            equals('GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U'));
+        expect(
+          stellarToml.generalInformation.accounts[0],
+          equals('GD5DJQDDBKGAYNEAXU562HYGOOSYAEOO6AS53PZXBOZGCP5M2OPGMZV3'),
+        );
+        expect(
+          stellarToml.generalInformation.accounts[1],
+          equals('GAENZLGHJGJRCMX5VCHOLHQXU3EMCU5XWDNU4BGGJFNLI2EL354IVBK7'),
+        );
+        expect(
+          stellarToml.generalInformation.accounts[2],
+          equals('GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U'),
+        );
       });
     });
 
@@ -120,12 +142,19 @@ ORG_LICENSE_NUMBER="MT-123456"
         expect(doc.orgUrl, equals('https://example.com'));
         expect(doc.orgLogo, equals('https://example.com/logo.png'));
         expect(doc.orgDescription, equals('A test organization'));
-        expect(doc.orgPhysicalAddress, equals('123 Main St, City, State 12345'));
-        expect(doc.orgPhysicalAddressAttestation,
-            equals('https://example.com/address_proof.pdf'));
+        expect(
+          doc.orgPhysicalAddress,
+          equals('123 Main St, City, State 12345'),
+        );
+        expect(
+          doc.orgPhysicalAddressAttestation,
+          equals('https://example.com/address_proof.pdf'),
+        );
         expect(doc.orgPhoneNumber, equals('+1-555-123-4567'));
-        expect(doc.orgPhoneNumberAttestation,
-            equals('https://example.com/phone_proof.pdf'));
+        expect(
+          doc.orgPhoneNumberAttestation,
+          equals('https://example.com/phone_proof.pdf'),
+        );
         expect(doc.orgKeybase, equals('example_org'));
         expect(doc.orgTwitter, equals('example_org'));
         expect(doc.orgGithub, equals('example_org'));
@@ -181,10 +210,18 @@ keybase="john_smith"
         expect(jane.twitter, equals('jane_doe'));
         expect(jane.telegram, equals('jane_doe_tg'));
         expect(jane.github, equals('jane_doe_gh'));
-        expect(jane.idPhotoHash,
-            equals('be688838ca8686e5c90689bf2ab585cef1137c999b48c70b92f67a5c34dc15697b5d11c982ed6d71be1e1e7f7b4e0733884aa97c3f7a339a8ed03577cf74be09'));
-        expect(jane.verificationPhotoHash,
-            equals('016ba8c4cfde65af99cb5fa8b8a37e2eb73f481b3ae34991666df2e04feb6c038666ebd1ec2b6f623967756033c702dde5f423f7d47ab6ed1827ff53783731f7'));
+        expect(
+          jane.idPhotoHash,
+          equals(
+            'be688838ca8686e5c90689bf2ab585cef1137c999b48c70b92f67a5c34dc15697b5d11c982ed6d71be1e1e7f7b4e0733884aa97c3f7a339a8ed03577cf74be09',
+          ),
+        );
+        expect(
+          jane.verificationPhotoHash,
+          equals(
+            '016ba8c4cfde65af99cb5fa8b8a37e2eb73f481b3ae34991666df2e04feb6c038666ebd1ec2b6f623967756033c702dde5f423f7d47ab6ed1827ff53783731f7',
+          ),
+        );
 
         final john = stellarToml.pointsOfContact![1];
         expect(john.name, equals('John Smith'));
@@ -221,8 +258,10 @@ display_decimals=2
 
         final currency = stellarToml.currencies![0];
         expect(currency.code, equals('USD'));
-        expect(currency.issuer,
-            equals('GCZJM35NKGVK47BB4SPBDV25477PZYIYPVVG453LPYFNXLS3FGHDXOCM'));
+        expect(
+          currency.issuer,
+          equals('GCZJM35NKGVK47BB4SPBDV25477PZYIYPVVG453LPYFNXLS3FGHDXOCM'),
+        );
         expect(currency.displayDecimals, equals(2));
       });
 
@@ -257,8 +296,10 @@ approval_criteria="KYC required"
         final currency = stellarToml.currencies![0];
 
         expect(currency.code, equals('BTC'));
-        expect(currency.issuer,
-            equals('GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U'));
+        expect(
+          currency.issuer,
+          equals('GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U'),
+        );
         expect(currency.status, equals('live'));
         expect(currency.displayDecimals, equals(7));
         expect(currency.name, equals('Bitcoin'));
@@ -269,20 +310,32 @@ approval_criteria="KYC required"
         expect(currency.isAssetAnchored, isTrue);
         expect(currency.anchorAssetType, equals('crypto'));
         expect(currency.anchorAsset, equals('BTC'));
-        expect(currency.attestationOfReserve,
-            equals('https://example.com/audit.pdf'));
-        expect(currency.redemptionInstructions,
-            equals('Use SEP-6 with our anchor'));
+        expect(
+          currency.attestationOfReserve,
+          equals('https://example.com/audit.pdf'),
+        );
+        expect(
+          currency.redemptionInstructions,
+          equals('Use SEP-6 with our anchor'),
+        );
         expect(currency.collateralAddresses, isNotNull);
         expect(currency.collateralAddresses!.length, equals(1));
-        expect(currency.collateralAddresses![0],
-            equals('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'));
+        expect(
+          currency.collateralAddresses![0],
+          equals('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'),
+        );
         expect(currency.collateralAddressMessages, isNotNull);
-        expect(currency.collateralAddressMessages![0],
-            equals('Reserved for Stellar BTC'));
+        expect(
+          currency.collateralAddressMessages![0],
+          equals('Reserved for Stellar BTC'),
+        );
         expect(currency.collateralAddressSignatures, isNotNull);
-        expect(currency.collateralAddressSignatures![0],
-            equals('304502206e21798a42fae0e854281abd38bacd1aeed3ee3738d9e1446618c4571d10'));
+        expect(
+          currency.collateralAddressSignatures![0],
+          equals(
+            '304502206e21798a42fae0e854281abd38bacd1aeed3ee3738d9e1446618c4571d10',
+          ),
+        );
         expect(currency.regulated, isTrue);
         expect(currency.approvalServer, equals('https://example.com/approval'));
         expect(currency.approvalCriteria, equals('KYC required'));
@@ -304,8 +357,12 @@ desc="USDC on Stellar Soroban"
         final currency = stellarToml.currencies![0];
 
         expect(currency.code, equals('USDC'));
-        expect(currency.contract,
-            equals('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'));
+        expect(
+          currency.contract,
+          equals(
+            'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC',
+          ),
+        );
         expect(currency.issuer, isNull);
       });
 
@@ -392,10 +449,14 @@ HISTORY="http://history.domain.com/prd/core-live/core_live_002/"
         expect(validator1.alias, equals('domain-au'));
         expect(validator1.displayName, equals('Domain Australia'));
         expect(validator1.host, equals('core-au.domain.com:11625'));
-        expect(validator1.publicKey,
-            equals('GD5DJQDDBKGAYNEAXU562HYGOOSYAEOO6AS53PZXBOZGCP5M2OPGMZV3'));
-        expect(validator1.history,
-            equals('http://history.domain.com/prd/core-live/core_live_001/'));
+        expect(
+          validator1.publicKey,
+          equals('GD5DJQDDBKGAYNEAXU562HYGOOSYAEOO6AS53PZXBOZGCP5M2OPGMZV3'),
+        );
+        expect(
+          validator1.history,
+          equals('http://history.domain.com/prd/core-live/core_live_001/'),
+        );
 
         final validator2 = stellarToml.validators![1];
         expect(validator2.alias, equals('domain-sg'));
@@ -528,8 +589,10 @@ toml="https://example.com/.well-known/USD.toml"
 
         expect(stellarToml.currencies, isNotNull);
         expect(stellarToml.currencies!.length, equals(1));
-        expect(stellarToml.currencies![0].toml,
-            equals('https://example.com/.well-known/USD.toml'));
+        expect(
+          stellarToml.currencies![0].toml,
+          equals('https://example.com/.well-known/USD.toml'),
+        );
         expect(stellarToml.currencies![0].code, isNull);
         expect(stellarToml.currencies![0].issuer, isNull);
       });

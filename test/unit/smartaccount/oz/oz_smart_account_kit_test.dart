@@ -67,10 +67,7 @@ OZSmartAccountKit _kitWithMockClients({
   OZExternalWalletAdapter? externalWallet,
   RecordingSorobanServer? sorobanServer,
 }) {
-  final config = _validConfig(
-    storage: storage,
-    externalWallet: externalWallet,
-  );
+  final config = _validConfig(storage: storage, externalWallet: externalWallet);
   return OZSmartAccountKit.forTesting(
     config: config,
     storage: storage ?? config.storage,
@@ -107,10 +104,9 @@ class _StubExternalWallet extends OZExternalWalletAdapter {
   Future<OZSignAuthEntryResult> signAuthEntry(
     String preimageXdr, {
     OZSignAuthEntryOptions? options,
-  }) =>
-      throw UnsupportedError(
-        '_StubExternalWallet.signAuthEntry is not implemented for tests',
-      );
+  }) => throw UnsupportedError(
+    '_StubExternalWallet.signAuthEntry is not implemented for tests',
+  );
 
   @override
   List<OZConnectedWallet> getConnectedWallets() => const <OZConnectedWallet>[];
@@ -130,8 +126,9 @@ class _StubEd25519Adapter extends OZExternalEd25519SignerAdapter {
   Future<Uint8List> signAuthDigest(
     Uint8List authDigest,
     Uint8List publicKey,
-  ) async =>
-      throw UnsupportedError('_StubEd25519Adapter.signAuthDigest not used in tests');
+  ) async => throw UnsupportedError(
+    '_StubEd25519Adapter.signAuthDigest not used in tests',
+  );
 }
 
 void main() {
@@ -380,10 +377,7 @@ void main() {
       kit.events.on<OZSmartAccountEventWalletDisconnected>(
         (_) => disconnectedFired++,
       );
-      expect(
-        kit.events.listenerCount('WalletDisconnected'),
-        greaterThan(0),
-      );
+      expect(kit.events.listenerCount('WalletDisconnected'), greaterThan(0));
 
       await kit.close();
 
@@ -391,7 +385,9 @@ void main() {
 
       // Re-emit after close — confirms the listener really detached.
       kit.events.emit(
-        const OZSmartAccountEventWalletDisconnected(contractId: _validContractId),
+        const OZSmartAccountEventWalletDisconnected(
+          contractId: _validContractId,
+        ),
       );
       expect(disconnectedFired, equals(0));
     });
@@ -443,15 +439,17 @@ void main() {
       expect(disconnectedFired, equals(0));
     });
 
-    test('requireConnected_whenNotConnected_throwsWalletNotConnected',
-        () async {
-      final kit = OZSmartAccountKit.create(config: _validConfig());
+    test(
+      'requireConnected_whenNotConnected_throwsWalletNotConnected',
+      () async {
+        final kit = OZSmartAccountKit.create(config: _validConfig());
 
-      await expectLater(
-        () => kit.requireConnected(),
-        throwsA(isA<SmartAccountWalletNotConnected>()),
-      );
-    });
+        await expectLater(
+          () => kit.requireConnected(),
+          throwsA(isA<SmartAccountWalletNotConnected>()),
+        );
+      },
+    );
 
     test('requireConnected_whenConnected_returnsState', () async {
       final kit = OZSmartAccountKit.create(config: _validConfig());
@@ -465,24 +463,26 @@ void main() {
       expect(state.contractId, equals(_validContractId));
     });
 
-    test('setHeadlessConnectedState_marksHeadlessConnection_withoutCredential',
-        () async {
-      final kit = OZSmartAccountKit.create(config: _validConfig());
+    test(
+      'setHeadlessConnectedState_marksHeadlessConnection_withoutCredential',
+      () async {
+        final kit = OZSmartAccountKit.create(config: _validConfig());
 
-      await kit.setHeadlessConnectedState(contractId: _validContractId);
+        await kit.setHeadlessConnectedState(contractId: _validContractId);
 
-      expect(kit.isConnected, isTrue);
-      expect(kit.isHeadless, isTrue);
-      expect(kit.credentialId, isNull);
-      expect(kit.contractId, equals(_validContractId));
+        expect(kit.isConnected, isTrue);
+        expect(kit.isHeadless, isTrue);
+        expect(kit.credentialId, isNull);
+        expect(kit.contractId, equals(_validContractId));
 
-      // A headless connection still satisfies requireConnected, but the
-      // returned state carries no credential and reports isHeadless.
-      final state = await kit.requireConnected();
-      expect(state.credentialId, isNull);
-      expect(state.isHeadless, isTrue);
-      expect(state.contractId, equals(_validContractId));
-    });
+        // A headless connection still satisfies requireConnected, but the
+        // returned state carries no credential and reports isHeadless.
+        final state = await kit.requireConnected();
+        expect(state.credentialId, isNull);
+        expect(state.isHeadless, isTrue);
+        expect(state.contractId, equals(_validContractId));
+      },
+    );
 
     test('connectionState_passkeyToHeadlessToPasskey_flipsFlags', () async {
       final kit = OZSmartAccountKit.create(config: _validConfig());
@@ -578,47 +578,29 @@ void main() {
         isTrue,
       );
       expect(identical(kit.signerManager, kit.signerManager), isTrue);
-      expect(
-        identical(kit.contextRuleManager, kit.contextRuleManager),
-        isTrue,
-      );
+      expect(identical(kit.contextRuleManager, kit.contextRuleManager), isTrue);
       expect(identical(kit.policyManager, kit.policyManager), isTrue);
-      expect(
-        identical(kit.credentialManager, kit.credentialManager),
-        isTrue,
-      );
-      expect(
-        identical(kit.multiSignerManager, kit.multiSignerManager),
-        isTrue,
-      );
+      expect(identical(kit.credentialManager, kit.credentialManager), isTrue);
+      expect(identical(kit.multiSignerManager, kit.multiSignerManager), isTrue);
       expect(identical(kit.events, kit.events), isTrue);
     });
 
     test('credentialManager_implementsWalletInterface', () {
       final kit = OZSmartAccountKit.create(config: _validConfig());
 
-      expect(
-        kit.credentialManager,
-        isA<OZWalletCredentialManagerInterface>(),
-      );
+      expect(kit.credentialManager, isA<OZWalletCredentialManagerInterface>());
     });
 
     test('contextRuleManager_implementsRuleInterface', () {
       final kit = OZSmartAccountKit.create(config: _validConfig());
 
-      expect(
-        kit.contextRuleManager,
-        isA<OZContextRuleManagerInterface>(),
-      );
+      expect(kit.contextRuleManager, isA<OZContextRuleManagerInterface>());
     });
 
     test('multiSignerManager_implementsMultiSignerInterface', () {
       final kit = OZSmartAccountKit.create(config: _validConfig());
 
-      expect(
-        kit.multiSignerManager,
-        isA<OZMultiSignerManagerInterface>(),
-      );
+      expect(kit.multiSignerManager, isA<OZMultiSignerManagerInterface>());
     });
 
     test('closeReleasesResources_indexerAndRelayer', () async {
@@ -642,7 +624,9 @@ void main() {
 
       // Re-emit after close — confirms global listeners detached too.
       kit.events.emit(
-        const OZSmartAccountEventWalletDisconnected(contractId: _validContractId),
+        const OZSmartAccountEventWalletDisconnected(
+          contractId: _validContractId,
+        ),
       );
       expect(globalListenerHits, equals(0));
     });
@@ -720,56 +704,55 @@ void main() {
 
   group('concurrency stress', () {
     test(
-        'parallel_disconnectAndSetConnectedState_completeWithoutDeadlockUnder30s',
-        () async {
-      final kit = OZSmartAccountKit.create(config: _validConfig());
+      'parallel_disconnectAndSetConnectedState_completeWithoutDeadlockUnder30s',
+      () async {
+        final kit = OZSmartAccountKit.create(config: _validConfig());
 
-      // why: drive 10 parallel callers, each performing a passkey connect, a
-      // headless re-connect, and a disconnect. The kit's lock serialises every
-      // state write, including setHeadlessConnectedState, against the storage
-      // I/O so the futures must all complete without any caller deadlocking on
-      // the previous tail, and each write the headless setter makes stays
-      // coherent under contention.
-      final futures = List<Future<void>>.generate(10, (i) async {
-        await kit.setConnectedState(
-          credentialId: 'cred-$i',
-          contractId: _validContractId,
-        );
-        await kit.setHeadlessConnectedState(contractId: _validContractId);
-        await kit.disconnect();
-      });
+        // why: drive 10 parallel callers, each performing a passkey connect, a
+        // headless re-connect, and a disconnect. The kit's lock serialises every
+        // state write, including setHeadlessConnectedState, against the storage
+        // I/O so the futures must all complete without any caller deadlocking on
+        // the previous tail, and each write the headless setter makes stays
+        // coherent under contention.
+        final futures = List<Future<void>>.generate(10, (i) async {
+          await kit.setConnectedState(
+            credentialId: 'cred-$i',
+            contractId: _validContractId,
+          );
+          await kit.setHeadlessConnectedState(contractId: _validContractId);
+          await kit.disconnect();
+        });
 
-      await Future.wait(futures).timeout(const Duration(seconds: 30));
+        await Future.wait(futures).timeout(const Duration(seconds: 30));
 
-      expect(kit.isConnected, isFalse);
-    });
+        expect(kit.isConnected, isFalse);
+      },
+    );
 
     test(
-        'parallel_requireConnectedReads_completeUnder30sWithDistinctResults',
-        () async {
-      final kit = OZSmartAccountKit.create(config: _validConfig());
+      'parallel_requireConnectedReads_completeUnder30sWithDistinctResults',
+      () async {
+        final kit = OZSmartAccountKit.create(config: _validConfig());
 
-      // why: 10 concurrent requireConnected reads through the state lock;
-      // confirms the read path does not deadlock the write path.
-      await kit.setConnectedState(
-        credentialId: _credentialIdB64,
-        contractId: _validContractId,
-      );
-      final addresses = List<String>.generate(
-        10,
-        (i) => 'caller-$i',
-      );
+        // why: 10 concurrent requireConnected reads through the state lock;
+        // confirms the read path does not deadlock the write path.
+        await kit.setConnectedState(
+          credentialId: _credentialIdB64,
+          contractId: _validContractId,
+        );
+        final addresses = List<String>.generate(10, (i) => 'caller-$i');
 
-      final results = await Future.wait<String>(
-        addresses.map((addr) async {
-          final state = await kit.requireConnected();
-          return '${state.contractId}|$addr';
-        }),
-      ).timeout(const Duration(seconds: 30));
+        final results = await Future.wait<String>(
+          addresses.map((addr) async {
+            final state = await kit.requireConnected();
+            return '${state.contractId}|$addr';
+          }),
+        ).timeout(const Duration(seconds: 30));
 
-      expect(results.length, equals(10));
-      expect(results.toSet().length, equals(10));
-    });
+        expect(results.length, equals(10));
+        expect(results.toSet().length, equals(10));
+      },
+    );
 
     test('disconnect_afterClose_pastInitialGuard_abortsCleanly', () async {
       final kit = OZSmartAccountKit.create(config: _validConfig());

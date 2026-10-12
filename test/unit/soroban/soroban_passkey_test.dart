@@ -8,16 +8,72 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 // secp256r1 generator point G coordinates (FIPS 186-4 / SEC 2).
 // These are on the curve by definition and are used as valid test inputs.
 final _gxBytes = Uint8List.fromList([
-  0x6b, 0x17, 0xd1, 0xf2, 0xe1, 0x2c, 0x42, 0x47,
-  0xf8, 0xbc, 0xe6, 0xe5, 0x63, 0xa4, 0x40, 0xf2,
-  0x77, 0x03, 0x7d, 0x81, 0x2d, 0xeb, 0x33, 0xa0,
-  0xf4, 0xa1, 0x39, 0x45, 0xd8, 0x98, 0xc2, 0x96,
+  0x6b,
+  0x17,
+  0xd1,
+  0xf2,
+  0xe1,
+  0x2c,
+  0x42,
+  0x47,
+  0xf8,
+  0xbc,
+  0xe6,
+  0xe5,
+  0x63,
+  0xa4,
+  0x40,
+  0xf2,
+  0x77,
+  0x03,
+  0x7d,
+  0x81,
+  0x2d,
+  0xeb,
+  0x33,
+  0xa0,
+  0xf4,
+  0xa1,
+  0x39,
+  0x45,
+  0xd8,
+  0x98,
+  0xc2,
+  0x96,
 ]);
 final _gyBytes = Uint8List.fromList([
-  0x4f, 0xe3, 0x42, 0xe2, 0xfe, 0x1a, 0x7f, 0x9b,
-  0x8e, 0xe7, 0xeb, 0x4a, 0x7c, 0x0f, 0x9e, 0x16,
-  0x2b, 0xce, 0x33, 0x57, 0x6b, 0x31, 0x5e, 0xce,
-  0xcb, 0xb6, 0x40, 0x68, 0x37, 0xbf, 0x51, 0xf5,
+  0x4f,
+  0xe3,
+  0x42,
+  0xe2,
+  0xfe,
+  0x1a,
+  0x7f,
+  0x9b,
+  0x8e,
+  0xe7,
+  0xeb,
+  0x4a,
+  0x7c,
+  0x0f,
+  0x9e,
+  0x16,
+  0x2b,
+  0xce,
+  0x33,
+  0x57,
+  0x6b,
+  0x31,
+  0x5e,
+  0xce,
+  0xcb,
+  0xb6,
+  0x40,
+  0x68,
+  0x37,
+  0xbf,
+  0x51,
+  0xf5,
 ]);
 
 // 65-byte uncompressed secp256r1 generator point G (0x04 || Gx || Gy).
@@ -33,9 +89,20 @@ Uint8List _generatorPubkey() {
 // Layout: [0xA5,0x01,0x02,0x03,0x26,0x20,0x01,0x21,0x58,0x20] || x(32) || [0x22,0x58,0x20] || y(32)
 Uint8List _buildCoseKey(Uint8List x, Uint8List y) {
   return Uint8List.fromList([
-    0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
+    0xA5,
+    0x01,
+    0x02,
+    0x03,
+    0x26,
+    0x20,
+    0x01,
+    0x21,
+    0x58,
+    0x20,
     ...x,
-    0x22, 0x58, 0x20,
+    0x22,
+    0x58,
+    0x20,
     ...y,
   ]);
 }
@@ -62,7 +129,10 @@ Uint8List _buildAuthData({
 
 // Builds a synthetic attestation object blob that contains the COSE ES256 key
 // after a short garbage prefix.
-Uint8List _buildAttestationObject({required Uint8List x, required Uint8List y}) {
+Uint8List _buildAttestationObject({
+  required Uint8List x,
+  required Uint8List y,
+}) {
   final coseKey = _buildCoseKey(x, y);
   return Uint8List.fromList([
     0x99, 0x88, // garbage prefix
@@ -101,10 +171,7 @@ Uint8List _encodeDerSignature(Uint8List r, Uint8List s) {
 
   final rb = derInt(r);
   final sb = derInt(s);
-  final body = <int>[
-    0x02, rb.length, ...rb,
-    0x02, sb.length, ...sb,
-  ];
+  final body = <int>[0x02, rb.length, ...rb, 0x02, sb.length, ...sb];
   return Uint8List.fromList([0x30, body.length, ...body]);
 }
 
@@ -189,7 +256,9 @@ void main() {
 
   group('PasskeyUtils - getContractSalt', () {
     test('generate contract salt from credentials ID', () {
-      final credentialsId = base64Url.encode(Uint8List.fromList(List.filled(32, 0x12)));
+      final credentialsId = base64Url.encode(
+        Uint8List.fromList(List.filled(32, 0x12)),
+      );
 
       final salt = PasskeyUtils.getContractSalt(credentialsId);
 
@@ -198,7 +267,9 @@ void main() {
     });
 
     test('same credentials ID produces same salt', () {
-      final credentialsId = base64Url.encode(Uint8List.fromList(List.filled(16, 0xAB)));
+      final credentialsId = base64Url.encode(
+        Uint8List.fromList(List.filled(16, 0xAB)),
+      );
 
       final salt1 = PasskeyUtils.getContractSalt(credentialsId);
       final salt2 = PasskeyUtils.getContractSalt(credentialsId);
@@ -207,8 +278,12 @@ void main() {
     });
 
     test('different credentials IDs produce different salts', () {
-      final credentialsId1 = base64Url.encode(Uint8List.fromList(List.filled(16, 0x11)));
-      final credentialsId2 = base64Url.encode(Uint8List.fromList(List.filled(16, 0x22)));
+      final credentialsId1 = base64Url.encode(
+        Uint8List.fromList(List.filled(16, 0x11)),
+      );
+      final credentialsId2 = base64Url.encode(
+        Uint8List.fromList(List.filled(16, 0x22)),
+      );
 
       final salt1 = PasskeyUtils.getContractSalt(credentialsId1);
       final salt2 = PasskeyUtils.getContractSalt(credentialsId2);
@@ -219,7 +294,9 @@ void main() {
 
   group('PasskeyUtils - deriveContractId', () {
     test('derive contract ID from salt and factory', () {
-      final credentialsId = base64Url.encode(Uint8List.fromList(List.filled(32, 0x42)));
+      final credentialsId = base64Url.encode(
+        Uint8List.fromList(List.filled(32, 0x42)),
+      );
       final salt = PasskeyUtils.getContractSalt(credentialsId);
       final factoryId = generateValidContractId();
 
@@ -235,7 +312,9 @@ void main() {
     });
 
     test('same inputs produce same contract ID', () {
-      final credentialsId = base64Url.encode(Uint8List.fromList(List.filled(32, 0x99)));
+      final credentialsId = base64Url.encode(
+        Uint8List.fromList(List.filled(32, 0x99)),
+      );
       final salt = PasskeyUtils.getContractSalt(credentialsId);
       final factoryId = generateValidContractId();
 
@@ -254,7 +333,9 @@ void main() {
     });
 
     test('different networks produce different contract IDs', () {
-      final credentialsId = base64Url.encode(Uint8List.fromList(List.filled(32, 0x55)));
+      final credentialsId = base64Url.encode(
+        Uint8List.fromList(List.filled(32, 0x55)),
+      );
       final salt = PasskeyUtils.getContractSalt(credentialsId);
       final factoryId = generateValidContractId();
 
@@ -273,7 +354,9 @@ void main() {
     });
 
     test('different factory IDs produce different contract IDs', () {
-      final credentialsId = base64Url.encode(Uint8List.fromList(List.filled(32, 0x77)));
+      final credentialsId = base64Url.encode(
+        Uint8List.fromList(List.filled(32, 0x77)),
+      );
       final salt = PasskeyUtils.getContractSalt(credentialsId);
 
       // Generate two different valid contract IDs
@@ -311,7 +394,9 @@ void main() {
       final r = Uint8List.fromList(List.filled(32, 0x11));
       final s = Uint8List.fromList(List.filled(32, 0x22));
 
-      final compactSig = PasskeyUtils.compactSignature(_encodeDerSignature(r, s));
+      final compactSig = PasskeyUtils.compactSignature(
+        _encodeDerSignature(r, s),
+      );
 
       expect(compactSig, isNotNull);
       expect(compactSig.length, equals(64));
@@ -323,20 +408,52 @@ void main() {
       final r = Uint8List.fromList(List.filled(32, 0x33));
       // n - 1 (secp256r1 curve order minus one): triggers the s > n/2 branch.
       final highS = Uint8List.fromList([
-        0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
-        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-        0xBC, 0xE6, 0xFA, 0xAD, 0xA7, 0x17, 0x9E, 0x84,
-        0xF3, 0xB9, 0xCA, 0xC2, 0xFC, 0x63, 0x25, 0x50,
+        0xFF,
+        0xFF,
+        0xFF,
+        0xFF,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0xFF,
+        0xFF,
+        0xFF,
+        0xFF,
+        0xFF,
+        0xFF,
+        0xFF,
+        0xFF,
+        0xBC,
+        0xE6,
+        0xFA,
+        0xAD,
+        0xA7,
+        0x17,
+        0x9E,
+        0x84,
+        0xF3,
+        0xB9,
+        0xCA,
+        0xC2,
+        0xFC,
+        0x63,
+        0x25,
+        0x50,
       ]);
 
-      final compactSig = PasskeyUtils.compactSignature(_encodeDerSignature(r, highS));
+      final compactSig = PasskeyUtils.compactSignature(
+        _encodeDerSignature(r, highS),
+      );
 
       expect(compactSig.length, equals(64));
 
       // Verify s is normalised to low-S form.
       final sBytes = compactSig.sublist(32);
       final sBigInt = BigInt.parse('0x${Util.bytesToHex(sBytes)}');
-      final n = BigInt.parse('0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551');
+      final n = BigInt.parse(
+        '0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551',
+      );
       final halfN = n ~/ BigInt.from(2);
 
       expect(sBigInt <= halfN, isTrue);
@@ -347,19 +464,77 @@ void main() {
       // value starts at the second byte). DER encodes this without the leading zero.
       // s is a fully populated 32-byte value well below the curve order.
       final r = Uint8List.fromList([
-        0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
-        0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
-        0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
-        0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x00,
+        0x00,
+        0x11,
+        0x22,
+        0x33,
+        0x44,
+        0x55,
+        0x66,
+        0x77,
+        0x88,
+        0x99,
+        0xAA,
+        0xBB,
+        0xCC,
+        0xDD,
+        0xEE,
+        0xFF,
+        0x11,
+        0x22,
+        0x33,
+        0x44,
+        0x55,
+        0x66,
+        0x77,
+        0x88,
+        0x99,
+        0xAA,
+        0xBB,
+        0xCC,
+        0xDD,
+        0xEE,
+        0xFF,
+        0x00,
       ]);
       final s = Uint8List.fromList([
-        0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99,
-        0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x00, 0x11,
-        0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99,
-        0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x00, 0x11,
+        0x22,
+        0x33,
+        0x44,
+        0x55,
+        0x66,
+        0x77,
+        0x88,
+        0x99,
+        0xAA,
+        0xBB,
+        0xCC,
+        0xDD,
+        0xEE,
+        0xFF,
+        0x00,
+        0x11,
+        0x22,
+        0x33,
+        0x44,
+        0x55,
+        0x66,
+        0x77,
+        0x88,
+        0x99,
+        0xAA,
+        0xBB,
+        0xCC,
+        0xDD,
+        0xEE,
+        0xFF,
+        0x00,
+        0x11,
       ]);
 
-      final compactSig = PasskeyUtils.compactSignature(_encodeDerSignature(r, s));
+      final compactSig = PasskeyUtils.compactSignature(
+        _encodeDerSignature(r, s),
+      );
 
       expect(compactSig.length, equals(64));
       // Verify each component is exactly 32 bytes
@@ -376,15 +551,45 @@ void main() {
       // 0x80... values are well below the curve order (n starts with 0xFF...),
       // so this is a valid secp256r1 r value.
       final r = Uint8List.fromList([
-        0x80, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
-        0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
-        0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
-        0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
+        0x80,
+        0x11,
+        0x22,
+        0x33,
+        0x44,
+        0x55,
+        0x66,
+        0x77,
+        0x88,
+        0x99,
+        0xAA,
+        0xBB,
+        0xCC,
+        0xDD,
+        0xEE,
+        0xFF,
+        0x00,
+        0x11,
+        0x22,
+        0x33,
+        0x44,
+        0x55,
+        0x66,
+        0x77,
+        0x88,
+        0x99,
+        0xAA,
+        0xBB,
+        0xCC,
+        0xDD,
+        0xEE,
+        0xFF,
       ]);
       // s is small and well within the curve order — no low-S flip.
       final s = Uint8List.fromList(List.filled(32, 0x44));
 
-      final compactSig = PasskeyUtils.compactSignature(_encodeDerSignature(r, s));
+      final compactSig = PasskeyUtils.compactSignature(
+        _encodeDerSignature(r, s),
+      );
 
       expect(compactSig.length, equals(64));
     });

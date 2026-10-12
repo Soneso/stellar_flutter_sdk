@@ -57,8 +57,12 @@ class SimulateTransactionRequest {
   /// Contains transaction to simulate with optional resource config, auth mode,
   /// and the [useUpgradedAuth] flag (default true; set false to request legacy
   /// ADDRESS entries).
-  SimulateTransactionRequest(this.transaction,
-      {this.resourceConfig, this.authMode, this.useUpgradedAuth = true});
+  SimulateTransactionRequest(
+    this.transaction, {
+    this.resourceConfig,
+    this.authMode,
+    this.useUpgradedAuth = true,
+  });
 
   Map<String, dynamic> getRequestArgs() {
     var map = <String, dynamic>{};
@@ -161,8 +165,12 @@ class GetEventsRequest {
   /// Creates a GetEventsRequest with event query parameters.
   ///
   /// Contains ledger range, event filters, and pagination options.
-  GetEventsRequest(
-      {this.startLedger, this.endLedger, this.filters, this.paginationOptions});
+  GetEventsRequest({
+    this.startLedger,
+    this.endLedger,
+    this.filters,
+    this.paginationOptions,
+  });
 
   Map<String, dynamic> getRequestArgs() {
     var map = <String, dynamic>{};
@@ -173,8 +181,9 @@ class GetEventsRequest {
       map['endLedger'] = endLedger;
     }
     if (filters != null) {
-      List<Map<String, dynamic>> values =
-          List<Map<String, dynamic>>.empty(growable: true);
+      List<Map<String, dynamic>> values = List<Map<String, dynamic>>.empty(
+        growable: true,
+      );
       for (EventFilter filter in filters!) {
         values.add(filter.getRequestArgs());
       }

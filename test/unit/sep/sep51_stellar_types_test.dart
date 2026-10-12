@@ -193,7 +193,9 @@ void main() {
       // codec refuses the crafted address on length and the reader restates
       // that as its own failure.
       final String short = craftStrKey(
-          VersionByte.MUXED_ACCOUNT_ID.getValue(), Uint8List(39));
+        VersionByte.MUXED_ACCOUNT_ID.getValue(),
+        Uint8List(39),
+      );
       expect(
         () => XdrMuxedAccountMed25519.fromXdrJson('"$short"'),
         throwsA(isA<FormatException>()),
@@ -418,8 +420,10 @@ void main() {
     });
 
     test('a well-formed strkey carrying the wrong number of bytes', () {
-      final String narrow =
-          craftStrKey(VersionByte.ACCOUNT_ID.getValue(), Uint8List(31));
+      final String narrow = craftStrKey(
+        VersionByte.ACCOUNT_ID.getValue(),
+        Uint8List(31),
+      );
       readers.forEach((String name, void Function(String) read) {
         expect(
           () => read(narrow),

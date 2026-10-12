@@ -76,66 +76,70 @@ void main() {
     // exercising multiple iterations of the loop.
     const fastInterval = Duration(milliseconds: 1);
 
-    test('pollsUntilContractVisible_thenReturns_pollingExactlyNPlusOneTimes',
-        () async {
-      final probe = _ProbeSorobanServer()
-        ..getContractDataOutcomes.addAll(<Object?>[
-          null, // not visible yet
-          null, // still not visible
-          null, // still not visible
-          _visibleInstanceEntry(), // now visible
-        ]);
-      final kit = FakePipelineKit(sorobanServer: probe);
-      final ops = OZWalletOperations(kit);
+    test(
+      'pollsUntilContractVisible_thenReturns_pollingExactlyNPlusOneTimes',
+      () async {
+        final probe = _ProbeSorobanServer()
+          ..getContractDataOutcomes.addAll(<Object?>[
+            null, // not visible yet
+            null, // still not visible
+            null, // still not visible
+            _visibleInstanceEntry(), // now visible
+          ]);
+        final kit = FakePipelineKit(sorobanServer: probe);
+        final ops = OZWalletOperations(kit);
 
-      await ops.waitForContractVisibleToRpc(
-        _contractA,
-        null,
-        pollInterval: fastInterval,
-        timeout: const Duration(seconds: 30),
-      );
+        await ops.waitForContractVisibleToRpc(
+          _contractA,
+          null,
+          pollInterval: fastInterval,
+          timeout: const Duration(seconds: 30),
+        );
 
-      // Polled once per null outcome (N = 3) plus the final visible read, and
-      // stopped immediately on the visible read: exactly N + 1 = 4 polls means
-      // no extra poll/sleep cycle ran after success.
-      expect(probe.getContractDataCalls.length, equals(4));
-      expect(
-        probe.getContractDataCalls.map((c) => c.contractId),
-        everyElement(equals(_contractA)),
-      );
+        // Polled once per null outcome (N = 3) plus the final visible read, and
+        // stopped immediately on the visible read: exactly N + 1 = 4 polls means
+        // no extra poll/sleep cycle ran after success.
+        expect(probe.getContractDataCalls.length, equals(4));
+        expect(
+          probe.getContractDataCalls.map((c) => c.contractId),
+          everyElement(equals(_contractA)),
+        );
 
-      // Each poll queried the contract-instance ledger key under persistent
-      // durability: the structural visibility signal.
-      final first = probe.getContractDataCalls.first;
-      expect(
-        first.key.discriminant,
-        equals(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE),
-      );
-      expect(first.durability, equals(XdrContractDataDurability.PERSISTENT));
-    });
+        // Each poll queried the contract-instance ledger key under persistent
+        // durability: the structural visibility signal.
+        final first = probe.getContractDataCalls.first;
+        expect(
+          first.key.discriminant,
+          equals(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE),
+        );
+        expect(first.durability, equals(XdrContractDataDurability.PERSISTENT));
+      },
+    );
 
-    test('contractVisibleOnFirstPoll_returnsAfterSingleCall_withoutSleeping',
-        () async {
-      final probe = _ProbeSorobanServer()
-        ..getContractDataFallback = _visibleInstanceEntry();
-      final kit = FakePipelineKit(sorobanServer: probe);
-      final ops = OZWalletOperations(kit);
+    test(
+      'contractVisibleOnFirstPoll_returnsAfterSingleCall_withoutSleeping',
+      () async {
+        final probe = _ProbeSorobanServer()
+          ..getContractDataFallback = _visibleInstanceEntry();
+        final kit = FakePipelineKit(sorobanServer: probe);
+        final ops = OZWalletOperations(kit);
 
-      // A deliberately large poll interval: if the helper slept on the visible
-      // path (before or after the read) the call would hang for ~30s. The tight
-      // elapsed bound below proves it returned without ever sleeping.
-      final stopwatch = Stopwatch()..start();
-      await ops.waitForContractVisibleToRpc(
-        _contractA,
-        null,
-        pollInterval: const Duration(seconds: 30),
-        timeout: const Duration(seconds: 60),
-      );
-      stopwatch.stop();
+        // A deliberately large poll interval: if the helper slept on the visible
+        // path (before or after the read) the call would hang for ~30s. The tight
+        // elapsed bound below proves it returned without ever sleeping.
+        final stopwatch = Stopwatch()..start();
+        await ops.waitForContractVisibleToRpc(
+          _contractA,
+          null,
+          pollInterval: const Duration(seconds: 30),
+          timeout: const Duration(seconds: 60),
+        );
+        stopwatch.stop();
 
-      expect(probe.getContractDataCalls.length, equals(1));
-      expect(stopwatch.elapsed, lessThan(const Duration(seconds: 2)));
-    });
+        expect(probe.getContractDataCalls.length, equals(1));
+        expect(stopwatch.elapsed, lessThan(const Duration(seconds: 2)));
+      },
+    );
 
     test('contractNeverVisible_throwsClearTimeoutError_withNoCause', () async {
       final probe = _ProbeSorobanServer()..getContractDataFallback = null;
@@ -156,11 +160,7 @@ void main() {
                 'message',
                 contains('not visible to the Soroban RPC'),
               )
-              .having(
-                (e) => e.message,
-                'message',
-                contains('Retry shortly'),
-              )
+              .having((e) => e.message, 'message', contains('Retry shortly'))
               // A pure timeout (no transient errors observed) carries no
               // spurious "last error" cause.
               .having((e) => e.cause, 'cause', isNull),
@@ -250,48 +250,50 @@ void main() {
       expect(probe.getContractDataCalls, isEmpty);
     });
 
-    test('cancelledMidPoll_propagatesCancellation_notTimeoutOrTransient',
-        () async {
-      // Stays invisible so the loop would otherwise run to the timeout; the
-      // cancel must abort it well before then.
-      final probe = _ProbeSorobanServer()..getContractDataFallback = null;
-      final kit = FakePipelineKit(sorobanServer: probe);
-      final ops = OZWalletOperations(kit);
+    test(
+      'cancelledMidPoll_propagatesCancellation_notTimeoutOrTransient',
+      () async {
+        // Stays invisible so the loop would otherwise run to the timeout; the
+        // cancel must abort it well before then.
+        final probe = _ProbeSorobanServer()..getContractDataFallback = null;
+        final kit = FakePipelineKit(sorobanServer: probe);
+        final ops = OZWalletOperations(kit);
 
-      final cancelToken = dio.CancelToken();
-      // Cancel shortly after polling begins.
-      Future<void>.delayed(
-        const Duration(milliseconds: 20),
-        cancelToken.cancel,
-      );
-
-      Object? thrown;
-      try {
-        await ops.waitForContractVisibleToRpc(
-          _contractA,
-          cancelToken,
-          pollInterval: fastInterval,
-          timeout: const Duration(seconds: 30),
+        final cancelToken = dio.CancelToken();
+        // Cancel shortly after polling begins.
+        Future<void>.delayed(
+          const Duration(milliseconds: 20),
+          cancelToken.cancel,
         );
-        fail('expected the cancelled poll to throw');
-      } catch (e) {
-        thrown = e;
-      }
 
-      // The cancellation surfaces as a submission-failed exception carrying the
-      // cancellation marker.
-      expect(thrown, isA<SmartAccountTransactionSubmissionFailed>());
-      final ex = thrown as SmartAccountTransactionSubmissionFailed;
-      expect(ex.message, contains('Operation cancelled'));
-      // It was NOT converted into the visibility timeout...
-      expect(ex.message, isNot(contains('not visible to the Soroban RPC')));
-      // ...and the cancellation was NOT recorded as a transient RPC error and
-      // re-surfaced as the timeout cause: the cause is the cancel error, not a
-      // retried RPC exception.
-      expect(ex.cause, same(cancelToken.cancelError));
+        Object? thrown;
+        try {
+          await ops.waitForContractVisibleToRpc(
+            _contractA,
+            cancelToken,
+            pollInterval: fastInterval,
+            timeout: const Duration(seconds: 30),
+          );
+          fail('expected the cancelled poll to throw');
+        } catch (e) {
+          thrown = e;
+        }
 
-      // Polling stopped well before the 30s timeout deadline.
-      expect(probe.getContractDataCalls.length, greaterThan(0));
-    });
+        // The cancellation surfaces as a submission-failed exception carrying the
+        // cancellation marker.
+        expect(thrown, isA<SmartAccountTransactionSubmissionFailed>());
+        final ex = thrown as SmartAccountTransactionSubmissionFailed;
+        expect(ex.message, contains('Operation cancelled'));
+        // It was NOT converted into the visibility timeout...
+        expect(ex.message, isNot(contains('not visible to the Soroban RPC')));
+        // ...and the cancellation was NOT recorded as a transient RPC error and
+        // re-surfaced as the timeout cause: the cause is the cancel error, not a
+        // retried RPC exception.
+        expect(ex.cause, same(cancelToken.cancelError));
+
+        // Polling stopped well before the 30s timeout deadline.
+        expect(probe.getContractDataCalls.length, greaterThan(0));
+      },
+    );
   });
 }

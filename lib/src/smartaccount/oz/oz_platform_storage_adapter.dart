@@ -56,7 +56,7 @@ class OZPlatformStorageAdapter implements OZStorageAdapter {
   /// Production code MUST omit this argument so the shared channel name is
   /// used and consumers' native overlays continue to receive calls.
   OZPlatformStorageAdapter({MethodChannel? methodChannel})
-      : _channel = methodChannel ?? const MethodChannel(_storageChannelName);
+    : _channel = methodChannel ?? const MethodChannel(_storageChannelName);
 
   final MethodChannel _channel;
 
@@ -108,8 +108,10 @@ class OZPlatformStorageAdapter implements OZStorageAdapter {
   @override
   Future<List<OZStoredCredential>> getAll() async {
     try {
-      final raw =
-          await _channel.invokeListMethod<Object?>('storage.getAll', null);
+      final raw = await _channel.invokeListMethod<Object?>(
+        'storage.getAll',
+        null,
+      );
       if (raw == null) return const <OZStoredCredential>[];
       return raw
           .whereType<Map<Object?, Object?>>()
@@ -123,10 +125,9 @@ class OZPlatformStorageAdapter implements OZStorageAdapter {
   @override
   Future<void> delete(String credentialId) async {
     try {
-      await _channel.invokeMethod<void>(
-        'storage.delete',
-        <String, Object?>{'credentialId': credentialId},
-      );
+      await _channel.invokeMethod<void>('storage.delete', <String, Object?>{
+        'credentialId': credentialId,
+      });
     } on PlatformException catch (e) {
       throw _mapStorageException(e, 'credential:$credentialId');
     }
@@ -257,7 +258,10 @@ class OZPlatformStorageAdapter implements OZStorageAdapter {
     return value;
   }
 
-  SmartAccountStorageException _mapStorageException(PlatformException e, String key) {
+  SmartAccountStorageException _mapStorageException(
+    PlatformException e,
+    String key,
+  ) {
     switch (e.code) {
       case _codeReadFailed:
         return SmartAccountStorageException.readFailed(key, cause: e);

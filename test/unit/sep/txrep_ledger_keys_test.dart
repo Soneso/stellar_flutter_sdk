@@ -152,9 +152,9 @@ signatures.len: 0
       });
 
       test(
-          'fromTxRep parses CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS',
-          () {
-        var txRep = '''
+        'fromTxRep parses CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS',
+        () {
+          var txRep = '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
 tx.fee: 100
@@ -178,14 +178,15 @@ tx.sorobanData.resourceFee: 100
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        var xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
-        expect(xdr, isNotEmpty);
-      });
+          var xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+          expect(xdr, isNotEmpty);
+        },
+      );
 
       test(
-          'fromTxRep parses CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES',
-          () {
-        var txRep = '''
+        'fromTxRep parses CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES',
+        () {
+          var txRep = '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
 tx.fee: 100
@@ -209,9 +210,10 @@ tx.sorobanData.resourceFee: 100
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        var xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
-        expect(xdr, isNotEmpty);
-      });
+          var xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+          expect(xdr, isNotEmpty);
+        },
+      );
 
       test('fromTxRep parses CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES', () {
         var txRep = '''
@@ -242,9 +244,10 @@ signatures.len: 0
         expect(xdr, isNotEmpty);
       });
 
-      test('fromTxRep parses CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES',
-          () {
-        var txRep = '''
+      test(
+        'fromTxRep parses CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES',
+        () {
+          var txRep = '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
 tx.fee: 100
@@ -268,9 +271,10 @@ tx.sorobanData.resourceFee: 100
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        var xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
-        expect(xdr, isNotEmpty);
-      });
+          var xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+          expect(xdr, isNotEmpty);
+        },
+      );
 
       test('fromTxRep parses CONFIG_SETTING_STATE_ARCHIVAL', () {
         var txRep = '''
@@ -481,13 +485,14 @@ signatures.len: 0
       test('toTxRep with TTL ledger key', () {
         var keyHash = Uint8List.fromList(List<int>.filled(32, 0));
         var sourceAccount = Account(
-            'GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW',
-            BigInt.from(123));
+          'GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW',
+          BigInt.from(123),
+        );
         var restoreOp = RestoreFootprintOperationBuilder().build();
 
-        var tx = TransactionBuilder(sourceAccount)
-            .addOperation(restoreOp)
-            .build();
+        var tx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(restoreOp).build();
 
         tx.sorobanTransactionData = XdrSorobanTransactionData(
           XdrSorobanTransactionDataExt(0),
@@ -546,8 +551,9 @@ feeBump.tx.feeSource: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
 feeBump.tx.fee: abc
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid tx.fee non-numeric', () {
@@ -557,8 +563,9 @@ tx.sourceAccount: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
 tx.fee: abc
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid timeBounds when present is true', () {
@@ -576,8 +583,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on missing CREATE_ACCOUNT destination', () {
@@ -596,8 +604,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid CREATE_ACCOUNT destination', () {
@@ -617,8 +626,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on missing PAYMENT destination', () {
@@ -638,8 +648,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid PAYMENT destination', () {
@@ -660,8 +671,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on missing BEGIN_SPONSORING sponsoredID', () {
@@ -679,12 +691,12 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
-      test('fromTxRep throws on missing CLAIM_CLAIMABLE_BALANCE balanceID',
-          () {
+      test('fromTxRep throws on missing CLAIM_CLAIMABLE_BALANCE balanceID', () {
         var txRep = '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
@@ -699,8 +711,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on missing CREATE_CLAIMABLE_BALANCE asset', () {
@@ -720,8 +733,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid CREATE_CLAIMABLE_BALANCE asset', () {
@@ -742,8 +756,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on missing CREATE_CLAIMABLE_BALANCE amount', () {
@@ -763,8 +778,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid CREATE_CLAIMABLE_BALANCE amount', () {
@@ -785,8 +801,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on missing claimant destination', () {
@@ -809,8 +826,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid claimant destination', () {
@@ -834,8 +852,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on missing claim predicate type', () {
@@ -858,8 +877,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on missing AND predicates length', () {
@@ -907,8 +927,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid absBefore time', () {
@@ -933,8 +954,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on missing relBefore time', () {
@@ -958,8 +980,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid relBefore time', () {
@@ -984,13 +1007,15 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
-      test('fromTxRep throws on missing SET_OPTIONS inflationDest._present',
-          () {
-        var txRep = '''
+      test(
+        'fromTxRep throws on missing SET_OPTIONS inflationDest._present',
+        () {
+          var txRep = '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
 tx.fee: 100
@@ -1003,13 +1028,15 @@ tx.operations[0].body.type: SET_OPTIONS
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        var result = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
-        expect(result, isNotEmpty);
-      });
+          var result = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+          expect(result, isNotEmpty);
+        },
+      );
 
-      test('fromTxRep throws on missing inflationDest when present is true',
-          () {
-        var txRep = '''
+      test(
+        'fromTxRep throws on missing inflationDest when present is true',
+        () {
+          var txRep = '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
 tx.fee: 100
@@ -1031,10 +1058,12 @@ tx.operations[0].body.setOptionsOp.signer._present: false
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(
+          expect(
             () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
-      });
+            throwsA(anything),
+          );
+        },
+      );
 
       test('fromTxRep throws on missing SET_OPTIONS clearFlags._present', () {
         var txRep = '''
@@ -1079,8 +1108,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid clearFlags value', () {
@@ -1108,8 +1138,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on missing SET_OPTIONS setFlags._present', () {
@@ -1156,8 +1187,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid setFlags value', () {
@@ -1185,12 +1217,12 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
-      test('fromTxRep throws on missing SET_OPTIONS masterWeight._present',
-          () {
+      test('fromTxRep throws on missing SET_OPTIONS masterWeight._present', () {
         var txRep = '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
@@ -1211,8 +1243,7 @@ signatures.len: 0
         expect(result, isNotEmpty);
       });
 
-      test('fromTxRep throws on missing masterWeight when present is true',
-          () {
+      test('fromTxRep throws on missing masterWeight when present is true', () {
         var txRep = '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
@@ -1236,8 +1267,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid masterWeight value', () {
@@ -1265,12 +1297,12 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
-      test('fromTxRep throws on missing SET_OPTIONS lowThreshold._present',
-          () {
+      test('fromTxRep throws on missing SET_OPTIONS lowThreshold._present', () {
         var txRep = '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
@@ -1292,8 +1324,7 @@ signatures.len: 0
         expect(result, isNotEmpty);
       });
 
-      test('fromTxRep throws on missing lowThreshold when present is true',
-          () {
+      test('fromTxRep throws on missing lowThreshold when present is true', () {
         var txRep = '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
@@ -1317,8 +1348,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid lowThreshold value', () {
@@ -1346,12 +1378,12 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
-      test('fromTxRep throws on missing SET_OPTIONS medThreshold._present',
-          () {
+      test('fromTxRep throws on missing SET_OPTIONS medThreshold._present', () {
         var txRep = '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
@@ -1374,8 +1406,7 @@ signatures.len: 0
         expect(result, isNotEmpty);
       });
 
-      test('fromTxRep throws on missing medThreshold when present is true',
-          () {
+      test('fromTxRep throws on missing medThreshold when present is true', () {
         var txRep = '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GASOCNHNNLYFNMDJYQ3XFMI7BYHIOCFW3GJEOWRPEGK2TDPGTG2E5EDW
@@ -1399,8 +1430,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
 
       test('fromTxRep throws on invalid medThreshold value', () {
@@ -1428,8 +1460,9 @@ tx.ext.v: 0
 signatures.len: 0
 ''';
         expect(
-            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsA(anything));
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsA(anything),
+        );
       });
     });
   });

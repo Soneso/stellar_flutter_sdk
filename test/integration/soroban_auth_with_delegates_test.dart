@@ -43,20 +43,28 @@ void main() {
     try {
       await sdk.accounts.account(accountId);
     } catch (_) {
-      await fundTestAccountAndAwaitVisibility(accountId,
-          rpc: sorobanServer, horizon: sdk, useFuturenet: testOn != 'testnet');
+      await fundTestAccountAndAwaitVisibility(
+        accountId,
+        rpc: sorobanServer,
+        horizon: sdk,
+        useFuturenet: testOn != 'testnet',
+      );
     }
   }
 
   Future<GetTransactionResponse> pollUntilDone(
-      SorobanServer server, String transactionId) async {
+    SorobanServer server,
+    String transactionId,
+  ) async {
     var status = GetTransactionResponse.STATUS_NOT_FOUND;
     GetTransactionResponse? response;
     while (status == GetTransactionResponse.STATUS_NOT_FOUND) {
       await Future.delayed(const Duration(seconds: 3));
       response = await server.getTransaction(transactionId);
-      assert(response.error == null,
-          'getTransaction returned an error: ${response.error}');
+      assert(
+        response.error == null,
+        'getTransaction returned an error: ${response.error}',
+      );
       status = response.status!;
       if (status == GetTransactionResponse.STATUS_FAILED) {
         fail('Transaction $transactionId failed: ${response.resultXdr}');
@@ -91,8 +99,9 @@ void main() {
           server: sorobanServer,
         ),
       );
-      final signersArg = XdrSCVal.forVec(
-          [Address.forAccountId(delegateKp.accountId).toXdrSCVal()]);
+      final signersArg = XdrSCVal.forVec([
+        Address.forAccountId(delegateKp.accountId).toXdrSCVal(),
+      ]);
       final modularClient = await SorobanClient.deploy(
         deployRequest: DeployRequest(
           sourceAccountKeyPair: submitterKp,
@@ -145,13 +154,19 @@ void main() {
       // Recording-mode simulation: returns the legacy ADDRESS authorization entry
       // for the modular account (with the RPC-assigned nonce). __check_auth is not
       // executed in this pass.
-      final sim = await sorobanServer.simulateTransaction(SimulateTransactionRequest(tx));
+      final sim = await sorobanServer.simulateTransaction(
+        SimulateTransactionRequest(tx),
+      );
       assert(!sim.isErrorResponse, 'simulation error: ${sim.error}');
       final auth = sim.sorobanAuth;
-      assert(auth != null && auth.isNotEmpty,
-          'simulation should return authorization entries');
-      assert(auth!.length == 1,
-          'increment should require exactly one authorization (the modular account)');
+      assert(
+        auth != null && auth.isNotEmpty,
+        'simulation should return authorization entries',
+      );
+      assert(
+        auth!.length == 1,
+        'increment should require exactly one authorization (the modular account)',
+      );
 
       final latest = await sorobanServer.getLatestLedger();
       final expirationLedger = latest.sequence! + 100;
@@ -165,13 +180,14 @@ void main() {
         final arm = entry.credentials.arm;
         if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
             arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2) {
-          final withDelegates = SorobanAuthorizationEntry.withDelegates(
-            entry,
-            [SorobanDelegateDescriptor(delegateKp.accountId)],
-            expirationLedger,
+          final withDelegates = SorobanAuthorizationEntry.withDelegates(entry, [
+            SorobanDelegateDescriptor(delegateKp.accountId),
+          ], expirationLedger);
+          withDelegates.sign(
+            delegateKp,
+            network,
+            forAddress: delegateKp.accountId,
           );
-          withDelegates.sign(delegateKp, network,
-              forAddress: delegateKp.accountId);
           signedAuth.add(withDelegates);
         } else {
           signedAuth.add(entry);
@@ -181,21 +197,28 @@ void main() {
       // A WITH_DELEGATES entry must be present with a void top-level signature and
       // a signed delegate node for the G-account.
       final wdEntries = signedAuth
-          .where((e) =>
-              e.credentials.arm ==
-              XdrSorobanCredentialsType
-                  .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES)
+          .where(
+            (e) =>
+                e.credentials.arm ==
+                XdrSorobanCredentialsType
+                    .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+          )
           .toList();
-      assert(wdEntries.length == 1,
-          'Expected exactly one ADDRESS_WITH_DELEGATES auth entry');
-      final wrapper = wdEntries.first.credentials.addressWithDelegatesCredentials!;
+      assert(
+        wdEntries.length == 1,
+        'Expected exactly one ADDRESS_WITH_DELEGATES auth entry',
+      );
+      final wrapper =
+          wdEntries.first.credentials.addressWithDelegatesCredentials!;
       assert(
         wrapper.addressCredentials.signature.discriminant ==
             XdrSCValType.SCV_VOID,
         'The top-level signature must remain void (the modular account signs nothing itself)',
       );
-      assert(wrapper.delegates.length == 1,
-          'Exactly one delegate node should be attached');
+      assert(
+        wrapper.delegates.length == 1,
+        'Exactly one delegate node should be attached',
+      );
       assert(
         wrapper.delegates.first.signature.discriminant != XdrSCValType.SCV_VOID,
         'The delegate node must carry a signature after signing',
@@ -206,8 +229,9 @@ void main() {
       // account entry) are captured. The recording-mode simulation above could not
       // have captured them.
       tx.setSorobanAuth(signedAuth);
-      final reSim = await sorobanServer
-          .simulateTransaction(SimulateTransactionRequest(tx, authMode: 'enforce'));
+      final reSim = await sorobanServer.simulateTransaction(
+        SimulateTransactionRequest(tx, authMode: 'enforce'),
+      );
       assert(!reSim.isErrorResponse, 're-simulation error: ${reSim.error}');
       assert(reSim.transactionData != null);
 
@@ -220,16 +244,20 @@ void main() {
       final send = await sorobanServer.sendTransaction(tx);
       assert(send.hash != null);
       final result = await pollUntilDone(sorobanServer, send.hash!);
-      assert(result.status == GetTransactionResponse.STATUS_SUCCESS,
-          'Expected SUCCESS, got ${result.status}');
+      assert(
+        result.status == GetTransactionResponse.STATUS_SUCCESS,
+        'Expected SUCCESS, got ${result.status}',
+      );
 
       // increment returns the modular account's accumulated counter; a fresh
       // account starts at 0, so a single increment by 1 returns 1, proving the
       // delegated authorization succeeded.
       final resultValue = result.getResultValue();
       assert(resultValue?.u32 != null, 'increment should return a u32');
-      assert(resultValue!.u32!.uint32 == 1,
-          'increment should return the accumulated counter value (1)');
+      assert(
+        resultValue!.u32!.uint32 == 1,
+        'increment should return the accumulated counter value (1)',
+      );
     },
     timeout: const Timeout(Duration(minutes: 5)),
   );

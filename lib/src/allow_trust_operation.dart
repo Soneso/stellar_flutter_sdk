@@ -88,7 +88,9 @@ import 'xdr/xdr.dart';
 ///
 /// Represents  an AllowTrust operation.
 /// See [Stellar developer docs](https://developers.stellar.org)
-@Deprecated('Use SetTrustLineFlagsOperation instead. This operation is deprecated as of Protocol 17.')
+@Deprecated(
+  'Use SetTrustLineFlagsOperation instead. This operation is deprecated as of Protocol 17.',
+)
 class AllowTrustOperation extends Operation {
   String _trustor;
   String _assetCode;
@@ -104,8 +106,12 @@ class AllowTrustOperation extends Operation {
   /// - [_authorizeToMaintainLiabilities] If true, authorize to maintain liabilities only
   ///
   /// Note: Only one of [_authorize] or [_authorizeToMaintainLiabilities] should be true
-  AllowTrustOperation(this._trustor, this._assetCode, this._authorize,
-      this._authorizeToMaintainLiabilities);
+  AllowTrustOperation(
+    this._trustor,
+    this._assetCode,
+    this._authorize,
+    this._authorizeToMaintainLiabilities,
+  );
 
   /// The account id of the recipient of the trustline.
   String get trustor => _trustor;
@@ -124,20 +130,25 @@ class AllowTrustOperation extends Operation {
   /// Returns: XDR OperationBody for this allow trust operation
   @override
   XdrOperationBody toOperationBody() {
-    XdrAccountID trustor =
-        new XdrAccountID(KeyPair.fromAccountId(this._trustor).xdrPublicKey);
+    XdrAccountID trustor = new XdrAccountID(
+      KeyPair.fromAccountId(this._trustor).xdrPublicKey,
+    );
     // asset
     XdrAssetType discriminant = XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4;
     Uint8List? assetCode4;
     Uint8List? assetCode12;
 
     if (_assetCode.length <= 4) {
-      assetCode4 =
-          Util.paddedByteArray(Uint8List.fromList(utf8.encode(_assetCode)), 4);
+      assetCode4 = Util.paddedByteArray(
+        Uint8List.fromList(utf8.encode(_assetCode)),
+        4,
+      );
     } else {
       discriminant = XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12;
-      assetCode12 =
-          Util.paddedByteArray(Uint8List.fromList(utf8.encode(_assetCode)), 12);
+      assetCode12 = Util.paddedByteArray(
+        Uint8List.fromList(utf8.encode(_assetCode)),
+        12,
+      );
     }
     XdrAllowTrustOpAsset asset = new XdrAllowTrustOpAsset(discriminant);
     asset.assetCode4 = assetCode4;
@@ -181,9 +192,10 @@ class AllowTrustOperation extends Operation {
     }
 
     return AllowTrustOperationBuilder(
-        KeyPair.fromXdrPublicKey(op.trustor.accountID).accountId,
-        assetCode,
-        op.authorize);
+      KeyPair.fromXdrPublicKey(op.trustor.accountID).accountId,
+      assetCode,
+      op.authorize,
+    );
   }
 }
 
@@ -202,7 +214,9 @@ class AllowTrustOperation extends Operation {
 ///   1  // AUTHORIZED_FLAG
 /// ).setSourceAccount(issuerAccountId).build();
 /// ```
-@Deprecated('Use SetTrustLineFlagsOperationBuilder instead. This operation is deprecated as of Protocol 17.')
+@Deprecated(
+  'Use SetTrustLineFlagsOperationBuilder instead. This operation is deprecated as of Protocol 17.',
+)
 class AllowTrustOperationBuilder
     extends OperationBuilder<AllowTrustOperationBuilder> {
   String _trustor;
@@ -222,10 +236,15 @@ class AllowTrustOperationBuilder
   /// Returns: A configured [AllowTrustOperation] instance
   AllowTrustOperation build() {
     bool tAuthorized = _authorize == XdrTrustLineFlags.AUTHORIZED_FLAG.value;
-    bool tAuthorizedToMaintain = _authorize ==
+    bool tAuthorizedToMaintain =
+        _authorize ==
         XdrTrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG.value;
     AllowTrustOperation operation = new AllowTrustOperation(
-        _trustor, _assetCode, tAuthorized, tAuthorizedToMaintain);
+      _trustor,
+      _assetCode,
+      tAuthorized,
+      tAuthorizedToMaintain,
+    );
     return applySourceAccount(operation);
   }
 }

@@ -58,21 +58,27 @@ TRANSFER_SERVER="https://api.example.com/transfer"
     test('successful deposit exchange with quote', () async {
       final mockClient = MockClient((request) async {
         expect(request.url.path, endsWith('/deposit-exchange'));
-        expect(request.url.queryParameters['destination_asset'], 'stellar:USDC:GXXXXXXX');
+        expect(
+          request.url.queryParameters['destination_asset'],
+          'stellar:USDC:GXXXXXXX',
+        );
         expect(request.url.queryParameters['source_asset'], 'iso4217:BRL');
         expect(request.url.queryParameters['amount'], '1000.00');
         expect(request.url.queryParameters['quote_id'], 'quote-123');
 
-        return http.Response(json.encode({
-          'id': 'deposit-exchange-001',
-          'how': 'Send BRL to receive USDC',
-          'instructions': {
-            'bank_account': {
-              'value': '1234567890',
-              'description': 'Send BRL to this account'
-            }
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'id': 'deposit-exchange-001',
+            'how': 'Send BRL to receive USDC',
+            'instructions': {
+              'bank_account': {
+                'value': '1234567890',
+                'description': 'Send BRL to this account',
+              },
+            },
+          }),
+          200,
+        );
       });
 
       final service = TransferServerService(
@@ -98,20 +104,30 @@ TRANSFER_SERVER="https://api.example.com/transfer"
         expect(request.url.path, endsWith('/deposit-exchange'));
         expect(request.url.queryParameters['memo_type'], 'hash');
         expect(request.url.queryParameters['memo'], 'test-memo-hash');
-        expect(request.url.queryParameters['email_address'], 'user@example.com');
+        expect(
+          request.url.queryParameters['email_address'],
+          'user@example.com',
+        );
         expect(request.url.queryParameters['type'], 'bank_transfer');
         expect(request.url.queryParameters['wallet_name'], 'TestWallet');
-        expect(request.url.queryParameters['wallet_url'], 'https://wallet.example.com');
+        expect(
+          request.url.queryParameters['wallet_url'],
+          'https://wallet.example.com',
+        );
         expect(request.url.queryParameters['lang'], 'pt');
-        expect(request.url.queryParameters['on_change_callback'], 'https://callback.example.com');
+        expect(
+          request.url.queryParameters['on_change_callback'],
+          'https://callback.example.com',
+        );
         expect(request.url.queryParameters['country_code'], 'BRA');
-        expect(request.url.queryParameters['claimable_balance_supported'], 'true');
+        expect(
+          request.url.queryParameters['claimable_balance_supported'],
+          'true',
+        );
         expect(request.url.queryParameters['customer_id'], 'customer-456');
         expect(request.url.queryParameters['location_id'], 'location-789');
 
-        return http.Response(json.encode({
-          'id': 'deposit-exchange-002',
-        }), 200);
+        return http.Response(json.encode({'id': 'deposit-exchange-002'}), 200);
       });
 
       final service = TransferServerService(
@@ -147,9 +163,7 @@ TRANSFER_SERVER="https://api.example.com/transfer"
         expect(request.url.queryParameters['custom_field_1'], 'value1');
         expect(request.url.queryParameters['custom_field_2'], 'value2');
 
-        return http.Response(json.encode({
-          'id': 'deposit-exchange-003',
-        }), 200);
+        return http.Response(json.encode({'id': 'deposit-exchange-003'}), 200);
       });
 
       final service = TransferServerService(
@@ -162,10 +176,7 @@ TRANSFER_SERVER="https://api.example.com/transfer"
         sourceAsset: 'iso4217:BRL',
         amount: '1000.00',
         account: 'GXXXXXXX',
-        extraFields: {
-          'custom_field_1': 'value1',
-          'custom_field_2': 'value2',
-        },
+        extraFields: {'custom_field_1': 'value1', 'custom_field_2': 'value2'},
         jwt: 'test-jwt',
       );
 
@@ -177,18 +188,24 @@ TRANSFER_SERVER="https://api.example.com/transfer"
     test('successful withdraw exchange with quote', () async {
       final mockClient = MockClient((request) async {
         expect(request.url.path, endsWith('/withdraw-exchange'));
-        expect(request.url.queryParameters['source_asset'], 'stellar:USDC:GXXXXXXX');
+        expect(
+          request.url.queryParameters['source_asset'],
+          'stellar:USDC:GXXXXXXX',
+        );
         expect(request.url.queryParameters['destination_asset'], 'iso4217:BRL');
         expect(request.url.queryParameters['amount'], '500.00');
         expect(request.url.queryParameters['type'], 'bank_account');
         expect(request.url.queryParameters['quote_id'], 'quote-456');
 
-        return http.Response(json.encode({
-          'id': 'withdraw-exchange-001',
-          'account_id': 'GANCHORXXXXXXX',
-          'memo_type': 'hash',
-          'memo': 'withdraw-memo-hash',
-        }), 200);
+        return http.Response(
+          json.encode({
+            'id': 'withdraw-exchange-001',
+            'account_id': 'GANCHORXXXXXXX',
+            'memo_type': 'hash',
+            'memo': 'withdraw-memo-hash',
+          }),
+          200,
+        );
       });
 
       final service = TransferServerService(
@@ -219,19 +236,28 @@ TRANSFER_SERVER="https://api.example.com/transfer"
         expect(request.url.queryParameters['memo'], 'user-memo');
         expect(request.url.queryParameters['memo_type'], 'text');
         expect(request.url.queryParameters['wallet_name'], 'MyWallet');
-        expect(request.url.queryParameters['wallet_url'], 'https://mywallet.com');
+        expect(
+          request.url.queryParameters['wallet_url'],
+          'https://mywallet.com',
+        );
         expect(request.url.queryParameters['lang'], 'es');
-        expect(request.url.queryParameters['on_change_callback'], 'https://callback.com');
+        expect(
+          request.url.queryParameters['on_change_callback'],
+          'https://callback.com',
+        );
         expect(request.url.queryParameters['country_code'], 'ESP');
         expect(request.url.queryParameters['refund_memo'], 'refund-memo');
         expect(request.url.queryParameters['refund_memo_type'], 'hash');
         expect(request.url.queryParameters['customer_id'], 'customer-789');
         expect(request.url.queryParameters['location_id'], 'location-012');
 
-        return http.Response(json.encode({
-          'id': 'withdraw-exchange-002',
-          'account_id': 'GANCHORXXXXXXX',
-        }), 200);
+        return http.Response(
+          json.encode({
+            'id': 'withdraw-exchange-002',
+            'account_id': 'GANCHORXXXXXXX',
+          }),
+          200,
+        );
       });
 
       final service = TransferServerService(
@@ -266,12 +292,18 @@ TRANSFER_SERVER="https://api.example.com/transfer"
 
     test('withdraw exchange with extra fields', () async {
       final mockClient = MockClient((request) async {
-        expect(request.url.queryParameters['custom_withdraw_field'], 'custom-value');
+        expect(
+          request.url.queryParameters['custom_withdraw_field'],
+          'custom-value',
+        );
 
-        return http.Response(json.encode({
-          'id': 'withdraw-exchange-003',
-          'account_id': 'GANCHORXXXXXXX',
-        }), 200);
+        return http.Response(
+          json.encode({
+            'id': 'withdraw-exchange-003',
+            'account_id': 'GANCHORXXXXXXX',
+          }),
+          200,
+        );
       });
 
       final service = TransferServerService(
@@ -284,9 +316,7 @@ TRANSFER_SERVER="https://api.example.com/transfer"
         destinationAsset: 'iso4217:EUR',
         amount: '500.00',
         type: 'bank_account',
-        extraFields: {
-          'custom_withdraw_field': 'custom-value',
-        },
+        extraFields: {'custom_withdraw_field': 'custom-value'},
         jwt: 'test-jwt',
       );
 
@@ -299,16 +329,20 @@ TRANSFER_SERVER="https://api.example.com/transfer"
       final mockClient = MockClient((request) async {
         expect(request.url.queryParameters['email_address'], 'user@test.com');
         expect(request.url.queryParameters['wallet_name'], 'TestWallet');
-        expect(request.url.queryParameters['wallet_url'], 'https://testwallet.com');
+        expect(
+          request.url.queryParameters['wallet_url'],
+          'https://testwallet.com',
+        );
         expect(request.url.queryParameters['lang'], 'fr');
-        expect(request.url.queryParameters['on_change_callback'], 'https://callback.test.com');
+        expect(
+          request.url.queryParameters['on_change_callback'],
+          'https://callback.test.com',
+        );
         expect(request.url.queryParameters['country_code'], 'FRA');
         expect(request.url.queryParameters['customer_id'], 'customer-999');
         expect(request.url.queryParameters['location_id'], 'location-888');
 
-        return http.Response(json.encode({
-          'id': 'deposit-with-params',
-        }), 200);
+        return http.Response(json.encode({'id': 'deposit-with-params'}), 200);
       });
 
       final service = TransferServerService(
@@ -335,12 +369,13 @@ TRANSFER_SERVER="https://api.example.com/transfer"
 
     test('deposit with extra fields', () async {
       final mockClient = MockClient((request) async {
-        expect(request.url.queryParameters['custom_deposit_field'], 'custom-deposit-value');
+        expect(
+          request.url.queryParameters['custom_deposit_field'],
+          'custom-deposit-value',
+        );
         expect(request.url.queryParameters['another_field'], 'another-value');
 
-        return http.Response(json.encode({
-          'id': 'deposit-extra',
-        }), 200);
+        return http.Response(json.encode({'id': 'deposit-extra'}), 200);
       });
 
       final service = TransferServerService(
@@ -367,19 +402,28 @@ TRANSFER_SERVER="https://api.example.com/transfer"
       final mockClient = MockClient((request) async {
         expect(request.url.queryParameters['account'], 'GXXXXXXX');
         expect(request.url.queryParameters['wallet_name'], 'UserWallet');
-        expect(request.url.queryParameters['wallet_url'], 'https://userwallet.com');
+        expect(
+          request.url.queryParameters['wallet_url'],
+          'https://userwallet.com',
+        );
         expect(request.url.queryParameters['lang'], 'de');
-        expect(request.url.queryParameters['on_change_callback'], 'https://withdraw-callback.com');
+        expect(
+          request.url.queryParameters['on_change_callback'],
+          'https://withdraw-callback.com',
+        );
         expect(request.url.queryParameters['country_code'], 'DEU');
         expect(request.url.queryParameters['refund_memo'], 'refund-memo-123');
         expect(request.url.queryParameters['refund_memo_type'], 'id');
         expect(request.url.queryParameters['customer_id'], 'customer-111');
         expect(request.url.queryParameters['location_id'], 'location-222');
 
-        return http.Response(json.encode({
-          'id': 'withdraw-with-params',
-          'account_id': 'GANCHORXXXXXXX',
-        }), 200);
+        return http.Response(
+          json.encode({
+            'id': 'withdraw-with-params',
+            'account_id': 'GANCHORXXXXXXX',
+          }),
+          200,
+        );
       });
 
       final service = TransferServerService(
@@ -408,12 +452,15 @@ TRANSFER_SERVER="https://api.example.com/transfer"
 
     test('withdraw with extra fields', () async {
       final mockClient = MockClient((request) async {
-        expect(request.url.queryParameters['custom_withdraw_param'], 'custom-withdraw-val');
+        expect(
+          request.url.queryParameters['custom_withdraw_param'],
+          'custom-withdraw-val',
+        );
 
-        return http.Response(json.encode({
-          'id': 'withdraw-extra',
-          'account_id': 'GANCHORXXXXXXX',
-        }), 200);
+        return http.Response(
+          json.encode({'id': 'withdraw-extra', 'account_id': 'GANCHORXXXXXXX'}),
+          200,
+        );
       });
 
       final service = TransferServerService(
@@ -424,9 +471,7 @@ TRANSFER_SERVER="https://api.example.com/transfer"
       final request = WithdrawRequest(
         assetCode: 'USD',
         type: 'cash',
-        extraFields: {
-          'custom_withdraw_param': 'custom-withdraw-val',
-        },
+        extraFields: {'custom_withdraw_param': 'custom-withdraw-val'},
         jwt: 'test-jwt',
       );
 
@@ -451,10 +496,7 @@ TRANSFER_SERVER="https://api.example.com/transfer"
 
       final request = PatchTransactionRequest(
         'tx-123',
-        fields: {
-          'dest': 'GB123...',
-          'dest_extra': 'memo-value',
-        },
+        fields: {'dest': 'GB123...', 'dest_extra': 'memo-value'},
         jwt: 'test-jwt',
       );
 
@@ -509,15 +551,13 @@ TRANSFER_SERVER="https://api.example.com/transfer"
         'max_amount': 10000.0,
         'fee_fixed': 5.0,
         'fee_percent': 1.0,
-        'extra_info': {
-          'message': 'Include reference number'
-        },
+        'extra_info': {'message': 'Include reference number'},
         'instructions': {
           'bank_account': {
             'value': '1234567890',
-            'description': 'Account number'
-          }
-        }
+            'description': 'Account number',
+          },
+        },
       };
 
       final response = DepositResponse.fromJson(json);
@@ -534,10 +574,7 @@ TRANSFER_SERVER="https://api.example.com/transfer"
     });
 
     test('DepositInstruction parses correctly', () {
-      final json = {
-        'value': '9876543210',
-        'description': 'Routing number'
-      };
+      final json = {'value': '9876543210', 'description': 'Routing number'};
 
       final instruction = DepositInstruction.fromJson(json);
 
@@ -546,9 +583,7 @@ TRANSFER_SERVER="https://api.example.com/transfer"
     });
 
     test('ExtraInfo parses message correctly', () {
-      final json = {
-        'message': 'Please include reference'
-      };
+      final json = {'message': 'Please include reference'};
 
       final extraInfo = ExtraInfo.fromJson(json);
       expect(extraInfo.message, 'Please include reference');
@@ -572,10 +607,7 @@ TRANSFER_SERVER="https://api.example.com/transfer"
     test('creates instance with custom headers', () {
       final service = TransferServerService(
         'https://api.example.com',
-        httpRequestHeaders: {
-          'X-API-Key': 'test-key',
-          'X-Version': '2.0',
-        },
+        httpRequestHeaders: {'X-API-Key': 'test-key', 'X-Version': '2.0'},
       );
 
       expect(service, isNotNull);
@@ -590,9 +622,10 @@ TRANSFER_SERVER="https://api.example.com/transfer"
   group('TransferServerService - Error Handling Edge Cases', () {
     test('handles HTTP 400 without error field', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'message': 'Bad request without error field'
-        }), 400);
+        return http.Response(
+          json.encode({'message': 'Bad request without error field'}),
+          400,
+        );
       });
 
       final service = TransferServerService(
@@ -600,23 +633,20 @@ TRANSFER_SERVER="https://api.example.com/transfer"
         httpClient: mockClient,
       );
 
-      final request = DepositRequest(
-        assetCode: 'USD',
-        account: 'GXXXXXXX',
-      );
+      final request = DepositRequest(assetCode: 'USD', account: 'GXXXXXXX');
 
-      expect(
-        () => service.deposit(request),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => service.deposit(request), throwsA(isA<Exception>()));
     });
 
     test('handles deposit 403 non_interactive_customer_info_needed', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'type': 'non_interactive_customer_info_needed',
-          'fields': ['email_address', 'mobile_number']
-        }), 403);
+        return http.Response(
+          json.encode({
+            'type': 'non_interactive_customer_info_needed',
+            'fields': ['email_address', 'mobile_number'],
+          }),
+          403,
+        );
       });
 
       final service = TransferServerService(
@@ -638,10 +668,10 @@ TRANSFER_SERVER="https://api.example.com/transfer"
 
     test('handles deposit 403 customer_info_status', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'type': 'customer_info_status',
-          'status': 'pending'
-        }), 403);
+        return http.Response(
+          json.encode({'type': 'customer_info_status', 'status': 'pending'}),
+          403,
+        );
       });
 
       final service = TransferServerService(
@@ -663,9 +693,10 @@ TRANSFER_SERVER="https://api.example.com/transfer"
 
     test('handles depositExchange 403 authentication_required', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'type': 'authentication_required'
-        }), 403);
+        return http.Response(
+          json.encode({'type': 'authentication_required'}),
+          403,
+        );
       });
 
       final service = TransferServerService(
@@ -688,10 +719,10 @@ TRANSFER_SERVER="https://api.example.com/transfer"
 
     test('handles withdrawExchange 403 customer_info_status', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'type': 'customer_info_status',
-          'status': 'denied'
-        }), 403);
+        return http.Response(
+          json.encode({'type': 'customer_info_status', 'status': 'denied'}),
+          403,
+        );
       });
 
       final service = TransferServerService(

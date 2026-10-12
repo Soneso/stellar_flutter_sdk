@@ -28,12 +28,12 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
   OZIndexedDBStorageAdapter({this.dbName = defaultDbName});
 
   Never _unsupported() => throw UnsupportedError(
-        'OZIndexedDBStorageAdapter is only available on Flutter web. '
-        'On non-web targets supply a platform-appropriate OZStorageAdapter '
-        '(e.g. a Keychain-backed implementation on iOS, an '
-        'EncryptedSharedPreferences-backed implementation on Android, or '
-        'OZInMemoryStorageAdapter for testing).',
-      );
+    'OZIndexedDBStorageAdapter is only available on Flutter web. '
+    'On non-web targets supply a platform-appropriate OZStorageAdapter '
+    '(e.g. a Keychain-backed implementation on iOS, an '
+    'EncryptedSharedPreferences-backed implementation on Android, or '
+    'OZInMemoryStorageAdapter for testing).',
+  );
 
   // coverage:ignore-start
   @override
@@ -53,8 +53,10 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
   Future<void> delete(String credentialId) async => _unsupported();
 
   @override
-  Future<void> update(String credentialId, OZStoredCredentialUpdate updates) async =>
-      _unsupported();
+  Future<void> update(
+    String credentialId,
+    OZStoredCredentialUpdate updates,
+  ) async => _unsupported();
 
   @override
   Future<void> clear() async => _unsupported();
@@ -78,5 +80,6 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
   /// [UnsupportedError] on non-web targets — there is no database to delete,
   /// so calling this outside the web target indicates a wiring bug worth
   /// surfacing.
-  Future<void> deleteDatabase({String? name}) async => _unsupported(); // coverage:ignore-line
+  Future<void> deleteDatabase({String? name}) async =>
+      _unsupported(); // coverage:ignore-line
 }

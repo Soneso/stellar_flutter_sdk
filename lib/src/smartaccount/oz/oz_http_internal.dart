@@ -67,8 +67,10 @@ bool isDioTimeout(dio.DioException e) {
 /// Falls back to [defaultText] when the underlying exception has no
 /// message and an empty `toString()` representation.
 @internal
-String dioErrorMessage(dio.DioException e,
-    {String defaultText = 'Request failed'}) {
+String dioErrorMessage(
+  dio.DioException e, {
+  String defaultText = 'Request failed',
+}) {
   final message = e.message;
   if (message != null && message.isNotEmpty) {
     return message;
@@ -136,7 +138,9 @@ bool isJsonContentType(String? contentType) {
 String normalizeOZUrl(String url, {required String serviceName}) {
   final trimmed = url.trim();
   if (trimmed.isEmpty) {
-    throw SmartAccountConfigurationException.invalidConfig('$serviceName URL is required');
+    throw SmartAccountConfigurationException.invalidConfig(
+      '$serviceName URL is required',
+    );
   }
   if (!trimmed.startsWith('https://') && !isLocalhostUrl(trimmed)) {
     throw SmartAccountConfigurationException.invalidConfig(

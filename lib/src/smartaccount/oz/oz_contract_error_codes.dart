@@ -132,8 +132,9 @@ class OZContractErrorCodes {
     return null;
   }
 
-  static final RegExp _contractErrorRegex =
-      RegExp(r'Error\s*\(\s*Contract\s*,\s*#(\d+)\s*\)');
+  static final RegExp _contractErrorRegex = RegExp(
+    r'Error\s*\(\s*Contract\s*,\s*#(\d+)\s*\)',
+  );
 
   static const List<OZContractError> _allErrors = <OZContractError>[
     // SmartAccountError (3000-3016; 3001 unused)
@@ -186,8 +187,7 @@ class OZContractErrorCodes {
     OZContractError(3227, 'SpendingLimitError', 'OnlyCallContractAllowed'),
   ];
 
-  static final Map<int, OZContractError> _codeTable =
-      <int, OZContractError>{
+  static final Map<int, OZContractError> _codeTable = <int, OZContractError>{
     for (final error in _allErrors) error.code: error,
   };
 }

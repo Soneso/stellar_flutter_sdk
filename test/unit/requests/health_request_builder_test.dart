@@ -92,7 +92,9 @@ void main() {
       });
 
       test('handles server URI with existing path', () {
-        final uriWithPath = Uri.parse('https://horizon-testnet.stellar.org/api/v1');
+        final uriWithPath = Uri.parse(
+          'https://horizon-testnet.stellar.org/api/v1',
+        );
         final builder = HealthRequestBuilder(mockClient, uriWithPath);
         final uri = builder.buildUri();
 
@@ -150,7 +152,9 @@ void main() {
       });
 
       test('handles URI with multiple path segments', () {
-        final multiPathUri = Uri.parse('https://horizon.stellar.org/api/v2/public');
+        final multiPathUri = Uri.parse(
+          'https://horizon.stellar.org/api/v2/public',
+        );
         final builder = HealthRequestBuilder(mockClient, multiPathUri);
         final uri = builder.buildUri();
 
@@ -322,9 +326,10 @@ void main() {
         final client = MockClient((request) async {
           expect(request.url.pathSegments, contains('health'));
           return http.Response(
-              '{"database_connected": true, "core_up": true, '
-              '"core_synced": true}',
-              200);
+            '{"database_connected": true, "core_up": true, '
+            '"core_synced": true}',
+            200,
+          );
         });
 
         final builder = HealthRequestBuilder(client, serverUri);
@@ -339,9 +344,10 @@ void main() {
       test('parses an unhealthy response', () async {
         final client = MockClient((request) async {
           return http.Response(
-              '{"database_connected": true, "core_up": true, '
-              '"core_synced": false}',
-              200);
+            '{"database_connected": true, "core_up": true, '
+            '"core_synced": false}',
+            200,
+          );
         });
 
         final builder = HealthRequestBuilder(client, serverUri);
@@ -368,7 +374,10 @@ void main() {
 
         expect(uri.pathSegments.contains('api'), isTrue);
         expect(uri.pathSegments.contains('health'), isTrue);
-        expect(uri.pathSegments.indexOf('health'), greaterThan(uri.pathSegments.indexOf('api')));
+        expect(
+          uri.pathSegments.indexOf('health'),
+          greaterThan(uri.pathSegments.indexOf('api')),
+        );
       });
 
       test('preserves trailing slash behavior', () {

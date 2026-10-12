@@ -57,7 +57,7 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   EffectsRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["effects"]);
+    : super(httpClient, serverURI, ["effects"]);
 
   /// Effects request builder of a specific account given by [accountId].
   /// See: [Stellar developer docs](https://developers.stellar.org)
@@ -102,7 +102,9 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// Requests specific `uri` and returns Page of EffectResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<EffectResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<EffectResponse>>(httpClient, uri);
   }
 
@@ -113,7 +115,8 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<EffectResponse> stream() {
     return streamEvents<EffectResponse>(
-        (json) => EffectResponse.fromJson(json));
+      (json) => EffectResponse.fromJson(json),
+    );
   }
 
   /// Build and execute the request.
@@ -132,7 +135,9 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// ```
   Future<Page<EffectResponse>> execute() {
     return EffectsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Sets the cursor for pagination to start returning records from a specific point.

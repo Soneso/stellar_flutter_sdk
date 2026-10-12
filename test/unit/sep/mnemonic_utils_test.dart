@@ -37,47 +37,53 @@ void main() {
 
       test('generates 12-word mnemonic in Chinese Simplified', () async {
         final mnemonic = await Wallet.generate12WordsMnemonic(
-            language: LANGUAGE_CHINESE_SIMPLIFIED);
+          language: LANGUAGE_CHINESE_SIMPLIFIED,
+        );
 
         final words = mnemonic.split(' ');
         expect(words.length, equals(12));
       });
 
       test('generates 12-word mnemonic in French', () async {
-        final mnemonic =
-            await Wallet.generate12WordsMnemonic(language: LANGUAGE_FRENCH);
+        final mnemonic = await Wallet.generate12WordsMnemonic(
+          language: LANGUAGE_FRENCH,
+        );
 
         final words = mnemonic.split(' ');
         expect(words.length, equals(12));
       });
 
       test('generates 12-word mnemonic in Spanish', () async {
-        final mnemonic =
-            await Wallet.generate12WordsMnemonic(language: LANGUAGE_SPANISH);
+        final mnemonic = await Wallet.generate12WordsMnemonic(
+          language: LANGUAGE_SPANISH,
+        );
 
         final words = mnemonic.split(' ');
         expect(words.length, equals(12));
       });
 
       test('generates 12-word mnemonic in Italian', () async {
-        final mnemonic =
-            await Wallet.generate12WordsMnemonic(language: LANGUAGE_ITALIAN);
+        final mnemonic = await Wallet.generate12WordsMnemonic(
+          language: LANGUAGE_ITALIAN,
+        );
 
         final words = mnemonic.split(' ');
         expect(words.length, equals(12));
       });
 
       test('generates 12-word mnemonic in Japanese', () async {
-        final mnemonic =
-            await Wallet.generate12WordsMnemonic(language: LANGUAGE_JAPANESE);
+        final mnemonic = await Wallet.generate12WordsMnemonic(
+          language: LANGUAGE_JAPANESE,
+        );
 
         final words = mnemonic.split(' ');
         expect(words.length, equals(12));
       });
 
       test('generates 12-word mnemonic in Korean', () async {
-        final mnemonic =
-            await Wallet.generate12WordsMnemonic(language: LANGUAGE_KOREAN);
+        final mnemonic = await Wallet.generate12WordsMnemonic(
+          language: LANGUAGE_KOREAN,
+        );
 
         final words = mnemonic.split(' ');
         expect(words.length, equals(12));
@@ -121,8 +127,10 @@ void main() {
         final wallet = await Wallet.from(mnemonic);
         final keyPair0 = await wallet.getKeyPair(index: 0);
 
-        expect(keyPair0.accountId,
-            equals('GDRXE2BQUC3AZNPVFSCEZ76NJ3WWL25FYFK6RGZGIEKWE4SOOHSUJUJ6'));
+        expect(
+          keyPair0.accountId,
+          equals('GDRXE2BQUC3AZNPVFSCEZ76NJ3WWL25FYFK6RGZGIEKWE4SOOHSUJUJ6'),
+        );
       });
 
       test('derives different KeyPairs for different indices', () async {
@@ -183,8 +191,10 @@ void main() {
         final wallet = await Wallet.from(mnemonic);
         final accountId = await wallet.getAccountId(index: 0);
 
-        expect(accountId,
-            equals('GDRXE2BQUC3AZNPVFSCEZ76NJ3WWL25FYFK6RGZGIEKWE4SOOHSUJUJ6'));
+        expect(
+          accountId,
+          equals('GDRXE2BQUC3AZNPVFSCEZ76NJ3WWL25FYFK6RGZGIEKWE4SOOHSUJUJ6'),
+        );
       });
 
       test('account ID matches KeyPair account ID', () async {
@@ -246,8 +256,7 @@ void main() {
       });
 
       test('test vector 4 - all same words except last', () async {
-        final mnemonic =
-            'zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo wrong';
+        final mnemonic = 'zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo wrong';
         final wallet = await Wallet.from(mnemonic);
         final keyPair = await wallet.getKeyPair(index: 0);
 
@@ -322,8 +331,10 @@ void main() {
         final wallet = await Wallet.from(mnemonic);
 
         final keyPair0 = await wallet.getKeyPair(index: 0);
-        expect(keyPair0.accountId,
-            equals('GDRXE2BQUC3AZNPVFSCEZ76NJ3WWL25FYFK6RGZGIEKWE4SOOHSUJUJ6'));
+        expect(
+          keyPair0.accountId,
+          equals('GDRXE2BQUC3AZNPVFSCEZ76NJ3WWL25FYFK6RGZGIEKWE4SOOHSUJUJ6'),
+        );
       });
 
       test('supports multiple account indices', () async {

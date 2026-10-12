@@ -76,19 +76,19 @@ class SerializableCredential {
 
   /// Encodes this record as a JSON-shaped [Map].
   Map<String, dynamic> toJson() => {
-        'credentialId': credentialId,
-        'publicKeyHex': publicKeyHex,
-        if (contractId != null) 'contractId': contractId,
-        'deploymentStatus': deploymentStatus,
-        if (deploymentError != null) 'deploymentError': deploymentError,
-        'createdAt': createdAt,
-        if (lastUsedAt != null) 'lastUsedAt': lastUsedAt,
-        if (nickname != null) 'nickname': nickname,
-        'isPrimary': isPrimary,
-        if (transports != null) 'transports': transports,
-        if (deviceType != null) 'deviceType': deviceType,
-        if (backedUp != null) 'backedUp': backedUp,
-      };
+    'credentialId': credentialId,
+    'publicKeyHex': publicKeyHex,
+    if (contractId != null) 'contractId': contractId,
+    'deploymentStatus': deploymentStatus,
+    if (deploymentError != null) 'deploymentError': deploymentError,
+    'createdAt': createdAt,
+    if (lastUsedAt != null) 'lastUsedAt': lastUsedAt,
+    if (nickname != null) 'nickname': nickname,
+    'isPrimary': isPrimary,
+    if (transports != null) 'transports': transports,
+    if (deviceType != null) 'deviceType': deviceType,
+    if (backedUp != null) 'backedUp': backedUp,
+  };
 
   /// Decodes a [SerializableCredential] from a JSON-shaped [Map].
   ///
@@ -157,11 +157,11 @@ class SerializableSession {
 
   /// Encodes this record as a JSON-shaped [Map].
   Map<String, dynamic> toJson() => {
-        'credentialId': credentialId,
-        'contractId': contractId,
-        'connectedAt': connectedAt,
-        'expiresAt': expiresAt,
-      };
+    'credentialId': credentialId,
+    'contractId': contractId,
+    'connectedAt': connectedAt,
+    'expiresAt': expiresAt,
+  };
 
   /// Decodes a [SerializableSession] from a JSON-shaped [Map].
   ///

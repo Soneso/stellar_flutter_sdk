@@ -13,9 +13,11 @@ void main() {
   }
 
   group('Address', () {
-    final validAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+    final validAccountId =
+        'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
     final validContractId = generateValidContractId();
-    final validMuxedId = 'MAAAAAAAAAAAJURAAB2X52XFQP6FBXLGT6LWOOWMEXWHEWBDVRZ7V5WH34Y22MPFBHUHY';
+    final validMuxedId =
+        'MAAAAAAAAAAAJURAAB2X52XFQP6FBXLGT6LWOOWMEXWHEWBDVRZ7V5WH34Y22MPFBHUHY';
 
     test('create account address', () {
       final address = Address.forAccountId(validAccountId);
@@ -44,7 +46,8 @@ void main() {
     });
 
     test('create claimable balance address', () {
-      final balanceId = '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
+      final balanceId =
+          '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
       final address = Address.forClaimableBalanceId(balanceId);
 
       expect(address, isNotNull);
@@ -53,7 +56,8 @@ void main() {
     });
 
     test('create liquidity pool address', () {
-      final poolId = 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
+      final poolId =
+          'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
       final address = Address.forLiquidityPoolId(poolId);
 
       expect(address, isNotNull);
@@ -95,29 +99,21 @@ void main() {
     });
 
     test('invalid type throws exception', () {
-      expect(
-        () => Address(999),
-        throwsException,
-      );
+      expect(() => Address(999), throwsException);
     });
 
     test('account type requires accountId', () {
-      expect(
-        () => Address(Address.TYPE_ACCOUNT),
-        throwsException,
-      );
+      expect(() => Address(Address.TYPE_ACCOUNT), throwsException);
     });
 
     test('contract type requires contractId', () {
-      expect(
-        () => Address(Address.TYPE_CONTRACT),
-        throwsException,
-      );
+      expect(() => Address(Address.TYPE_CONTRACT), throwsException);
     });
   });
 
   group('SorobanAddressCredentials', () {
-    final validAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+    final validAccountId =
+        'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
     final address = Address.forAccountId(validAccountId);
     final nonce = BigInt.from(123456789);
     final expirationLedger = 1000000;
@@ -171,7 +167,8 @@ void main() {
   });
 
   group('SorobanCredentials', () {
-    final validAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+    final validAccountId =
+        'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
     final address = Address.forAccountId(validAccountId);
     final nonce = BigInt.from(123456789);
     final expirationLedger = 1000000;
@@ -189,7 +186,10 @@ void main() {
 
       final xdr = credentials.toXdr();
 
-      expect(xdr.type, equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT));
+      expect(
+        xdr.type,
+        equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT),
+      );
       expect(xdr.address, isNull);
     });
 
@@ -217,7 +217,10 @@ void main() {
 
       final xdr = credentials.toXdr();
 
-      expect(xdr.type, equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS));
+      expect(
+        xdr.type,
+        equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS),
+      );
       expect(xdr.address, isNotNull);
     });
 
@@ -234,7 +237,10 @@ void main() {
 
       expect(restored.addressCredentials, isNotNull);
       expect(restored.addressCredentials!.nonce, equals(nonce));
-      expect(restored.addressCredentials!.signatureExpirationLedger, equals(expirationLedger));
+      expect(
+        restored.addressCredentials!.signatureExpirationLedger,
+        equals(expirationLedger),
+      );
     });
 
     test('forAddressCredentials constructor', () {
@@ -244,7 +250,9 @@ void main() {
         expirationLedger,
         signature,
       );
-      final credentials = SorobanCredentials.forAddressCredentials(addressCreds);
+      final credentials = SorobanCredentials.forAddressCredentials(
+        addressCreds,
+      );
 
       expect(credentials.addressV2Credentials, equals(addressCreds));
     });
@@ -278,7 +286,13 @@ void main() {
 
       final xdr = function.toXdr();
 
-      expect(xdr.type, equals(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN));
+      expect(
+        xdr.type,
+        equals(
+          XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
+        ),
+      );
       expect(xdr.contractFn, isNotNull);
       expect(xdr.contractFn!.functionName, equals('approve'));
     });
@@ -295,11 +309,17 @@ void main() {
 
     test('create contract host function', () {
       final createArgs = XdrCreateContractArgs(
-        XdrContractIDPreimage(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS),
-        XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM),
+        XdrContractIDPreimage(
+          XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+        ),
+        XdrContractExecutable(
+          XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+        ),
       );
 
-      final function = SorobanAuthorizedFunction.forCreateContractHostFunction(createArgs);
+      final function = SorobanAuthorizedFunction.forCreateContractHostFunction(
+        createArgs,
+      );
 
       expect(function, isNotNull);
       expect(function.createContractHostFn, equals(createArgs));
@@ -309,12 +329,19 @@ void main() {
 
     test('create contract v2 host function', () {
       final createV2Args = XdrCreateContractArgsV2(
-        XdrContractIDPreimage(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS),
-        XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM),
+        XdrContractIDPreimage(
+          XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+        ),
+        XdrContractExecutable(
+          XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+        ),
         [],
       );
 
-      final function = SorobanAuthorizedFunction.forCreateContractV2HostFunction(createV2Args);
+      final function =
+          SorobanAuthorizedFunction.forCreateContractV2HostFunction(
+            createV2Args,
+          );
 
       expect(function, isNotNull);
       expect(function.createContractV2HostFn, equals(createV2Args));
@@ -323,10 +350,7 @@ void main() {
     });
 
     test('invalid construction without arguments throws', () {
-      expect(
-        () => SorobanAuthorizedFunction(),
-        throwsArgumentError,
-      );
+      expect(() => SorobanAuthorizedFunction(), throwsArgumentError);
     });
 
     test('authorized function toXdr and fromXdr', () {
@@ -445,7 +469,9 @@ void main() {
         [],
       );
 
-      final grandchildInvocation = SorobanAuthorizedInvocation(grandchildFunction);
+      final grandchildInvocation = SorobanAuthorizedInvocation(
+        grandchildFunction,
+      );
       final childInvocation = SorobanAuthorizedInvocation(
         childFunction,
         subInvocations: [grandchildInvocation],
@@ -461,14 +487,20 @@ void main() {
       expect(restored.subInvocations.length, equals(1));
       expect(restored.subInvocations[0].subInvocations.length, equals(1));
       expect(
-        restored.subInvocations[0].subInvocations[0].function.contractFn!.functionName,
+        restored
+            .subInvocations[0]
+            .subInvocations[0]
+            .function
+            .contractFn!
+            .functionName,
         equals('grandchild'),
       );
     });
   });
 
   group('SorobanAuthorizationEntry', () {
-    final validAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+    final validAccountId =
+        'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
     final validContractId = generateValidContractId();
     final address = Address.forAccountId(validAccountId);
     final contractAddress = Address.forContractId(validContractId);
@@ -504,7 +536,10 @@ void main() {
       final entry = SorobanAuthorizationEntry(credentials, invocation);
 
       expect(entry.credentials.addressCredentials, isNotNull);
-      expect(entry.credentials.addressCredentials!.nonce, equals(BigInt.from(123456)));
+      expect(
+        entry.credentials.addressCredentials!.nonce,
+        equals(BigInt.from(123456)),
+      );
     });
 
     test('authorization entry toXdr and fromXdr', () {
@@ -521,7 +556,10 @@ void main() {
       final restored = SorobanAuthorizationEntry.fromXdr(xdr);
 
       expect(restored.credentials.addressCredentials, isNull);
-      expect(restored.rootInvocation.function.contractFn!.functionName, equals('test'));
+      expect(
+        restored.rootInvocation.function.contractFn!.functionName,
+        equals('test'),
+      );
     });
 
     test('authorization entry base64 encoding', () {
@@ -535,9 +573,14 @@ void main() {
       final entry = SorobanAuthorizationEntry(credentials, invocation);
 
       final base64Xdr = entry.toBase64EncodedXdrString();
-      final restored = SorobanAuthorizationEntry.fromBase64EncodedXdr(base64Xdr);
+      final restored = SorobanAuthorizationEntry.fromBase64EncodedXdr(
+        base64Xdr,
+      );
 
-      expect(restored.rootInvocation.function.contractFn!.functionName, equals('method'));
+      expect(
+        restored.rootInvocation.function.contractFn!.functionName,
+        equals('method'),
+      );
     });
 
     test('sign authorization entry', () {
@@ -559,7 +602,10 @@ void main() {
       entry.sign(signer, Network.TESTNET);
 
       expect(entry.credentials.addressCredentials!.signature.vec, isNotNull);
-      expect(entry.credentials.addressCredentials!.signature.vec!.length, equals(1));
+      expect(
+        entry.credentials.addressCredentials!.signature.vec!.length,
+        equals(1),
+      );
     });
 
     test('sign authorization entry throws without address credentials', () {
@@ -573,10 +619,7 @@ void main() {
       final invocation = SorobanAuthorizedInvocation(function);
       final entry = SorobanAuthorizationEntry(credentials, invocation);
 
-      expect(
-        () => entry.sign(signer, Network.TESTNET),
-        throwsException,
-      );
+      expect(() => entry.sign(signer, Network.TESTNET), throwsException);
     });
 
     test('multiple signatures on entry', () {
@@ -599,7 +642,10 @@ void main() {
       entry.sign(signer1, Network.TESTNET);
       entry.sign(signer2, Network.TESTNET);
 
-      expect(entry.credentials.addressCredentials!.signature.vec!.length, equals(2));
+      expect(
+        entry.credentials.addressCredentials!.signature.vec!.length,
+        equals(2),
+      );
     });
   });
 
@@ -609,7 +655,10 @@ void main() {
       final payload = Uint8List(32);
       final signatureBytes = keyPair.sign(payload);
 
-      final signature = AccountEd25519Signature(keyPair.xdrPublicKey, signatureBytes);
+      final signature = AccountEd25519Signature(
+        keyPair.xdrPublicKey,
+        signatureBytes,
+      );
 
       expect(signature, isNotNull);
       expect(signature.publicKey, isA<XdrPublicKey>());
@@ -619,7 +668,10 @@ void main() {
     test('signature toXdrSCVal creates map', () {
       final keyPair = KeyPair.random();
       final signatureBytes = Uint8List.fromList(List.filled(64, 0));
-      final signature = AccountEd25519Signature(keyPair.xdrPublicKey, signatureBytes);
+      final signature = AccountEd25519Signature(
+        keyPair.xdrPublicKey,
+        signatureBytes,
+      );
 
       final scVal = signature.toXdrSCVal();
 
@@ -631,7 +683,10 @@ void main() {
     test('signature map contains public_key and signature entries', () {
       final keyPair = KeyPair.random();
       final signatureBytes = Uint8List.fromList(List.filled(64, 1));
-      final signature = AccountEd25519Signature(keyPair.xdrPublicKey, signatureBytes);
+      final signature = AccountEd25519Signature(
+        keyPair.xdrPublicKey,
+        signatureBytes,
+      );
 
       final scVal = signature.toXdrSCVal();
       final map = scVal.map!;
@@ -646,7 +701,10 @@ void main() {
       final payload = Util.hash(Uint8List.fromList('test payload'.codeUnits));
       final signatureBytes = keyPair.sign(payload);
 
-      final signature = AccountEd25519Signature(keyPair.xdrPublicKey, signatureBytes);
+      final signature = AccountEd25519Signature(
+        keyPair.xdrPublicKey,
+        signatureBytes,
+      );
       final scVal = signature.toXdrSCVal();
 
       expect(scVal.map, isNotNull);
@@ -684,8 +742,10 @@ void main() {
       final address = Address.forClaimableBalanceId(balanceId);
 
       final xdr = address.toXdr();
-      expect(xdr.discriminant,
-          equals(XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE));
+      expect(
+        xdr.discriminant,
+        equals(XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE),
+      );
 
       final restored = Address.fromXdr(xdr);
       expect(restored.type, equals(Address.TYPE_CLAIMABLE_BALANCE));
@@ -701,8 +761,10 @@ void main() {
       final address = Address.forLiquidityPoolId(poolId);
 
       final xdr = address.toXdr();
-      expect(xdr.discriminant,
-          equals(XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL));
+      expect(
+        xdr.discriminant,
+        equals(XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL),
+      );
 
       final restored = Address.fromXdr(xdr);
       expect(restored.type, equals(Address.TYPE_LIQUIDITY_POOL));
@@ -715,15 +777,17 @@ void main() {
       final address = Address.forMuxedAccountId(muxedId);
 
       final xdr = address.toXdr();
-      expect(xdr.discriminant,
-          equals(XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT));
+      expect(
+        xdr.discriminant,
+        equals(XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT),
+      );
     });
-
   });
 
   group('Address muxed contract', () {
     // SEP-0023 vector: the contract below paired with the id 123456.
-    const contractId = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+    const contractId =
+        'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
     const contractHex =
         '363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103';
     const muxedContractId =
@@ -746,56 +810,78 @@ void main() {
       final native = scVal.toNative();
       expect(native, isA<Address>());
       expect((native as Address).muxedContractId, muxedContractId);
-      expect(XdrSCVal.forAddressStrKey(muxedContractId).address!.toStrKey(),
-          muxedContractId);
+      expect(
+        XdrSCVal.forAddressStrKey(muxedContractId).address!.toStrKey(),
+        muxedContractId,
+      );
     });
 
     test('refuses a muxed contract address without its id', () {
-      expect(() => Address(Address.TYPE_MUXED_CONTRACT),
-          throwsA(isA<Exception>().having((Exception e) => e.toString(),
-              'toString', 'Exception: invalid arguments')));
+      expect(
+        () => Address(Address.TYPE_MUXED_CONTRACT),
+        throwsA(
+          isA<Exception>().having(
+            (Exception e) => e.toString(),
+            'toString',
+            'Exception: invalid arguments',
+          ),
+        ),
+      );
 
       final address = Address.forMuxedContractId(muxedContractId)
         ..muxedContractId = null;
       expect(
-          () => address.toXdr(),
-          throwsA(isA<Exception>().having((Exception e) => e.toString(),
-              'toString',
-              'Exception: invalid address, has no muxed contract id')));
+        () => address.toXdr(),
+        throwsA(
+          isA<Exception>().having(
+            (Exception e) => e.toString(),
+            'toString',
+            'Exception: invalid address, has no muxed contract id',
+          ),
+        ),
+      );
     });
 
     test('forMuxedContract pairs a contract id with an id', () {
-      final fromStrKey =
-          Address.forMuxedContract(contractId: contractId, id: BigInt.from(123456));
+      final fromStrKey = Address.forMuxedContract(
+        contractId: contractId,
+        id: BigInt.from(123456),
+      );
       expect(fromStrKey.type, Address.TYPE_MUXED_CONTRACT);
       expect(fromStrKey.muxedContractId, muxedContractId);
-      final fromHex =
-          Address.forMuxedContract(contractId: contractHex, id: BigInt.from(123456));
+      final fromHex = Address.forMuxedContract(
+        contractId: contractHex,
+        id: BigInt.from(123456),
+      );
       expect(fromHex.muxedContractId, muxedContractId);
       expect(
-          Address.forMuxedContract(
-                  contractId:
-                      'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA',
-                  id: BigInt.zero)
-              .muxedContractId,
-          'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC');
+        Address.forMuxedContract(
+          contractId:
+              'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA',
+          id: BigInt.zero,
+        ).muxedContractId,
+        'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC',
+      );
       final maxId = (BigInt.one << 64) - BigInt.one;
       expect(
-          Address.forMuxedContract(contractId: contractId, id: maxId)
-              .toXdr()
-              .muxedContract!
-              .id
-              .uint64,
-          maxId);
+        Address.forMuxedContract(
+          contractId: contractId,
+          id: maxId,
+        ).toXdr().muxedContract!.id.uint64,
+        maxId,
+      );
     });
 
     test('forMuxedContract refuses an id or contract id out of range', () {
       for (final id in [BigInt.from(-1), BigInt.one << 64]) {
         expect(
-            () => Address.forMuxedContract(contractId: contractId, id: id),
-            throwsA(isA<ArgumentError>()
+          () => Address.forMuxedContract(contractId: contractId, id: id),
+          throwsA(
+            isA<ArgumentError>()
                 .having((ArgumentError e) => e.name, 'name', 'id')
-                .having((ArgumentError e) => e.invalidValue, 'value', id)));
+                .having((ArgumentError e) => e.invalidValue, 'value', id),
+          ),
+        );
       }
       for (final malformed in [
         'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXF',
@@ -803,11 +889,17 @@ void main() {
         muxedContractId,
       ]) {
         expect(
-            () => Address.forMuxedContract(
-                contractId: malformed, id: BigInt.one),
-            throwsA(isA<ArgumentError>()
+          () => Address.forMuxedContract(contractId: malformed, id: BigInt.one),
+          throwsA(
+            isA<ArgumentError>()
                 .having((ArgumentError e) => e.name, 'name', 'contractId')
-                .having((ArgumentError e) => e.invalidValue, 'value', malformed)));
+                .having(
+                  (ArgumentError e) => e.invalidValue,
+                  'value',
+                  malformed,
+                ),
+          ),
+        );
       }
     });
   });
@@ -815,13 +907,18 @@ void main() {
   group('SorobanAddressCredentials - deep', () {
     test('creates credentials with all fields', () {
       final address = Address.forAccountId(
-          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final nonce = BigInt.from(12345);
       final expiration = 67890;
       final signature = XdrSCVal.forVoid();
 
-      final credentials =
-          SorobanAddressCredentials(address, nonce, expiration, signature);
+      final credentials = SorobanAddressCredentials(
+        address,
+        nonce,
+        expiration,
+        signature,
+      );
 
       expect(credentials.address, equals(address));
       expect(credentials.nonce, equals(nonce));
@@ -831,13 +928,18 @@ void main() {
 
     test('toXdr and fromXdr round trip', () {
       final address = Address.forAccountId(
-          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final nonce = BigInt.from(98765);
       final expiration = 100000;
       final signature = XdrSCVal.forVoid();
 
-      final credentials =
-          SorobanAddressCredentials(address, nonce, expiration, signature);
+      final credentials = SorobanAddressCredentials(
+        address,
+        nonce,
+        expiration,
+        signature,
+      );
       final xdr = credentials.toXdr();
       final restored = SorobanAddressCredentials.fromXdr(xdr);
 
@@ -848,13 +950,18 @@ void main() {
 
     test('fromXdr converts XDR correctly', () {
       final address = Address.forAccountId(
-          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final nonce = BigInt.from(54321);
       final expiration = 90000;
       final signature = XdrSCVal.forVoid();
 
-      final original =
-          SorobanAddressCredentials(address, nonce, expiration, signature);
+      final original = SorobanAddressCredentials(
+        address,
+        nonce,
+        expiration,
+        signature,
+      );
       final xdr = original.toXdr();
 
       expect(xdr.nonce.int64, equals(nonce));
@@ -871,13 +978,18 @@ void main() {
 
     test('forAddressLegacy creates credentials with address', () {
       final address = Address.forAccountId(
-          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final nonce = BigInt.from(11111);
       final expiration = 22222;
       final signature = XdrSCVal.forVoid();
 
       final credentials = SorobanCredentials.forAddressLegacy(
-          address, nonce, expiration, signature);
+        address,
+        nonce,
+        expiration,
+        signature,
+      );
 
       expect(credentials.addressCredentials, isNotNull);
       expect(credentials.addressCredentials!.address, equals(address));
@@ -886,12 +998,18 @@ void main() {
 
     test('forAddressCredentials wraps address credentials', () {
       final address = Address.forAccountId(
-          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final addressCreds = SorobanAddressCredentials(
-          address, BigInt.from(333), 444, XdrSCVal.forVoid());
+        address,
+        BigInt.from(333),
+        444,
+        XdrSCVal.forVoid(),
+      );
 
-      final credentials =
-          SorobanCredentials.forAddressCredentials(addressCreds);
+      final credentials = SorobanCredentials.forAddressCredentials(
+        addressCreds,
+      );
 
       expect(credentials.addressV2Credentials, equals(addressCreds));
     });
@@ -900,27 +1018,37 @@ void main() {
       final credentials = SorobanCredentials.forSourceAccount();
       final xdr = credentials.toXdr();
 
-      expect(xdr.type,
-          equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT));
+      expect(
+        xdr.type,
+        equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT),
+      );
       expect(xdr.address, isNull);
     });
 
     test('toXdr for address credentials', () {
       final address = Address.forAccountId(
-          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final credentials = SorobanCredentials.forAddressLegacy(
-          address, BigInt.from(555), 666, XdrSCVal.forVoid());
+        address,
+        BigInt.from(555),
+        666,
+        XdrSCVal.forVoid(),
+      );
 
       final xdr = credentials.toXdr();
 
-      expect(xdr.type,
-          equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS));
+      expect(
+        xdr.type,
+        equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS),
+      );
       expect(xdr.address, isNotNull);
     });
 
     test('fromXdr for source account', () {
       final xdr = XdrSorobanCredentials(
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
+      );
 
       final credentials = SorobanCredentials.fromXdr(xdr);
 
@@ -929,12 +1057,18 @@ void main() {
 
     test('fromXdr for address credentials', () {
       final address = Address.forAccountId(
-          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final addressCreds = SorobanAddressCredentials(
-          address, BigInt.from(777), 888, XdrSCVal.forVoid());
+        address,
+        BigInt.from(777),
+        888,
+        XdrSCVal.forVoid(),
+      );
 
       final xdr = XdrSorobanCredentials(
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS);
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS,
+      );
       xdr.address = addressCreds.toXdr();
 
       final credentials = SorobanCredentials.fromXdr(xdr);
@@ -946,16 +1080,15 @@ void main() {
 
   group('SorobanAuthorizedFunction - deep', () {
     test('forContractFunction creates function', () {
-      final contractAddress =
-          Address.forContractId(generateValidContractId());
+      final contractAddress = Address.forContractId(generateValidContractId());
       final functionName = 'transfer';
-      final args = [
-        XdrSCVal.forI32(100),
-        XdrSCVal.forSymbol('test')
-      ];
+      final args = [XdrSCVal.forI32(100), XdrSCVal.forSymbol('test')];
 
       final function = SorobanAuthorizedFunction.forContractFunction(
-          contractAddress, functionName, args);
+        contractAddress,
+        functionName,
+        args,
+      );
 
       expect(function.contractFn, isNotNull);
       expect(function.contractFn!.functionName, equals(functionName));
@@ -966,11 +1099,17 @@ void main() {
 
     test('forCreateContractHostFunction creates function', () {
       final createArgs = XdrCreateContractArgs(
-          XdrContractIDPreimage(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS),
-          XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM));
+        XdrContractIDPreimage(
+          XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+        ),
+        XdrContractExecutable(
+          XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+        ),
+      );
 
-      final function =
-          SorobanAuthorizedFunction.forCreateContractHostFunction(createArgs);
+      final function = SorobanAuthorizedFunction.forCreateContractHostFunction(
+        createArgs,
+      );
 
       expect(function.createContractHostFn, isNotNull);
       expect(function.contractFn, isNull);
@@ -979,9 +1118,14 @@ void main() {
 
     test('forCreateContractV2HostFunction creates function', () {
       final createArgs = XdrCreateContractArgsV2(
-          XdrContractIDPreimage(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS),
-          XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM),
-          []);
+        XdrContractIDPreimage(
+          XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+        ),
+        XdrContractExecutable(
+          XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+        ),
+        [],
+      );
 
       final function =
           SorobanAuthorizedFunction.forCreateContractV2HostFunction(createArgs);
@@ -996,56 +1140,82 @@ void main() {
     });
 
     test('toXdr for contract function', () {
-      final contractAddress =
-          Address.forContractId(generateValidContractId());
+      final contractAddress = Address.forContractId(generateValidContractId());
       final function = SorobanAuthorizedFunction.forContractFunction(
-          contractAddress, 'approve', [XdrSCVal.forI32(1000)]);
+        contractAddress,
+        'approve',
+        [XdrSCVal.forI32(1000)],
+      );
 
       final xdr = function.toXdr();
 
-      expect(xdr.type,
-          equals(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN));
+      expect(
+        xdr.type,
+        equals(
+          XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
+        ),
+      );
       expect(xdr.contractFn, isNotNull);
     });
 
     test('toXdr for create contract host function', () {
       final createArgs = XdrCreateContractArgs(
-          XdrContractIDPreimage(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS),
-          XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM));
+        XdrContractIDPreimage(
+          XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+        ),
+        XdrContractExecutable(
+          XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+        ),
+      );
 
-      final function =
-          SorobanAuthorizedFunction.forCreateContractHostFunction(createArgs);
+      final function = SorobanAuthorizedFunction.forCreateContractHostFunction(
+        createArgs,
+      );
       final xdr = function.toXdr();
 
       expect(
-          xdr.type,
-          equals(XdrSorobanAuthorizedFunctionType
-              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN));
+        xdr.type,
+        equals(
+          XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN,
+        ),
+      );
       expect(xdr.createContractHostFn, isNotNull);
     });
 
     test('toXdr for create contract v2 host function', () {
       final createArgs = XdrCreateContractArgsV2(
-          XdrContractIDPreimage(XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS),
-          XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM),
-          []);
+        XdrContractIDPreimage(
+          XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+        ),
+        XdrContractExecutable(
+          XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+        ),
+        [],
+      );
 
       final function =
           SorobanAuthorizedFunction.forCreateContractV2HostFunction(createArgs);
       final xdr = function.toXdr();
 
       expect(
-          xdr.type,
-          equals(XdrSorobanAuthorizedFunctionType
-              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN));
+        xdr.type,
+        equals(
+          XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN,
+        ),
+      );
       expect(xdr.createContractV2HostFn, isNotNull);
     });
 
     test('fromXdr for contract function', () {
-      final contractAddress =
-          Address.forContractId(generateValidContractId());
+      final contractAddress = Address.forContractId(generateValidContractId());
       final original = SorobanAuthorizedFunction.forContractFunction(
-          contractAddress, 'balance', []);
+        contractAddress,
+        'balance',
+        [],
+      );
 
       final xdr = original.toXdr();
       final restored = SorobanAuthorizedFunction.fromXdr(xdr);
@@ -1058,9 +1228,10 @@ void main() {
   group('SorobanAuthorizedInvocation - deep', () {
     test('creates invocation without sub-invocations', () {
       final function = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()),
-          'test_func',
-          []);
+        Address.forContractId(generateValidContractId()),
+        'test_func',
+        [],
+      );
 
       final invocation = SorobanAuthorizedInvocation(function);
 
@@ -1070,18 +1241,22 @@ void main() {
 
     test('creates invocation with sub-invocations', () {
       final mainFunction = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()),
-          'main_func',
-          []);
+        Address.forContractId(generateValidContractId()),
+        'main_func',
+        [],
+      );
 
       final subFunction = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()),
-          'sub_func',
-          []);
+        Address.forContractId(generateValidContractId()),
+        'sub_func',
+        [],
+      );
 
       final subInvocation = SorobanAuthorizedInvocation(subFunction);
-      final mainInvocation = SorobanAuthorizedInvocation(mainFunction,
-          subInvocations: [subInvocation]);
+      final mainInvocation = SorobanAuthorizedInvocation(
+        mainFunction,
+        subInvocations: [subInvocation],
+      );
 
       expect(mainInvocation.function, equals(mainFunction));
       expect(mainInvocation.subInvocations.length, equals(1));
@@ -1090,30 +1265,38 @@ void main() {
 
     test('toXdr and fromXdr round trip', () {
       final function = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()),
-          'round_trip',
-          [XdrSCVal.forI32(42)]);
+        Address.forContractId(generateValidContractId()),
+        'round_trip',
+        [XdrSCVal.forI32(42)],
+      );
 
       final invocation = SorobanAuthorizedInvocation(function);
       final xdr = invocation.toXdr();
       final restored = SorobanAuthorizedInvocation.fromXdr(xdr);
 
       expect(restored.function.contractFn, isNotNull);
-      expect(
-          restored.function.contractFn!.functionName, equals('round_trip'));
+      expect(restored.function.contractFn!.functionName, equals('round_trip'));
       expect(restored.subInvocations.length, equals(0));
     });
 
     test('toXdr includes sub-invocations', () {
       final mainFunction = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()), 'main', []);
+        Address.forContractId(generateValidContractId()),
+        'main',
+        [],
+      );
 
       final subFunction = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()), 'sub', []);
+        Address.forContractId(generateValidContractId()),
+        'sub',
+        [],
+      );
 
       final subInvocation = SorobanAuthorizedInvocation(subFunction);
-      final mainInvocation = SorobanAuthorizedInvocation(mainFunction,
-          subInvocations: [subInvocation]);
+      final mainInvocation = SorobanAuthorizedInvocation(
+        mainFunction,
+        subInvocations: [subInvocation],
+      );
 
       final xdr = mainInvocation.toXdr();
 
@@ -1122,27 +1305,42 @@ void main() {
 
     test('fromXdr restores sub-invocations', () {
       final mainFunction = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()), 'parent', []);
+        Address.forContractId(generateValidContractId()),
+        'parent',
+        [],
+      );
 
       final subFunction1 = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()), 'child1', []);
+        Address.forContractId(generateValidContractId()),
+        'child1',
+        [],
+      );
 
       final subFunction2 = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()), 'child2', []);
+        Address.forContractId(generateValidContractId()),
+        'child2',
+        [],
+      );
 
       final subInv1 = SorobanAuthorizedInvocation(subFunction1);
       final subInv2 = SorobanAuthorizedInvocation(subFunction2);
-      final mainInvocation = SorobanAuthorizedInvocation(mainFunction,
-          subInvocations: [subInv1, subInv2]);
+      final mainInvocation = SorobanAuthorizedInvocation(
+        mainFunction,
+        subInvocations: [subInv1, subInv2],
+      );
 
       final xdr = mainInvocation.toXdr();
       final restored = SorobanAuthorizedInvocation.fromXdr(xdr);
 
       expect(restored.subInvocations.length, equals(2));
-      expect(restored.subInvocations[0].function.contractFn!.functionName,
-          equals('child1'));
-      expect(restored.subInvocations[1].function.contractFn!.functionName,
-          equals('child2'));
+      expect(
+        restored.subInvocations[0].function.contractFn!.functionName,
+        equals('child1'),
+      );
+      expect(
+        restored.subInvocations[1].function.contractFn!.functionName,
+        equals('child2'),
+      );
     });
   });
 
@@ -1150,9 +1348,10 @@ void main() {
     test('creates authorization entry', () {
       final credentials = SorobanCredentials.forSourceAccount();
       final function = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()),
-          'authorize',
-          []);
+        Address.forContractId(generateValidContractId()),
+        'authorize',
+        [],
+      );
       final invocation = SorobanAuthorizedInvocation(function);
 
       final entry = SorobanAuthorizationEntry(credentials, invocation);
@@ -1164,9 +1363,10 @@ void main() {
     test('toXdr and fromXdr round trip', () {
       final credentials = SorobanCredentials.forSourceAccount();
       final function = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()),
-          'execute',
-          []);
+        Address.forContractId(generateValidContractId()),
+        'execute',
+        [],
+      );
       final invocation = SorobanAuthorizedInvocation(function);
 
       final entry = SorobanAuthorizationEntry(credentials, invocation);
@@ -1180,25 +1380,29 @@ void main() {
     test('toBase64EncodedXdrString and fromBase64EncodedXdr', () {
       final credentials = SorobanCredentials.forSourceAccount();
       final function = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()),
-          'base64_test',
-          []);
+        Address.forContractId(generateValidContractId()),
+        'base64_test',
+        [],
+      );
       final invocation = SorobanAuthorizedInvocation(function);
 
       final entry = SorobanAuthorizationEntry(credentials, invocation);
       final base64 = entry.toBase64EncodedXdrString();
       final restored = SorobanAuthorizationEntry.fromBase64EncodedXdr(base64);
 
-      expect(restored.rootInvocation.function.contractFn!.functionName,
-          equals('base64_test'));
+      expect(
+        restored.rootInvocation.function.contractFn!.functionName,
+        equals('base64_test'),
+      );
     });
 
     test('sign throws exception when no address credentials', () {
       final credentials = SorobanCredentials.forSourceAccount();
       final function = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()),
-          'sign_test',
-          []);
+        Address.forContractId(generateValidContractId()),
+        'sign_test',
+        [],
+      );
       final invocation = SorobanAuthorizedInvocation(function);
 
       final entry = SorobanAuthorizationEntry(credentials, invocation);
@@ -1210,14 +1414,20 @@ void main() {
 
     test('sign works with address credentials', () {
       final address = Address.forAccountId(
-          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final credentials = SorobanCredentials.forAddressLegacy(
-          address, BigInt.from(123), 456, XdrSCVal.forVoid());
+        address,
+        BigInt.from(123),
+        456,
+        XdrSCVal.forVoid(),
+      );
 
       final function = SorobanAuthorizedFunction.forContractFunction(
-          Address.forContractId(generateValidContractId()),
-          'sign_test',
-          []);
+        Address.forContractId(generateValidContractId()),
+        'sign_test',
+        [],
+      );
       final invocation = SorobanAuthorizedInvocation(function);
 
       final entry = SorobanAuthorizationEntry(credentials, invocation);
@@ -1229,7 +1439,9 @@ void main() {
       // After signing, the signature should be updated
       expect(entry.credentials.addressCredentials!.signature.vec, isNotNull);
       expect(
-          entry.credentials.addressCredentials!.signature.vec!.length, greaterThan(0));
+        entry.credentials.addressCredentials!.signature.vec!.length,
+        greaterThan(0),
+      );
     });
   });
 
@@ -1241,8 +1453,10 @@ void main() {
         signatureBytes[i] = i;
       }
 
-      final signature =
-          AccountEd25519Signature(keyPair.xdrPublicKey, signatureBytes);
+      final signature = AccountEd25519Signature(
+        keyPair.xdrPublicKey,
+        signatureBytes,
+      );
 
       expect(signature.publicKey, isNotNull);
       expect(signature.signatureBytes, equals(signatureBytes));
@@ -1252,8 +1466,10 @@ void main() {
       final keyPair = KeyPair.random();
       final signatureBytes = Uint8List(64);
 
-      final signature =
-          AccountEd25519Signature(keyPair.xdrPublicKey, signatureBytes);
+      final signature = AccountEd25519Signature(
+        keyPair.xdrPublicKey,
+        signatureBytes,
+      );
       final scVal = signature.toXdrSCVal();
 
       expect(scVal.discriminant, equals(XdrSCValType.SCV_MAP));
@@ -1262,13 +1478,15 @@ void main() {
 
       // Check for public_key entry
       final pkEntry = scVal.map!.firstWhere(
-          (entry) => entry.key.sym == 'public_key');
+        (entry) => entry.key.sym == 'public_key',
+      );
       expect(pkEntry, isNotNull);
       expect(pkEntry.val.discriminant, equals(XdrSCValType.SCV_BYTES));
 
       // Check for signature entry
       final sigEntry = scVal.map!.firstWhere(
-          (entry) => entry.key.sym == 'signature');
+        (entry) => entry.key.sym == 'signature',
+      );
       expect(sigEntry, isNotNull);
       expect(sigEntry.val.discriminant, equals(XdrSCValType.SCV_BYTES));
     });
@@ -1279,12 +1497,15 @@ void main() {
       final paddedBytes = Uint8List(64);
       paddedBytes.setRange(0, 5, testBytes);
 
-      final signature =
-          AccountEd25519Signature(keyPair.xdrPublicKey, paddedBytes);
+      final signature = AccountEd25519Signature(
+        keyPair.xdrPublicKey,
+        paddedBytes,
+      );
       final scVal = signature.toXdrSCVal();
 
       final sigEntry = scVal.map!.firstWhere(
-          (entry) => entry.key.sym == 'signature');
+        (entry) => entry.key.sym == 'signature',
+      );
 
       expect(sigEntry.val.bytes!.sCBytes, equals(paddedBytes));
     });

@@ -71,14 +71,7 @@ Uint8List _encodeDerSignature(BigInt r, BigInt s) {
 
   final rb = componentBytes(r);
   final sb = componentBytes(s);
-  final body = <int>[
-    0x02,
-    rb.length,
-    ...rb,
-    0x02,
-    sb.length,
-    ...sb,
-  ];
+  final body = <int>[0x02, rb.length, ...rb, 0x02, sb.length, ...sb];
   if (body.length > 255) throw ArgumentError('body too long');
   return Uint8List.fromList([0x30, body.length, ...body]);
 }
@@ -115,89 +108,132 @@ void main() {
 
     test('parseDerSignature_wrongLeadingByte', () {
       final out = Uint8List.fromList([0x31, 6, 0x02, 1, 1, 0x02, 1, 1]);
-      expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.parseDerSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('parseDerSignature_lengthMismatch', () {
       final out = Uint8List.fromList([0x30, 99, 0x02, 1, 1, 0x02, 1, 1]);
-      expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.parseDerSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('parseDerSignature_missingRMarker', () {
       final out = Uint8List.fromList([0x30, 6, 0x03, 1, 1, 0x02, 1, 1]);
-      expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.parseDerSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('parseDerSignature_zeroLengthR', () {
       final out = Uint8List.fromList([0x30, 6, 0x02, 0, 0x02, 1, 1, 0]);
-      expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.parseDerSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('parseDerSignature_truncatedRComponent', () {
       // R length claims 5 bytes but only 1 is present.
       final out = Uint8List.fromList([0x30, 4, 0x02, 5, 0x01, 0x02]);
-      expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.parseDerSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('parseDerSignature_missingSMarker', () {
       // R length 1 followed by something other than 0x02 marker.
       final out = Uint8List.fromList([0x30, 6, 0x02, 1, 1, 0x03, 1, 1]);
-      expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.parseDerSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('parseDerSignature_zeroLengthS', () {
       final out = Uint8List.fromList([0x30, 6, 0x02, 1, 1, 0x02, 0, 0]);
-      expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.parseDerSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('parseDerSignature_truncatedSComponent', () {
       final out = Uint8List.fromList([0x30, 6, 0x02, 1, 1, 0x02, 5, 1]);
-      expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.parseDerSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('parseDerSignature_trailingBytesAfterS', () {
       final out = Uint8List.fromList([
-        0x30, 8, 0x02, 1, 1, 0x02, 1, 1, 0x99, 0x99,
+        0x30,
+        8,
+        0x02,
+        1,
+        1,
+        0x02,
+        1,
+        1,
+        0x99,
+        0x99,
       ]);
-      expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.parseDerSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('parseDerSignature_trailingBytesInsideEnvelope', () {
       // header length 6 covers the body; appending bytes makes the size
       // mismatch (declared 6 but actual 8).
       final out = Uint8List.fromList([
-        0x30, 6, 0x02, 1, 1, 0x02, 1, 1, 0x99, 0x99,
+        0x30,
+        6,
+        0x02,
+        1,
+        1,
+        0x02,
+        1,
+        1,
+        0x99,
+        0x99,
       ]);
-      expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.parseDerSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('parseDerSignature_rIsZero', () {
       final out = Uint8List.fromList([0x30, 6, 0x02, 1, 0, 0x02, 1, 1]);
-      expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.parseDerSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('parseDerSignature_sIsZero', () {
       final out = Uint8List.fromList([0x30, 6, 0x02, 1, 1, 0x02, 1, 0]);
-      expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.parseDerSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('parseDerSignature_rExceedsCurveOrder', () {
       final tooBig = _curveOrder + BigInt.one;
       expect(
         () => SmartAccountUtils.parseDerSignature(
-            _encodeDerSignature(tooBig, BigInt.one)),
+          _encodeDerSignature(tooBig, BigInt.one),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -206,7 +242,8 @@ void main() {
       final tooBig = _curveOrder + BigInt.one;
       expect(
         () => SmartAccountUtils.parseDerSignature(
-            _encodeDerSignature(BigInt.one, tooBig)),
+          _encodeDerSignature(BigInt.one, tooBig),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -229,8 +266,12 @@ void main() {
       }
       final sBytes = Uint8List.fromList([0x01]);
       final inner = <int>[
-        0x02, rBytes.length, ...rBytes,
-        0x02, sBytes.length, ...sBytes,
+        0x02,
+        rBytes.length,
+        ...rBytes,
+        0x02,
+        sBytes.length,
+        ...sBytes,
       ];
       final raw = Uint8List.fromList([0x30, inner.length, ...inner]);
       expect(
@@ -247,8 +288,12 @@ void main() {
         sBytes[i] = i + 1;
       }
       final inner = <int>[
-        0x02, rBytes.length, ...rBytes,
-        0x02, sBytes.length, ...sBytes,
+        0x02,
+        rBytes.length,
+        ...rBytes,
+        0x02,
+        sBytes.length,
+        ...sBytes,
       ];
       final raw = Uint8List.fromList([0x30, inner.length, ...inner]);
       expect(
@@ -262,7 +307,9 @@ void main() {
     test('test_normalize_low_s_already_compact', () {
       final s = _halfOrder - BigInt.one;
       final r = BigInt.from(7);
-      final sig = SmartAccountUtils.normalizeSignature(_encodeDerSignature(r, s));
+      final sig = SmartAccountUtils.normalizeSignature(
+        _encodeDerSignature(r, s),
+      );
       expect(sig.length, 64);
       // S should be unchanged.
       expect(sig.sublist(32), _bigIntToFixedBytes(s, 32));
@@ -271,8 +318,9 @@ void main() {
     test('test_normalize_high_s_flipped', () {
       final s = _halfOrder + BigInt.one;
       final r = BigInt.from(7);
-      final sig =
-          SmartAccountUtils.normalizeSignature(_encodeDerSignature(r, s));
+      final sig = SmartAccountUtils.normalizeSignature(
+        _encodeDerSignature(r, s),
+      );
       expect(sig.length, 64);
       final expected = _curveOrder - s;
       expect(sig.sublist(32), _bigIntToFixedBytes(expected, 32));
@@ -281,8 +329,9 @@ void main() {
     test('test_normalize_low_s_boundary_value', () {
       final s = _halfOrder; // boundary -- not >, not flipped
       final r = BigInt.from(7);
-      final sig =
-          SmartAccountUtils.normalizeSignature(_encodeDerSignature(r, s));
+      final sig = SmartAccountUtils.normalizeSignature(
+        _encodeDerSignature(r, s),
+      );
       expect(sig.sublist(32), _bigIntToFixedBytes(s, 32));
     });
 
@@ -302,8 +351,9 @@ void main() {
         radix: 16,
       );
       final s = BigInt.from(99);
-      final sig =
-          SmartAccountUtils.normalizeSignature(_encodeDerSignature(r, s));
+      final sig = SmartAccountUtils.normalizeSignature(
+        _encodeDerSignature(r, s),
+      );
       expect(sig.length, 64);
     });
 
@@ -318,7 +368,8 @@ void main() {
       // 0 is rejected because rIsZero.
       expect(
         () => SmartAccountUtils.normalizeSignature(
-            _encodeDerSignature(BigInt.zero, BigInt.one)),
+          _encodeDerSignature(BigInt.zero, BigInt.one),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -326,8 +377,9 @@ void main() {
     test('test_normalize_returns_64_byte_compact_r_concat_s', () {
       final r = BigInt.from(0x12);
       final s = BigInt.from(0x34);
-      final sig =
-          SmartAccountUtils.normalizeSignature(_encodeDerSignature(r, s));
+      final sig = SmartAccountUtils.normalizeSignature(
+        _encodeDerSignature(r, s),
+      );
       expect(sig.length, 64);
       // Top 31 bytes of R should be zero, last byte = 0x12.
       for (var i = 0; i < 31; i++) {
@@ -363,55 +415,67 @@ void main() {
     test('testNormalizeSignature_alreadyLowS', () {
       final r = BigInt.from(0x42);
       final s = BigInt.from(0x100);
-      final sig =
-          SmartAccountUtils.normalizeSignature(_encodeDerSignature(r, s));
+      final sig = SmartAccountUtils.normalizeSignature(
+        _encodeDerSignature(r, s),
+      );
       expect(sig.sublist(32), _bigIntToFixedBytes(s, 32));
     });
 
     test('testNormalizeSignature_highSToLowS', () {
       final r = BigInt.from(7);
       final s = _halfOrder + BigInt.one;
-      final sig =
-          SmartAccountUtils.normalizeSignature(_encodeDerSignature(r, s));
+      final sig = SmartAccountUtils.normalizeSignature(
+        _encodeDerSignature(r, s),
+      );
       // Flipped to n - s.
       expect(sig.sublist(32), _bigIntToFixedBytes(_curveOrder - s, 32));
     });
 
     test('testNormalizeSignature_exactHalfOrder', () {
       final sig = SmartAccountUtils.normalizeSignature(
-          _encodeDerSignature(BigInt.one, _halfOrder));
+        _encodeDerSignature(BigInt.one, _halfOrder),
+      );
       expect(sig.sublist(32), _bigIntToFixedBytes(_halfOrder, 32));
     });
 
     test('testNormalizeSignature_halfOrderPlusOne', () {
       final s = _halfOrder + BigInt.one;
       final sig = SmartAccountUtils.normalizeSignature(
-          _encodeDerSignature(BigInt.one, s));
+        _encodeDerSignature(BigInt.one, s),
+      );
       expect(sig.sublist(32), _bigIntToFixedBytes(_curveOrder - s, 32));
     });
 
     test('testNormalizeSignature_invalidHeader', () {
       final out = Uint8List.fromList([0x31, 6, 0x02, 1, 1, 0x02, 1, 1]);
-      expect(() => SmartAccountUtils.normalizeSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.normalizeSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('testNormalizeSignature_missingRMarker', () {
       final out = Uint8List.fromList([0x30, 6, 0x99, 1, 1, 0x02, 1, 1]);
-      expect(() => SmartAccountUtils.normalizeSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.normalizeSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('testNormalizeSignature_missingSMarker', () {
       final out = Uint8List.fromList([0x30, 6, 0x02, 1, 1, 0x99, 1, 1]);
-      expect(() => SmartAccountUtils.normalizeSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.normalizeSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('testNormalizeSignature_truncated', () {
       final out = Uint8List.fromList([0x30, 4, 0x02, 5, 1]);
-      expect(() => SmartAccountUtils.normalizeSignature(out),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => SmartAccountUtils.normalizeSignature(out),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
   });
 
@@ -476,7 +540,8 @@ void main() {
       final attest = Uint8List.fromList(List<int>.generate(200, (i) => i));
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(
-            attestationObject: attest),
+          attestationObject: attest,
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -485,7 +550,8 @@ void main() {
       final attest = Uint8List(50);
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(
-            attestationObject: attest),
+          attestationObject: attest,
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -543,7 +609,8 @@ void main() {
       // Empty publicKey -> falls through; with no other source -> throws.
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(
-            publicKey: Uint8List(0)),
+          publicKey: Uint8List(0),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -587,8 +654,7 @@ void main() {
       final pk = Uint8List(20);
       pk[0] = 0x99; // not 0x04, 0x02, or 0x03 -> falls through
       expect(
-        () =>
-            SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk),
+        () => SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -605,8 +671,7 @@ void main() {
     test('testExtractPublicKeyFromAuthenticatorData_noATFlag', () {
       final data = Uint8List(200);
       // flags byte at index 32 is 0 -> AT not set.
-      final out =
-          SmartAccountUtils.extractPublicKeyFromAuthenticatorData(data);
+      final out = SmartAccountUtils.extractPublicKeyFromAuthenticatorData(data);
       expect(out, isNull);
     });
 
@@ -626,46 +691,49 @@ void main() {
     });
 
     test(
-        'testExtractPublicKeyFromAuthenticatorData_wrongCosePrefixReturnsNull',
-        () {
-      final pkx = _bigIntToFixedBytes(_gx, 32);
-      final pky = _bigIntToFixedBytes(_gy, 32);
-      final builder = <int>[
-        ...List<int>.filled(32, 0xAA),
-        0x40,
-        0, 0, 0, 0,
-        ...List<int>.filled(16, 0xBB),
-        0, 0,
-        // Wrong COSE prefix - first byte 0xFF.
-        0xFF, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
-        ...pkx,
-        0x22, 0x58, 0x20,
-        ...pky,
-      ];
-      final out = SmartAccountUtils.extractPublicKeyFromAuthenticatorData(
-        Uint8List.fromList(builder),
-      );
-      expect(out, isNull);
-    });
+      'testExtractPublicKeyFromAuthenticatorData_wrongCosePrefixReturnsNull',
+      () {
+        final pkx = _bigIntToFixedBytes(_gx, 32);
+        final pky = _bigIntToFixedBytes(_gy, 32);
+        final builder = <int>[
+          ...List<int>.filled(32, 0xAA),
+          0x40,
+          0, 0, 0, 0,
+          ...List<int>.filled(16, 0xBB),
+          0, 0,
+          // Wrong COSE prefix - first byte 0xFF.
+          0xFF, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
+          ...pkx,
+          0x22, 0x58, 0x20,
+          ...pky,
+        ];
+        final out = SmartAccountUtils.extractPublicKeyFromAuthenticatorData(
+          Uint8List.fromList(builder),
+        );
+        expect(out, isNull);
+      },
+    );
 
-    test('testExtractPublicKeyFromAuthenticatorData_truncatedAfterXReturnsNull',
-        () {
-      final pkx = _bigIntToFixedBytes(_gx, 32);
-      final builder = <int>[
-        ...List<int>.filled(32, 0xAA),
-        0x40,
-        0, 0, 0, 0,
-        ...List<int>.filled(16, 0xBB),
-        0, 0,
-        0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
-        ...pkx,
-        // Truncated -- no Y data.
-      ];
-      final out = SmartAccountUtils.extractPublicKeyFromAuthenticatorData(
-        Uint8List.fromList(builder),
-      );
-      expect(out, isNull);
-    });
+    test(
+      'testExtractPublicKeyFromAuthenticatorData_truncatedAfterXReturnsNull',
+      () {
+        final pkx = _bigIntToFixedBytes(_gx, 32);
+        final builder = <int>[
+          ...List<int>.filled(32, 0xAA),
+          0x40,
+          0, 0, 0, 0,
+          ...List<int>.filled(16, 0xBB),
+          0, 0,
+          0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
+          ...pkx,
+          // Truncated -- no Y data.
+        ];
+        final out = SmartAccountUtils.extractPublicKeyFromAuthenticatorData(
+          Uint8List.fromList(builder),
+        );
+        expect(out, isNull);
+      },
+    );
 
     test('testExtractPublicKeyFromAuthenticatorData_wrongYMarkerThrows', () {
       final pkx = _bigIntToFixedBytes(_gx, 32);
@@ -683,7 +751,8 @@ void main() {
       ];
       expect(
         () => SmartAccountUtils.extractPublicKeyFromAuthenticatorData(
-            Uint8List.fromList(builder)),
+          Uint8List.fromList(builder),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -702,7 +771,8 @@ void main() {
       ];
       expect(
         () => SmartAccountUtils.extractPublicKeyFromAuthenticatorData(
-            Uint8List.fromList(builder)),
+          Uint8List.fromList(builder),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -714,13 +784,28 @@ void main() {
       final builder = <int>[
         ...List<int>.filled(32, 0xAA),
         0x40,
-        0, 0, 0, 0,
+        0,
+        0,
+        0,
+        0,
         ...List<int>.filled(16, 0xBB),
-        0, credId.length,
+        0,
+        credId.length,
         ...credId,
-        0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
+        0xA5,
+        0x01,
+        0x02,
+        0x03,
+        0x26,
+        0x20,
+        0x01,
+        0x21,
+        0x58,
+        0x20,
         ...pkx,
-        0x22, 0x58, 0x20,
+        0x22,
+        0x58,
+        0x20,
         ...pky,
       ];
       final out = SmartAccountUtils.extractPublicKeyFromAuthenticatorData(
@@ -738,13 +823,28 @@ void main() {
       final builder = <int>[
         ...List<int>.filled(32, 0xAA),
         0x40,
-        0, 0, 0, 0,
+        0,
+        0,
+        0,
+        0,
         ...List<int>.filled(16, 0xBB),
-        0x01, 0x02,
+        0x01,
+        0x02,
         ...credId,
-        0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
+        0xA5,
+        0x01,
+        0x02,
+        0x03,
+        0x26,
+        0x20,
+        0x01,
+        0x21,
+        0x58,
+        0x20,
         ...pkx,
-        0x22, 0x58, 0x20,
+        0x22,
+        0x58,
+        0x20,
         ...pky,
       ];
       final out = SmartAccountUtils.extractPublicKeyFromAuthenticatorData(
@@ -759,14 +859,27 @@ void main() {
       final pkx = _bigIntToFixedBytes(_gx, 32);
       final pky = _bigIntToFixedBytes(_gy, 32);
       final attest = Uint8List.fromList([
-        0xFF, 0xFE,
-        0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
+        0xFF,
+        0xFE,
+        0xA5,
+        0x01,
+        0x02,
+        0x03,
+        0x26,
+        0x20,
+        0x01,
+        0x21,
+        0x58,
+        0x20,
         ...pkx,
-        0x22, 0x58, 0x20,
+        0x22,
+        0x58,
+        0x20,
         ...pky,
       ]);
-      final out =
-          SmartAccountUtils.extractPublicKeyFromAttestationObject(attest);
+      final out = SmartAccountUtils.extractPublicKeyFromAttestationObject(
+        attest,
+      );
       expect(out.length, 65);
     });
 
@@ -806,9 +919,20 @@ void main() {
 
     test('extractPublicKeyFromAttestation_offCurveThrows', () {
       final attest = Uint8List.fromList([
-        0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
+        0xA5,
+        0x01,
+        0x02,
+        0x03,
+        0x26,
+        0x20,
+        0x01,
+        0x21,
+        0x58,
+        0x20,
         ...List<int>.filled(32, 0x99),
-        0x22, 0x58, 0x20,
+        0x22,
+        0x58,
+        0x20,
         ...List<int>.filled(32, 0x99),
       ]);
       expect(
@@ -831,26 +955,53 @@ void main() {
       final builder = <int>[
         ...List<int>.filled(32, 0xAA),
         0x40,
-        0, 0, 0, 0,
+        0,
+        0,
+        0,
+        0,
         ...List<int>.filled(16, 0xBB),
-        0, 0,
-        0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
+        0,
+        0,
+        0xA5,
+        0x01,
+        0x02,
+        0x03,
+        0x26,
+        0x20,
+        0x01,
+        0x21,
+        0x58,
+        0x20,
         ...List<int>.filled(32, 0x42),
-        0x22, 0x58, 0x20,
+        0x22,
+        0x58,
+        0x20,
         ...List<int>.filled(32, 0x42),
       ];
       expect(
         () => SmartAccountUtils.extractPublicKeyFromAuthenticatorData(
-            Uint8List.fromList(builder)),
+          Uint8List.fromList(builder),
+        ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
     test('testOnCurveValidation_offCurvePointRejected_attestationObject', () {
       final attest = Uint8List.fromList([
-        0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
+        0xA5,
+        0x01,
+        0x02,
+        0x03,
+        0x26,
+        0x20,
+        0x01,
+        0x21,
+        0x58,
+        0x20,
         ...List<int>.filled(32, 0x42),
-        0x22, 0x58, 0x20,
+        0x22,
+        0x58,
+        0x20,
         ...List<int>.filled(32, 0x42),
       ]);
       expect(
@@ -917,10 +1068,8 @@ void main() {
     });
 
     test('getContractSalt_differentInputsDifferentSalts', () {
-      final s1 = SmartAccountUtils.getContractSalt(
-          Uint8List.fromList([1]));
-      final s2 = SmartAccountUtils.getContractSalt(
-          Uint8List.fromList([2]));
+      final s1 = SmartAccountUtils.getContractSalt(Uint8List.fromList([1]));
+      final s2 = SmartAccountUtils.getContractSalt(Uint8List.fromList([2]));
       expect(s1, isNot(s2));
     });
 
@@ -957,8 +1106,7 @@ void main() {
       expect(a1, a2);
     });
 
-    test('deriveContractAddress_differentCredentialIdsDifferentAddresses',
-        () {
+    test('deriveContractAddress_differentCredentialIdsDifferentAddresses', () {
       const deployer =
           'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
       final a1 = SmartAccountUtils.deriveContractAddress(
@@ -974,8 +1122,7 @@ void main() {
       expect(a1, isNot(a2));
     });
 
-    test('deriveContractAddress_differentNetworksDifferentAddresses',
-        () {
+    test('deriveContractAddress_differentNetworksDifferentAddresses', () {
       const deployer =
           'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
       final a1 = SmartAccountUtils.deriveContractAddress(
@@ -986,8 +1133,7 @@ void main() {
       final a2 = SmartAccountUtils.deriveContractAddress(
         credentialId: Uint8List.fromList([1]),
         deployerPublicKey: deployer,
-        networkPassphrase:
-            'Public Global Stellar Network ; September 2015',
+        networkPassphrase: 'Public Global Stellar Network ; September 2015',
       );
       expect(a1, isNot(a2));
     });
@@ -1007,66 +1153,92 @@ void main() {
   group('findSubarray', () {
     test('findSubarray_findsAtBeginning', () {
       expect(
-          SmartAccountUtils.findSubarray(
-              Uint8List.fromList([1, 2, 3, 4]), Uint8List.fromList([1, 2])),
-          0);
+        SmartAccountUtils.findSubarray(
+          Uint8List.fromList([1, 2, 3, 4]),
+          Uint8List.fromList([1, 2]),
+        ),
+        0,
+      );
     });
 
     test('findSubarray_findsInMiddle', () {
       expect(
-          SmartAccountUtils.findSubarray(
-              Uint8List.fromList([1, 2, 3, 4]), Uint8List.fromList([2, 3])),
-          1);
+        SmartAccountUtils.findSubarray(
+          Uint8List.fromList([1, 2, 3, 4]),
+          Uint8List.fromList([2, 3]),
+        ),
+        1,
+      );
     });
 
     test('findSubarray_findsAtEnd', () {
       expect(
-          SmartAccountUtils.findSubarray(
-              Uint8List.fromList([1, 2, 3, 4]), Uint8List.fromList([3, 4])),
-          2);
+        SmartAccountUtils.findSubarray(
+          Uint8List.fromList([1, 2, 3, 4]),
+          Uint8List.fromList([3, 4]),
+        ),
+        2,
+      );
     });
 
     test('findSubarray_notFound', () {
       expect(
-          SmartAccountUtils.findSubarray(
-              Uint8List.fromList([1, 2, 3, 4]), Uint8List.fromList([5])),
-          -1);
+        SmartAccountUtils.findSubarray(
+          Uint8List.fromList([1, 2, 3, 4]),
+          Uint8List.fromList([5]),
+        ),
+        -1,
+      );
     });
 
     test('findSubarray_emptySubarray', () {
       expect(
-          SmartAccountUtils.findSubarray(
-              Uint8List.fromList([1, 2, 3]), Uint8List(0)),
-          -1);
+        SmartAccountUtils.findSubarray(
+          Uint8List.fromList([1, 2, 3]),
+          Uint8List(0),
+        ),
+        -1,
+      );
     });
 
     test('findSubarray_subarrayLargerThanArray', () {
       expect(
-          SmartAccountUtils.findSubarray(
-              Uint8List.fromList([1]), Uint8List.fromList([1, 2, 3])),
-          -1);
+        SmartAccountUtils.findSubarray(
+          Uint8List.fromList([1]),
+          Uint8List.fromList([1, 2, 3]),
+        ),
+        -1,
+      );
     });
 
     test('findSubarray_exactMatch', () {
       expect(
-          SmartAccountUtils.findSubarray(
-              Uint8List.fromList([1, 2, 3]), Uint8List.fromList([1, 2, 3])),
-          0);
+        SmartAccountUtils.findSubarray(
+          Uint8List.fromList([1, 2, 3]),
+          Uint8List.fromList([1, 2, 3]),
+        ),
+        0,
+      );
     });
 
     test('findSubarray_singleByteMatch', () {
       expect(
-          SmartAccountUtils.findSubarray(
-              Uint8List.fromList([1, 2, 3]), Uint8List.fromList([2])),
-          1);
+        SmartAccountUtils.findSubarray(
+          Uint8List.fromList([1, 2, 3]),
+          Uint8List.fromList([2]),
+        ),
+        1,
+      );
     });
 
     test('findSubarray_firstOccurrence', () {
       expect(
-          SmartAccountUtils.findSubarray(
-              Uint8List.fromList([1, 2, 1, 2, 1, 2]),
-              Uint8List.fromList([1, 2])),
-          0);
+        SmartAccountUtils.findSubarray(
+          Uint8List.fromList([1, 2, 1, 2, 1, 2]),
+          Uint8List.fromList([1, 2]),
+        ),
+        0,
+      );
     });
 
     test('findSubarray_bothEmpty', () {

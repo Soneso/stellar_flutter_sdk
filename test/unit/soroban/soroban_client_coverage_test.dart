@@ -35,7 +35,8 @@ void main() {
       test('validates contract ID format requirements', () async {
         final options = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: 'https://invalid-rpc.example.com',
         );
@@ -64,15 +65,9 @@ void main() {
       });
 
       test('creates deploy request with all optional fields', () {
-        final constructorArgs = [
-          XdrSCVal.forU32(100),
-          XdrSCVal.forU32(200),
-        ];
+        final constructorArgs = [XdrSCVal.forU32(100), XdrSCVal.forU32(200)];
         final salt = XdrUint256(Uint8List.fromList(List.filled(32, 5)));
-        final customOptions = MethodOptions(
-          fee: 2000,
-          timeoutInSeconds: 120,
-        );
+        final customOptions = MethodOptions(fee: 2000, timeoutInSeconds: 120);
 
         final request = DeployRequest(
           sourceAccountKeyPair: sourceKeyPair,
@@ -119,8 +114,14 @@ void main() {
           wasmHash: 'defaults',
         );
 
-        expect(request.methodOptions.fee, NetworkConstants.DEFAULT_SOROBAN_BASE_FEE);
-        expect(request.methodOptions.timeoutInSeconds, NetworkConstants.DEFAULT_TIMEOUT_SECONDS);
+        expect(
+          request.methodOptions.fee,
+          NetworkConstants.DEFAULT_SOROBAN_BASE_FEE,
+        );
+        expect(
+          request.methodOptions.timeoutInSeconds,
+          NetworkConstants.DEFAULT_TIMEOUT_SECONDS,
+        );
         expect(request.methodOptions.simulate, true);
         expect(request.methodOptions.restore, false);
       });
@@ -208,19 +209,24 @@ void main() {
       test('creates options with TESTNET', () {
         final options = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: 'https://soroban-testnet.stellar.org:443',
         );
 
         expect(options.network, Network.TESTNET);
-        expect(options.network.networkPassphrase, Network.TESTNET.networkPassphrase);
+        expect(
+          options.network.networkPassphrase,
+          Network.TESTNET.networkPassphrase,
+        );
       });
 
       test('creates options with PUBLIC', () {
         final options = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.PUBLIC,
           rpcUrl: 'https://soroban-mainnet.stellar.org',
         );
@@ -232,12 +238,16 @@ void main() {
         final customNetwork = Network('My Custom Network Passphrase');
         final options = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: customNetwork,
           rpcUrl: 'https://custom-rpc.example.com',
         );
 
-        expect(options.network.networkPassphrase, 'My Custom Network Passphrase');
+        expect(
+          options.network.networkPassphrase,
+          'My Custom Network Passphrase',
+        );
       });
 
       test('supports read-only keypairs', () {
@@ -245,7 +255,8 @@ void main() {
 
         final options = ClientOptions(
           sourceAccountKeyPair: publicKeyOnly,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
         );
@@ -257,7 +268,8 @@ void main() {
       test('supports write-enabled keypairs', () {
         final options = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
         );
@@ -305,7 +317,10 @@ void main() {
         final options = MethodOptions();
 
         expect(options.fee, NetworkConstants.DEFAULT_SOROBAN_BASE_FEE);
-        expect(options.timeoutInSeconds, NetworkConstants.DEFAULT_TIMEOUT_SECONDS);
+        expect(
+          options.timeoutInSeconds,
+          NetworkConstants.DEFAULT_TIMEOUT_SECONDS,
+        );
         expect(options.simulate, true);
         expect(options.restore, false);
       });
@@ -314,7 +329,10 @@ void main() {
         final options = MethodOptions(fee: 5000);
 
         expect(options.fee, 5000);
-        expect(options.timeoutInSeconds, NetworkConstants.DEFAULT_TIMEOUT_SECONDS);
+        expect(
+          options.timeoutInSeconds,
+          NetworkConstants.DEFAULT_TIMEOUT_SECONDS,
+        );
         expect(options.simulate, true);
         expect(options.restore, false);
       });
@@ -381,7 +399,8 @@ void main() {
       test('creates with null arguments', () {
         final clientOptions = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
         );
@@ -399,7 +418,8 @@ void main() {
       test('creates with empty arguments list', () {
         final clientOptions = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
         );
@@ -418,7 +438,8 @@ void main() {
       test('creates with single argument', () {
         final clientOptions = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
         );
@@ -438,7 +459,8 @@ void main() {
       test('creates with multiple argument types', () {
         final clientOptions = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
         );
@@ -467,7 +489,8 @@ void main() {
       test('creates with complex nested arguments', () {
         final clientOptions = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
         );
@@ -492,7 +515,8 @@ void main() {
       test('creates with logging enabled', () {
         final clientOptions = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
         );
@@ -510,7 +534,8 @@ void main() {
       test('creates with custom method options', () {
         final clientOptions = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
         );
@@ -693,12 +718,14 @@ void main() {
       test('handles very long method names', () {
         final clientOptions = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
         );
 
-        final longMethodName = 'very_long_method_name_that_exceeds_normal_length_${'x' * 100}';
+        final longMethodName =
+            'very_long_method_name_that_exceeds_normal_length_${'x' * 100}';
 
         final options = AssembledTransactionOptions(
           clientOptions: clientOptions,
@@ -721,7 +748,8 @@ void main() {
 
         final clientOptions = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
         );
@@ -737,14 +765,12 @@ void main() {
       });
 
       test('handles empty strings and symbols', () {
-        final args = [
-          XdrSCVal.forString(''),
-          XdrSCVal.forSymbol(''),
-        ];
+        final args = [XdrSCVal.forString(''), XdrSCVal.forSymbol('')];
 
         final clientOptions = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
         );
@@ -768,7 +794,8 @@ void main() {
 
         final clientOptions = ClientOptions(
           sourceAccountKeyPair: sourceKeyPair,
-          contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          contractId:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
         );
@@ -794,7 +821,8 @@ void main() {
         for (final url in specialUrls) {
           final options = ClientOptions(
             sourceAccountKeyPair: sourceKeyPair,
-            contractId: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+            contractId:
+                'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
             network: Network.TESTNET,
             rpcUrl: url,
           );
@@ -806,9 +834,9 @@ void main() {
       test('handles different salt variations for deployment', () {
         final zeroSalt = XdrUint256(Uint8List.fromList(List.filled(32, 0)));
         final maxSalt = XdrUint256(Uint8List.fromList(List.filled(32, 255)));
-        final randomSalt = XdrUint256(Uint8List.fromList(
-          List.generate(32, (i) => i * 7 % 256),
-        ));
+        final randomSalt = XdrUint256(
+          Uint8List.fromList(List.generate(32, (i) => i * 7 % 256)),
+        );
 
         final requestZero = DeployRequest(
           sourceAccountKeyPair: sourceKeyPair,

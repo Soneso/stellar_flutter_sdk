@@ -6,16 +6,20 @@ import '../tests_util.dart';
 
 void main() {
   String testOn = 'testnet'; //'futurenet';
-  StellarSDK sdk =
-  testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+  StellarSDK sdk = testOn == 'testnet'
+      ? StellarSDK.TESTNET
+      : StellarSDK.FUTURENET;
   Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
   test('test sponsorship', () async {
     KeyPair masterAccountKeyPair = KeyPair.random();
     String masterAccountId = masterAccountKeyPair.accountId;
 
-    await fundTestAccountAndAwaitVisibility(masterAccountId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      masterAccountId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
 
     AccountResponse masterAccount = await sdk.accounts.account(masterAccountId);
 
@@ -24,8 +28,9 @@ void main() {
     print("ACC: " + accountAId);
 
     BeginSponsoringFutureReservesOperationBuilder beginSponsoringBuilder =
-        BeginSponsoringFutureReservesOperationBuilder(accountAId)
-            .setSourceAccount(masterAccountId);
+        BeginSponsoringFutureReservesOperationBuilder(
+          accountAId,
+        ).setSourceAccount(masterAccountId);
     CreateAccountOperationBuilder createAccountBuilder =
         CreateAccountOperationBuilder(accountAId, "100");
     String dataName = "soneso";
@@ -33,51 +38,72 @@ void main() {
 
     List<int> list = dataValue.codeUnits;
     Uint8List valueBytes = Uint8List.fromList(list);
-    ManageDataOperationBuilder manageDataBuilder =
-        ManageDataOperationBuilder(dataName, valueBytes)
-            .setSourceAccount(accountAId);
+    ManageDataOperationBuilder manageDataBuilder = ManageDataOperationBuilder(
+      dataName,
+      valueBytes,
+    ).setSourceAccount(accountAId);
 
     Asset? richAsset = Asset.createFromCanonicalForm("RICH:" + masterAccountId);
     ChangeTrustOperationBuilder changeTrustBuilder =
-        ChangeTrustOperationBuilder(richAsset!, "100000")
-            .setSourceAccount(accountAId);
-    PaymentOperationBuilder paymentBuilder =
-        PaymentOperationBuilder(accountAId, richAsset, "1000");
+        ChangeTrustOperationBuilder(
+          richAsset!,
+          "100000",
+        ).setSourceAccount(accountAId);
+    PaymentOperationBuilder paymentBuilder = PaymentOperationBuilder(
+      accountAId,
+      richAsset,
+      "1000",
+    );
     ManageSellOfferOperationBuilder manageSellOfferBuilder =
-        ManageSellOfferOperationBuilder(richAsset, Asset.NATIVE, "10", "2")
-            .setSourceAccount(accountAId);
+        ManageSellOfferOperationBuilder(
+          richAsset,
+          Asset.NATIVE,
+          "10",
+          "2",
+        ).setSourceAccount(accountAId);
 
-    Claimant claimant =
-        Claimant(masterAccountId, Claimant.predicateUnconditional());
+    Claimant claimant = Claimant(
+      masterAccountId,
+      Claimant.predicateUnconditional(),
+    );
     List<Claimant> claimants = [];
     claimants.add(claimant);
 
     CreateClaimableBalanceOperationBuilder createClaimBuilder =
         CreateClaimableBalanceOperationBuilder(claimants, richAsset, "10");
 
-    SetOptionsOperationBuilder setOptionsBuilder =
-        SetOptionsOperationBuilder().setSourceAccount(accountAId);
-    XdrSignerKey signer =
-        XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+    SetOptionsOperationBuilder setOptionsBuilder = SetOptionsOperationBuilder()
+        .setSourceAccount(accountAId);
+    XdrSignerKey signer = XdrSignerKey(
+      XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519,
+    );
     signer.ed25519 = XdrUint256(StrKey.decodeStellarAccountId(masterAccountId));
     setOptionsBuilder.setSigner(signer, 1);
 
     EndSponsoringFutureReservesOperationBuilder endSponsorshipBuilder =
-        EndSponsoringFutureReservesOperationBuilder()
-            .setSourceAccount(accountAId);
+        EndSponsoringFutureReservesOperationBuilder().setSourceAccount(
+          accountAId,
+        );
 
     RevokeSponsorshipOperationBuilder revokeAccountSpBuilder =
-        RevokeSponsorshipOperationBuilder()
-            .revokeAccountSponsorship(accountAId);
+        RevokeSponsorshipOperationBuilder().revokeAccountSponsorship(
+          accountAId,
+        );
     RevokeSponsorshipOperationBuilder revokeDataSpBuilder =
-        RevokeSponsorshipOperationBuilder()
-            .revokeDataSponsorship(accountAId, dataName);
+        RevokeSponsorshipOperationBuilder().revokeDataSponsorship(
+          accountAId,
+          dataName,
+        );
     RevokeSponsorshipOperationBuilder revokeTrustlineSpBuilder =
-        RevokeSponsorshipOperationBuilder()
-            .revokeTrustlineSponsorship(accountAId, richAsset);
+        RevokeSponsorshipOperationBuilder().revokeTrustlineSponsorship(
+          accountAId,
+          richAsset,
+        );
     RevokeSponsorshipOperationBuilder revokeSignerSpBuilder =
-        RevokeSponsorshipOperationBuilder()
-            .revokeEd25519Signer(accountAId, masterAccountId);
+        RevokeSponsorshipOperationBuilder().revokeEd25519Signer(
+          accountAId,
+          masterAccountId,
+        );
 
     Transaction transaction = new TransactionBuilder(masterAccount)
         .addOperation(beginSponsoringBuilder.build())
@@ -99,8 +125,9 @@ void main() {
     transaction.sign(masterAccountKeyPair, network);
     transaction.sign(accountAKeyPair, network);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
 

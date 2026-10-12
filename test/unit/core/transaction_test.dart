@@ -10,9 +10,16 @@ void main() {
     late KeyPair destinationKeyPair;
 
     setUp(() {
-      sourceKeyPair = KeyPair.fromSecretSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
-      sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(2908908335136768));
-      destinationKeyPair = KeyPair.fromSecretSeed('SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
+      sourceKeyPair = KeyPair.fromSecretSeed(
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+      );
+      sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(2908908335136768),
+      );
+      destinationKeyPair = KeyPair.fromSecretSeed(
+        'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+      );
     });
 
     group('TransactionBuilder', () {
@@ -20,36 +27,41 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
-        expect(transaction.sourceAccount.ed25519AccountId, equals(sourceKeyPair.accountId));
+        expect(
+          transaction.sourceAccount.ed25519AccountId,
+          equals(sourceKeyPair.accountId),
+        );
         expect(transaction.operations.length, equals(1));
         expect(transaction.operations[0], equals(paymentOp));
-        expect(transaction.sequenceNumber, equals(BigInt.from(2908908335136769)));
+        expect(
+          transaction.sequenceNumber,
+          equals(BigInt.from(2908908335136769)),
+        );
       });
 
       test('builds transaction with multiple operations', () {
         final paymentOp1 = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
         final paymentOp2 = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "50.0"
+          "50.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp1)
-          .addOperation(paymentOp2)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp1).addOperation(paymentOp2).build();
 
         expect(transaction.operations.length, equals(2));
         expect(transaction.operations[0], equals(paymentOp1));
@@ -60,13 +72,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .addMemo(Memo.none())
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).addMemo(Memo.none()).build();
 
         expect(transaction.memo, isA<MemoNone>());
       });
@@ -75,13 +86,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .addMemo(Memo.text("Test payment"))
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).addMemo(Memo.text("Test payment")).build();
 
         expect(transaction.memo, isA<MemoText>());
         expect((transaction.memo as MemoText).text, equals("Test payment"));
@@ -91,16 +101,18 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .addMemo(Memo.id(BigInt.from(12345)))
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).addMemo(Memo.id(BigInt.from(12345))).build();
 
         expect(transaction.memo, isA<MemoId>());
-        expect((transaction.memo as MemoId).getId(), equals(BigInt.from(12345)));
+        expect(
+          (transaction.memo as MemoId).getId(),
+          equals(BigInt.from(12345)),
+        );
       });
 
       test('builds transaction with Memo.hash()', () {
@@ -112,18 +124,17 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .addMemo(Memo.hash(hash))
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).addMemo(Memo.hash(hash)).build();
 
         expect(transaction.memo, isA<MemoHash>());
         expect(
           ListEquality().equals((transaction.memo as MemoHash).bytes, hash),
-          isTrue
+          isTrue,
         );
       });
 
@@ -136,18 +147,20 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .addMemo(Memo.returnHash(hash))
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).addMemo(Memo.returnHash(hash)).build();
 
         expect(transaction.memo, isA<MemoReturnHash>());
         expect(
-          ListEquality().equals((transaction.memo as MemoReturnHash).bytes, hash),
-          isTrue
+          ListEquality().equals(
+            (transaction.memo as MemoReturnHash).bytes,
+            hash,
+          ),
+          isTrue,
         );
       });
 
@@ -155,17 +168,16 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
         final timeBounds = TimeBounds(1000, 2000);
         final preconditions = TransactionPreconditions();
         preconditions.timeBounds = timeBounds;
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .addPreconditions(preconditions)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).addPreconditions(preconditions).build();
 
         expect(transaction.preconditions, isNotNull);
         expect(transaction.preconditions!.timeBounds, isNotNull);
@@ -177,35 +189,36 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
         final ledgerBounds = LedgerBounds(100, 1000);
         final preconditions = TransactionPreconditions();
         preconditions.ledgerBounds = ledgerBounds;
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .addPreconditions(preconditions)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).addPreconditions(preconditions).build();
 
         expect(transaction.preconditions, isNotNull);
         expect(transaction.preconditions!.ledgerBounds, isNotNull);
         expect(transaction.preconditions!.ledgerBounds!.minLedger, equals(100));
-        expect(transaction.preconditions!.ledgerBounds!.maxLedger, equals(1000));
+        expect(
+          transaction.preconditions!.ledgerBounds!.maxLedger,
+          equals(1000),
+        );
       });
 
       test('builds transaction with custom base fee', () {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .setMaxOperationFee(200)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).setMaxOperationFee(200).build();
 
         expect(transaction.fee, equals(200));
       });
@@ -214,12 +227,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         expect(transaction.fee, equals(100));
       });
@@ -232,7 +245,7 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
         builder.addOperation(paymentOp);
@@ -244,20 +257,20 @@ void main() {
         final paymentOp1 = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
         final paymentOp2 = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "50.0"
+          "50.0",
         ).build();
 
         final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp1)
-          .addOperation(paymentOp2)
-          .setMaxOperationFee(150)
-          .build();
+            .addOperation(paymentOp1)
+            .addOperation(paymentOp2)
+            .setMaxOperationFee(150)
+            .build();
 
         expect(transaction.fee, equals(300));
       });
@@ -265,7 +278,7 @@ void main() {
       test('setMaxOperationFee throws if below minimum', () {
         expect(
           () => TransactionBuilder(sourceAccount).setMaxOperationFee(50),
-          throwsA(isA<Exception>())
+          throwsA(isA<Exception>()),
         );
       });
 
@@ -275,7 +288,7 @@ void main() {
 
         expect(
           () => builder.addMemo(Memo.text("Second memo")),
-          throwsA(isA<Exception>())
+          throwsA(isA<Exception>()),
         );
       });
     });
@@ -285,48 +298,55 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
-        expect(transaction.sourceAccount.ed25519AccountId, equals(sourceKeyPair.accountId));
+        expect(
+          transaction.sourceAccount.ed25519AccountId,
+          equals(sourceKeyPair.accountId),
+        );
       });
 
       test('XDR encoding round-trip', () {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .addMemo(Memo.text("Test"))
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).addMemo(Memo.text("Test")).build();
 
         final xdr = transaction.toXdr();
         final xdrBytes = XdrDataOutputStream();
         XdrTransaction.encode(xdrBytes, xdr);
 
-        final decoded = XdrTransaction.decode(XdrDataInputStream(Uint8List.fromList(xdrBytes.bytes)));
+        final decoded = XdrTransaction.decode(
+          XdrDataInputStream(Uint8List.fromList(xdrBytes.bytes)),
+        );
 
         expect(decoded.fee.uint32, equals(transaction.fee));
-        expect(decoded.seqNum.sequenceNumber, equals(transaction.sequenceNumber));
+        expect(
+          decoded.seqNum.sequenceNumber,
+          equals(transaction.sequenceNumber),
+        );
       });
 
       test('transaction hash computation is deterministic', () {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         final hash1 = transaction.hash(Network.TESTNET);
         final hash2 = transaction.hash(Network.TESTNET);
@@ -338,22 +358,22 @@ void main() {
         final paymentOp1 = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction1 = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp1)
-          .build();
+        final transaction1 = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp1).build();
 
         final paymentOp2 = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "200.0"
+          "200.0",
         ).build();
 
-        final transaction2 = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp2)
-          .build();
+        final transaction2 = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp2).build();
 
         final hash1 = transaction1.hash(Network.TESTNET);
         final hash2 = transaction2.hash(Network.TESTNET);
@@ -365,12 +385,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
@@ -386,19 +406,22 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         expect(transaction.signatures.length, equals(0));
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
         expect(transaction.signatures.length, equals(1));
-        expect(transaction.signatures[0].signature.signature.length, equals(64));
+        expect(
+          transaction.signatures[0].signature.signature.length,
+          equals(64),
+        );
       });
 
       test('transaction signing with multiple keypairs', () {
@@ -407,12 +430,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         transaction.sign(secondKeyPair, Network.TESTNET);
@@ -424,12 +447,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         final initialSigCount = transaction.signatures.length;
         transaction.sign(sourceKeyPair, Network.TESTNET);
@@ -441,12 +464,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
@@ -460,12 +483,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
@@ -480,12 +503,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
@@ -499,13 +522,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .addMemo(Memo.text("Test"))
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).addMemo(Memo.text("Test")).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
@@ -514,7 +536,10 @@ void main() {
 
         expect(parsed, isA<Transaction>());
         final parsedTx = parsed as Transaction;
-        expect(parsedTx.sourceAccount.ed25519AccountId, equals(sourceKeyPair.accountId));
+        expect(
+          parsedTx.sourceAccount.ed25519AccountId,
+          equals(sourceKeyPair.accountId),
+        );
         expect(parsedTx.operations.length, equals(1));
         expect(parsedTx.memo, isA<MemoText>());
         expect((parsedTx.memo as MemoText).text, equals("Test"));
@@ -526,34 +551,36 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         expect(transaction.sequenceNumber, equals(initialSeqNum + BigInt.one));
-        expect(sourceAccount.sequenceNumber, equals(initialSeqNum + BigInt.one));
+        expect(
+          sourceAccount.sequenceNumber,
+          equals(initialSeqNum + BigInt.one),
+        );
       });
 
       test('fee calculation based on operations', () {
         final paymentOp1 = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
         final paymentOp2 = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "50.0"
+          "50.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp1)
-          .addOperation(paymentOp2)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp1).addOperation(paymentOp2).build();
 
         expect(transaction.fee, equals(200));
       });
@@ -562,26 +589,29 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
-        expect(transaction.sourceAccount.ed25519AccountId, equals(sourceKeyPair.accountId));
+        expect(
+          transaction.sourceAccount.ed25519AccountId,
+          equals(sourceKeyPair.accountId),
+        );
       });
 
       test('operations list is immutable after build', () {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         final operations = transaction.operations;
         expect(operations.length, equals(1));
@@ -591,12 +621,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         final testnetHash = transaction.hash(Network.TESTNET);
         final publicHash = transaction.hash(Network.PUBLIC);
@@ -608,20 +638,23 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         final preimage = Uint8List.fromList([1, 2, 3, 4, 5]);
         transaction.signHash(preimage);
 
         expect(transaction.signatures.length, equals(1));
         expect(
-          ListEquality().equals(transaction.signatures[0].signature.signature, preimage),
-          isTrue
+          ListEquality().equals(
+            transaction.signatures[0].signature.signature,
+            preimage,
+          ),
+          isTrue,
         );
       });
 
@@ -629,12 +662,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         final initialFee = transaction.fee;
         transaction.addResourceFee(5000);
@@ -648,67 +681,73 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final innerTx = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final innerTx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         innerTx.sign(sourceKeyPair, Network.TESTNET);
 
         final feeAccount = KeyPair.random();
-        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-          .setBaseFee(200)
-          .setFeeAccount(feeAccount.accountId)
-          .build();
+        final feeBumpTx = FeeBumpTransactionBuilder(
+          innerTx,
+        ).setBaseFee(200).setFeeAccount(feeAccount.accountId).build();
 
         expect(feeBumpTx, isNotNull);
         expect(feeBumpTx.innerTransaction, equals(innerTx));
-        expect(feeBumpTx.feeAccount.ed25519AccountId, equals(feeAccount.accountId));
+        expect(
+          feeBumpTx.feeAccount.ed25519AccountId,
+          equals(feeAccount.accountId),
+        );
       });
 
       test('fee bump wraps inner transaction', () {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final innerTx = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final innerTx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         innerTx.sign(sourceKeyPair, Network.TESTNET);
 
         final feeAccount = KeyPair.random();
-        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-          .setBaseFee(200)
-          .setFeeAccount(feeAccount.accountId)
-          .build();
+        final feeBumpTx = FeeBumpTransactionBuilder(
+          innerTx,
+        ).setBaseFee(200).setFeeAccount(feeAccount.accountId).build();
 
-        expect(feeBumpTx.innerTransaction.operations.length, equals(innerTx.operations.length));
-        expect(feeBumpTx.innerTransaction.sourceAccount.ed25519AccountId, equals(innerTx.sourceAccount.ed25519AccountId));
+        expect(
+          feeBumpTx.innerTransaction.operations.length,
+          equals(innerTx.operations.length),
+        );
+        expect(
+          feeBumpTx.innerTransaction.sourceAccount.ed25519AccountId,
+          equals(innerTx.sourceAccount.ed25519AccountId),
+        );
       });
 
       test('fee bump XDR round-trip', () {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final innerTx = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final innerTx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         innerTx.sign(sourceKeyPair, Network.TESTNET);
 
         final feeAccount = KeyPair.random();
-        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-          .setBaseFee(200)
-          .setFeeAccount(feeAccount.accountId)
-          .build();
+        final feeBumpTx = FeeBumpTransactionBuilder(
+          innerTx,
+        ).setBaseFee(200).setFeeAccount(feeAccount.accountId).build();
 
         feeBumpTx.sign(feeAccount, Network.TESTNET);
 
@@ -717,29 +756,32 @@ void main() {
 
         expect(parsed, isA<FeeBumpTransaction>());
         final parsedFeeBump = parsed as FeeBumpTransaction;
-        expect(parsedFeeBump.feeAccount.ed25519AccountId, equals(feeAccount.accountId));
+        expect(
+          parsedFeeBump.feeAccount.ed25519AccountId,
+          equals(feeAccount.accountId),
+        );
       });
 
       test('fee bump requires base fee to be set', () {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final innerTx = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final innerTx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         innerTx.sign(sourceKeyPair, Network.TESTNET);
 
         final feeAccount = KeyPair.random();
 
         expect(
-          () => FeeBumpTransactionBuilder(innerTx)
-            .setFeeAccount(feeAccount.accountId)
-            .build(),
-          throwsA(isA<Exception>())
+          () => FeeBumpTransactionBuilder(
+            innerTx,
+          ).setFeeAccount(feeAccount.accountId).build(),
+          throwsA(isA<Exception>()),
         );
       });
 
@@ -747,20 +789,18 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final innerTx = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final innerTx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         innerTx.sign(sourceKeyPair, Network.TESTNET);
 
         expect(
-          () => FeeBumpTransactionBuilder(innerTx)
-            .setBaseFee(200)
-            .build(),
-          throwsA(isA<Exception>())
+          () => FeeBumpTransactionBuilder(innerTx).setBaseFee(200).build(),
+          throwsA(isA<Exception>()),
         );
       });
 
@@ -768,23 +808,22 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final innerTx = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final innerTx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         innerTx.sign(sourceKeyPair, Network.TESTNET);
 
         final feeAccount = KeyPair.random();
 
         expect(
-          () => FeeBumpTransactionBuilder(innerTx)
-            .setBaseFee(50)
-            .setFeeAccount(feeAccount.accountId)
-            .build(),
-          throwsA(isA<Exception>())
+          () => FeeBumpTransactionBuilder(
+            innerTx,
+          ).setBaseFee(50).setFeeAccount(feeAccount.accountId).build(),
+          throwsA(isA<Exception>()),
         );
       });
 
@@ -792,34 +831,31 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final innerTx = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final innerTx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         innerTx.sign(sourceKeyPair, Network.TESTNET);
 
         final builder = FeeBumpTransactionBuilder(innerTx);
         builder.setBaseFee(200);
 
-        expect(
-          () => builder.setBaseFee(300),
-          throwsA(isA<Exception>())
-        );
+        expect(() => builder.setBaseFee(300), throwsA(isA<Exception>()));
       });
 
       test('fee bump throws if fee account already set', () {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final innerTx = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final innerTx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         innerTx.sign(sourceKeyPair, Network.TESTNET);
 
@@ -829,7 +865,7 @@ void main() {
 
         expect(
           () => builder.setFeeAccount(feeAccount.accountId),
-          throwsA(isA<Exception>())
+          throwsA(isA<Exception>()),
         );
       });
     });
@@ -843,9 +879,9 @@ void main() {
             sourceAccount.incrementedSequenceNumber,
             [],
             null,
-            null
+            null,
           ),
-          throwsA(isA<Exception>())
+          throwsA(isA<Exception>()),
         );
       });
 
@@ -853,12 +889,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         expect(transaction.signatures.length, equals(0));
       });
@@ -867,12 +903,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         final xdrBase64 = transaction.toXdrBase64();
 
@@ -884,7 +920,7 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
         final preconditions = TransactionPreconditions();
@@ -894,15 +930,17 @@ void main() {
         preconditions.minSeqAge = 3600;
         preconditions.minSeqLedgerGap = 10;
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .addPreconditions(preconditions)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).addPreconditions(preconditions).build();
 
         expect(transaction.preconditions, isNotNull);
         expect(transaction.preconditions!.timeBounds, isNotNull);
         expect(transaction.preconditions!.ledgerBounds, isNotNull);
-        expect(transaction.preconditions!.minSeqNumber, equals(BigInt.from(123456)));
+        expect(
+          transaction.preconditions!.minSeqNumber,
+          equals(BigInt.from(123456)),
+        );
         expect(transaction.preconditions!.minSeqAge, equals(3600));
         expect(transaction.preconditions!.minSeqLedgerGap, equals(10));
       });
@@ -911,12 +949,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         final sigBaseTestnet = transaction.signatureBase(Network.TESTNET);
         final sigBasePublic = transaction.signatureBase(Network.PUBLIC);
@@ -929,8 +967,13 @@ void main() {
       test('TimeBounds validation minTime > maxTime throws', () {
         expect(
           () => TimeBounds(2000, 1000),
-          throwsA(isA<Exception>().having((e) => e.toString(), 'message',
-              contains('minTime cannot be greater than maxTime'))),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('minTime cannot be greater than maxTime'),
+            ),
+          ),
         );
       });
 
@@ -941,17 +984,11 @@ void main() {
       });
 
       test('TimeBounds validation negative minTime throws', () {
-        expect(
-          () => TimeBounds(-1, 2000),
-          throwsA(isA<Exception>())
-        );
+        expect(() => TimeBounds(-1, 2000), throwsA(isA<Exception>()));
       });
 
       test('TimeBounds validation negative maxTime throws', () {
-        expect(
-          () => TimeBounds(1000, -1),
-          throwsA(isA<Exception>())
-        );
+        expect(() => TimeBounds(1000, -1), throwsA(isA<Exception>()));
       });
 
       test('TimeBounds maxTime can be 0 for infinite', () {
@@ -983,8 +1020,13 @@ void main() {
       test('LedgerBounds validation minLedger > maxLedger throws', () {
         expect(
           () => LedgerBounds(2000, 1000),
-          throwsA(isA<Exception>().having((e) => e.toString(), 'message',
-              contains('minLedger cannot be greater than maxLedger'))),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('minLedger cannot be greater than maxLedger'),
+            ),
+          ),
         );
       });
 
@@ -995,17 +1037,11 @@ void main() {
       });
 
       test('LedgerBounds validation negative minLedger throws', () {
-        expect(
-          () => LedgerBounds(-1, 2000),
-          throwsA(isA<Exception>())
-        );
+        expect(() => LedgerBounds(-1, 2000), throwsA(isA<Exception>()));
       });
 
       test('LedgerBounds validation negative maxLedger throws', () {
-        expect(
-          () => LedgerBounds(1000, -1),
-          throwsA(isA<Exception>())
-        );
+        expect(() => LedgerBounds(1000, -1), throwsA(isA<Exception>()));
       });
 
       test('LedgerBounds maxLedger can be 0 for infinite', () {
@@ -1034,12 +1070,15 @@ void main() {
     });
 
     group('TransactionPreconditions', () {
-      test('TransactionPreconditions hasV2 returns false for simple time bounds', () {
-        final preconditions = TransactionPreconditions();
-        preconditions.timeBounds = TimeBounds(1000, 2000);
+      test(
+        'TransactionPreconditions hasV2 returns false for simple time bounds',
+        () {
+          final preconditions = TransactionPreconditions();
+          preconditions.timeBounds = TimeBounds(1000, 2000);
 
-        expect(preconditions.hasV2(), isFalse);
-      });
+          expect(preconditions.hasV2(), isFalse);
+        },
+      );
 
       test('TransactionPreconditions hasV2 returns true for ledger bounds', () {
         final preconditions = TransactionPreconditions();
@@ -1055,12 +1094,15 @@ void main() {
         expect(preconditions.hasV2(), isTrue);
       });
 
-      test('TransactionPreconditions hasV2 returns true for minSeqLedgerGap', () {
-        final preconditions = TransactionPreconditions();
-        preconditions.minSeqLedgerGap = 10;
+      test(
+        'TransactionPreconditions hasV2 returns true for minSeqLedgerGap',
+        () {
+          final preconditions = TransactionPreconditions();
+          preconditions.minSeqLedgerGap = 10;
 
-        expect(preconditions.hasV2(), isTrue);
-      });
+          expect(preconditions.hasV2(), isTrue);
+        },
+      );
 
       test('TransactionPreconditions hasV2 returns true for minSeqNumber', () {
         final preconditions = TransactionPreconditions();
@@ -1095,13 +1137,13 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
         final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .addMemo(Memo.text("Integration test"))
-          .build();
+            .addOperation(paymentOp)
+            .addMemo(Memo.text("Integration test"))
+            .build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
@@ -1123,12 +1165,12 @@ void main() {
         final paymentOp = PaymentOperationBuilder(
           destinationKeyPair.accountId,
           Asset.NATIVE,
-          "100.0"
+          "100.0",
         ).build();
 
-        final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         transaction.sign(secondSigner, Network.TESTNET);
@@ -1136,8 +1178,20 @@ void main() {
         expect(transaction.signatures.length, equals(2));
 
         final hash = transaction.hash(Network.TESTNET);
-        expect(sourceKeyPair.verify(hash, transaction.signatures[0].signature.signature), isTrue);
-        expect(secondSigner.verify(hash, transaction.signatures[1].signature.signature), isTrue);
+        expect(
+          sourceKeyPair.verify(
+            hash,
+            transaction.signatures[0].signature.signature,
+          ),
+          isTrue,
+        );
+        expect(
+          secondSigner.verify(
+            hash,
+            transaction.signatures[1].signature.signature,
+          ),
+          isTrue,
+        );
       });
     });
   });
@@ -1145,7 +1199,10 @@ void main() {
   group('Transaction Deep Branch Testing', () {
     test('Transaction.builder creates TransactionBuilder', () {
       KeyPair sourceKeyPair = KeyPair.random();
-      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+      Account sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(100),
+      );
 
       TransactionBuilder builder = Transaction.builder(sourceAccount);
 
@@ -1155,15 +1212,22 @@ void main() {
 
     test('Transaction with TimeBounds preconditions', () {
       KeyPair sourceKeyPair = KeyPair.random();
-      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+      Account sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(100),
+      );
 
       TimeBounds timeBounds = TimeBounds(1000, 2000);
       TransactionPreconditions preconditions = TransactionPreconditions();
       preconditions.timeBounds = timeBounds;
 
       Transaction transaction = TransactionBuilder(sourceAccount)
-          .addOperation(CreateAccountOperationBuilder(
-              KeyPair.random().accountId, "100").build())
+          .addOperation(
+            CreateAccountOperationBuilder(
+              KeyPair.random().accountId,
+              "100",
+            ).build(),
+          )
           .addPreconditions(preconditions)
           .build();
 
@@ -1175,15 +1239,22 @@ void main() {
 
     test('Transaction with LedgerBounds preconditions', () {
       KeyPair sourceKeyPair = KeyPair.random();
-      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+      Account sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(100),
+      );
 
       LedgerBounds ledgerBounds = LedgerBounds(100, 200);
       TransactionPreconditions preconditions = TransactionPreconditions();
       preconditions.ledgerBounds = ledgerBounds;
 
       Transaction transaction = TransactionBuilder(sourceAccount)
-          .addOperation(CreateAccountOperationBuilder(
-              KeyPair.random().accountId, "100").build())
+          .addOperation(
+            CreateAccountOperationBuilder(
+              KeyPair.random().accountId,
+              "100",
+            ).build(),
+          )
           .addPreconditions(preconditions)
           .build();
 
@@ -1195,20 +1266,24 @@ void main() {
 
     test('Transaction with extra signers', () {
       KeyPair sourceKeyPair = KeyPair.random();
-      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+      Account sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(100),
+      );
 
       KeyPair signer1 = KeyPair.random();
       KeyPair signer2 = KeyPair.random();
 
       TransactionPreconditions preconditions = TransactionPreconditions();
-      preconditions.extraSigners = [
-        signer1.xdrSignerKey,
-        signer2.xdrSignerKey,
-      ];
+      preconditions.extraSigners = [signer1.xdrSignerKey, signer2.xdrSignerKey];
 
       Transaction transaction = TransactionBuilder(sourceAccount)
-          .addOperation(CreateAccountOperationBuilder(
-              KeyPair.random().accountId, "100").build())
+          .addOperation(
+            CreateAccountOperationBuilder(
+              KeyPair.random().accountId,
+              "100",
+            ).build(),
+          )
           .addPreconditions(preconditions)
           .build();
 
@@ -1219,14 +1294,21 @@ void main() {
 
     test('Transaction with minSeqNumber precondition', () {
       KeyPair sourceKeyPair = KeyPair.random();
-      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+      Account sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(100),
+      );
 
       TransactionPreconditions preconditions = TransactionPreconditions();
       preconditions.minSeqNumber = BigInt.from(50);
 
       Transaction transaction = TransactionBuilder(sourceAccount)
-          .addOperation(CreateAccountOperationBuilder(
-              KeyPair.random().accountId, "100").build())
+          .addOperation(
+            CreateAccountOperationBuilder(
+              KeyPair.random().accountId,
+              "100",
+            ).build(),
+          )
           .addPreconditions(preconditions)
           .build();
 
@@ -1236,14 +1318,21 @@ void main() {
 
     test('Transaction with minSeqAge precondition', () {
       KeyPair sourceKeyPair = KeyPair.random();
-      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+      Account sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(100),
+      );
 
       TransactionPreconditions preconditions = TransactionPreconditions();
       preconditions.minSeqAge = 3600;
 
       Transaction transaction = TransactionBuilder(sourceAccount)
-          .addOperation(CreateAccountOperationBuilder(
-              KeyPair.random().accountId, "100").build())
+          .addOperation(
+            CreateAccountOperationBuilder(
+              KeyPair.random().accountId,
+              "100",
+            ).build(),
+          )
           .addPreconditions(preconditions)
           .build();
 
@@ -1253,14 +1342,21 @@ void main() {
 
     test('Transaction with minSeqLedgerGap precondition', () {
       KeyPair sourceKeyPair = KeyPair.random();
-      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+      Account sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(100),
+      );
 
       TransactionPreconditions preconditions = TransactionPreconditions();
       preconditions.minSeqLedgerGap = 10;
 
       Transaction transaction = TransactionBuilder(sourceAccount)
-          .addOperation(CreateAccountOperationBuilder(
-              KeyPair.random().accountId, "100").build())
+          .addOperation(
+            CreateAccountOperationBuilder(
+              KeyPair.random().accountId,
+              "100",
+            ).build(),
+          )
           .addPreconditions(preconditions)
           .build();
 
@@ -1270,20 +1366,31 @@ void main() {
 
     test('Transaction toXdr and fromXdr round trip', () {
       KeyPair sourceKeyPair = KeyPair.random();
-      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+      Account sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(100),
+      );
 
       Transaction original = TransactionBuilder(sourceAccount)
-          .addOperation(CreateAccountOperationBuilder(
-              KeyPair.random().accountId, "100").build())
+          .addOperation(
+            CreateAccountOperationBuilder(
+              KeyPair.random().accountId,
+              "100",
+            ).build(),
+          )
           .addMemo(Memo.text("test"))
           .build();
 
       original.sign(sourceKeyPair, Network.TESTNET);
 
       String xdrBase64 = original.toEnvelopeXdrBase64();
-      Transaction decoded = AbstractTransaction.fromEnvelopeXdrString(xdrBase64) as Transaction;
+      Transaction decoded =
+          AbstractTransaction.fromEnvelopeXdrString(xdrBase64) as Transaction;
 
-      expect(decoded.sourceAccount.ed25519AccountId, equals(original.sourceAccount.ed25519AccountId));
+      expect(
+        decoded.sourceAccount.ed25519AccountId,
+        equals(original.sourceAccount.ed25519AccountId),
+      );
       expect(decoded.sequenceNumber, equals(original.sequenceNumber));
       expect(decoded.operations.length, equals(1));
       expect(decoded.memo, isA<MemoText>());
@@ -1291,11 +1398,18 @@ void main() {
 
     test('Transaction toV0Xdr', () {
       KeyPair sourceKeyPair = KeyPair.random();
-      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+      Account sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(100),
+      );
 
       Transaction transaction = TransactionBuilder(sourceAccount)
-          .addOperation(CreateAccountOperationBuilder(
-              KeyPair.random().accountId, "100").build())
+          .addOperation(
+            CreateAccountOperationBuilder(
+              KeyPair.random().accountId,
+              "100",
+            ).build(),
+          )
           .build();
 
       XdrTransactionV0 v0Xdr = transaction.toV0Xdr();
@@ -1306,51 +1420,76 @@ void main() {
 
     test('FeeBumpTransaction with muxed fee account', () {
       KeyPair sourceKeyPair = KeyPair.random();
-      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+      Account sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(100),
+      );
 
       Transaction innerTx = TransactionBuilder(sourceAccount)
-          .addOperation(CreateAccountOperationBuilder(
-              KeyPair.random().accountId, "100").build())
+          .addOperation(
+            CreateAccountOperationBuilder(
+              KeyPair.random().accountId,
+              "100",
+            ).build(),
+          )
           .build();
       innerTx.sign(sourceKeyPair, Network.TESTNET);
 
       KeyPair feeSourceKeyPair = KeyPair.random();
-      MuxedAccount muxedFeeAccount = MuxedAccount(feeSourceKeyPair.accountId, BigInt.from(123));
+      MuxedAccount muxedFeeAccount = MuxedAccount(
+        feeSourceKeyPair.accountId,
+        BigInt.from(123),
+      );
 
-      FeeBumpTransaction feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-          .setBaseFee(200)
-          .setMuxedFeeAccount(muxedFeeAccount)
-          .build();
+      FeeBumpTransaction feeBumpTx = FeeBumpTransactionBuilder(
+        innerTx,
+      ).setBaseFee(200).setMuxedFeeAccount(muxedFeeAccount).build();
 
-      expect(feeBumpTx.feeAccount.ed25519AccountId, equals(feeSourceKeyPair.accountId));
+      expect(
+        feeBumpTx.feeAccount.ed25519AccountId,
+        equals(feeSourceKeyPair.accountId),
+      );
       expect(feeBumpTx.feeAccount.id, equals(BigInt.from(123)));
     });
 
     test('FeeBumpTransaction toXdr and fromXdr', () {
       KeyPair sourceKeyPair = KeyPair.random();
-      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+      Account sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(100),
+      );
 
       Transaction innerTx = TransactionBuilder(sourceAccount)
-          .addOperation(CreateAccountOperationBuilder(
-              KeyPair.random().accountId, "100").build())
+          .addOperation(
+            CreateAccountOperationBuilder(
+              KeyPair.random().accountId,
+              "100",
+            ).build(),
+          )
           .build();
       innerTx.sign(sourceKeyPair, Network.TESTNET);
 
       KeyPair feeSourceKeyPair = KeyPair.random();
 
-      FeeBumpTransaction original = FeeBumpTransactionBuilder(innerTx)
-          .setBaseFee(200)
-          .setFeeAccount(feeSourceKeyPair.accountId)
-          .build();
+      FeeBumpTransaction original = FeeBumpTransactionBuilder(
+        innerTx,
+      ).setBaseFee(200).setFeeAccount(feeSourceKeyPair.accountId).build();
 
       original.sign(feeSourceKeyPair, Network.TESTNET);
 
       String xdrBase64 = original.toEnvelopeXdrBase64();
-      FeeBumpTransaction decoded = AbstractTransaction.fromEnvelopeXdrString(xdrBase64) as FeeBumpTransaction;
+      FeeBumpTransaction decoded =
+          AbstractTransaction.fromEnvelopeXdrString(xdrBase64)
+              as FeeBumpTransaction;
 
-      expect(decoded.feeAccount.ed25519AccountId, equals(original.feeAccount.ed25519AccountId));
-      expect(decoded.innerTransaction.sourceAccount.ed25519AccountId,
-             equals(original.innerTransaction.sourceAccount.ed25519AccountId));
+      expect(
+        decoded.feeAccount.ed25519AccountId,
+        equals(original.feeAccount.ed25519AccountId),
+      );
+      expect(
+        decoded.innerTransaction.sourceAccount.ed25519AccountId,
+        equals(original.innerTransaction.sourceAccount.ed25519AccountId),
+      );
     });
 
     test('TimeBounds toXdr and fromXdr', () {
@@ -1403,7 +1542,10 @@ void main() {
 
       XdrPreconditions xdr = preconditions.toXdr();
 
-      expect(xdr.discriminant.value, equals(XdrPreconditionType.PRECOND_V2.value));
+      expect(
+        xdr.discriminant.value,
+        equals(XdrPreconditionType.PRECOND_V2.value),
+      );
       expect(xdr.v2, isNotNull);
       expect(xdr.v2!.ledgerBounds, isNotNull);
       expect(xdr.v2!.minSeqNum, isNotNull);
@@ -1431,25 +1573,39 @@ void main() {
       Account sourceAccount = Account(
         sourceKeyPair.accountId,
         BigInt.from(100),
-        muxedAccountMed25519Id: BigInt.from(456)
+        muxedAccountMed25519Id: BigInt.from(456),
       );
 
       Transaction transaction = TransactionBuilder(sourceAccount)
-          .addOperation(CreateAccountOperationBuilder(
-              KeyPair.random().accountId, "100").build())
+          .addOperation(
+            CreateAccountOperationBuilder(
+              KeyPair.random().accountId,
+              "100",
+            ).build(),
+          )
           .build();
 
-      expect(transaction.sourceAccount.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        transaction.sourceAccount.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
       expect(transaction.sourceAccount.id, equals(BigInt.from(456)));
     });
 
     test('Transaction addResourceFee', () {
       KeyPair sourceKeyPair = KeyPair.random();
-      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+      Account sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(100),
+      );
 
       Transaction transaction = TransactionBuilder(sourceAccount)
-          .addOperation(CreateAccountOperationBuilder(
-              KeyPair.random().accountId, "100").build())
+          .addOperation(
+            CreateAccountOperationBuilder(
+              KeyPair.random().accountId,
+              "100",
+            ).build(),
+          )
           .setMaxOperationFee(100)
           .build();
 
@@ -1472,7 +1628,9 @@ void main() {
     group('AbstractTransaction Tests', () {
       test('fromEnvelopeXdr throws on unsupported envelope type', () {
         // Create an envelope with an invalid discriminant
-        final envelope = XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_OP_ID);
+        final envelope = XdrTransactionEnvelope(
+          XdrEnvelopeType.ENVELOPE_TYPE_OP_ID,
+        );
 
         expect(
           () => AbstractTransaction.fromEnvelopeXdr(envelope),
@@ -1493,7 +1651,9 @@ void main() {
 
         final v0Xdr = transaction.toV0Xdr();
         final v0Envelope = XdrTransactionV0Envelope(v0Xdr, []);
-        final envelope = XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0);
+        final envelope = XdrTransactionEnvelope(
+          XdrEnvelopeType.ENVELOPE_TYPE_TX_V0,
+        );
         envelope.v0 = v0Envelope;
 
         final result = AbstractTransaction.fromEnvelopeXdr(envelope);
@@ -1512,10 +1672,9 @@ void main() {
             .build();
         innerTx.sign(testKeyPair, Network.TESTNET);
 
-        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-            .setBaseFee(200)
-            .setFeeAccount(KeyPair.random().accountId)
-            .build();
+        final feeBumpTx = FeeBumpTransactionBuilder(
+          innerTx,
+        ).setBaseFee(200).setFeeAccount(KeyPair.random().accountId).build();
 
         final envelope = feeBumpTx.toEnvelopeXdr();
         final result = AbstractTransaction.fromEnvelopeXdr(envelope);
@@ -1581,7 +1740,10 @@ void main() {
         transaction.sign(testKeyPair, Network.TESTNET);
 
         final v0Xdr = transaction.toV0Xdr();
-        final v0Envelope = XdrTransactionV0Envelope(v0Xdr, transaction.signatures);
+        final v0Envelope = XdrTransactionV0Envelope(
+          v0Xdr,
+          transaction.signatures,
+        );
 
         final result = Transaction.fromV0EnvelopeXdr(v0Envelope);
 
@@ -1603,10 +1765,7 @@ void main() {
       test('setMaxOperationFee throws when fee too small', () {
         final builder = TransactionBuilder(testAccount);
 
-        expect(
-          () => builder.setMaxOperationFee(50),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => builder.setMaxOperationFee(50), throwsA(isA<Exception>()));
       });
     });
 
@@ -1693,17 +1852,21 @@ void main() {
         innerTx.sign(testKeyPair, Network.TESTNET);
 
         final feeAccount = KeyPair.random();
-        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-            .setBaseFee(200)
-            .setFeeAccount(feeAccount.accountId)
-            .build();
+        final feeBumpTx = FeeBumpTransactionBuilder(
+          innerTx,
+        ).setBaseFee(200).setFeeAccount(feeAccount.accountId).build();
 
         final envelope = feeBumpTx.toEnvelopeXdr();
-        final result = FeeBumpTransaction.fromFeeBumpTransactionEnvelope(envelope.feeBump!);
+        final result = FeeBumpTransaction.fromFeeBumpTransactionEnvelope(
+          envelope.feeBump!,
+        );
 
         expect(result.feeAccount.accountId, feeAccount.accountId);
         expect(result.fee, greaterThan(innerTx.fee));
-        expect(result.innerTransaction.sourceAccount.accountId, testAccount.accountId);
+        expect(
+          result.innerTransaction.sourceAccount.accountId,
+          testAccount.accountId,
+        );
       });
 
       test('toXdrBase64 returns base64 encoded XDR', () {
@@ -1718,10 +1881,9 @@ void main() {
             .build();
         innerTx.sign(testKeyPair, Network.TESTNET);
 
-        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-            .setBaseFee(200)
-            .setFeeAccount(KeyPair.random().accountId)
-            .build();
+        final feeBumpTx = FeeBumpTransactionBuilder(
+          innerTx,
+        ).setBaseFee(200).setFeeAccount(KeyPair.random().accountId).build();
 
         final xdrBase64 = feeBumpTx.toXdrBase64();
 
@@ -1747,8 +1909,10 @@ void main() {
         builder.setFeeAccount(KeyPair.random().accountId);
 
         final feeBumpTx = builder.build();
-        expect(feeBumpTx.innerTransaction.toEnvelopeXdr().discriminant,
-            XdrEnvelopeType.ENVELOPE_TYPE_TX);
+        expect(
+          feeBumpTx.innerTransaction.toEnvelopeXdr().discriminant,
+          XdrEnvelopeType.ENVELOPE_TYPE_TX,
+        );
       });
 
       test('setBaseFee throws when already set', () {
@@ -1765,10 +1929,7 @@ void main() {
         final builder = FeeBumpTransactionBuilder(innerTx);
         builder.setBaseFee(200);
 
-        expect(
-          () => builder.setBaseFee(300),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => builder.setBaseFee(300), throwsA(isA<Exception>()));
       });
 
       test('setBaseFee throws when fee too small', () {
@@ -1784,10 +1945,7 @@ void main() {
 
         final builder = FeeBumpTransactionBuilder(innerTx);
 
-        expect(
-          () => builder.setBaseFee(50),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => builder.setBaseFee(50), throwsA(isA<Exception>()));
       });
 
       test('setBaseFee throws when lower than inner transaction fee', () {
@@ -1804,10 +1962,7 @@ void main() {
 
         final builder = FeeBumpTransactionBuilder(innerTx);
 
-        expect(
-          () => builder.setBaseFee(150),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => builder.setBaseFee(150), throwsA(isA<Exception>()));
       });
 
       test('setBaseFee computes total fee as baseFee * (operations + 1)', () {
@@ -1821,10 +1976,9 @@ void main() {
             )
             .build();
 
-        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-            .setBaseFee(200)
-            .setFeeAccount(KeyPair.random().accountId)
-            .build();
+        final feeBumpTx = FeeBumpTransactionBuilder(
+          innerTx,
+        ).setBaseFee(200).setFeeAccount(KeyPair.random().accountId).build();
 
         expect(feeBumpTx.fee, 400);
       });
@@ -1836,7 +1990,8 @@ void main() {
         final builder = TransactionBuilder(testAccount);
         for (var i = 0; i < 3; i++) {
           builder.addOperation(
-              PaymentOperationBuilder(destination, Asset.NATIVE, '10').build());
+            PaymentOperationBuilder(destination, Asset.NATIVE, '10').build(),
+          );
         }
         final innerTx = builder.build();
         innerTx.fee = 400;
@@ -1846,66 +2001,83 @@ void main() {
           throwsA(isA<Exception>()),
         );
 
-        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-            .setBaseFee(134)
-            .setFeeAccount(KeyPair.random().accountId)
-            .build();
+        final feeBumpTx = FeeBumpTransactionBuilder(
+          innerTx,
+        ).setBaseFee(134).setFeeAccount(KeyPair.random().accountId).build();
         expect(feeBumpTx.fee, 134 * 4);
       });
 
-      test('setBaseFee excludes the Soroban resource fee from the fee rate',
-          () {
-        const resourceFee = 500000;
-        final innerTx = TransactionBuilder(testAccount)
-            .addOperation(InvokeHostFuncOpBuilder(
-                    UploadContractWasmHostFunction(
-                        Uint8List.fromList([0, 1, 2, 3])))
-                .build())
-            .build();
-        innerTx.sorobanTransactionData = XdrSorobanTransactionData(
+      test(
+        'setBaseFee excludes the Soroban resource fee from the fee rate',
+        () {
+          const resourceFee = 500000;
+          final innerTx = TransactionBuilder(testAccount)
+              .addOperation(
+                InvokeHostFuncOpBuilder(
+                  UploadContractWasmHostFunction(
+                    Uint8List.fromList([0, 1, 2, 3]),
+                  ),
+                ).build(),
+              )
+              .build();
+          innerTx.sorobanTransactionData = XdrSorobanTransactionData(
             XdrSorobanTransactionDataExt(0),
-            XdrSorobanResources(XdrLedgerFootprint([], []), XdrUint32(0),
-                XdrUint32(0), XdrUint32(0)),
-            XdrInt64(BigInt.from(resourceFee)));
-        innerTx.addResourceFee(resourceFee);
-        expect(innerTx.fee, 100 + resourceFee);
+            XdrSorobanResources(
+              XdrLedgerFootprint([], []),
+              XdrUint32(0),
+              XdrUint32(0),
+              XdrUint32(0),
+            ),
+            XdrInt64(BigInt.from(resourceFee)),
+          );
+          innerTx.addResourceFee(resourceFee);
+          expect(innerTx.fee, 100 + resourceFee);
 
-        // The base fee only has to cover the inclusion fee rate (100), not
-        // the resource fee.
-        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-            .setBaseFee(200)
-            .setFeeAccount(KeyPair.random().accountId)
-            .build();
+          // The base fee only has to cover the inclusion fee rate (100), not
+          // the resource fee.
+          final feeBumpTx = FeeBumpTransactionBuilder(
+            innerTx,
+          ).setBaseFee(200).setFeeAccount(KeyPair.random().accountId).build();
 
-        // Total: baseFee * (operations + 1) + resource fee.
-        expect(feeBumpTx.fee, 200 * 2 + resourceFee);
-      });
+          // Total: baseFee * (operations + 1) + resource fee.
+          expect(feeBumpTx.fee, 200 * 2 + resourceFee);
+        },
+      );
 
       test(
-          'setBaseFee enforces the inclusion fee rate of a Soroban transaction',
-          () {
-        const resourceFee = 500000;
-        final innerTx = TransactionBuilder(testAccount)
-            .setMaxOperationFee(300)
-            .addOperation(InvokeHostFuncOpBuilder(
-                    UploadContractWasmHostFunction(
-                        Uint8List.fromList([0, 1, 2, 3])))
-                .build())
-            .build();
-        innerTx.sorobanTransactionData = XdrSorobanTransactionData(
+        'setBaseFee enforces the inclusion fee rate of a Soroban transaction',
+        () {
+          const resourceFee = 500000;
+          final innerTx = TransactionBuilder(testAccount)
+              .setMaxOperationFee(300)
+              .addOperation(
+                InvokeHostFuncOpBuilder(
+                  UploadContractWasmHostFunction(
+                    Uint8List.fromList([0, 1, 2, 3]),
+                  ),
+                ).build(),
+              )
+              .build();
+          innerTx.sorobanTransactionData = XdrSorobanTransactionData(
             XdrSorobanTransactionDataExt(0),
-            XdrSorobanResources(XdrLedgerFootprint([], []), XdrUint32(0),
-                XdrUint32(0), XdrUint32(0)),
-            XdrInt64(BigInt.from(resourceFee)));
-        innerTx.addResourceFee(resourceFee);
+            XdrSorobanResources(
+              XdrLedgerFootprint([], []),
+              XdrUint32(0),
+              XdrUint32(0),
+              XdrUint32(0),
+            ),
+            XdrInt64(BigInt.from(resourceFee)),
+          );
+          innerTx.addResourceFee(resourceFee);
 
-        // The inclusion fee rate is 300, so 200 is too low even though the
-        // resource fee is excluded.
-        expect(
-          () => FeeBumpTransactionBuilder(innerTx).setBaseFee(200),
-          throwsA(isA<Exception>()),
-        );
-      });
+          // The inclusion fee rate is 300, so 200 is too low even though the
+          // resource fee is excluded.
+          expect(
+            () => FeeBumpTransactionBuilder(innerTx).setBaseFee(200),
+            throwsA(isA<Exception>()),
+          );
+        },
+      );
 
       test('setFeeAccount throws when already set', () {
         final innerTx = TransactionBuilder(testAccount)
@@ -1939,7 +2111,9 @@ void main() {
             .build();
 
         final builder = FeeBumpTransactionBuilder(innerTx);
-        final muxedAccount = MuxedAccount.fromAccountId(KeyPair.random().accountId)!;
+        final muxedAccount = MuxedAccount.fromAccountId(
+          KeyPair.random().accountId,
+        )!;
         builder.setMuxedFeeAccount(muxedAccount);
 
         expect(
@@ -1962,10 +2136,7 @@ void main() {
         final builder = FeeBumpTransactionBuilder(innerTx);
         builder.setFeeAccount(KeyPair.random().accountId);
 
-        expect(
-          () => builder.build(),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => builder.build(), throwsA(isA<Exception>()));
       });
 
       test('build throws when fee account not set', () {
@@ -1982,33 +2153,21 @@ void main() {
         final builder = FeeBumpTransactionBuilder(innerTx);
         builder.setBaseFee(200);
 
-        expect(
-          () => builder.build(),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => builder.build(), throwsA(isA<Exception>()));
       });
     });
 
     group('TimeBounds Tests', () {
       test('constructor throws on negative minTime', () {
-        expect(
-          () => TimeBounds(-1, 1000),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => TimeBounds(-1, 1000), throwsA(isA<Exception>()));
       });
 
       test('constructor throws on negative maxTime', () {
-        expect(
-          () => TimeBounds(0, -1),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => TimeBounds(0, -1), throwsA(isA<Exception>()));
       });
 
       test('constructor throws when minTime > maxTime', () {
-        expect(
-          () => TimeBounds(1001, 1000),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => TimeBounds(1001, 1000), throwsA(isA<Exception>()));
       });
 
       test('constructor allows minTime equal to maxTime', () {
@@ -2033,24 +2192,15 @@ void main() {
 
     group('LedgerBounds Tests', () {
       test('constructor throws on negative minLedger', () {
-        expect(
-          () => LedgerBounds(-1, 1000),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => LedgerBounds(-1, 1000), throwsA(isA<Exception>()));
       });
 
       test('constructor throws on negative maxLedger', () {
-        expect(
-          () => LedgerBounds(0, -1),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => LedgerBounds(0, -1), throwsA(isA<Exception>()));
       });
 
       test('constructor throws when minLedger > maxLedger', () {
-        expect(
-          () => LedgerBounds(1001, 1000),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => LedgerBounds(1001, 1000), throwsA(isA<Exception>()));
       });
 
       test('constructor allows minLedger equal to maxLedger', () {

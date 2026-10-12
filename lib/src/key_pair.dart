@@ -61,34 +61,54 @@ class VersionByte {
   int getValue() => this._value;
 
   /// Version byte for standard account IDs (G...).
-  static const ACCOUNT_ID = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_ACCOUNT_ID);
+  static const ACCOUNT_ID = const VersionByte._internal(
+    StellarProtocolConstants.VERSION_BYTE_ACCOUNT_ID,
+  );
 
   /// Version byte for muxed account IDs (M...).
-  static const MUXED_ACCOUNT_ID = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_MUXED_ACCOUNT);
+  static const MUXED_ACCOUNT_ID = const VersionByte._internal(
+    StellarProtocolConstants.VERSION_BYTE_MUXED_ACCOUNT,
+  );
 
   /// Version byte for secret seeds/private keys (S...).
-  static const SEED = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_SEED);
+  static const SEED = const VersionByte._internal(
+    StellarProtocolConstants.VERSION_BYTE_SEED,
+  );
 
   /// Version byte for pre-authorized transaction hashes (T...).
-  static const PRE_AUTH_TX = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_PRE_AUTH_TX);
+  static const PRE_AUTH_TX = const VersionByte._internal(
+    StellarProtocolConstants.VERSION_BYTE_PRE_AUTH_TX,
+  );
 
   /// Version byte for SHA256 hash signers (X...).
-  static const SHA256_HASH = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_SHA256_HASH);
+  static const SHA256_HASH = const VersionByte._internal(
+    StellarProtocolConstants.VERSION_BYTE_SHA256_HASH,
+  );
 
   /// Version byte for signed payload signers (P...).
-  static const SIGNED_PAYLOAD = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_SIGNED_PAYLOAD);
+  static const SIGNED_PAYLOAD = const VersionByte._internal(
+    StellarProtocolConstants.VERSION_BYTE_SIGNED_PAYLOAD,
+  );
 
   /// Version byte for smart contract IDs (C...).
-  static const CONTRACT_ID = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_CONTRACT_ID);
+  static const CONTRACT_ID = const VersionByte._internal(
+    StellarProtocolConstants.VERSION_BYTE_CONTRACT_ID,
+  );
 
   /// Version byte for liquidity pool IDs (L...).
-  static const LIQUIDITY_POOL = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_LIQUIDITY_POOL);
+  static const LIQUIDITY_POOL = const VersionByte._internal(
+    StellarProtocolConstants.VERSION_BYTE_LIQUIDITY_POOL,
+  );
 
   /// Version byte for claimable balance IDs (B...).
-  static const CLAIMABLE_BALANCE = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE);
+  static const CLAIMABLE_BALANCE = const VersionByte._internal(
+    StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE,
+  );
 
   /// Version byte for muxed contract addresses (W...).
-  static const MUXED_CONTRACT = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_MUXED_CONTRACT);
+  static const MUXED_CONTRACT = const VersionByte._internal(
+    StellarProtocolConstants.VERSION_BYTE_MUXED_CONTRACT,
+  );
 }
 
 /// The lengths one strkey type admits.
@@ -103,18 +123,19 @@ class _StrKeyLengths {
   final int payloadMin;
   final int payloadMax;
 
-  const _StrKeyLengths(
-      {required this.encodedMin,
-      required this.encodedMax,
-      required this.payloadMin,
-      required this.payloadMax});
+  const _StrKeyLengths({
+    required this.encodedMin,
+    required this.encodedMax,
+    required this.payloadMin,
+    required this.payloadMax,
+  });
 
   /// Lengths of a type whose encoded string and payload each have one width.
   const _StrKeyLengths.fixed(int encoded, int payload)
-      : encodedMin = encoded,
-        encodedMax = encoded,
-        payloadMin = payload,
-        payloadMax = payload;
+    : encodedMin = encoded,
+      encodedMax = encoded,
+      payloadMin = payload,
+      payloadMax = payload;
 
   /// The encoded-length bound, worded for an error message.
   String get encodedRange => _describe(encodedMin, encodedMax);
@@ -176,43 +197,55 @@ class StrKey {
   /// [decodeCheck] describes how it applies the two ranges a type holds here.
   static const Map<int, _StrKeyLengths> _lengthsByVersionByte = {
     StellarProtocolConstants.VERSION_BYTE_ACCOUNT_ID: _StrKeyLengths.fixed(
-        StellarProtocolConstants.STRKEY_ACCOUNT_ID_LENGTH,
-        StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES),
+      StellarProtocolConstants.STRKEY_ACCOUNT_ID_LENGTH,
+      StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES,
+    ),
     StellarProtocolConstants.VERSION_BYTE_MUXED_ACCOUNT: _StrKeyLengths.fixed(
-        StellarProtocolConstants.STRKEY_MUXED_ACCOUNT_ID_LENGTH,
-        StellarProtocolConstants.MUXED_ACCOUNT_DECODED_LENGTH),
+      StellarProtocolConstants.STRKEY_MUXED_ACCOUNT_ID_LENGTH,
+      StellarProtocolConstants.MUXED_ACCOUNT_DECODED_LENGTH,
+    ),
     StellarProtocolConstants.VERSION_BYTE_SEED: _StrKeyLengths.fixed(
-        StellarProtocolConstants.STRKEY_SECRET_SEED_LENGTH,
-        StellarProtocolConstants.ED25519_PRIVATE_KEY_LENGTH_BYTES),
+      StellarProtocolConstants.STRKEY_SECRET_SEED_LENGTH,
+      StellarProtocolConstants.ED25519_PRIVATE_KEY_LENGTH_BYTES,
+    ),
     StellarProtocolConstants.VERSION_BYTE_PRE_AUTH_TX: _StrKeyLengths.fixed(
-        StellarProtocolConstants.STRKEY_PRE_AUTH_TX_LENGTH,
-        StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES),
+      StellarProtocolConstants.STRKEY_PRE_AUTH_TX_LENGTH,
+      StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES,
+    ),
     StellarProtocolConstants.VERSION_BYTE_SHA256_HASH: _StrKeyLengths.fixed(
-        StellarProtocolConstants.STRKEY_SHA256_HASH_LENGTH,
-        StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES),
+      StellarProtocolConstants.STRKEY_SHA256_HASH_LENGTH,
+      StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES,
+    ),
     StellarProtocolConstants.VERSION_BYTE_SIGNED_PAYLOAD: _StrKeyLengths(
-        encodedMin: StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MIN_LENGTH,
-        encodedMax: StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MAX_LENGTH,
-        payloadMin: StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES +
-            StellarProtocolConstants.SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES +
-            StellarProtocolConstants.SIGNED_PAYLOAD_MIN_PADDED_LENGTH_BYTES,
-        payloadMax: StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES +
-            StellarProtocolConstants.SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES +
-            StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES),
+      encodedMin: StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MIN_LENGTH,
+      encodedMax: StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MAX_LENGTH,
+      payloadMin:
+          StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES +
+          StellarProtocolConstants.SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES +
+          StellarProtocolConstants.SIGNED_PAYLOAD_MIN_PADDED_LENGTH_BYTES,
+      payloadMax:
+          StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES +
+          StellarProtocolConstants.SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES +
+          StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES,
+    ),
     StellarProtocolConstants.VERSION_BYTE_CONTRACT_ID: _StrKeyLengths.fixed(
-        StellarProtocolConstants.STRKEY_CONTRACT_ID_LENGTH,
-        StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES),
+      StellarProtocolConstants.STRKEY_CONTRACT_ID_LENGTH,
+      StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES,
+    ),
     StellarProtocolConstants.VERSION_BYTE_LIQUIDITY_POOL: _StrKeyLengths.fixed(
-        StellarProtocolConstants.STRKEY_LIQUIDITY_POOL_LENGTH,
-        StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES),
+      StellarProtocolConstants.STRKEY_LIQUIDITY_POOL_LENGTH,
+      StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES,
+    ),
     StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE:
         _StrKeyLengths.fixed(
-            StellarProtocolConstants.STRKEY_CLAIMABLE_BALANCE_LENGTH,
-            StellarProtocolConstants.CLAIMABLE_BALANCE_DISCRIMINANT_BYTES +
-                StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES),
+          StellarProtocolConstants.STRKEY_CLAIMABLE_BALANCE_LENGTH,
+          StellarProtocolConstants.CLAIMABLE_BALANCE_DISCRIMINANT_BYTES +
+              StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES,
+        ),
     StellarProtocolConstants.VERSION_BYTE_MUXED_CONTRACT: _StrKeyLengths.fixed(
-        StellarProtocolConstants.STRKEY_MUXED_CONTRACT_LENGTH,
-        StellarProtocolConstants.MUXED_CONTRACT_DECODED_LENGTH),
+      StellarProtocolConstants.STRKEY_MUXED_CONTRACT_LENGTH,
+      StellarProtocolConstants.MUXED_CONTRACT_DECODED_LENGTH,
+    ),
   };
 
   /// Encodes [data] to strkey account id (G...).
@@ -322,18 +355,22 @@ class StrKey {
 
   /// Encodes [signedPayloadSigner] to strkey signed payload (P...).
   static String encodeSignedPayload(SignedPayloadSigner signedPayloadSigner) {
-    XdrDataValue payloadDataValue =
-        new XdrDataValue(signedPayloadSigner.payload);
+    XdrDataValue payloadDataValue = new XdrDataValue(
+      signedPayloadSigner.payload,
+    );
 
     XdrSignedPayload xdrPayloadSigner = new XdrSignedPayload(
-        signedPayloadSigner.signerAccountID.accountID.getEd25519()!,
-        payloadDataValue);
+      signedPayloadSigner.signerAccountID.accountID.getEd25519()!,
+      payloadDataValue,
+    );
 
     var xdrOutputStream = XdrDataOutputStream();
     XdrSignedPayload.encode(xdrOutputStream, xdrPayloadSigner);
 
     return encodeCheck(
-        VersionByte.SIGNED_PAYLOAD, xdrOutputStream.data.toUint8List());
+      VersionByte.SIGNED_PAYLOAD,
+      xdrOutputStream.data.toUint8List(),
+    );
   }
 
   /// Encodes [xdrPayloadSigner] to strkey signed payload (P...).
@@ -341,25 +378,34 @@ class StrKey {
     var xdrOutputStream = XdrDataOutputStream();
     XdrSignedPayload.encode(xdrOutputStream, xdrPayloadSigner);
     return encodeCheck(
-        VersionByte.SIGNED_PAYLOAD, xdrOutputStream.data.toUint8List());
+      VersionByte.SIGNED_PAYLOAD,
+      xdrOutputStream.data.toUint8List(),
+    );
   }
 
   /// Decodes strkey [signedPayload] (P...) to [SignedPayloadSigner].
   static SignedPayloadSigner decodeSignedPayload(String signedPayload) {
-    Uint8List signedPayloadRaw =
-        decodeCheck(VersionByte.SIGNED_PAYLOAD, signedPayload);
-    XdrSignedPayload xdrPayloadSigner =
-        XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));
+    Uint8List signedPayloadRaw = decodeCheck(
+      VersionByte.SIGNED_PAYLOAD,
+      signedPayload,
+    );
+    XdrSignedPayload xdrPayloadSigner = XdrSignedPayload.decode(
+      XdrDataInputStream(signedPayloadRaw),
+    );
 
     SignedPayloadSigner result = SignedPayloadSigner.fromPublicKey(
-        xdrPayloadSigner.ed25519.uint256, xdrPayloadSigner.payload.dataValue);
+      xdrPayloadSigner.ed25519.uint256,
+      xdrPayloadSigner.payload.dataValue,
+    );
     return result;
   }
 
   /// Decodes strkey [signedPayload] (P...) to [XdrSignedPayload].
   static XdrSignedPayload decodeXdrSignedPayload(String signedPayload) {
-    Uint8List signedPayloadRaw =
-        decodeCheck(VersionByte.SIGNED_PAYLOAD, signedPayload);
+    Uint8List signedPayloadRaw = decodeCheck(
+      VersionByte.SIGNED_PAYLOAD,
+      signedPayload,
+    );
     return XdrSignedPayload.decode(XdrDataInputStream(signedPayloadRaw));
   }
 
@@ -419,8 +465,9 @@ class StrKey {
           'and a payload length';
     }
 
-    final int length =
-        ByteData.sublistView(region).getUint32(keyWidth, Endian.big);
+    final int length = ByteData.sublistView(
+      region,
+    ).getUint32(keyWidth, Endian.big);
     final String? bound = signedPayloadLengthViolation(length);
     if (bound != null) {
       return bound;
@@ -478,7 +525,8 @@ class StrKey {
   /// hex representation of the raw bytes.
   static String decodeContractIdHex(String strKeyContractId) {
     return Util.bytesToHex(
-        decodeCheck(VersionByte.CONTRACT_ID, strKeyContractId));
+      decodeCheck(VersionByte.CONTRACT_ID, strKeyContractId),
+    );
   }
 
   /// Encodes [data] to strkey muxed contract address (W...).
@@ -537,41 +585,46 @@ class StrKey {
     const int hashWidth = StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES;
     const int taggedWidth =
         StellarProtocolConstants.CLAIMABLE_BALANCE_DISCRIMINANT_BYTES +
-            hashWidth;
+        hashWidth;
     const int xdrDiscriminantWidth =
         StellarProtocolConstants.XDR_UNION_DISCRIMINANT_BYTES;
     const int xdrWidth = xdrDiscriminantWidth + hashWidth;
 
     if (data.length == hashWidth) {
       return encodeCheck(
-          VersionByte.CLAIMABLE_BALANCE,
-          Uint8List.fromList([
-            XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0.value,
-            ...data
-          ]));
+        VersionByte.CLAIMABLE_BALANCE,
+        Uint8List.fromList([
+          XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0.value,
+          ...data,
+        ]),
+      );
     }
     if (data.length == xdrWidth) {
       final v0 = XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0.value;
       if (data[0] != 0 || data[1] != 0 || data[2] != 0 || data[3] != v0) {
         throw new Exception(
-            "claimable balance id carries an XDR discriminant that names no "
-            "claimable balance id type");
+          "claimable balance id carries an XDR discriminant that names no "
+          "claimable balance id type",
+        );
       }
       return encodeCheck(
-          VersionByte.CLAIMABLE_BALANCE,
-          Uint8List.fromList([v0, ...data.sublist(xdrDiscriminantWidth)]));
+        VersionByte.CLAIMABLE_BALANCE,
+        Uint8List.fromList([v0, ...data.sublist(xdrDiscriminantWidth)]),
+      );
     }
     if (data.length != taggedWidth) {
       throw new Exception(
-          "claimable balance id must be $hashWidth bytes (the hash), "
-          "$taggedWidth bytes (the hash behind its discriminant), "
-          "or $xdrWidth bytes (its XDR encoding), "
-          "got ${data.length}");
+        "claimable balance id must be $hashWidth bytes (the hash), "
+        "$taggedWidth bytes (the hash behind its discriminant), "
+        "or $xdrWidth bytes (its XDR encoding), "
+        "got ${data.length}",
+      );
     }
     // Fires ahead of encodeCheck's copy of this rule on purpose: this arm's
     // message and plain-Exception type are pinned by tests.
-    final String? discriminant =
-        _claimableBalanceDiscriminantViolation(data[0]);
+    final String? discriminant = _claimableBalanceDiscriminantViolation(
+      data[0],
+    );
     if (discriminant != null) {
       throw new Exception("claimable balance id $discriminant");
     }
@@ -606,7 +659,9 @@ class StrKey {
   /// Encodes hex [liquidityPoolIdHex] to strkey liquidity pool (L...).
   static String encodeLiquidityPoolIdHex(String liquidityPoolIdHex) {
     return encodeCheck(
-        VersionByte.LIQUIDITY_POOL, Util.hexToBytes(liquidityPoolIdHex));
+      VersionByte.LIQUIDITY_POOL,
+      Util.hexToBytes(liquidityPoolIdHex),
+    );
   }
 
   /// Decodes [liquidityPoolId] liquidity pool id (L...) to raw data.
@@ -658,12 +713,15 @@ class StrKey {
 
     if (lengths == null) {
       throw new FormatException(
-          "Unrecognized version byte ${versionByte.getValue()}");
+        "Unrecognized version byte ${versionByte.getValue()}",
+      );
     }
 
     if (data.length < lengths.payloadMin || data.length > lengths.payloadMax) {
-      throw new Exception("Payload must be ${lengths.payloadRange} bytes, "
-          "got ${data.length}");
+      throw new Exception(
+        "Payload must be ${lengths.payloadRange} bytes, "
+        "got ${data.length}",
+      );
     }
 
     if (versionByte.getValue() ==
@@ -676,8 +734,9 @@ class StrKey {
 
     if (versionByte.getValue() ==
         StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE) {
-      final String? discriminant =
-          _claimableBalanceDiscriminantViolation(data[0]);
+      final String? discriminant = _claimableBalanceDiscriminantViolation(
+        data[0],
+      );
       if (discriminant != null) {
         throw new FormatException("Claimable balance id $discriminant");
       }
@@ -742,23 +801,29 @@ class StrKey {
 
     if (lengths == null) {
       throw new FormatException(
-          "Unrecognized version byte ${versionByte.getValue()}");
+        "Unrecognized version byte ${versionByte.getValue()}",
+      );
     }
 
     if (encData.length < lengths.encodedMin ||
         encData.length > lengths.encodedMax) {
-      throw new FormatException("Encoded string must be "
-          "${lengths.encodedRange} characters, got ${encData.length}");
+      throw new FormatException(
+        "Encoded string must be "
+        "${lengths.encodedRange} characters, got ${encData.length}",
+      );
     }
 
     Uint8List decoded = Base32.decode(encData);
     int decodedVersionByte = decoded[0];
-    Uint8List payload =
-        Uint8List.fromList(decoded.getRange(0, decoded.length - 2).toList());
-    Uint8List data =
-        Uint8List.fromList(payload.getRange(1, payload.length).toList());
+    Uint8List payload = Uint8List.fromList(
+      decoded.getRange(0, decoded.length - 2).toList(),
+    );
+    Uint8List data = Uint8List.fromList(
+      payload.getRange(1, payload.length).toList(),
+    );
     Uint8List checksum = Uint8List.fromList(
-        decoded.getRange(decoded.length - 2, decoded.length).toList());
+      decoded.getRange(decoded.length - 2, decoded.length).toList(),
+    );
 
     if (encData != Base32.encode(decoded)) {
       throw new FormatException("Invalid encoded string");
@@ -777,8 +842,10 @@ class StrKey {
     // The encoded-length bound above already fixes this width for every type
     // the table names. This backs that invariant rather than replacing it.
     if (data.length < lengths.payloadMin || data.length > lengths.payloadMax) {
-      throw new FormatException("Decoded payload must be "
-          "${lengths.payloadRange} bytes, got ${data.length}");
+      throw new FormatException(
+        "Decoded payload must be "
+        "${lengths.payloadRange} bytes, got ${data.length}",
+      );
     }
 
     if (versionByte.getValue() ==
@@ -791,8 +858,9 @@ class StrKey {
 
     if (versionByte.getValue() ==
         StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE) {
-      final String? discriminant =
-          _claimableBalanceDiscriminantViolation(data[0]);
+      final String? discriminant = _claimableBalanceDiscriminantViolation(
+        data[0],
+      );
       if (discriminant != null) {
         throw new FormatException("Decoded claimable balance id $discriminant");
       }
@@ -839,7 +907,10 @@ class StrKey {
     }
 
     // little-endian
-    return Uint8List.fromList([crc & BitConstants.BYTE_MASK, (crc >> 8) & BitConstants.BYTE_MASK]);
+    return Uint8List.fromList([
+      crc & BitConstants.BYTE_MASK,
+      (crc >> 8) & BitConstants.BYTE_MASK,
+    ]);
   }
 }
 
@@ -925,9 +996,11 @@ class KeyPair {
   static KeyPair fromSecretSeedList(Uint8List seed) {
     if (seed.length !=
         StellarProtocolConstants.ED25519_PRIVATE_KEY_LENGTH_BYTES) {
-      throw ArgumentError("Secret seed must be "
-          "${StellarProtocolConstants.ED25519_PRIVATE_KEY_LENGTH_BYTES} bytes, "
-          "got ${seed.length}");
+      throw ArgumentError(
+        "Secret seed must be "
+        "${StellarProtocolConstants.ED25519_PRIVATE_KEY_LENGTH_BYTES} bytes, "
+        "got ${seed.length}",
+      );
     }
     ed25519.SigningKey sk = ed25519.SigningKey.fromSeed(seed);
     return new KeyPair(sk.publicKey.asTypedList, sk.asTypedList);
@@ -954,9 +1027,11 @@ class KeyPair {
   static KeyPair fromPublicKey(Uint8List publicKey) {
     if (publicKey.length !=
         StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES) {
-      throw ArgumentError("Public key must be "
-          "${StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES} bytes, "
-          "got ${publicKey.length}");
+      throw ArgumentError(
+        "Public key must be "
+        "${StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES} bytes, "
+        "got ${publicKey.length}",
+      );
     }
     return new KeyPair(publicKey, null);
   }
@@ -972,7 +1047,8 @@ class KeyPair {
 
   ///Returns the human readable secret seed of this key pair.
   String get secretSeed => StrKey.encodeStellarSecretSeed(
-      ed25519.SigningKey.fromValidBytes(_mPrivateKey!).seed.asTypedList);
+    ed25519.SigningKey.fromValidBytes(_mPrivateKey!).seed.asTypedList,
+  );
 
   Uint8List get publicKey => _mPublicKey;
 
@@ -982,30 +1058,35 @@ class KeyPair {
     XdrDataOutputStream xdrOutputStream = new XdrDataOutputStream();
     XdrPublicKey.encode(xdrOutputStream, this.xdrPublicKey);
     Uint8List publicKeyBytes = Uint8List.fromList(xdrOutputStream.bytes);
-    Uint8List signatureHintBytes = Uint8List.fromList(publicKeyBytes
-        .getRange(publicKeyBytes.length - 4, publicKeyBytes.length)
-        .toList());
+    Uint8List signatureHintBytes = Uint8List.fromList(
+      publicKeyBytes
+          .getRange(publicKeyBytes.length - 4, publicKeyBytes.length)
+          .toList(),
+    );
 
     return new XdrSignatureHint(signatureHintBytes);
   }
 
   XdrMuxedAccount get xdrMuxedAccount {
-    XdrMuxedAccount xdrMuxAccount =
-        XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
+    XdrMuxedAccount xdrMuxAccount = XdrMuxedAccount(
+      XdrCryptoKeyType.KEY_TYPE_ED25519,
+    );
     xdrMuxAccount.ed25519 = xdrPublicKey.getEd25519();
     return xdrMuxAccount;
   }
 
   XdrPublicKey get xdrPublicKey {
-    XdrPublicKey publicKey =
-        new XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
+    XdrPublicKey publicKey = new XdrPublicKey(
+      XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519,
+    );
     publicKey.setEd25519(new XdrUint256(this.publicKey));
     return publicKey;
   }
 
   XdrSignerKey get xdrSignerKey {
-    XdrSignerKey signerKey =
-        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
+    XdrSignerKey signerKey = new XdrSignerKey(
+      XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519,
+    );
     signerKey.ed25519 = new XdrUint256(this.publicKey);
     return signerKey;
   }
@@ -1064,7 +1145,8 @@ class KeyPair {
   Uint8List sign(Uint8List data) {
     if (_mPrivateKey == null) {
       throw new Exception(
-          "KeyPair does not contain secret key. Use KeyPair.fromSecretSeed method to create a new KeyPair with a secret key.");
+        "KeyPair does not contain secret key. Use KeyPair.fromSecretSeed method to create a new KeyPair with a secret key.",
+      );
     }
 
     ed25519.SigningKey sk = ed25519.SigningKey.fromValidBytes(_mPrivateKey!);
@@ -1082,8 +1164,13 @@ class KeyPair {
 
     Uint8List hint = Uint8List(4);
     if (signerPayload.length > hint.length) {
-      List.copyRange(hint, 0, signerPayload, signerPayload.length - hint.length,
-          signerPayload.length);
+      List.copyRange(
+        hint,
+        0,
+        signerPayload,
+        signerPayload.length - hint.length,
+        signerPayload.length,
+      );
     } else {
       List.copyRange(hint, 0, signerPayload, 0, signerPayload.length);
     }
@@ -1139,8 +1226,9 @@ class KeyPair {
       for (int i = 0; i < sigLength; i++) sd[i] = signature[i];
       for (int i = 0; i < dataLength; i++) sd[i + sigLength] = data[i];
 
-      ed25519.SignedMessage sm =
-          ed25519.SignedMessage.fromList(signedMessage: sd);
+      ed25519.SignedMessage sm = ed25519.SignedMessage.fromList(
+        signedMessage: sd,
+      );
       return vk.verifySignedMessage(signedMessage: sm);
     } catch (e) {
       return false;
@@ -1149,8 +1237,9 @@ class KeyPair {
 
   /// UTF-8 encoded prefix prepended to all messages before hashing,
   /// as defined by [SEP-53](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md).
-  static final Uint8List _messagePrefix =
-      Uint8List.fromList(utf8.encode('Stellar Signed Message:\n'));
+  static final Uint8List _messagePrefix = Uint8List.fromList(
+    utf8.encode('Stellar Signed Message:\n'),
+  );
 
   /// Computes the SHA-256 hash of the SEP-53 prefixed message.
   ///
@@ -1293,16 +1382,22 @@ class SignedPayloadSigner {
   SignedPayloadSigner(this._signerAccountID, this._payload) {
     if (_payload.length <
         StellarProtocolConstants.SIGNED_PAYLOAD_MIN_LENGTH_BYTES) {
-      throw Exception("invalid payload length, must be at least " +
-          StellarProtocolConstants.SIGNED_PAYLOAD_MIN_LENGTH_BYTES.toString());
+      throw Exception(
+        "invalid payload length, must be at least " +
+            StellarProtocolConstants.SIGNED_PAYLOAD_MIN_LENGTH_BYTES.toString(),
+      );
     }
-    if (_payload.length > StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES) {
-      throw Exception("invalid payload length, must be at most " +
-          StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES.toString());
+    if (_payload.length >
+        StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES) {
+      throw Exception(
+        "invalid payload length, must be at most " +
+            StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES.toString(),
+      );
     }
     if (_signerAccountID.accountID.getEd25519() == null) {
       throw Exception(
-          "invalid payload signer, only ED25519 public key accounts are supported currently");
+        "invalid payload signer, only ED25519 public key accounts are supported currently",
+      );
     }
   }
 
@@ -1324,14 +1419,20 @@ class SignedPayloadSigner {
   /// - [FormatException]: if [accountId] is not an account id this codec reads
   /// - [Exception]: if [payload] is not a width a signed payload carries
   static SignedPayloadSigner fromAccountId(
-      String accountId, Uint8List payload) {
+    String accountId,
+    Uint8List payload,
+  ) {
     if (accountId.startsWith('M')) {
-      throw ArgumentError("A signed payload signer takes an ed25519 account id "
-          "(G...), not a muxed account id (M...)");
+      throw ArgumentError(
+        "A signed payload signer takes an ed25519 account id "
+        "(G...), not a muxed account id (M...)",
+      );
     }
     XdrAccountID accId = XdrAccountID(
-        KeyPair.fromPublicKey(StrKey.decodeStellarAccountId(accountId))
-            .xdrPublicKey);
+      KeyPair.fromPublicKey(
+        StrKey.decodeStellarAccountId(accountId),
+      ).xdrPublicKey,
+    );
     return SignedPayloadSigner(accId, payload);
   }
 
@@ -1343,9 +1444,12 @@ class SignedPayloadSigner {
   ///
   /// Returns: SignedPayloadSigner instance
   static SignedPayloadSigner fromPublicKey(
-      Uint8List signerED25519PublicKey, Uint8List payload) {
+    Uint8List signerED25519PublicKey,
+    Uint8List payload,
+  ) {
     XdrAccountID accId = XdrAccountID(
-        KeyPair.fromPublicKey(signerED25519PublicKey).xdrPublicKey);
+      KeyPair.fromPublicKey(signerED25519PublicKey).xdrPublicKey,
+    );
     return SignedPayloadSigner(accId, payload);
   }
 
@@ -1369,8 +1473,9 @@ class SignerKey {
 
   /// Create `sha256Hash` XdrSignerKey from a sha256 [hash] of a preimage.
   static XdrSignerKey sha256Hash(Uint8List hash) {
-    XdrSignerKey signerKey =
-        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
+    XdrSignerKey signerKey = new XdrSignerKey(
+      XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X,
+    );
     XdrUint256 value = SignerKey._createUint256(hash);
     signerKey.hashX = value;
     return signerKey;
@@ -1378,8 +1483,9 @@ class SignerKey {
 
   /// Create `preAuthTx` XdrSignerKey from a Transaction [tx].
   static XdrSignerKey preAuthTx(Transaction tx, Network network) {
-    XdrSignerKey signerKey =
-        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
+    XdrSignerKey signerKey = new XdrSignerKey(
+      XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX,
+    );
     XdrUint256 value = SignerKey._createUint256(tx.hash(network));
     signerKey.preAuthTx = value;
     return signerKey;
@@ -1387,8 +1493,9 @@ class SignerKey {
 
   /// Create `preAuthTxHash` XdrSignerKey from a preAuthTxHash [hash].
   static XdrSignerKey preAuthTxHash(Uint8List hash) {
-    XdrSignerKey signerKey =
-        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
+    XdrSignerKey signerKey = new XdrSignerKey(
+      XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX,
+    );
     XdrUint256 value = SignerKey._createUint256(hash);
     signerKey.preAuthTx = value;
     return signerKey;
@@ -1401,14 +1508,17 @@ class SignerKey {
   ///
   /// Returns: XdrSignerKey configured for signed payload (CAP-40)
   static XdrSignerKey signedPayload(SignedPayloadSigner signedPayloadSigner) {
-    XdrSignerKey signerKey =
-        new XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
-    XdrDataValue payloadDataValue =
-        new XdrDataValue(signedPayloadSigner.payload);
+    XdrSignerKey signerKey = new XdrSignerKey(
+      XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD,
+    );
+    XdrDataValue payloadDataValue = new XdrDataValue(
+      signedPayloadSigner.payload,
+    );
 
     XdrSignedPayload payloadSigner = new XdrSignedPayload(
-        signedPayloadSigner.signerAccountID.accountID.getEd25519()!,
-        payloadDataValue);
+      signedPayloadSigner.signerAccountID.accountID.getEd25519()!,
+      payloadDataValue,
+    );
 
     signerKey.signedPayload = payloadSigner;
     return signerKey;
@@ -1416,7 +1526,9 @@ class SignerKey {
 
   static XdrUint256 _createUint256(Uint8List hash) {
     if (hash.length != StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
-      throw new Exception("hash must be ${StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES} bytes long");
+      throw new Exception(
+        "hash must be ${StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES} bytes long",
+      );
     }
     return new XdrUint256(hash);
   }

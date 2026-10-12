@@ -23,7 +23,9 @@ enum BindingsSpecTestContractNoneKind {
   factory BindingsSpecTestContractNoneKind.fromValue(String value) {
     return BindingsSpecTestContractNoneKind.values.firstWhere(
       (e) => e.value == value,
-      orElse: () => throw ArgumentError('Unknown BindingsSpecTestContractNoneKind value: $value'),
+      orElse: () => throw ArgumentError(
+        'Unknown BindingsSpecTestContractNoneKind value: $value',
+      ),
     );
   }
 }
@@ -32,17 +34,21 @@ enum BindingsSpecTestContractNoneKind {
 class BindingsSpecTestContractNone {
   final BindingsSpecTestContractNoneKind kind;
 
-  const BindingsSpecTestContractNone._({
-    required this.kind,
-  });
+  const BindingsSpecTestContractNone._({required this.kind});
   factory BindingsSpecTestContractNone.elif() {
-    return BindingsSpecTestContractNone._(kind: BindingsSpecTestContractNoneKind.Elif);
+    return BindingsSpecTestContractNone._(
+      kind: BindingsSpecTestContractNoneKind.Elif,
+    );
   }
   factory BindingsSpecTestContractNone.nonlocal() {
-    return BindingsSpecTestContractNone._(kind: BindingsSpecTestContractNoneKind.Nonlocal);
+    return BindingsSpecTestContractNone._(
+      kind: BindingsSpecTestContractNoneKind.Nonlocal,
+    );
   }
   factory BindingsSpecTestContractNone.not() {
-    return BindingsSpecTestContractNone._(kind: BindingsSpecTestContractNoneKind.Not);
+    return BindingsSpecTestContractNone._(
+      kind: BindingsSpecTestContractNoneKind.Not,
+    );
   }
 
   XdrSCVal toScVal() {
@@ -58,7 +64,9 @@ class BindingsSpecTestContractNone {
 
   factory BindingsSpecTestContractNone.fromScVal(XdrSCVal val) {
     final vec = val.vec!;
-    final kind = BindingsSpecTestContractNoneKind.fromValue(vec[0].sym!.toString());
+    final kind = BindingsSpecTestContractNoneKind.fromValue(
+      vec[0].sym!.toString(),
+    );
 
     switch (kind) {
       case BindingsSpecTestContractNoneKind.Elif:
@@ -103,16 +111,11 @@ class BindingsSpecTestContractNone {
 class BindingsSpecTestContractTrue {
   final int def;
 
-  const BindingsSpecTestContractTrue({
-    required this.def,
-  });
+  const BindingsSpecTestContractTrue({required this.def});
 
   XdrSCVal toScVal() {
     final fields = <XdrSCMapEntry>[];
-    fields.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('def'),
-      XdrSCVal.forU32(def),
-    ));
+    fields.add(XdrSCMapEntry(XdrSCVal.forSymbol('def'), XdrSCVal.forU32(def)));
     return XdrSCVal.forMap(fields);
   }
 
@@ -123,21 +126,16 @@ class BindingsSpecTestContractTrue {
       fieldsMap[entry.key.sym!.toString()] = entry.val;
     }
 
-    return BindingsSpecTestContractTrue(
-      def: fieldsMap['def']!.u32!.uint32,
-    );
+    return BindingsSpecTestContractTrue(def: fieldsMap['def']!.u32!.uint32);
   }
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BindingsSpecTestContractTrue &&
-          def == other.def;
+      other is BindingsSpecTestContractTrue && def == other.def;
 
   @override
-  int get hashCode => Object.hashAll([
-      def
-  ]);
+  int get hashCode => Object.hashAll([def]);
 }
 
 /// BindingsSpecTestContractError error enum
@@ -151,7 +149,9 @@ enum BindingsSpecTestContractError {
   factory BindingsSpecTestContractError.fromValue(int value) {
     return BindingsSpecTestContractError.values.firstWhere(
       (e) => e.value == value,
-      orElse: () => throw ArgumentError('Unknown BindingsSpecTestContractError value: $value'),
+      orElse: () => throw ArgumentError(
+        'Unknown BindingsSpecTestContractError value: $value',
+      ),
     );
   }
 
@@ -175,7 +175,9 @@ enum BindingsSpecTestContractFalse {
   factory BindingsSpecTestContractFalse.fromValue(int value) {
     return BindingsSpecTestContractFalse.values.firstWhere(
       (e) => e.value == value,
-      orElse: () => throw ArgumentError('Unknown BindingsSpecTestContractFalse value: $value'),
+      orElse: () => throw ArgumentError(
+        'Unknown BindingsSpecTestContractFalse value: $value',
+      ),
     );
   }
 
@@ -200,7 +202,9 @@ enum BindingsSpecTestContractimport_ {
   factory BindingsSpecTestContractimport_.fromValue(int value) {
     return BindingsSpecTestContractimport_.values.firstWhere(
       (e) => e.value == value,
-      orElse: () => throw ArgumentError('Unknown BindingsSpecTestContractimport_ value: $value'),
+      orElse: () => throw ArgumentError(
+        'Unknown BindingsSpecTestContractimport_ value: $value',
+      ),
     );
   }
 
@@ -226,7 +230,9 @@ enum BindingsSpecTestContractRoyalCard {
   factory BindingsSpecTestContractRoyalCard.fromValue(int value) {
     return BindingsSpecTestContractRoyalCard.values.firstWhere(
       (e) => e.value == value,
-      orElse: () => throw ArgumentError('Unknown BindingsSpecTestContractRoyalCard value: $value'),
+      orElse: () => throw ArgumentError(
+        'Unknown BindingsSpecTestContractRoyalCard value: $value',
+      ),
     );
   }
 
@@ -252,7 +258,9 @@ enum BindingsSpecTestContractSimpleEnumKind {
   factory BindingsSpecTestContractSimpleEnumKind.fromValue(String value) {
     return BindingsSpecTestContractSimpleEnumKind.values.firstWhere(
       (e) => e.value == value,
-      orElse: () => throw ArgumentError('Unknown BindingsSpecTestContractSimpleEnumKind value: $value'),
+      orElse: () => throw ArgumentError(
+        'Unknown BindingsSpecTestContractSimpleEnumKind value: $value',
+      ),
     );
   }
 }
@@ -261,17 +269,21 @@ enum BindingsSpecTestContractSimpleEnumKind {
 class BindingsSpecTestContractSimpleEnum {
   final BindingsSpecTestContractSimpleEnumKind kind;
 
-  const BindingsSpecTestContractSimpleEnum._({
-    required this.kind,
-  });
+  const BindingsSpecTestContractSimpleEnum._({required this.kind});
   factory BindingsSpecTestContractSimpleEnum.first() {
-    return BindingsSpecTestContractSimpleEnum._(kind: BindingsSpecTestContractSimpleEnumKind.First);
+    return BindingsSpecTestContractSimpleEnum._(
+      kind: BindingsSpecTestContractSimpleEnumKind.First,
+    );
   }
   factory BindingsSpecTestContractSimpleEnum.second() {
-    return BindingsSpecTestContractSimpleEnum._(kind: BindingsSpecTestContractSimpleEnumKind.Second);
+    return BindingsSpecTestContractSimpleEnum._(
+      kind: BindingsSpecTestContractSimpleEnumKind.Second,
+    );
   }
   factory BindingsSpecTestContractSimpleEnum.third() {
-    return BindingsSpecTestContractSimpleEnum._(kind: BindingsSpecTestContractSimpleEnumKind.Third);
+    return BindingsSpecTestContractSimpleEnum._(
+      kind: BindingsSpecTestContractSimpleEnumKind.Third,
+    );
   }
 
   XdrSCVal toScVal() {
@@ -287,7 +299,9 @@ class BindingsSpecTestContractSimpleEnum {
 
   factory BindingsSpecTestContractSimpleEnum.fromScVal(XdrSCVal val) {
     final vec = val.vec!;
-    final kind = BindingsSpecTestContractSimpleEnumKind.fromValue(vec[0].sym!.toString());
+    final kind = BindingsSpecTestContractSimpleEnumKind.fromValue(
+      vec[0].sym!.toString(),
+    );
 
     switch (kind) {
       case BindingsSpecTestContractSimpleEnumKind.First:
@@ -343,7 +357,9 @@ enum BindingsSpecTestContractComplexEnumKind {
   factory BindingsSpecTestContractComplexEnumKind.fromValue(String value) {
     return BindingsSpecTestContractComplexEnumKind.values.firstWhere(
       (e) => e.value == value,
-      orElse: () => throw ArgumentError('Unknown BindingsSpecTestContractComplexEnumKind value: $value'),
+      orElse: () => throw ArgumentError(
+        'Unknown BindingsSpecTestContractComplexEnumKind value: $value',
+      ),
     );
   }
 }
@@ -363,19 +379,25 @@ class BindingsSpecTestContractComplexEnum {
     this.enum_,
     this.asset,
   });
-  factory BindingsSpecTestContractComplexEnum.struct(BindingsSpecTestContractSimpleStruct value) {
+  factory BindingsSpecTestContractComplexEnum.struct(
+    BindingsSpecTestContractSimpleStruct value,
+  ) {
     return BindingsSpecTestContractComplexEnum._(
       kind: BindingsSpecTestContractComplexEnumKind.Struct,
       struct: value,
     );
   }
-  factory BindingsSpecTestContractComplexEnum.tuple(BindingsSpecTestContractTupleStruct value) {
+  factory BindingsSpecTestContractComplexEnum.tuple(
+    BindingsSpecTestContractTupleStruct value,
+  ) {
     return BindingsSpecTestContractComplexEnum._(
       kind: BindingsSpecTestContractComplexEnumKind.Tuple,
       tuple: value,
     );
   }
-  factory BindingsSpecTestContractComplexEnum.enum_(BindingsSpecTestContractSimpleEnum value) {
+  factory BindingsSpecTestContractComplexEnum.enum_(
+    BindingsSpecTestContractSimpleEnum value,
+  ) {
     return BindingsSpecTestContractComplexEnum._(
       kind: BindingsSpecTestContractComplexEnumKind.Enum,
       enum_: value,
@@ -388,7 +410,9 @@ class BindingsSpecTestContractComplexEnum {
     );
   }
   factory BindingsSpecTestContractComplexEnum.void_() {
-    return BindingsSpecTestContractComplexEnum._(kind: BindingsSpecTestContractComplexEnumKind.Void);
+    return BindingsSpecTestContractComplexEnum._(
+      kind: BindingsSpecTestContractComplexEnumKind.Void,
+    );
   }
 
   XdrSCVal toScVal() {
@@ -413,7 +437,7 @@ class BindingsSpecTestContractComplexEnum {
         return XdrSCVal.forVec([
           XdrSCVal.forSymbol(kind.value),
           tuple.$1.toXdrSCVal(),
-          XdrSCVal.forI128BigInt(tuple.$2)
+          XdrSCVal.forI128BigInt(tuple.$2),
         ]);
       case BindingsSpecTestContractComplexEnumKind.Void:
         return XdrSCVal.forVec([XdrSCVal.forSymbol(kind.value)]);
@@ -422,25 +446,27 @@ class BindingsSpecTestContractComplexEnum {
 
   factory BindingsSpecTestContractComplexEnum.fromScVal(XdrSCVal val) {
     final vec = val.vec!;
-    final kind = BindingsSpecTestContractComplexEnumKind.fromValue(vec[0].sym!.toString());
+    final kind = BindingsSpecTestContractComplexEnumKind.fromValue(
+      vec[0].sym!.toString(),
+    );
 
     switch (kind) {
       case BindingsSpecTestContractComplexEnumKind.Struct:
         return BindingsSpecTestContractComplexEnum.struct(
-          BindingsSpecTestContractSimpleStruct.fromScVal(vec[1])
+          BindingsSpecTestContractSimpleStruct.fromScVal(vec[1]),
         );
       case BindingsSpecTestContractComplexEnumKind.Tuple:
         return BindingsSpecTestContractComplexEnum.tuple(
-          BindingsSpecTestContractTupleStruct.fromScVal(vec[1])
+          BindingsSpecTestContractTupleStruct.fromScVal(vec[1]),
         );
       case BindingsSpecTestContractComplexEnumKind.Enum:
         return BindingsSpecTestContractComplexEnum.enum_(
-          BindingsSpecTestContractSimpleEnum.fromScVal(vec[1])
+          BindingsSpecTestContractSimpleEnum.fromScVal(vec[1]),
         );
       case BindingsSpecTestContractComplexEnumKind.Asset:
         return BindingsSpecTestContractComplexEnum.asset((
           Address.fromXdrSCVal(vec[1]),
-          vec[2].toBigInt()!
+          vec[2].toBigInt()!,
         ));
       case BindingsSpecTestContractComplexEnumKind.Void:
         return BindingsSpecTestContractComplexEnum.void_();
@@ -486,22 +512,23 @@ class BindingsSpecTestContractComplexEnum {
 
 /// BindingsSpecTestContractTupleStruct tuple struct
 class BindingsSpecTestContractTupleStruct {
-  final (BindingsSpecTestContractSimpleStruct, BindingsSpecTestContractSimpleEnum) value;
+  final (
+    BindingsSpecTestContractSimpleStruct,
+    BindingsSpecTestContractSimpleEnum,
+  )
+  value;
 
   const BindingsSpecTestContractTupleStruct(this.value);
 
   XdrSCVal toScVal() {
-    return XdrSCVal.forVec([
-      value.$1.toScVal(),
-      value.$2.toScVal()
-    ]);
+    return XdrSCVal.forVec([value.$1.toScVal(), value.$2.toScVal()]);
   }
 
   factory BindingsSpecTestContractTupleStruct.fromScVal(XdrSCVal val) {
     final vec = val.vec!;
     return BindingsSpecTestContractTupleStruct((
       BindingsSpecTestContractSimpleStruct.fromScVal(vec[0]),
-      BindingsSpecTestContractSimpleEnum.fromScVal(vec[1])
+      BindingsSpecTestContractSimpleEnum.fromScVal(vec[1]),
     ));
   }
 
@@ -528,18 +555,9 @@ class BindingsSpecTestContractSimpleStruct {
 
   XdrSCVal toScVal() {
     final fields = <XdrSCMapEntry>[];
-    fields.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('a'),
-      XdrSCVal.forU32(a),
-    ));
-    fields.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('b'),
-      XdrSCVal.forBool(b),
-    ));
-    fields.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('c'),
-      XdrSCVal.forSymbol(c),
-    ));
+    fields.add(XdrSCMapEntry(XdrSCVal.forSymbol('a'), XdrSCVal.forU32(a)));
+    fields.add(XdrSCMapEntry(XdrSCVal.forSymbol('b'), XdrSCVal.forBool(b)));
+    fields.add(XdrSCMapEntry(XdrSCVal.forSymbol('c'), XdrSCVal.forSymbol(c)));
     return XdrSCVal.forMap(fields);
   }
 
@@ -566,11 +584,7 @@ class BindingsSpecTestContractSimpleStruct {
           c == other.c;
 
   @override
-  int get hashCode => Object.hashAll([
-      a,
-      b,
-      c
-  ]);
+  int get hashCode => Object.hashAll([a, b, c]);
 }
 
 /// Client for interacting with the BindingsSpecTestContract contract
@@ -619,9 +633,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forI32(i32),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forI32(i32)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -646,9 +658,7 @@ class BindingsSpecTestContract {
     required int i32,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forI32(i32),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forI32(i32)];
 
     return await _client.buildInvokeMethodTx(
       name: 'i32',
@@ -666,9 +676,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forI64(i64),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forI64(i64)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -693,9 +701,7 @@ class BindingsSpecTestContract {
     required BigInt i64,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forI64(i64),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forI64(i64)];
 
     return await _client.buildInvokeMethodTx(
       name: 'i64',
@@ -714,7 +720,16 @@ class BindingsSpecTestContract {
     bool force = false,
   }) async {
     final List<XdrSCVal> args = [
-      XdrSCVal.forMap((map.entries.toList()..sort((a, b) => a.key.compareTo(b.key))).map((e) => XdrSCMapEntry(XdrSCVal.forU32(e.key), XdrSCVal.forBool(e.value))).toList()),
+      XdrSCVal.forMap(
+        (map.entries.toList()..sort((a, b) => a.key.compareTo(b.key)))
+            .map(
+              (e) => XdrSCMapEntry(
+                XdrSCVal.forU32(e.key),
+                XdrSCVal.forBool(e.value),
+              ),
+            )
+            .toList(),
+      ),
     ];
 
     final methodOptions = MethodOptions(
@@ -731,7 +746,9 @@ class BindingsSpecTestContract {
       methodOptions: methodOptions,
     );
 
-    return Map.fromEntries(result.map!.map((e) => MapEntry(e.key.u32!.uint32, e.val.b!)));
+    return Map.fromEntries(
+      result.map!.map((e) => MapEntry(e.key.u32!.uint32, e.val.b!)),
+    );
   }
 
   /// Builds an AssembledTransaction for the map method.
@@ -741,7 +758,16 @@ class BindingsSpecTestContract {
     MethodOptions? methodOptions,
   }) async {
     final List<XdrSCVal> args = [
-      XdrSCVal.forMap((map.entries.toList()..sort((a, b) => a.key.compareTo(b.key))).map((e) => XdrSCMapEntry(XdrSCVal.forU32(e.key), XdrSCVal.forBool(e.value))).toList()),
+      XdrSCVal.forMap(
+        (map.entries.toList()..sort((a, b) => a.key.compareTo(b.key)))
+            .map(
+              (e) => XdrSCMapEntry(
+                XdrSCVal.forU32(e.key),
+                XdrSCVal.forBool(e.value),
+              ),
+            )
+            .toList(),
+      ),
     ];
 
     return await _client.buildInvokeMethodTx(
@@ -760,9 +786,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forBool(boolean),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forBool(boolean)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -787,9 +811,7 @@ class BindingsSpecTestContract {
     required bool boolean,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forBool(boolean),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forBool(boolean)];
 
     return await _client.buildInvokeMethodTx(
       name: 'not',
@@ -807,9 +829,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU32(u32),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU32(u32)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -834,9 +854,7 @@ class BindingsSpecTestContract {
     required int u32,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU32(u32),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU32(u32)];
 
     return await _client.buildInvokeMethodTx(
       name: 'u32',
@@ -854,9 +872,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU64(u64),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU64(u64)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -881,9 +897,7 @@ class BindingsSpecTestContract {
     required BigInt u64,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU64(u64),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU64(u64)];
 
     return await _client.buildInvokeMethodTx(
       name: 'u64',
@@ -902,10 +916,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU32(a),
-      b,
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU32(a), b];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -931,10 +942,7 @@ class BindingsSpecTestContract {
     required XdrSCVal b,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU32(a),
-      b,
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU32(a), b];
 
     return await _client.buildInvokeMethodTx(
       name: 'val',
@@ -999,9 +1007,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      card.toScVal(),
-    ];
+    final List<XdrSCVal> args = [card.toScVal()];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1026,9 +1032,7 @@ class BindingsSpecTestContract {
     required BindingsSpecTestContractRoyalCard card,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      card.toScVal(),
-    ];
+    final List<XdrSCVal> args = [card.toScVal()];
 
     return await _client.buildInvokeMethodTx(
       name: 'card',
@@ -1046,9 +1050,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forSymbol(finally_),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forSymbol(finally_)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1073,9 +1075,7 @@ class BindingsSpecTestContract {
     required String finally_,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forSymbol(finally_),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forSymbol(finally_)];
 
     return await _client.buildInvokeMethodTx(
       name: 'from',
@@ -1093,9 +1093,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forI128BigInt(i128),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forI128BigInt(i128)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1120,9 +1118,7 @@ class BindingsSpecTestContract {
     required BigInt i128,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forI128BigInt(i128),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forI128BigInt(i128)];
 
     return await _client.buildInvokeMethodTx(
       name: 'i128',
@@ -1140,9 +1136,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forI256BigInt(i256),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forI256BigInt(i256)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1167,9 +1161,7 @@ class BindingsSpecTestContract {
     required BigInt i256,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forI256BigInt(i256),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forI256BigInt(i256)];
 
     return await _client.buildInvokeMethodTx(
       name: 'i256',
@@ -1187,9 +1179,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU128BigInt(u128),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU128BigInt(u128)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1214,9 +1204,7 @@ class BindingsSpecTestContract {
     required BigInt u128,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU128BigInt(u128),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU128BigInt(u128)];
 
     return await _client.buildInvokeMethodTx(
       name: 'u128',
@@ -1234,9 +1222,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU256BigInt(u256),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU256BigInt(u256)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1261,9 +1247,7 @@ class BindingsSpecTestContract {
     required BigInt u256,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU256BigInt(u256),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU256BigInt(u256)];
 
     return await _client.buildInvokeMethodTx(
       name: 'u256',
@@ -1280,8 +1264,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-    ];
+    final List<XdrSCVal> args = [];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1303,8 +1286,7 @@ class BindingsSpecTestContract {
   Future<AssembledTransaction> buildVoidTx({
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-    ];
+    final List<XdrSCVal> args = [];
 
     return await _client.buildInvokeMethodTx(
       name: 'void',
@@ -1322,9 +1304,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forSymbol(hello),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forSymbol(hello)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1349,9 +1329,7 @@ class BindingsSpecTestContract {
     required String hello,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forSymbol(hello),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forSymbol(hello)];
 
     return await _client.buildInvokeMethodTx(
       name: 'hello',
@@ -1370,7 +1348,10 @@ class BindingsSpecTestContract {
     bool force = false,
   }) async {
     final List<XdrSCVal> args = [
-      XdrSCVal.forVec([XdrSCVal.forSymbol(tuple.$1), XdrSCVal.forU32(tuple.$2)]),
+      XdrSCVal.forVec([
+        XdrSCVal.forSymbol(tuple.$1),
+        XdrSCVal.forU32(tuple.$2),
+      ]),
     ];
 
     final methodOptions = MethodOptions(
@@ -1397,7 +1378,10 @@ class BindingsSpecTestContract {
     MethodOptions? methodOptions,
   }) async {
     final List<XdrSCVal> args = [
-      XdrSCVal.forVec([XdrSCVal.forSymbol(tuple.$1), XdrSCVal.forU32(tuple.$2)]),
+      XdrSCVal.forVec([
+        XdrSCVal.forSymbol(tuple.$1),
+        XdrSCVal.forU32(tuple.$2),
+      ]),
     ];
 
     return await _client.buildInvokeMethodTx(
@@ -1416,9 +1400,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forBytes(bytes),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forBytes(bytes)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1443,9 +1425,7 @@ class BindingsSpecTestContract {
     required Uint8List bytes,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forBytes(bytes),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forBytes(bytes)];
 
     return await _client.buildInvokeMethodTx(
       name: 'bytes_',
@@ -1481,7 +1461,9 @@ class BindingsSpecTestContract {
       methodOptions: methodOptions,
     );
 
-    return result.discriminant == XdrSCValType.SCV_VOID ? null : result.u32!.uint32;
+    return result.discriminant == XdrSCValType.SCV_VOID
+        ? null
+        : result.u32!.uint32;
   }
 
   /// Builds an AssembledTransaction for the option method.
@@ -1510,9 +1492,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      simple.toScVal(),
-    ];
+    final List<XdrSCVal> args = [simple.toScVal()];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1537,9 +1517,7 @@ class BindingsSpecTestContract {
     required BindingsSpecTestContractSimpleEnum simple,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      simple.toScVal(),
-    ];
+    final List<XdrSCVal> args = [simple.toScVal()];
 
     return await _client.buildInvokeMethodTx(
       name: 'simple',
@@ -1557,9 +1535,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forString(string),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forString(string)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1584,9 +1560,7 @@ class BindingsSpecTestContract {
     required String string,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forString(string),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forString(string)];
 
     return await _client.buildInvokeMethodTx(
       name: 'string',
@@ -1604,9 +1578,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      strukt.toScVal(),
-    ];
+    final List<XdrSCVal> args = [strukt.toScVal()];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1631,9 +1603,7 @@ class BindingsSpecTestContract {
     required BindingsSpecTestContractSimpleStruct strukt,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      strukt.toScVal(),
-    ];
+    final List<XdrSCVal> args = [strukt.toScVal()];
 
     return await _client.buildInvokeMethodTx(
       name: 'strukt',
@@ -1651,9 +1621,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      address.toXdrSCVal(),
-    ];
+    final List<XdrSCVal> args = [address.toXdrSCVal()];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1678,9 +1646,7 @@ class BindingsSpecTestContract {
     required Address address,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      address.toXdrSCVal(),
-    ];
+    final List<XdrSCVal> args = [address.toXdrSCVal()];
 
     return await _client.buildInvokeMethodTx(
       name: 'address',
@@ -1698,9 +1664,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forBool(boolean),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forBool(boolean)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1725,9 +1689,7 @@ class BindingsSpecTestContract {
     required bool boolean,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forBool(boolean),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forBool(boolean)];
 
     return await _client.buildInvokeMethodTx(
       name: 'boolean',
@@ -1745,9 +1707,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forBytes(bytesN),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forBytes(bytesN)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1772,9 +1732,7 @@ class BindingsSpecTestContract {
     required Uint8List bytesN,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forBytes(bytesN),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forBytes(bytesN)];
 
     return await _client.buildInvokeMethodTx(
       name: 'bytes_n',
@@ -1792,9 +1750,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      complex.toScVal(),
-    ];
+    final List<XdrSCVal> args = [complex.toScVal()];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1819,9 +1775,7 @@ class BindingsSpecTestContract {
     required BindingsSpecTestContractComplexEnum complex,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      complex.toScVal(),
-    ];
+    final List<XdrSCVal> args = [complex.toScVal()];
 
     return await _client.buildInvokeMethodTx(
       name: 'complex',
@@ -1839,9 +1793,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forDuration(duration),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forDuration(duration)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1866,9 +1818,7 @@ class BindingsSpecTestContract {
     required BigInt duration,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forDuration(duration),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forDuration(duration)];
 
     return await _client.buildInvokeMethodTx(
       name: 'duration',
@@ -1886,9 +1836,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forTimepoint(timepoint),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forTimepoint(timepoint)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1913,9 +1861,7 @@ class BindingsSpecTestContract {
     required BigInt timepoint,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forTimepoint(timepoint),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forTimepoint(timepoint)];
 
     return await _client.buildInvokeMethodTx(
       name: 'timepoint',
@@ -1934,10 +1880,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU32(a),
-      XdrSCVal.forBool(b),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU32(a), XdrSCVal.forBool(b)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -1963,10 +1906,7 @@ class BindingsSpecTestContract {
     required bool b,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU32(a),
-      XdrSCVal.forBool(b),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU32(a), XdrSCVal.forBool(b)];
 
     return await _client.buildInvokeMethodTx(
       name: 'multi_args',
@@ -1984,9 +1924,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      strukt.toScVal(),
-    ];
+    final List<XdrSCVal> args = [strukt.toScVal()];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -2011,9 +1949,7 @@ class BindingsSpecTestContract {
     required BindingsSpecTestContractSimpleStruct strukt,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      strukt.toScVal(),
-    ];
+    final List<XdrSCVal> args = [strukt.toScVal()];
 
     return await _client.buildInvokeMethodTx(
       name: 'strukt_hel',
@@ -2030,8 +1966,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-    ];
+    final List<XdrSCVal> args = [];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -2053,8 +1988,7 @@ class BindingsSpecTestContract {
   Future<AssembledTransaction> buildEmptyTupleTx({
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-    ];
+    final List<XdrSCVal> args = [];
 
     return await _client.buildInvokeMethodTx(
       name: 'empty_tuple',
@@ -2072,9 +2006,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      tupleStrukt.toScVal(),
-    ];
+    final List<XdrSCVal> args = [tupleStrukt.toScVal()];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -2099,9 +2031,7 @@ class BindingsSpecTestContract {
     required BindingsSpecTestContractTupleStruct tupleStrukt,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      tupleStrukt.toScVal(),
-    ];
+    final List<XdrSCVal> args = [tupleStrukt.toScVal()];
 
     return await _client.buildInvokeMethodTx(
       name: 'tuple_strukt',
@@ -2119,9 +2049,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      address.toXdrSCVal(),
-    ];
+    final List<XdrSCVal> args = [address.toXdrSCVal()];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -2146,9 +2074,7 @@ class BindingsSpecTestContract {
     required Address address,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      address.toXdrSCVal(),
-    ];
+    final List<XdrSCVal> args = [address.toXdrSCVal()];
 
     return await _client.buildInvokeMethodTx(
       name: 'muxed_address',
@@ -2166,9 +2092,7 @@ class BindingsSpecTestContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU32(u32),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU32(u32)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -2193,9 +2117,7 @@ class BindingsSpecTestContract {
     required int u32,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU32(u32),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU32(u32)];
 
     return await _client.buildInvokeMethodTx(
       name: 'u32_fail_on_even',
@@ -2205,8 +2127,15 @@ class BindingsSpecTestContract {
   }
 
   /// Invokes the tuple_strukt_nested method
-  Future<(BindingsSpecTestContractSimpleStruct, BindingsSpecTestContractSimpleEnum)> tupleStruktNested({
-    required (BindingsSpecTestContractSimpleStruct, BindingsSpecTestContractSimpleEnum) tupleStrukt,
+  Future<
+    (BindingsSpecTestContractSimpleStruct, BindingsSpecTestContractSimpleEnum)
+  >
+  tupleStruktNested({
+    required (
+      BindingsSpecTestContractSimpleStruct,
+      BindingsSpecTestContractSimpleEnum,
+    )
+    tupleStrukt,
     int baseFee = 100,
     int transactionTimeout = 300,
     bool simulate = true,
@@ -2231,13 +2160,20 @@ class BindingsSpecTestContract {
       methodOptions: methodOptions,
     );
 
-    return (BindingsSpecTestContractSimpleStruct.fromScVal(result.vec![0]), BindingsSpecTestContractSimpleEnum.fromScVal(result.vec![1]));
+    return (
+      BindingsSpecTestContractSimpleStruct.fromScVal(result.vec![0]),
+      BindingsSpecTestContractSimpleEnum.fromScVal(result.vec![1]),
+    );
   }
 
   /// Builds an AssembledTransaction for the tuple_strukt_nested method.
   /// This is useful if you need to manipulate the transaction before signing and sending.
   Future<AssembledTransaction> buildTupleStruktNestedTx({
-    required (BindingsSpecTestContractSimpleStruct, BindingsSpecTestContractSimpleEnum) tupleStrukt,
+    required (
+      BindingsSpecTestContractSimpleStruct,
+      BindingsSpecTestContractSimpleEnum,
+    )
+    tupleStrukt,
     MethodOptions? methodOptions,
   }) async {
     final List<XdrSCVal> args = [

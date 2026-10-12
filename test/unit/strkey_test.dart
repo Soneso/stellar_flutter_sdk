@@ -12,16 +12,27 @@ import '../tests_util.dart';
 /// reading past the end of a buffer is an [Error]. Pinning the type therefore
 /// separates a refusal the codec makes deliberately from a failure it runs
 /// into while decoding.
-Matcher throwsFormat(String message) => throwsA(isA<FormatException>()
-    .having((FormatException e) => e.message, 'message', message));
+Matcher throwsFormat(String message) => throwsA(
+  isA<FormatException>().having(
+    (FormatException e) => e.message,
+    'message',
+    message,
+  ),
+);
 
 /// Matches an [Exception] whose rendering contains [fragment].
-Matcher throwsExceptionWith(String fragment) => throwsA(isA<Exception>()
-    .having((Exception e) => e.toString(), 'toString', contains(fragment)));
+Matcher throwsExceptionWith(String fragment) => throwsA(
+  isA<Exception>().having(
+    (Exception e) => e.toString(),
+    'toString',
+    contains(fragment),
+  ),
+);
 
 void main() {
-  final keyPair = KeyPair.fromSecretSeedList(Util.hash(
-      Uint8List.fromList(Network.TESTNET.networkPassphrase.codeUnits)));
+  final keyPair = KeyPair.fromSecretSeedList(
+    Util.hash(Uint8List.fromList(Network.TESTNET.networkPassphrase.codeUnits)),
+  );
   final accountIdEncoded = keyPair.accountId;
   final seedEncoded = keyPair.secretSeed;
 
@@ -32,15 +43,19 @@ void main() {
 
     // decodes secret seed correctly
     final decodedSeed = StrKey.decodeStellarSecretSeed(seedEncoded);
-    assert(ListEquality().equals(
+    assert(
+      ListEquality().equals(
         ed25519.SigningKey.fromValidBytes(keyPair.privateKey!).seed.asTypedList,
-        decodedSeed));
+        decodedSeed,
+      ),
+    );
 
     // throws an error when the version byte is wrong
     var thrown = false;
     try {
       StrKey.decodeStellarSecretSeed(
-          "GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL");
+        "GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL",
+      );
     } on Exception catch (e) {
       assert("FormatException: Version byte is invalid" == e.toString());
       thrown = true;
@@ -50,7 +65,8 @@ void main() {
     thrown = false;
     try {
       StrKey.decodeStellarAccountId(
-          "SBGWKM3CD4IL47QN6X54N6Y33T3JDNVI6AIJ6CD5IM47HG3IG4O36XCU");
+        "SBGWKM3CD4IL47QN6X54N6Y33T3JDNVI6AIJ6CD5IM47HG3IG4O36XCU",
+      );
     } on Exception catch (e) {
       assert("FormatException: Version byte is invalid" == e.toString());
       thrown = true;
@@ -62,7 +78,8 @@ void main() {
     try {
       // invalid account id
       StrKey.decodeStellarAccountId(
-          "GBPXX0A5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL");
+        "GBPXX0A5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL",
+      );
     } on Exception catch (e) {
       assert("FormatException: Invalid encoded string" == e.toString());
       thrown = true;
@@ -73,7 +90,8 @@ void main() {
     try {
       // invalid secret seed
       StrKey.decodeStellarSecretSeed(
-          "SCMB30FQCIQAWZ4WQTS6SVK37LGMAFJGXOZIHTH2PY6EXLP37G46H6DT");
+        "SCMB30FQCIQAWZ4WQTS6SVK37LGMAFJGXOZIHTH2PY6EXLP37G46H6DT",
+      );
     } on Exception catch (e) {
       assert("FormatException: Invalid encoded string" == e.toString());
       thrown = true;
@@ -85,10 +103,13 @@ void main() {
     try {
       // invalid account id
       StrKey.decodeStellarAccountId(
-          "GCFZB6L25D26RQFDWSSBDEYQ32JHLRMTT44ZYE3DZQUTYOL7WY43PLBG++");
+        "GCFZB6L25D26RQFDWSSBDEYQ32JHLRMTT44ZYE3DZQUTYOL7WY43PLBG++",
+      );
     } on Exception catch (e) {
-      assert("FormatException: Encoded string must be 56 characters, got 58" ==
-          e.toString());
+      assert(
+        "FormatException: Encoded string must be 56 characters, got 58" ==
+            e.toString(),
+      );
       thrown = true;
     }
     assert(thrown);
@@ -97,10 +118,13 @@ void main() {
     try {
       // invalid account id
       StrKey.decodeStellarAccountId(
-          "GB6OWYST45X57HCJY5XWOHDEBULB6XUROWPIKW77L5DSNANBEQGUPADT2T");
+        "GB6OWYST45X57HCJY5XWOHDEBULB6XUROWPIKW77L5DSNANBEQGUPADT2T",
+      );
     } on Exception catch (e) {
-      assert("FormatException: Encoded string must be 56 characters, got 58" ==
-          e.toString());
+      assert(
+        "FormatException: Encoded string must be 56 characters, got 58" ==
+            e.toString(),
+      );
       thrown = true;
     }
     assert(thrown);
@@ -109,10 +133,13 @@ void main() {
     try {
       // invalid secret seed
       StrKey.decodeStellarSecretSeed(
-          "SB7OJNF5727F3RJUG5ASQJ3LUM44ELLNKW35ZZQDHMVUUQNGYW");
+        "SB7OJNF5727F3RJUG5ASQJ3LUM44ELLNKW35ZZQDHMVUUQNGYW",
+      );
     } on Exception catch (e) {
-      assert("FormatException: Encoded string must be 56 characters, got 50" ==
-          e.toString());
+      assert(
+        "FormatException: Encoded string must be 56 characters, got 50" ==
+            e.toString(),
+      );
       thrown = true;
     }
     assert(thrown);
@@ -121,10 +148,13 @@ void main() {
     try {
       // invalid secret seed
       StrKey.decodeStellarSecretSeed(
-          "SB7OJNF5727F3RJUG5ASQJ3LUM44ELLNKW35ZZQDHMVUUQNGYWMEGB2W2");
+        "SB7OJNF5727F3RJUG5ASQJ3LUM44ELLNKW35ZZQDHMVUUQNGYWMEGB2W2",
+      );
     } on Exception catch (e) {
-      assert("FormatException: Encoded string must be 56 characters, got 57" ==
-          e.toString());
+      assert(
+        "FormatException: Encoded string must be 56 characters, got 57" ==
+            e.toString(),
+      );
       thrown = true;
     }
     assert(thrown);
@@ -133,10 +163,13 @@ void main() {
     try {
       // invalid secret seed
       StrKey.decodeStellarSecretSeed(
-          "SB7OJNF5727F3RJUG5ASQJ3LUM44ELLNKW35ZZQDHMVUUQNGYWMEGB2W2T");
+        "SB7OJNF5727F3RJUG5ASQJ3LUM44ELLNKW35ZZQDHMVUUQNGYWMEGB2W2T",
+      );
     } on Exception catch (e) {
-      assert("FormatException: Encoded string must be 56 characters, got 58" ==
-          e.toString());
+      assert(
+        "FormatException: Encoded string must be 56 characters, got 58" ==
+            e.toString(),
+      );
       thrown = true;
     }
     assert(thrown);
@@ -145,10 +178,13 @@ void main() {
     try {
       // invalid secret seed
       StrKey.decodeStellarSecretSeed(
-          "SAYC2LQ322EEHZYWNSKBEW6N66IRTDREEBUXXU5HPVZGMAXKLIZNM45H++");
+        "SAYC2LQ322EEHZYWNSKBEW6N66IRTDREEBUXXU5HPVZGMAXKLIZNM45H++",
+      );
     } on Exception catch (e) {
-      assert("FormatException: Encoded string must be 56 characters, got 58" ==
-          e.toString());
+      assert(
+        "FormatException: Encoded string must be 56 characters, got 58" ==
+            e.toString(),
+      );
       thrown = true;
     }
     assert(thrown);
@@ -158,7 +194,8 @@ void main() {
     try {
       // invalid account id checksum
       StrKey.decodeStellarAccountId(
-          "GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVT");
+        "GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVT",
+      );
     } on Exception catch (e) {
       assert("FormatException: Checksum invalid" == e.toString());
       thrown = true;
@@ -169,7 +206,8 @@ void main() {
     try {
       // invalid secret seed checksum
       StrKey.decodeStellarSecretSeed(
-          "SBGWKM3CD4IL47QN6X54N6Y33T3JDNVI6AIJ6CD5IM47HG3IG4O36XCX");
+        "SBGWKM3CD4IL47QN6X54N6Y33T3JDNVI6AIJ6CD5IM47HG3IG4O36XCX",
+      );
     } on Exception catch (e) {
       assert("FormatException: Checksum invalid" == e.toString());
       thrown = true;
@@ -182,28 +220,42 @@ void main() {
     final encodedAccountId = StrKey.encodeStellarAccountId(keyPair.publicKey);
     assert(accountIdEncoded == encodedAccountId);
     assert(encodedAccountId.startsWith("G"));
-    assert(ListEquality().equals(
-        keyPair.publicKey, StrKey.decodeStellarAccountId(accountIdEncoded)));
+    assert(
+      ListEquality().equals(
+        keyPair.publicKey,
+        StrKey.decodeStellarAccountId(accountIdEncoded),
+      ),
+    );
 
     final encodedSecretSeed = StrKey.encodeStellarSecretSeed(
-        ed25519.SigningKey.fromValidBytes(keyPair.privateKey!)
-            .seed
-            .asTypedList);
+      ed25519.SigningKey.fromValidBytes(keyPair.privateKey!).seed.asTypedList,
+    );
     assert(seedEncoded == encodedSecretSeed);
     assert(encodedSecretSeed.startsWith("S"));
-    assert(ListEquality().equals(
+    assert(
+      ListEquality().equals(
         ed25519.SigningKey.fromValidBytes(keyPair.privateKey!).seed.asTypedList,
-        StrKey.decodeStellarSecretSeed(encodedSecretSeed)));
+        StrKey.decodeStellarSecretSeed(encodedSecretSeed),
+      ),
+    );
 
     var strKeyEncoded = StrKey.encodePreAuthTx(keyPair.publicKey);
     assert(strKeyEncoded.startsWith("T"));
-    assert(ListEquality()
-        .equals(keyPair.publicKey, StrKey.decodePreAuthTx(strKeyEncoded)));
+    assert(
+      ListEquality().equals(
+        keyPair.publicKey,
+        StrKey.decodePreAuthTx(strKeyEncoded),
+      ),
+    );
 
     strKeyEncoded = StrKey.encodeSha256Hash(keyPair.publicKey);
     assert(strKeyEncoded.startsWith("X"));
-    assert(ListEquality()
-        .equals(keyPair.publicKey, StrKey.decodeSha256Hash(strKeyEncoded)));
+    assert(
+      ListEquality().equals(
+        keyPair.publicKey,
+        StrKey.decodeSha256Hash(strKeyEncoded),
+      ),
+    );
   });
 
   test('test is valid', () async {
@@ -218,7 +270,7 @@ void main() {
       'GAJHORKJKDDEPYCD6URDFODV7CVLJ5AAOJKR6PG2VQOLWFQOF3X7XLOG',
       'GACXQEAXYBEZLBMQ2XETOBRO4P66FZAJENDHOQRYPUIXZIIXLKMZEXBJ',
       'GDD3XRXU3G4DXHVRUDH7LJM4CD4PDZTVP4QHOO4Q6DELKXUATR657OZV',
-      'GDTYVCTAUQVPKEDZIBWEJGKBQHB4UGGXI2SXXUEW7LXMD4B7MK37CWLJ'
+      'GDTYVCTAUQVPKEDZIBWEJGKBQHB4UGGXI2SXXUEW7LXMD4B7MK37CWLJ',
     ];
 
     for (var key in keys) {
@@ -236,7 +288,7 @@ void main() {
       'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
       'gWRYUerEKuz53tstxEuR3NCkiQDcV4wzFHmvLnZmj7PUqxW2wt',
       'test',
-      'g4VPBPrHZkfE8CsjuG2S4yBQNd455UWmk' // Old network key
+      'g4VPBPrHZkfE8CsjuG2S4yBQNd455UWmk', // Old network key
     ];
 
     for (var key in keys) {
@@ -250,7 +302,7 @@ void main() {
       'SCGNLQKTZ4XCDUGVIADRVOD4DEVNYZ5A7PGLIIZQGH7QEHK6DYODTFEH',
       'SDH6R7PMU4WIUEXSM66LFE4JCUHGYRTLTOXVUV5GUEPITQEO3INRLHER',
       'SC2RDTRNSHXJNCWEUVO7VGUSPNRAWFCQDPP6BGN4JFMWDSEZBRAPANYW',
-      'SCEMFYOSFZ5MUXDKTLZ2GC5RTOJO6FGTAJCF3CCPZXSLXA2GX6QUYOA7'
+      'SCEMFYOSFZ5MUXDKTLZ2GC5RTOJO6FGTAJCF3CCPZXSLXA2GX6QUYOA7',
     ];
 
     for (var key in keys) {
@@ -274,13 +326,18 @@ void main() {
   final MPUBKEY =
       'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK';
   final RAW_MPUBKEY = Util.hexToBytes(
-      '3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a8000000000000000');
+    '3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a8000000000000000',
+  );
 
   test('test muxed accounts', () async {
     // encodes & decodes M... addresses correctly
     assert(MPUBKEY == StrKey.encodeStellarMuxedAccountId(RAW_MPUBKEY));
-    assert(ListEquality()
-        .equals(RAW_MPUBKEY, StrKey.decodeStellarMuxedAccountId(MPUBKEY)));
+    assert(
+      ListEquality().equals(
+        RAW_MPUBKEY,
+        StrKey.decodeStellarMuxedAccountId(MPUBKEY),
+      ),
+    );
   });
 
   test('refuses to encode a payload of the wrong width', () async {
@@ -295,28 +352,38 @@ void main() {
     };
 
     encodersOf32Bytes.forEach((name, encode) {
-      expect(() => encode(short),
-          throwsExceptionWith("Payload must be 32 bytes, got 31"),
-          reason: name);
+      expect(
+        () => encode(short),
+        throwsExceptionWith("Payload must be 32 bytes, got 31"),
+        reason: name,
+      );
     });
-    expect(() => StrKey.encodeStellarMuxedAccountId(Uint8List(39)),
-        throwsExceptionWith("Payload must be 40 bytes, got 39"));
-    expect(() => StrKey.encodeMuxedContractId(Uint8List(39)),
-        throwsExceptionWith("Payload must be 40 bytes, got 39"));
+    expect(
+      () => StrKey.encodeStellarMuxedAccountId(Uint8List(39)),
+      throwsExceptionWith("Payload must be 40 bytes, got 39"),
+    );
+    expect(
+      () => StrKey.encodeMuxedContractId(Uint8List(39)),
+      throwsExceptionWith("Payload must be 40 bytes, got 39"),
+    );
   });
 
   test('test sep-23 contract and muxed id 0 vectors', () async {
     final contract = "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA";
     assert(StrKey.isValidContractId(contract));
     assert(
-        contract == StrKey.encodeContractId(StrKey.decodeContractId(contract)));
+      contract == StrKey.encodeContractId(StrKey.decodeContractId(contract)),
+    );
 
     final muxedIdZero =
         "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ";
     assert(StrKey.isValidStellarMuxedAccountId(muxedIdZero));
-    assert(muxedIdZero ==
-        StrKey.encodeStellarMuxedAccountId(
-            StrKey.decodeStellarMuxedAccountId(muxedIdZero)));
+    assert(
+      muxedIdZero ==
+          StrKey.encodeStellarMuxedAccountId(
+            StrKey.decodeStellarMuxedAccountId(muxedIdZero),
+          ),
+    );
 
     // An id of 0 stays a muxed account: it multiplexes the base account, it
     // does not collapse into it.
@@ -331,17 +398,17 @@ void main() {
     (
       "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA",
       BigInt.zero,
-      "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC"
+      "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC",
     ),
     (
       "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA",
       BigInt.parse("9223372036854775808"),
-      "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY"
+      "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY",
     ),
     (
       "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE",
       BigInt.from(123456),
-      "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+      "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG",
     ),
   ];
 
@@ -358,18 +425,28 @@ void main() {
 
   test('test signed payloads', () async {
     var decoded = StrKey.decodeSignedPayload(
-        "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IBZGM");
-    assert("GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ" ==
-        KeyPair.fromXdrAccountId(decoded.signerAccountID).accountId);
-    assert("0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20" ==
-        Util.bytesToHex(decoded.payload));
+      "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IBZGM",
+    );
+    assert(
+      "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ" ==
+          KeyPair.fromXdrAccountId(decoded.signerAccountID).accountId,
+    );
+    assert(
+      "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20" ==
+          Util.bytesToHex(decoded.payload),
+    );
 
     decoded = StrKey.decodeSignedPayload(
-        "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAOQCAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUAAAAFGBU");
-    assert("GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ" ==
-        KeyPair.fromXdrAccountId(decoded.signerAccountID).accountId);
-    assert("0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d" ==
-        Util.bytesToHex(decoded.payload));
+      "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAOQCAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUAAAAFGBU",
+    );
+    assert(
+      "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ" ==
+          KeyPair.fromXdrAccountId(decoded.signerAccountID).accountId,
+    );
+    assert(
+      "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d" ==
+          Util.bytesToHex(decoded.payload),
+    );
   });
 
   test('test contracts', () async {
@@ -383,34 +460,44 @@ void main() {
     assert(contractId == StrKey.encodeContractIdHex(asHex));
 
     assert(StrKey.isValidContractId(contractId));
-    assert(!StrKey.isValidContractId(
-        "GA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE"));
+    assert(
+      !StrKey.isValidContractId(
+        "GA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE",
+      ),
+    );
   });
 
-  test('test contract id hex validation accepts what contract id does',
-      () async {
-    // isValidContractIdHex has always taken a C... strkey rather than hex, and
-    // answers for exactly the strings isValidContractId answers for.
-    final contractId =
-        "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE";
-    final asHex =
-        "363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103";
-    final candidates = <String, bool>{
-      contractId: true,
-      asHex: false,
-      "GA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE": false,
-      "INVALID": false,
-      "": false,
-    };
+  test(
+    'test contract id hex validation accepts what contract id does',
+    () async {
+      // isValidContractIdHex has always taken a C... strkey rather than hex, and
+      // answers for exactly the strings isValidContractId answers for.
+      final contractId =
+          "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE";
+      final asHex =
+          "363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103";
+      final candidates = <String, bool>{
+        contractId: true,
+        asHex: false,
+        "GA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE": false,
+        "INVALID": false,
+        "": false,
+      };
 
-    candidates.forEach((candidate, accepted) {
-      expect(StrKey.isValidContractIdHex(candidate), accepted,
-          reason: candidate);
-      expect(StrKey.isValidContractIdHex(candidate),
+      candidates.forEach((candidate, accepted) {
+        expect(
+          StrKey.isValidContractIdHex(candidate),
+          accepted,
+          reason: candidate,
+        );
+        expect(
+          StrKey.isValidContractIdHex(candidate),
           StrKey.isValidContractId(candidate),
-          reason: candidate);
-    });
-  });
+          reason: candidate,
+        );
+      });
+    },
+  );
 
   test('test liquidity pools', () async {
     final liquidityPoolId =
@@ -419,13 +506,17 @@ void main() {
         "3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a";
     var decoded = StrKey.decodeLiquidityPoolId(liquidityPoolId);
     assert(asHex == Util.bytesToHex(decoded));
-    assert(liquidityPoolId ==
-        StrKey.encodeLiquidityPoolId(Util.hexToBytes(asHex)));
+    assert(
+      liquidityPoolId == StrKey.encodeLiquidityPoolId(Util.hexToBytes(asHex)),
+    );
     assert(liquidityPoolId == StrKey.encodeLiquidityPoolIdHex(asHex));
 
     assert(StrKey.isValidLiquidityPoolId(liquidityPoolId));
-    assert(!StrKey.isValidLiquidityPoolId(
-        "LB7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN"));
+    assert(
+      !StrKey.isValidLiquidityPoolId(
+        "LB7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN",
+      ),
+    );
   });
 
   test('test claimable balances', () async {
@@ -435,13 +526,18 @@ void main() {
         "003f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a";
     var decoded = StrKey.decodeClaimableBalanceId(claimableBalanceId);
     assert(asHex == Util.bytesToHex(decoded));
-    assert(claimableBalanceId ==
-        StrKey.encodeClaimableBalanceId(Util.hexToBytes(asHex)));
+    assert(
+      claimableBalanceId ==
+          StrKey.encodeClaimableBalanceId(Util.hexToBytes(asHex)),
+    );
     assert(claimableBalanceId == StrKey.encodeClaimableBalanceIdHex(asHex));
 
     assert(StrKey.isValidClaimableBalanceId(claimableBalanceId));
-    assert(!StrKey.isValidClaimableBalanceId(
-        "BBAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU"));
+    assert(
+      !StrKey.isValidClaimableBalanceId(
+        "BBAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU",
+      ),
+    );
 
     // test with removed discriminant
     final asHex2 =
@@ -458,23 +554,30 @@ void main() {
     // any of those bytes names no balance id type.
     for (final prefix in <String>["00000001", "01000000", "00010000"]) {
       expect(
-          () => StrKey.encodeClaimableBalanceIdHex(prefix + asHex2),
-          throwsExceptionWith("claimable balance id carries an XDR "
-              "discriminant that names no claimable balance id type"),
-          reason: prefix);
+        () => StrKey.encodeClaimableBalanceIdHex(prefix + asHex2),
+        throwsExceptionWith(
+          "claimable balance id carries an XDR "
+          "discriminant that names no claimable balance id type",
+        ),
+        reason: prefix,
+      );
     }
 
-    final xdr = "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";
+    final xdr =
+        "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";
 
     final aTx = AbstractTransaction.fromEnvelopeXdrString(xdr);
-    assert (aTx is Transaction);
+    assert(aTx is Transaction);
     final tx = aTx as Transaction;
     final op = tx.operations.first;
     assert(op is InvokeHostFunctionOperation);
     final hostFunction = (op as InvokeHostFunctionOperation).function;
     assert(hostFunction is InvokeContractHostFunction);
     final contractId = (hostFunction as InvokeContractHostFunction).contractID;
-    assert("BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU" == contractId);
+    assert(
+      "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU" ==
+          contractId,
+    );
   });
 
   // The signed payload strkeys SEP-0023 lists as invalid, each named by the
@@ -497,37 +600,37 @@ void main() {
     // The unused trailing bit is set.
     (
       "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWD",
-      "Invalid encoded string"
+      "Invalid encoded string",
     ),
     // The length is congruent to 6 mod 8.
     (
       "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWCA",
-      "Encoded string must be 69 characters, got 70"
+      "Encoded string must be 69 characters, got 70",
     ),
     // Base-32 decoding yields 44 bytes, not 43.
     (
       "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAAIOUI",
-      "Encoded string must be 69 characters, got 71"
+      "Encoded string must be 69 characters, got 71",
     ),
     // The low 3 bits of the version byte are 7, checksum recomputed.
     (
       "W47QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAADXHW",
-      "Version byte is invalid"
+      "Version byte is invalid",
     ),
     // The low 3 bits of the version byte are 7, checksum not recomputed.
     (
       "W47QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC",
-      "Version byte is invalid"
+      "Version byte is invalid",
     ),
     // The checksum does not match.
     (
       "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWA",
-      "Checksum invalid"
+      "Checksum invalid",
     ),
     // Padding is not allowed.
     (
       "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC===",
-      "Encoded string must be 69 characters, got 72"
+      "Encoded string must be 69 characters, got 72",
     ),
   ];
 
@@ -616,104 +719,142 @@ void main() {
     final payloadOf31Bytes = Uint8List.fromList(List<int>.filled(31, 1));
     final payloadOf32Bytes = Uint8List.fromList(List<int>.filled(32, 1));
     final payloadOf37Bytes = Uint8List.fromList(List<int>.filled(37, 1));
-    final accountIdOf31Bytes =
-        craftStrKey(VersionByte.ACCOUNT_ID.getValue(), payloadOf31Bytes);
-    final accountIdOf32Bytes =
-        StrKey.encodeCheck(VersionByte.ACCOUNT_ID, payloadOf32Bytes);
-    final accountIdOf37Bytes =
-        craftStrKey(VersionByte.ACCOUNT_ID.getValue(), payloadOf37Bytes);
-    final liquidityPoolOf32Bytes =
-        StrKey.encodeCheck(VersionByte.LIQUIDITY_POOL, payloadOf32Bytes);
+    final accountIdOf31Bytes = craftStrKey(
+      VersionByte.ACCOUNT_ID.getValue(),
+      payloadOf31Bytes,
+    );
+    final accountIdOf32Bytes = StrKey.encodeCheck(
+      VersionByte.ACCOUNT_ID,
+      payloadOf32Bytes,
+    );
+    final accountIdOf37Bytes = craftStrKey(
+      VersionByte.ACCOUNT_ID.getValue(),
+      payloadOf37Bytes,
+    );
+    final liquidityPoolOf32Bytes = StrKey.encodeCheck(
+      VersionByte.LIQUIDITY_POOL,
+      payloadOf32Bytes,
+    );
 
     test('accepts the address the wrong-width vectors are built beside', () {
       expect(accountIdOf32Bytes.length, 56);
       expect(
-          StrKey.decodeStellarAccountId(accountIdOf32Bytes), payloadOf32Bytes);
+        StrKey.decodeStellarAccountId(accountIdOf32Bytes),
+        payloadOf32Bytes,
+      );
     });
 
     test('refuses an empty string', () {
-      expect(() => StrKey.decodeStellarAccountId(""),
-          throwsFormat("Encoded string must be 56 characters, got 0"));
+      expect(
+        () => StrKey.decodeStellarAccountId(""),
+        throwsFormat("Encoded string must be 56 characters, got 0"),
+      );
     });
 
     test('refuses a one character string', () {
-      expect(() => StrKey.decodeStellarAccountId("G"),
-          throwsFormat("Encoded string must be 56 characters, got 1"));
+      expect(
+        () => StrKey.decodeStellarAccountId("G"),
+        throwsFormat("Encoded string must be 56 characters, got 1"),
+      );
     });
 
     test('refuses a valid checksum carried on too few characters', () {
       expect(accountIdOf31Bytes.length, 55);
-      expect(() => StrKey.decodeStellarAccountId(accountIdOf31Bytes),
-          throwsFormat("Encoded string must be 56 characters, got 55"));
+      expect(
+        () => StrKey.decodeStellarAccountId(accountIdOf31Bytes),
+        throwsFormat("Encoded string must be 56 characters, got 55"),
+      );
     });
 
     test('refuses a valid checksum carried on too many characters', () {
       expect(accountIdOf37Bytes.length, 64);
-      expect(() => StrKey.decodeStellarAccountId(accountIdOf37Bytes),
-          throwsFormat("Encoded string must be 56 characters, got 64"));
-      expect(() => KeyPair.fromAccountId(accountIdOf37Bytes),
-          throwsFormat("Encoded string must be 56 characters, got 64"));
+      expect(
+        () => StrKey.decodeStellarAccountId(accountIdOf37Bytes),
+        throwsFormat("Encoded string must be 56 characters, got 64"),
+      );
+      expect(
+        () => KeyPair.fromAccountId(accountIdOf37Bytes),
+        throwsFormat("Encoded string must be 56 characters, got 64"),
+      );
     });
 
     test('refuses an over-long string', () {
       final overLongAccountId = "G${"A" * 319999}";
       expect(overLongAccountId.length, 320000);
-      expect(() => StrKey.decodeStellarAccountId(overLongAccountId),
-          throwsFormat("Encoded string must be 56 characters, got 320000"));
+      expect(
+        () => StrKey.decodeStellarAccountId(overLongAccountId),
+        throwsFormat("Encoded string must be 56 characters, got 320000"),
+      );
 
       final overLongSignedPayload = "P${"A" * 319999}";
       expect(
-          () => StrKey.decodeSignedPayload(overLongSignedPayload),
-          throwsFormat(
-              "Encoded string must be 69 to 165 characters, got 320000"));
+        () => StrKey.decodeSignedPayload(overLongSignedPayload),
+        throwsFormat("Encoded string must be 69 to 165 characters, got 320000"),
+      );
     });
 
     test('refuses the muxed contracts SEP-0023 lists as invalid', () {
       for (final (strKey, message) in invalidMuxedContracts) {
-        expect(() => StrKey.decodeMuxedContractId(strKey),
-            throwsFormat(message),
-            reason: strKey);
+        expect(
+          () => StrKey.decodeMuxedContractId(strKey),
+          throwsFormat(message),
+          reason: strKey,
+        );
       }
     });
 
     test('refuses a version byte belonging to another type', () {
       expect(liquidityPoolOf32Bytes.length, 56);
-      expect(() => StrKey.decodeContractId(liquidityPoolOf32Bytes),
-          throwsFormat("Version byte is invalid"));
+      expect(
+        () => StrKey.decodeContractId(liquidityPoolOf32Bytes),
+        throwsFormat("Version byte is invalid"),
+      );
     });
 
     test('refuses a version byte naming no type at all', () {
-      expect(() => StrKey.decodeCheck(VersionByte(0), accountIdOf32Bytes),
-          throwsFormat("Unrecognized version byte 0"));
+      expect(
+        () => StrKey.decodeCheck(VersionByte(0), accountIdOf32Bytes),
+        throwsFormat("Unrecognized version byte 0"),
+      );
 
       // One above the account id version byte, so the low three bits carry a
       // value no type claims.
-      expect(() => StrKey.decodeCheck(VersionByte(49), accountIdOf32Bytes),
-          throwsFormat("Unrecognized version byte 49"));
+      expect(
+        () => StrKey.decodeCheck(VersionByte(49), accountIdOf32Bytes),
+        throwsFormat("Unrecognized version byte 49"),
+      );
     });
 
     test('refuses a claimable balance id of an unknown type', () {
       expect(
-          () => StrKey.decodeClaimableBalanceId(claimableBalanceOfUnknownType),
-          throwsFormat("Decoded claimable balance id carries the discriminant "
-              "1, which names no claimable balance id type"));
+        () => StrKey.decodeClaimableBalanceId(claimableBalanceOfUnknownType),
+        throwsFormat(
+          "Decoded claimable balance id carries the discriminant "
+          "1, which names no claimable balance id type",
+        ),
+      );
     });
 
     test('refuses to build a balance id from an unknown type', () {
       XdrClaimableBalanceID? built;
       expect(
-          () => built =
-              XdrClaimableBalanceID.forId(claimableBalanceOfUnknownType),
-          throwsA(isA<FormatException>()));
+        () =>
+            built = XdrClaimableBalanceID.forId(claimableBalanceOfUnknownType),
+        throwsA(isA<FormatException>()),
+      );
       expect(built, isNull);
     });
 
     test('refuses to encode a claimable balance id of an unknown type', () {
       expect(
-          () => StrKey.encodeClaimableBalanceId(
-              Uint8List.fromList([1, ...payloadOf32Bytes])),
-          throwsExceptionWith("claimable balance id carries the discriminant 1,"
-              " which names no claimable balance id type"));
+        () => StrKey.encodeClaimableBalanceId(
+          Uint8List.fromList([1, ...payloadOf32Bytes]),
+        ),
+        throwsExceptionWith(
+          "claimable balance id carries the discriminant 1,"
+          " which names no claimable balance id type",
+        ),
+      );
     });
 
     test('refuses to encode a claimable balance id of an unknown type through '
@@ -722,30 +863,40 @@ void main() {
       // and encodeCheck holds the same rule for a caller that reaches past it.
       final unknownType = Uint8List.fromList([1, ...payloadOf32Bytes]);
       expect(
-          () => StrKey.encodeCheck(VersionByte.CLAIMABLE_BALANCE, unknownType),
-          throwsFormat("Claimable balance id carries the discriminant 1, "
-              "which names no claimable balance id type"));
+        () => StrKey.encodeCheck(VersionByte.CLAIMABLE_BALANCE, unknownType),
+        throwsFormat(
+          "Claimable balance id carries the discriminant 1, "
+          "which names no claimable balance id type",
+        ),
+      );
       expect(
-          () => StrKey.decodeClaimableBalanceId(
-              craftStrKey(VersionByte.CLAIMABLE_BALANCE.getValue(),
-                  unknownType)),
-          throwsFormat("Decoded claimable balance id carries the discriminant "
-              "1, which names no claimable balance id type"));
+        () => StrKey.decodeClaimableBalanceId(
+          craftStrKey(VersionByte.CLAIMABLE_BALANCE.getValue(), unknownType),
+        ),
+        throwsFormat(
+          "Decoded claimable balance id carries the discriminant "
+          "1, which names no claimable balance id type",
+        ),
+      );
     });
 
     test('refuses to encode a claimable balance id of the wrong width', () {
       expect(
-          () => StrKey.encodeClaimableBalanceId(payloadOf31Bytes),
-          throwsExceptionWith(
-              "claimable balance id must be 32 bytes (the hash), 33 bytes "
-              "(the hash behind its discriminant), or 36 bytes "
-              "(its XDR encoding), got 31"));
+        () => StrKey.encodeClaimableBalanceId(payloadOf31Bytes),
+        throwsExceptionWith(
+          "claimable balance id must be 32 bytes (the hash), 33 bytes "
+          "(the hash behind its discriminant), or 36 bytes "
+          "(its XDR encoding), got 31",
+        ),
+      );
       expect(
-          () => StrKey.encodeClaimableBalanceId(payloadOf37Bytes),
-          throwsExceptionWith(
-              "claimable balance id must be 32 bytes (the hash), 33 bytes "
-              "(the hash behind its discriminant), or 36 bytes "
-              "(its XDR encoding), got 37"));
+        () => StrKey.encodeClaimableBalanceId(payloadOf37Bytes),
+        throwsExceptionWith(
+          "claimable balance id must be 32 bytes (the hash), 33 bytes "
+          "(the hash behind its discriminant), or 36 bytes "
+          "(its XDR encoding), got 37",
+        ),
+      );
     });
   });
 
@@ -757,8 +908,11 @@ void main() {
     /// [body] as the bytes that follow it.
     Uint8List region(int declared, List<int> body) {
       final length = ByteData(4)..setUint32(0, declared, Endian.big);
-      return Uint8List.fromList(
-          [...signerKey, ...length.buffer.asUint8List(), ...body]);
+      return Uint8List.fromList([
+        ...signerKey,
+        ...length.buffer.asUint8List(),
+        ...body,
+      ]);
     }
 
     final declaresEmptyPayload = region(0, List<int>.filled(4, 0));
@@ -769,42 +923,58 @@ void main() {
     final wellFramed = region(29, [...List<int>.filled(29, 7), 0, 0, 0]);
 
     test('names the payload lengths a signed payload cannot render', () {
-      expect(StrKey.signedPayloadLengthViolation(0),
-          "carries an empty payload, which has no strkey rendering");
-      expect(StrKey.signedPayloadLengthViolation(65),
-          "carries a 65-byte payload, more than the declared maximum of 64");
+      expect(
+        StrKey.signedPayloadLengthViolation(0),
+        "carries an empty payload, which has no strkey rendering",
+      );
+      expect(
+        StrKey.signedPayloadLengthViolation(65),
+        "carries a 65-byte payload, more than the declared maximum of 64",
+      );
       expect(StrKey.signedPayloadLengthViolation(1), isNull);
       expect(StrKey.signedPayloadLengthViolation(64), isNull);
     });
 
     test('names a region too short to hold a signer key and a length', () {
-      expect(StrKey.signedPayloadFramingViolation(Uint8List(35)),
-          "is 35 bytes, too short to hold a signer key and a payload length");
+      expect(
+        StrKey.signedPayloadFramingViolation(Uint8List(35)),
+        "is 35 bytes, too short to hold a signer key and a payload length",
+      );
     });
 
     test('names a region declaring an empty payload', () {
-      expect(StrKey.signedPayloadFramingViolation(declaresEmptyPayload),
-          "carries an empty payload, which has no strkey rendering");
+      expect(
+        StrKey.signedPayloadFramingViolation(declaresEmptyPayload),
+        "carries an empty payload, which has no strkey rendering",
+      );
     });
 
     test('names a region declaring more than the maximum payload', () {
-      expect(StrKey.signedPayloadFramingViolation(declaresOversizePayload),
-          "carries a 65-byte payload, more than the declared maximum of 64");
+      expect(
+        StrKey.signedPayloadFramingViolation(declaresOversizePayload),
+        "carries a 65-byte payload, more than the declared maximum of 64",
+      );
     });
 
     test('names a region wider than its declared length occupies', () {
-      expect(StrKey.signedPayloadFramingViolation(declaresLessThanItCarries),
-          "is 72 bytes, but a 32-byte payload occupies 68");
+      expect(
+        StrKey.signedPayloadFramingViolation(declaresLessThanItCarries),
+        "is 72 bytes, but a 32-byte payload occupies 68",
+      );
     });
 
     test('names a region narrower than its declared length occupies', () {
-      expect(StrKey.signedPayloadFramingViolation(declaresMoreThanItCarries),
-          "is 64 bytes, but a 29-byte payload occupies 68");
+      expect(
+        StrKey.signedPayloadFramingViolation(declaresMoreThanItCarries),
+        "is 64 bytes, but a 29-byte payload occupies 68",
+      );
     });
 
     test('names a region padding its payload with a byte that is not NUL', () {
-      expect(StrKey.signedPayloadFramingViolation(padsWithoutNul),
-          "pads its payload with a byte that is not NUL");
+      expect(
+        StrKey.signedPayloadFramingViolation(padsWithoutNul),
+        "pads its payload with a byte that is not NUL",
+      );
     });
 
     test('accepts a well framed region', () {
@@ -818,40 +988,53 @@ void main() {
       final cases = <(String, String)>[
         (
           craftStrKey(
-              VersionByte.SIGNED_PAYLOAD.getValue(), declaresEmptyPayload),
+            VersionByte.SIGNED_PAYLOAD.getValue(),
+            declaresEmptyPayload,
+          ),
           "Decoded signed payload carries an empty payload, "
-              "which has no strkey rendering"
+              "which has no strkey rendering",
         ),
         (
           craftStrKey(
-              VersionByte.SIGNED_PAYLOAD.getValue(), declaresOversizePayload),
+            VersionByte.SIGNED_PAYLOAD.getValue(),
+            declaresOversizePayload,
+          ),
           "Decoded signed payload carries a 65-byte payload, "
-              "more than the declared maximum of 64"
+              "more than the declared maximum of 64",
         ),
         (
           craftStrKey(
-              VersionByte.SIGNED_PAYLOAD.getValue(), declaresLessThanItCarries),
+            VersionByte.SIGNED_PAYLOAD.getValue(),
+            declaresLessThanItCarries,
+          ),
           "Decoded signed payload is 72 bytes, "
-              "but a 32-byte payload occupies 68"
+              "but a 32-byte payload occupies 68",
         ),
         (
           craftStrKey(
-              VersionByte.SIGNED_PAYLOAD.getValue(), declaresMoreThanItCarries),
+            VersionByte.SIGNED_PAYLOAD.getValue(),
+            declaresMoreThanItCarries,
+          ),
           "Decoded signed payload is 64 bytes, "
-              "but a 29-byte payload occupies 68"
+              "but a 29-byte payload occupies 68",
         ),
         (
           craftStrKey(VersionByte.SIGNED_PAYLOAD.getValue(), padsWithoutNul),
-          "Decoded signed payload pads its payload with a byte that is not NUL"
+          "Decoded signed payload pads its payload with a byte that is not NUL",
         ),
       ];
 
       for (final (address, message) in cases) {
-        expect(() => StrKey.decodeSignedPayload(address), throwsFormat(message),
-            reason: address);
-        expect(() => StrKey.decodeXdrSignedPayload(address),
-            throwsFormat(message),
-            reason: address);
+        expect(
+          () => StrKey.decodeSignedPayload(address),
+          throwsFormat(message),
+          reason: address,
+        );
+        expect(
+          () => StrKey.decodeXdrSignedPayload(address),
+          throwsFormat(message),
+          reason: address,
+        );
         expect(StrKey.isValidSignedPayload(address), isFalse, reason: address);
       }
     });
@@ -861,41 +1044,46 @@ void main() {
         (
           declaresEmptyPayload,
           "Signed payload carries an empty payload, "
-              "which has no strkey rendering"
+              "which has no strkey rendering",
         ),
         (
           declaresOversizePayload,
           "Signed payload carries a 65-byte payload, "
-              "more than the declared maximum of 64"
+              "more than the declared maximum of 64",
         ),
         (
           declaresLessThanItCarries,
-          "Signed payload is 72 bytes, but a 32-byte payload occupies 68"
+          "Signed payload is 72 bytes, but a 32-byte payload occupies 68",
         ),
         (
           declaresMoreThanItCarries,
-          "Signed payload is 64 bytes, but a 29-byte payload occupies 68"
+          "Signed payload is 64 bytes, but a 29-byte payload occupies 68",
         ),
         (
           padsWithoutNul,
-          "Signed payload pads its payload with a byte that is not NUL"
+          "Signed payload pads its payload with a byte that is not NUL",
         ),
       ];
 
       for (final (region, message) in cases) {
         expect(
-            () => StrKey.encodeCheck(VersionByte.SIGNED_PAYLOAD, region),
-            throwsFormat(message),
-            reason: message);
+          () => StrKey.encodeCheck(VersionByte.SIGNED_PAYLOAD, region),
+          throwsFormat(message),
+          reason: message,
+        );
       }
     });
 
     test('encodes a well framed region', () {
-      final encoded =
-          StrKey.encodeCheck(VersionByte.SIGNED_PAYLOAD, wellFramed);
+      final encoded = StrKey.encodeCheck(
+        VersionByte.SIGNED_PAYLOAD,
+        wellFramed,
+      );
       expect(encoded, startsWith("P"));
-      expect(StrKey.decodeCheck(VersionByte.SIGNED_PAYLOAD, encoded),
-          wellFramed);
+      expect(
+        StrKey.decodeCheck(VersionByte.SIGNED_PAYLOAD, encoded),
+        wellFramed,
+      );
     });
 
     test('refuses the signed payloads SEP-0023 lists as invalid', () {
@@ -905,26 +1093,31 @@ void main() {
         (
           signedPayloadPrefixShorterThanPayload,
           "Decoded signed payload is 72 bytes, "
-              "but a 32-byte payload occupies 68"
+              "but a 32-byte payload occupies 68",
         ),
         (
           signedPayloadPrefixLongerThanPayload,
           "Decoded signed payload is 64 bytes, "
-              "but a 29-byte payload occupies 68"
+              "but a 29-byte payload occupies 68",
         ),
         (
           signedPayloadWithoutZeroPadding,
           "Decoded signed payload is 65 bytes, "
-              "but a 29-byte payload occupies 68"
+              "but a 29-byte payload occupies 68",
         ),
       ];
 
       for (final (address, message) in cases) {
-        expect(() => StrKey.decodeSignedPayload(address), throwsFormat(message),
-            reason: address);
-        expect(() => StrKey.decodeXdrSignedPayload(address),
-            throwsFormat(message),
-            reason: address);
+        expect(
+          () => StrKey.decodeSignedPayload(address),
+          throwsFormat(message),
+          reason: address,
+        );
+        expect(
+          () => StrKey.decodeXdrSignedPayload(address),
+          throwsFormat(message),
+          reason: address,
+        );
       }
     });
 
@@ -932,35 +1125,51 @@ void main() {
       // 1 and 3 bytes are padded to 4, 4 bytes takes no padding, 5 bytes is
       // padded to 8, and 64 bytes is the widest payload the format carries.
       for (final width in <int>[1, 3, 4, 5, 64]) {
-        final payload =
-            Uint8List.fromList(List<int>.generate(width, (int i) => i + 1));
+        final payload = Uint8List.fromList(
+          List<int>.generate(width, (int i) => i + 1),
+        );
         final encoded = StrKey.encodeSignedPayload(
-            SignedPayloadSigner.fromPublicKey(signerKey, payload));
+          SignedPayloadSigner.fromPublicKey(signerKey, payload),
+        );
 
         final decoded = StrKey.decodeSignedPayload(encoded);
         expect(decoded.payload, payload, reason: "payload of $width bytes");
-        expect(StrKey.encodeSignedPayload(decoded), encoded,
-            reason: "payload of $width bytes");
+        expect(
+          StrKey.encodeSignedPayload(decoded),
+          encoded,
+          reason: "payload of $width bytes",
+        );
 
         final decodedXdr = StrKey.decodeXdrSignedPayload(encoded);
-        expect(decodedXdr.payload.dataValue, payload,
-            reason: "payload of $width bytes");
-        expect(StrKey.encodeXdrSignedPayload(decodedXdr), encoded,
-            reason: "payload of $width bytes");
+        expect(
+          decodedXdr.payload.dataValue,
+          payload,
+          reason: "payload of $width bytes",
+        );
+        expect(
+          StrKey.encodeXdrSignedPayload(decodedXdr),
+          encoded,
+          reason: "payload of $width bytes",
+        );
       }
     });
 
     test('reaches both ends of its encoded length range', () {
       expect(
-          StrKey.encodeSignedPayload(SignedPayloadSigner.fromPublicKey(
-                  signerKey, Uint8List.fromList([1])))
-              .length,
-          69);
+        StrKey.encodeSignedPayload(
+          SignedPayloadSigner.fromPublicKey(signerKey, Uint8List.fromList([1])),
+        ).length,
+        69,
+      );
       expect(
-          StrKey.encodeSignedPayload(SignedPayloadSigner.fromPublicKey(
-                  signerKey, Uint8List.fromList(List<int>.filled(64, 1))))
-              .length,
-          165);
+        StrKey.encodeSignedPayload(
+          SignedPayloadSigner.fromPublicKey(
+            signerKey,
+            Uint8List.fromList(List<int>.filled(64, 1)),
+          ),
+        ).length,
+        165,
+      );
     });
   });
 
@@ -969,12 +1178,16 @@ void main() {
       // Read back as the length prefix declares, this address yields a 32-byte
       // payload that re-encodes to a shorter, different address.
       expect(
-          () => StrKey.decodeSignedPayload(
-              signedPayloadPrefixShorterThanPayload),
-          throwsFormat("Decoded signed payload is 72 bytes, "
-              "but a 32-byte payload occupies 68"));
-      expect(StrKey.isValidSignedPayload(signedPayloadPrefixShorterThanPayload),
-          isFalse);
+        () => StrKey.decodeSignedPayload(signedPayloadPrefixShorterThanPayload),
+        throwsFormat(
+          "Decoded signed payload is 72 bytes, "
+          "but a 32-byte payload occupies 68",
+        ),
+      );
+      expect(
+        StrKey.isValidSignedPayload(signedPayloadPrefixShorterThanPayload),
+        isFalse,
+      );
     });
 
     test('re-encodes every accepted address to the string it came from', () {
@@ -982,59 +1195,61 @@ void main() {
         (
           accountIdEncoded,
           (String a) =>
-              StrKey.encodeStellarAccountId(StrKey.decodeStellarAccountId(a))
+              StrKey.encodeStellarAccountId(StrKey.decodeStellarAccountId(a)),
         ),
         (
           MPUBKEY,
           (String a) => StrKey.encodeStellarMuxedAccountId(
-              StrKey.decodeStellarMuxedAccountId(a))
+            StrKey.decodeStellarMuxedAccountId(a),
+          ),
         ),
         (
           seedEncoded,
           (String a) =>
-              StrKey.encodeStellarSecretSeed(StrKey.decodeStellarSecretSeed(a))
+              StrKey.encodeStellarSecretSeed(StrKey.decodeStellarSecretSeed(a)),
         ),
         (
           StrKey.encodePreAuthTx(keyPair.publicKey),
-          (String a) => StrKey.encodePreAuthTx(StrKey.decodePreAuthTx(a))
+          (String a) => StrKey.encodePreAuthTx(StrKey.decodePreAuthTx(a)),
         ),
         (
           StrKey.encodeSha256Hash(keyPair.publicKey),
-          (String a) => StrKey.encodeSha256Hash(StrKey.decodeSha256Hash(a))
+          (String a) => StrKey.encodeSha256Hash(StrKey.decodeSha256Hash(a)),
         ),
         (
           signedPayloadOf32Bytes,
           (String a) =>
-              StrKey.encodeSignedPayload(StrKey.decodeSignedPayload(a))
+              StrKey.encodeSignedPayload(StrKey.decodeSignedPayload(a)),
         ),
         (
           signedPayloadOf29Bytes,
           (String a) =>
-              StrKey.encodeSignedPayload(StrKey.decodeSignedPayload(a))
+              StrKey.encodeSignedPayload(StrKey.decodeSignedPayload(a)),
         ),
         (
           signedPayloadOf29Bytes,
           (String a) =>
-              StrKey.encodeXdrSignedPayload(StrKey.decodeXdrSignedPayload(a))
+              StrKey.encodeXdrSignedPayload(StrKey.decodeXdrSignedPayload(a)),
         ),
         (
           "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE",
-          (String a) => StrKey.encodeContractId(StrKey.decodeContractId(a))
+          (String a) => StrKey.encodeContractId(StrKey.decodeContractId(a)),
         ),
         (
           "LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN",
           (String a) =>
-              StrKey.encodeLiquidityPoolId(StrKey.decodeLiquidityPoolId(a))
+              StrKey.encodeLiquidityPoolId(StrKey.decodeLiquidityPoolId(a)),
         ),
         (
           "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU",
           (String a) => StrKey.encodeClaimableBalanceId(
-              StrKey.decodeClaimableBalanceId(a))
+            StrKey.decodeClaimableBalanceId(a),
+          ),
         ),
         (
           muxedContracts.last.$3,
           (String a) =>
-              StrKey.encodeMuxedContractId(StrKey.decodeMuxedContractId(a))
+              StrKey.encodeMuxedContractId(StrKey.decodeMuxedContractId(a)),
         ),
       ];
 
@@ -1052,8 +1267,7 @@ void main() {
     final hash = Uint8List.fromList(List<int>.filled(32, 1));
     final hashAndId = Uint8List.fromList([...hash, ...List<int>.filled(8, 2)]);
     final claimableBalance = Uint8List.fromList([0, ...hash]);
-    final signedPayload =
-        Uint8List.fromList([...hash, 0, 0, 0, 4, 9, 9, 9, 9]);
+    final signedPayload = Uint8List.fromList([...hash, 0, 0, 0, 4, 9, 9, 9, 9]);
 
     final payloads = <(VersionByte, Uint8List)>[
       (VersionByte.ACCOUNT_ID, hash),
@@ -1072,8 +1286,11 @@ void main() {
       expect(payloads.length, 10);
       for (final (versionByte, payload) in payloads) {
         final encoded = StrKey.encodeCheck(versionByte, payload);
-        expect(StrKey.decodeCheck(versionByte, encoded), payload,
-            reason: "version byte ${versionByte.getValue()}");
+        expect(
+          StrKey.decodeCheck(versionByte, encoded),
+          payload,
+          reason: "version byte ${versionByte.getValue()}",
+        );
       }
     });
   });

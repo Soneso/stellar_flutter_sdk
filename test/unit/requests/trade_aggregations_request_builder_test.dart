@@ -14,7 +14,8 @@ void main() {
     late int endTime;
     late int resolution;
     late int offset;
-    final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+    final issuerAccountId =
+        'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
     setUp(() {
       mockClient = MockClient((request) async {
@@ -94,13 +95,22 @@ void main() {
         );
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['base_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['base_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['base_asset_code'], equals('USD'));
-        expect(uri.queryParameters['base_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['base_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds base asset parameters for AlphaNum12', () {
-        final baseAsset = AssetTypeCreditAlphaNum12('LONGASSET', issuerAccountId);
+        final baseAsset = AssetTypeCreditAlphaNum12(
+          'LONGASSET',
+          issuerAccountId,
+        );
         final builder = TradeAggregationsRequestBuilder(
           mockClient,
           serverUri,
@@ -113,9 +123,15 @@ void main() {
         );
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['base_asset_type'], equals('credit_alphanum12'));
+        expect(
+          uri.queryParameters['base_asset_type'],
+          equals('credit_alphanum12'),
+        );
         expect(uri.queryParameters['base_asset_code'], equals('LONGASSET'));
-        expect(uri.queryParameters['base_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['base_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds base asset parameters for native asset', () {
@@ -153,13 +169,22 @@ void main() {
         );
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['counter_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['counter_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['counter_asset_code'], equals('EUR'));
-        expect(uri.queryParameters['counter_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['counter_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds counter asset parameters for AlphaNum12', () {
-        final counterAsset = AssetTypeCreditAlphaNum12('COUNTERLONG', issuerAccountId);
+        final counterAsset = AssetTypeCreditAlphaNum12(
+          'COUNTERLONG',
+          issuerAccountId,
+        );
         final builder = TradeAggregationsRequestBuilder(
           mockClient,
           serverUri,
@@ -172,9 +197,18 @@ void main() {
         );
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['counter_asset_type'], equals('credit_alphanum12'));
-        expect(uri.queryParameters['counter_asset_code'], equals('COUNTERLONG'));
-        expect(uri.queryParameters['counter_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['counter_asset_type'],
+          equals('credit_alphanum12'),
+        );
+        expect(
+          uri.queryParameters['counter_asset_code'],
+          equals('COUNTERLONG'),
+        );
+        expect(
+          uri.queryParameters['counter_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds counter asset parameters for native asset', () {
@@ -193,7 +227,10 @@ void main() {
 
         expect(uri.queryParameters['counter_asset_type'], equals('native'));
         expect(uri.queryParameters.containsKey('counter_asset_code'), isFalse);
-        expect(uri.queryParameters.containsKey('counter_asset_issuer'), isFalse);
+        expect(
+          uri.queryParameters.containsKey('counter_asset_issuer'),
+          isFalse,
+        );
       });
     });
 
@@ -243,7 +280,10 @@ void main() {
         );
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['resolution'], equals(resolution.toString()));
+        expect(
+          uri.queryParameters['resolution'],
+          equals(resolution.toString()),
+        );
       });
 
       test('adds offset parameter', () {
@@ -417,13 +457,22 @@ void main() {
         );
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['base_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['base_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['base_asset_code'], equals('USD'));
-        expect(uri.queryParameters['counter_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['counter_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['counter_asset_code'], equals('EUR'));
         expect(uri.queryParameters['start_time'], equals(startTime.toString()));
         expect(uri.queryParameters['end_time'], equals(endTime.toString()));
-        expect(uri.queryParameters['resolution'], equals(resolution.toString()));
+        expect(
+          uri.queryParameters['resolution'],
+          equals(resolution.toString()),
+        );
         expect(uri.queryParameters['offset'], equals(offset.toString()));
       });
 
@@ -443,7 +492,10 @@ void main() {
         final uri = builder.buildUri();
 
         expect(uri.queryParameters['base_asset_type'], equals('native'));
-        expect(uri.queryParameters['counter_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['counter_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['counter_asset_code'], equals('USDC'));
       });
 
@@ -462,14 +514,23 @@ void main() {
         );
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['base_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['base_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['base_asset_code'], equals('BTC'));
         expect(uri.queryParameters['counter_asset_type'], equals('native'));
       });
 
       test('builds URI with AlphaNum12 assets', () {
-        final baseAsset = AssetTypeCreditAlphaNum12('LONGBASE', issuerAccountId);
-        final counterAsset = AssetTypeCreditAlphaNum12('LONGCOUNTER', issuerAccountId);
+        final baseAsset = AssetTypeCreditAlphaNum12(
+          'LONGBASE',
+          issuerAccountId,
+        );
+        final counterAsset = AssetTypeCreditAlphaNum12(
+          'LONGCOUNTER',
+          issuerAccountId,
+        );
         final builder = TradeAggregationsRequestBuilder(
           mockClient,
           serverUri,
@@ -482,10 +543,19 @@ void main() {
         );
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['base_asset_type'], equals('credit_alphanum12'));
+        expect(
+          uri.queryParameters['base_asset_type'],
+          equals('credit_alphanum12'),
+        );
         expect(uri.queryParameters['base_asset_code'], equals('LONGBASE'));
-        expect(uri.queryParameters['counter_asset_type'], equals('credit_alphanum12'));
-        expect(uri.queryParameters['counter_asset_code'], equals('LONGCOUNTER'));
+        expect(
+          uri.queryParameters['counter_asset_type'],
+          equals('credit_alphanum12'),
+        );
+        expect(
+          uri.queryParameters['counter_asset_code'],
+          equals('LONGCOUNTER'),
+        );
       });
 
       test('builds URI with all parameters including non-zero offset', () {
@@ -680,7 +750,7 @@ void main() {
       test('returns a page of trade aggregations', () async {
         final page = {
           '_links': {
-            'self': {'href': 'x'}
+            'self': {'href': 'x'},
           },
           '_embedded': {
             'records': [
@@ -697,10 +767,10 @@ void main() {
                 'open': '0.4500000',
                 'open_r': {'n': 9, 'd': 20},
                 'close': '0.5500000',
-                'close_r': {'n': 11, 'd': 20}
-              }
-            ]
-          }
+                'close_r': {'n': 11, 'd': 20},
+              },
+            ],
+          },
         };
 
         final client = MockClient((request) async {

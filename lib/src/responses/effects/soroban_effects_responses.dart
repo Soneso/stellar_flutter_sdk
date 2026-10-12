@@ -45,18 +45,19 @@ class ContractCreditedEffectResponse extends EffectResponse {
 
   /// Creates a [ContractCreditedEffectResponse] with contract ID, amount, asset details and effect details.
   ContractCreditedEffectResponse(
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links,
-      this.contract,
-      this.amount,
-      this.assetType,
-      {this.assetCode,
-        this.assetIssuer});
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+    this.contract,
+    this.amount,
+    this.assetType, {
+    this.assetCode,
+    this.assetIssuer,
+  });
 
   /// Creates a contract credited effect from Horizon API JSON response.
   factory ContractCreditedEffectResponse.fromJson(Map<String, dynamic> json) =>
@@ -72,7 +73,8 @@ class ContractCreditedEffectResponse extends EffectResponse {
           json['amount'],
           json['asset_type'],
           assetCode: json['asset_code'],
-          assetIssuer: json['asset_issuer'])
+          assetIssuer: json['asset_issuer'],
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -118,18 +120,19 @@ class ContractDebitedEffectResponse extends EffectResponse {
 
   /// Creates a [ContractDebitedEffectResponse] with contract ID, amount, asset details and effect details.
   ContractDebitedEffectResponse(
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links,
-      this.contract,
-      this.amount,
-      this.assetType,
-      {this.assetCode,
-        this.assetIssuer});
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+    this.contract,
+    this.amount,
+    this.assetType, {
+    this.assetCode,
+    this.assetIssuer,
+  });
 
   /// Creates a contract debited effect from Horizon API JSON response.
   factory ContractDebitedEffectResponse.fromJson(Map<String, dynamic> json) =>
@@ -145,7 +148,8 @@ class ContractDebitedEffectResponse extends EffectResponse {
           json['amount'],
           json['asset_type'],
           assetCode: json['asset_code'],
-          assetIssuer: json['asset_issuer'])
+          assetIssuer: json['asset_issuer'],
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }

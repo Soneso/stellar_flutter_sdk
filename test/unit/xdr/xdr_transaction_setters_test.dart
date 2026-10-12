@@ -25,8 +25,7 @@ void main() {
       ext.sorobanData = sorobanData;
       expect(ext.sorobanData, equals(sorobanData));
     });
-
-});
+  });
 
   group('XdrFeeBumpTransaction setters', () {
     test('should set feeSource', () {
@@ -39,8 +38,12 @@ void main() {
         XdrFeeBumpTransactionExt(0),
       );
 
-      final newMuxedAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
-      newMuxedAccount.ed25519 = XdrUint256(Uint8List.fromList(List.filled(32, 1)));
+      final newMuxedAccount = XdrMuxedAccount(
+        XdrCryptoKeyType.KEY_TYPE_ED25519,
+      );
+      newMuxedAccount.ed25519 = XdrUint256(
+        Uint8List.fromList(List.filled(32, 1)),
+      );
       tx.feeSource = newMuxedAccount;
       expect(tx.feeSource, equals(newMuxedAccount));
     });
@@ -69,9 +72,14 @@ void main() {
         XdrFeeBumpTransactionExt(0),
       );
 
-      final newInnerTx = XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0);
+      final newInnerTx = XdrFeeBumpTransactionInnerTx(
+        XdrEnvelopeType.ENVELOPE_TYPE_TX_V0,
+      );
       tx.innerTx = newInnerTx;
-      expect(tx.innerTx.discriminant, equals(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0));
+      expect(
+        tx.innerTx.discriminant,
+        equals(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0),
+      );
     });
 
     test('should set ext', () {
@@ -148,7 +156,10 @@ void main() {
         XdrTransactionV0Ext(0),
       );
 
-      final timeBounds = XdrTimeBounds(XdrUint64(BigInt.from(1000)), XdrUint64(BigInt.from(2000)));
+      final timeBounds = XdrTimeBounds(
+        XdrUint64(BigInt.from(1000)),
+        XdrUint64(BigInt.from(2000)),
+      );
       tx.timeBounds = timeBounds;
       expect(tx.timeBounds, equals(timeBounds));
     });
@@ -214,8 +225,7 @@ void main() {
       final decoded = XdrTransactionMeta.fromBase64EncodedXdrString(base64);
       expect(decoded.discriminant, equals(0));
     });
-
-});
+  });
 
   group('XdrSorobanTransactionMetaExtV1 setters', () {
     test('should set totalNonRefundableResourceFeeCharged', () {
@@ -227,7 +237,10 @@ void main() {
       );
 
       metaExt.totalNonRefundableResourceFeeCharged = XdrInt64(BigInt.from(300));
-      expect(metaExt.totalNonRefundableResourceFeeCharged.int64, equals(BigInt.from(300)));
+      expect(
+        metaExt.totalNonRefundableResourceFeeCharged.int64,
+        equals(BigInt.from(300)),
+      );
     });
   });
 
@@ -330,9 +343,7 @@ void main() {
         null,
       );
 
-      final ops = [
-        XdrOperationMeta(XdrLedgerEntryChanges([])),
-      ];
+      final ops = [XdrOperationMeta(XdrLedgerEntryChanges([]))];
       meta.operations = ops;
       expect(meta.operations.length, equals(1));
     });
@@ -404,7 +415,10 @@ void main() {
 
       final base64 = event.toBase64EncodedXdrString();
       final decoded = XdrTransactionEvent.fromBase64EncodedXdrString(base64);
-      expect(decoded.stage, equals(XdrTransactionEventStage.TRANSACTION_EVENT_STAGE_AFTER_TX));
+      expect(
+        decoded.stage,
+        equals(XdrTransactionEventStage.TRANSACTION_EVENT_STAGE_AFTER_TX),
+      );
     });
   });
 
@@ -455,11 +469,7 @@ void main() {
       );
 
       final ops = <XdrOperationMetaV2>[
-        XdrOperationMetaV2(
-          XdrExtensionPoint(0),
-          XdrLedgerEntryChanges([]),
-          [],
-        ),
+        XdrOperationMetaV2(XdrExtensionPoint(0), XdrLedgerEntryChanges([]), []),
       ];
       meta.operations = ops;
       expect(meta.operations.length, equals(1));

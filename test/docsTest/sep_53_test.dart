@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
@@ -18,12 +17,15 @@ void main() {
     KeyPair keyPair = KeyPair.random();
 
     // Sign a message
-    Uint8List signature =
-        keyPair.signMessageString("I agree to the terms of service");
+    Uint8List signature = keyPair.signMessageString(
+      "I agree to the terms of service",
+    );
 
     // Verify the signature
     bool isValid = keyPair.verifyMessageString(
-        "I agree to the terms of service", signature);
+      "I agree to the terms of service",
+      signature,
+    );
 
     expect(isValid, true);
   });
@@ -113,7 +115,9 @@ void main() {
     Uint8List decodedSignature = base64.decode(response['signature']!);
 
     bool isAuthenticated = publicKey.verifyMessageString(
-        response['challenge']!, decodedSignature);
+      response['challenge']!,
+      decodedSignature,
+    );
 
     expect(isAuthenticated, true);
     expect(response['account_id'], expectedAccountId);
@@ -192,8 +196,9 @@ void main() {
     // Snippet from sep-53.md "Binary data message"
 
     // Binary data (base64-decoded)
-    Uint8List message =
-        base64.decode("2zZDP1sa1BVBfLP7TeeMk3sUbaxAkUhBhDiNdrksaFo=");
+    Uint8List message = base64.decode(
+      "2zZDP1sa1BVBfLP7TeeMk3sUbaxAkUhBhDiNdrksaFo=",
+    );
 
     KeyPair keyPair = KeyPair.fromSecretSeed(seed);
     Uint8List signature = keyPair.signMessage(message);
@@ -239,8 +244,7 @@ void main() {
 
     // Verification with a different public key should fail
     KeyPair otherKey = KeyPair.random();
-    bool isValid =
-        otherKey.verifyMessageString("Hello, World!", signature);
+    bool isValid = otherKey.verifyMessageString("Hello, World!", signature);
     expect(isValid, false);
   });
 }

@@ -113,10 +113,13 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       );
     }
 
-    final resolvedDecimals = decimals ??
+    final resolvedDecimals =
+        decimals ??
         await _kit.transactionOperations.fetchTokenDecimals(tokenContract);
-    final baseUnits =
-        OZTransactionOperations.amountToBaseUnits(amount, decimals: resolvedDecimals);
+    final baseUnits = OZTransactionOperations.amountToBaseUnits(
+      amount,
+      decimals: resolvedDecimals,
+    );
 
     final targetArgs = <XdrSCVal>[
       XdrSCVal.forAddress(Address.forContractId(connected.contractId).toXdr()),
@@ -275,10 +278,9 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   }) async {
     final connected = await _kit.requireConnected();
 
-    final walletSigners =
-        selectedSigners.whereType<OZSelectedSignerWallet>().toList(
-              growable: false,
-            );
+    final walletSigners = selectedSigners
+        .whereType<OZSelectedSignerWallet>()
+        .toList(growable: false);
 
     for (final walletSigner in walletSigners) {
       bool canSign;
@@ -301,10 +303,9 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     // Validate Ed25519 signers: verifier address format, public-key length,
     // and signing-source availability. All precondition checks run before any
     // RPC call so failures surface cheaply.
-    final ed25519Signers =
-        selectedSigners.whereType<OZSelectedSignerEd25519>().toList(
-              growable: false,
-            );
+    final ed25519Signers = selectedSigners
+        .whereType<OZSelectedSignerEd25519>()
+        .toList(growable: false);
 
     if (ed25519Signers.isNotEmpty) {
       await _validateEd25519Signers(_kit.externalSigners, ed25519Signers);
@@ -322,7 +323,9 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(operation)
         .addMemo(Memo.none())
-        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
+        .addPreconditions(
+          buildTimeoutPreconditions(_kit.config.timeoutInSeconds),
+        )
         .build();
 
     final SimulateTransactionResponse simulation;
@@ -368,8 +371,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     }
 
     // Step 3: expiration.
-    final expirationLedger =
-        ledgerSeq + _kit.config.signatureExpirationLedgers;
+    final expirationLedger = ledgerSeq + _kit.config.signatureExpirationLedgers;
 
     // Step 3b: pre-fetch context rules ONCE for every entry.
     final contextRules = await _kit.contextRuleManager.listContextRules();
@@ -422,7 +424,8 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       // SorobanAuthorizationEntry.sign(signer, network, forAddress: address)
       // to route signatures to specific nodes before calling this method.
       if (entry.credentials.discriminant ==
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+          XdrSorobanCredentialsType
+              .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
         throw SmartAccountTransactionException.signingFailed(
           'ADDRESS_WITH_DELEGATES auth entries cannot be auto-signed by the '
           'multi-signer pipeline. Use SorobanAuthorizationEntry.sign with the '
@@ -471,12 +474,17 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
       final List<int> resolvedContextRuleIds;
       if (resolveContextRuleIds != null) {
-        resolvedContextRuleIds =
-            await resolveContextRuleIds(signedEntry, entryIndex);
+        resolvedContextRuleIds = await resolveContextRuleIds(
+          signedEntry,
+          entryIndex,
+        );
       } else {
         resolvedContextRuleIds = await _kit.contextRuleManager
             .resolveContextRuleIdsForEntry(
-                signedEntry, smartAccountSigners, contextRules);
+              signedEntry,
+              smartAccountSigners,
+              contextRules,
+            );
       }
 
       final payloadHash = await OZSmartAccountAuth.buildAuthPayloadHash(
@@ -491,9 +499,11 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       );
 
       // Step 4a: per-passkey WebAuthn signing.
-      for (var signerIndex = 0;
-          signerIndex < selectedSigners.length;
-          signerIndex++) {
+      for (
+        var signerIndex = 0;
+        signerIndex < selectedSigners.length;
+        signerIndex++
+      ) {
         final selectedSigner = selectedSigners[signerIndex];
         if (selectedSigner is! OZSelectedSignerPasskey) continue;
 
@@ -529,8 +539,9 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
           );
         }
 
-        final compactSig =
-            SmartAccountUtils.normalizeSignature(authResult.signature);
+        final compactSig = SmartAccountUtils.normalizeSignature(
+          authResult.signature,
+        );
 
         final webAuthnSig = OZWebAuthnSignature(
           authenticatorData: authResult.authenticatorData,
@@ -643,7 +654,9 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(signedOperation)
         .addMemo(Memo.none())
-        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
+        .addPreconditions(
+          buildTimeoutPreconditions(_kit.config.timeoutInSeconds),
+        )
         .build();
 
     final SimulateTransactionResponse reSimulation;
@@ -723,8 +736,9 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         publicKey: ed25519Signer.publicKey,
       );
       if (!canSign) {
-        final prefix =
-            SmartAccountUtils.truncateForLog(ed25519Signer.verifierAddress);
+        final prefix = SmartAccountUtils.truncateForLog(
+          ed25519Signer.verifierAddress,
+        );
         throw SmartAccountValidationException.invalidInput(
           'selectedSigners',
           'Ed25519 signer (verifier=$prefix...) has no registered signing '
@@ -780,8 +794,8 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       if (rawSignature.length != SmartAccountConstants.ed25519SignatureSize) {
         throw SmartAccountTransactionException.signingFailed(
           'Ed25519 signing source returned ${rawSignature.length} bytes for '
-              'verifier $verifierAddress; expected '
-              '${SmartAccountConstants.ed25519SignatureSize}',
+          'verifier $verifierAddress; expected '
+          '${SmartAccountConstants.ed25519SignatureSize}',
         );
       }
 
@@ -792,7 +806,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       if (!signatureValid) {
         throw SmartAccountTransactionException.signingFailed(
           'Ed25519 signing source returned a signature that does not verify '
-              'against the registered public key for verifier $verifierAddress',
+          'against the registered public key for verifier $verifierAddress',
         );
       }
 
@@ -899,16 +913,14 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     XdrHashIDPreimage.encode(stream, preimage);
     final preimageXdr = base64Encode(stream.bytes);
 
-    final OZSignAuthEntryResult signResult =
-        await _kit.externalSigners.signAuthEntry(
-      walletSigner.address,
-      preimageXdr,
-    );
+    final OZSignAuthEntryResult signResult = await _kit.externalSigners
+        .signAuthEntry(walletSigner.address, preimageXdr);
 
     final signatureBytes = base64Decode(signResult.signedAuthEntry);
 
-    final publicKeyBytes =
-        KeyPair.fromAccountId(walletSigner.address).publicKey;
+    final publicKeyBytes = KeyPair.fromAccountId(
+      walletSigner.address,
+    ).publicKey;
 
     final sigMap = <XdrSCMapEntry>[
       XdrSCMapEntry(
@@ -920,9 +932,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         XdrSCVal.forBytes(Uint8List.fromList(signatureBytes)),
       ),
     ];
-    final signatureScVal = XdrSCVal.forVec(<XdrSCVal>[
-      XdrSCVal.forMap(sigMap),
-    ]);
+    final signatureScVal = XdrSCVal.forVec(<XdrSCVal>[XdrSCVal.forMap(sigMap)]);
 
     final updatedCredentials = XdrSorobanAddressCredentials(
       credentials.address,
@@ -1018,9 +1028,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         XdrSCVal.forBytes(result.signature),
       ),
     ];
-    final signatureScVal = XdrSCVal.forVec(<XdrSCVal>[
-      XdrSCVal.forMap(sigMap),
-    ]);
+    final signatureScVal = XdrSCVal.forVec(<XdrSCVal>[XdrSCVal.forMap(sigMap)]);
 
     final credentials = XdrSorobanAddressCredentials(
       Address.forAccountId(publicKey).toXdr(),

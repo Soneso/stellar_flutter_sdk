@@ -201,7 +201,8 @@ final class OZConnectWalletConnected extends OZConnectWalletResult {
   }
 
   @override
-  int get hashCode => Object.hash(credentialId, contractId, restoredFromSession);
+  int get hashCode =>
+      Object.hash(credentialId, contractId, restoredFromSession);
 }
 
 /// Wallet connection produced multiple candidate contracts.
@@ -487,8 +488,9 @@ class OZWalletOperations {
       );
     }
 
-    final credentialIdBase64url =
-        ozBase64UrlEncode(registrationResult.credentialId);
+    final credentialIdBase64url = ozBase64UrlEncode(
+      registrationResult.credentialId,
+    );
 
     final OZStoredCredential credential;
     try {
@@ -506,7 +508,10 @@ class OZWalletOperations {
     } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw SmartAccountStorageException.writeFailed(credentialIdBase64url, cause: e);
+      throw SmartAccountStorageException.writeFailed(
+        credentialIdBase64url,
+        cause: e,
+      );
     }
 
     // Best-effort: marking the credential as primary is metadata-only.
@@ -516,17 +521,21 @@ class OZWalletOperations {
       // Non-critical — isPrimary is metadata only.
     }
 
-    _kit.events.emit(OZSmartAccountEventCredentialCreated(credential: credential));
+    _kit.events.emit(
+      OZSmartAccountEventCredentialCreated(credential: credential),
+    );
 
     await _kit.setConnectedState(
       credentialId: credentialIdBase64url,
       contractId: contractId,
     );
 
-    _kit.events.emit(OZSmartAccountEventWalletConnected(
-      contractId: contractId,
-      credentialId: credentialIdBase64url,
-    ));
+    _kit.events.emit(
+      OZSmartAccountEventWalletConnected(
+        contractId: contractId,
+        credentialId: credentialIdBase64url,
+      ),
+    );
 
     await _saveSession(
       credentialId: credentialIdBase64url,
@@ -675,10 +684,12 @@ class OZWalletOperations {
       }
 
       if (session != null && session.isExpired) {
-        _kit.events.emit(OZSmartAccountEventSessionExpired(
-          contractId: session.contractId,
-          credentialId: session.credentialId,
-        ));
+        _kit.events.emit(
+          OZSmartAccountEventSessionExpired(
+            contractId: session.contractId,
+            credentialId: session.credentialId,
+          ),
+        );
         try {
           await _kit.getStorage().clearSession();
         } catch (_) {
@@ -714,8 +725,9 @@ class OZWalletOperations {
       );
     }
 
-    final credentialIdBase64url =
-        ozBase64UrlEncode(authenticationResult.credentialId);
+    final credentialIdBase64url = ozBase64UrlEncode(
+      authenticationResult.credentialId,
+    );
 
     _checkCancellation(cancelToken);
 
@@ -730,9 +742,7 @@ class OZWalletOperations {
     _checkCancellation(cancelToken);
 
     if (contractId == null) {
-      final indexerResolution = await _resolveViaIndexer(
-        credentialIdBase64url,
-      );
+      final indexerResolution = await _resolveViaIndexer(credentialIdBase64url);
       switch (indexerResolution) {
         case _IndexerResolvedSingle(:final contractId):
           // ignore: parameter_assignments
@@ -857,10 +867,12 @@ class OZWalletOperations {
       contractId: finalContractId,
     );
 
-    _kit.events.emit(OZSmartAccountEventWalletConnected(
-      contractId: finalContractId,
-      credentialId: credentialIdBase64url,
-    ));
+    _kit.events.emit(
+      OZSmartAccountEventWalletConnected(
+        contractId: finalContractId,
+        credentialId: credentialIdBase64url,
+      ),
+    );
 
     await _saveSession(
       credentialId: credentialIdBase64url,
@@ -926,10 +938,9 @@ class OZWalletOperations {
         } catch (_) {
           stored = null;
         }
-        allowCredentials.add(WebAuthnAllowCredential(
-          id: idBytes,
-          transports: stored?.transports,
-        ));
+        allowCredentials.add(
+          WebAuthnAllowCredential(id: idBytes, transports: stored?.transports),
+        );
       }
     }
 
@@ -956,7 +967,10 @@ class OZWalletOperations {
     if (allowCredentials != null && allowCredentials.isNotEmpty) {
       var matched = false;
       for (final allow in allowCredentials) {
-        if (Util.constantTimeEquals(allow.id, authenticationResult.credentialId)) {
+        if (Util.constantTimeEquals(
+          allow.id,
+          authenticationResult.credentialId,
+        )) {
           matched = true;
           break;
         }
@@ -968,8 +982,9 @@ class OZWalletOperations {
       }
     }
 
-    final credentialIdBase64url =
-        ozBase64UrlEncode(authenticationResult.credentialId);
+    final credentialIdBase64url = ozBase64UrlEncode(
+      authenticationResult.credentialId,
+    );
 
     final Uint8List normalizedSignature;
     try {
@@ -1106,15 +1121,14 @@ class OZWalletOperations {
       contractId: contractId,
     );
 
-    _kit.events.emit(OZSmartAccountEventWalletConnected(
-      contractId: contractId,
-      credentialId: credentialId,
-    ));
-
-    await _saveSession(
-      credentialId: credentialId,
-      contractId: contractId,
+    _kit.events.emit(
+      OZSmartAccountEventWalletConnected(
+        contractId: contractId,
+        credentialId: credentialId,
+      ),
     );
+
+    await _saveSession(credentialId: credentialId, contractId: contractId);
 
     final Transaction deployTransaction;
     try {
@@ -1277,7 +1291,9 @@ class OZWalletOperations {
   /// Returns the stored credential under [credentialId] or `null` when
   /// storage misses or raises. Swallows storage exceptions because storage
   /// is an optional cache for the credential lifecycle.
-  Future<OZStoredCredential?> _fetchStoredCredential(String credentialId) async {
+  Future<OZStoredCredential?> _fetchStoredCredential(
+    String credentialId,
+  ) async {
     try {
       return await _credentialManager.getCredential(credentialId);
     } catch (_) {
@@ -1473,8 +1489,11 @@ class OZWalletOperations {
   }) async {
     final keyData = Uint8List(publicKey.length + credentialId.length)
       ..setRange(0, publicKey.length, publicKey)
-      ..setRange(publicKey.length, publicKey.length + credentialId.length,
-          credentialId);
+      ..setRange(
+        publicKey.length,
+        publicKey.length + credentialId.length,
+        credentialId,
+      );
 
     final OZExternalSigner webauthnSigner;
     try {
@@ -1558,7 +1577,8 @@ class OZWalletOperations {
           .addOperation(operation)
           .addMemo(Memo.none())
           .addPreconditions(
-              buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
+            buildTimeoutPreconditions(_kit.config.timeoutInSeconds),
+          )
           .build();
     } catch (e) {
       throw SmartAccountTransactionException.signingFailed(
@@ -1584,7 +1604,9 @@ class OZWalletOperations {
 
     final simError = simulation.resultError ?? simulation.error?.message;
     if (simError != null && simError.isNotEmpty) {
-      throw SmartAccountTransactionException.simulationFailed('Simulation error: $simError');
+      throw SmartAccountTransactionException.simulationFailed(
+        'Simulation error: $simError',
+      );
     }
 
     final minResourceFee = simulation.minResourceFee;
@@ -1594,7 +1616,8 @@ class OZWalletOperations {
       );
     }
 
-    final useRelayer = ozResolveSubmissionMethod(_kit, forceMethod) ==
+    final useRelayer =
+        ozResolveSubmissionMethod(_kit, forceMethod) ==
         OZSubmissionMethod.relayer;
 
     if (simulation.transactionData != null) {
@@ -1639,7 +1662,8 @@ class OZWalletOperations {
     OZSubmissionMethod? forceMethod,
     dio.CancelToken? cancelToken,
   }) async {
-    final useRelayer = ozResolveSubmissionMethod(_kit, forceMethod) ==
+    final useRelayer =
+        ozResolveSubmissionMethod(_kit, forceMethod) ==
         OZSubmissionMethod.relayer;
 
     final String transactionHash;
@@ -1672,8 +1696,7 @@ class OZWalletOperations {
       }
 
       if (!relayerResponse.success) {
-        final errorMsg =
-            relayerResponse.error ?? 'Relayer submission failed';
+        final errorMsg = relayerResponse.error ?? 'Relayer submission failed';
         try {
           await _credentialManager.markDeploymentFailed(
             credentialId: credentialIdBase64url,
@@ -1750,10 +1773,7 @@ class OZWalletOperations {
     // pipeline uses the SDK's pollTransaction with a longer 90s budget.
     var confirmed = false;
     for (var attempt = 1; attempt <= 10; attempt++) {
-      await _cancellableDelay(
-        const Duration(milliseconds: 2000),
-        cancelToken,
-      );
+      await _cancellableDelay(const Duration(milliseconds: 2000), cancelToken);
 
       final GetTransactionResponse txStatus;
       try {
@@ -1848,9 +1868,11 @@ class OZWalletOperations {
     String contractId,
     dio.CancelToken? cancelToken, {
     Duration pollInterval = const Duration(
-        milliseconds: OZConstants.rpcVisibilityPollIntervalMs),
+      milliseconds: OZConstants.rpcVisibilityPollIntervalMs,
+    ),
     Duration timeout = const Duration(
-        seconds: OZConstants.rpcVisibilityTimeoutSeconds),
+      seconds: OZConstants.rpcVisibilityTimeoutSeconds,
+    ),
   }) async {
     final deadline = DateTime.now().add(timeout);
     Object? lastError;
@@ -1884,7 +1906,8 @@ class OZWalletOperations {
         ? '${timeout.inSeconds}s'
         : '${timeout.inMilliseconds}ms';
     throw SmartAccountTransactionException.timeout(
-      details: 'Smart-account contract $contractId not visible to the Soroban '
+      details:
+          'Smart-account contract $contractId not visible to the Soroban '
           'RPC within $timeoutLabel after deployment; testnet propagation may '
           'be delayed. Retry shortly.',
       cause: lastError,

@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -40,17 +39,22 @@ void main() {
     await FriendBot.fundTestAccount(destinationKp.accountId);
 
     // Set AUTH_REQUIRED and AUTH_REVOCABLE flags on issuer account
-    AccountResponse issuerAccount =
-        await sdk.accounts.account(issuerKp.accountId);
-    int flagsVal = AccountFlag.AUTH_REQUIRED_FLAG.value |
+    AccountResponse issuerAccount = await sdk.accounts.account(
+      issuerKp.accountId,
+    );
+    int flagsVal =
+        AccountFlag.AUTH_REQUIRED_FLAG.value |
         AccountFlag.AUTH_REVOCABLE_FLAG.value;
-    SetOptionsOperation setFlagsOp =
-        SetOptionsOperationBuilder().setSetFlags(flagsVal).build();
-    Transaction flagsTx =
-        TransactionBuilder(issuerAccount).addOperation(setFlagsOp).build();
+    SetOptionsOperation setFlagsOp = SetOptionsOperationBuilder()
+        .setSetFlags(flagsVal)
+        .build();
+    Transaction flagsTx = TransactionBuilder(
+      issuerAccount,
+    ).addOperation(setFlagsOp).build();
     flagsTx.sign(issuerKp, network);
-    SubmitTransactionResponse flagsResponse =
-        await sdk.submitTransaction(flagsTx);
+    SubmitTransactionResponse flagsResponse = await sdk.submitTransaction(
+      flagsTx,
+    );
     assert(flagsResponse.success);
 
     // Parse toml and set issuer
@@ -58,15 +62,19 @@ void main() {
     toml.currencies?.first.issuer = issuerKp.accountId;
 
     // Build a test transaction for use in approval tests
-    AccountResponse senderAccount =
-        await sdk.accounts.account(senderKp.accountId);
+    AccountResponse senderAccount = await sdk.accounts.account(
+      senderKp.accountId,
+    );
     RegulatedAssetsService tempService = RegulatedAssetsService(toml);
     RegulatedAsset goatAsset = tempService.regulatedAssets.first;
 
     Transaction tx = TransactionBuilder(senderAccount)
         .addOperation(
-          PaymentOperationBuilder(destinationKp.accountId, goatAsset, '100')
-              .build(),
+          PaymentOperationBuilder(
+            destinationKp.accountId,
+            goatAsset,
+            '100',
+          ).build(),
         )
         .build();
     tx.sign(senderKp, network);
@@ -88,7 +96,10 @@ void main() {
     RegulatedAssetsService service = RegulatedAssetsService(toml);
 
     expect(service.regulatedAssets.length, 1);
-    expect(service.network.networkPassphrase, Network.TESTNET.networkPassphrase);
+    expect(
+      service.network.networkPassphrase,
+      Network.TESTNET.networkPassphrase,
+    );
   });
 
   test('sep-08: Creating the Service - fromDomain with mock', () async {
@@ -106,7 +117,10 @@ void main() {
       httpClient: mockClient,
     );
 
-    expect(service.network.networkPassphrase, Network.TESTNET.networkPassphrase);
+    expect(
+      service.network.networkPassphrase,
+      Network.TESTNET.networkPassphrase,
+    );
     // Note: assets from fromDomain won't have issuers matching our test accounts
     // because the toml returned by mock has no issuer set for GOAT
   });
@@ -159,8 +173,7 @@ void main() {
   test('sep-08: postTransaction - success response', () async {
     // Snippet from sep-08.md "Handling All Response Types" - success case
     http.Client mockClient = MockClient((request) async {
-      if (request.url.toString().contains('goat') &&
-          request.method == 'POST') {
+      if (request.url.toString().contains('goat') && request.method == 'POST') {
         String tx = json.decode(request.body)['tx'];
         var result = {'status': 'success', 'tx': tx, 'message': 'Approved'};
         return http.Response(jsonEncode(result), 200);
@@ -168,12 +181,16 @@ void main() {
       return http.Response(json.encode({'error': 'Bad request'}), 400);
     });
 
-    RegulatedAssetsService service =
-        RegulatedAssetsService(toml, httpClient: mockClient);
+    RegulatedAssetsService service = RegulatedAssetsService(
+      toml,
+      httpClient: mockClient,
+    );
     RegulatedAsset goatAsset = service.regulatedAssets.first;
 
-    PostTransactionResponse response =
-        await service.postTransaction(testTxXdr, goatAsset.approvalServer);
+    PostTransactionResponse response = await service.postTransaction(
+      testTxXdr,
+      goatAsset.approvalServer,
+    );
 
     expect(response, isA<PostTransactionSuccess>());
     PostTransactionSuccess success = response as PostTransactionSuccess;
@@ -184,25 +201,28 @@ void main() {
   test('sep-08: postTransaction - revised response', () async {
     // Snippet from sep-08.md "Handling All Response Types" - revised case
     http.Client mockClient = MockClient((request) async {
-      if (request.url.toString().contains('goat') &&
-          request.method == 'POST') {
+      if (request.url.toString().contains('goat') && request.method == 'POST') {
         String tx = json.decode(request.body)['tx'];
         var result = {
           'status': 'revised',
           'tx': tx,
-          'message': 'Added authorization operations'
+          'message': 'Added authorization operations',
         };
         return http.Response(jsonEncode(result), 200);
       }
       return http.Response(json.encode({'error': 'Bad request'}), 400);
     });
 
-    RegulatedAssetsService service =
-        RegulatedAssetsService(toml, httpClient: mockClient);
+    RegulatedAssetsService service = RegulatedAssetsService(
+      toml,
+      httpClient: mockClient,
+    );
     RegulatedAsset goatAsset = service.regulatedAssets.first;
 
-    PostTransactionResponse response =
-        await service.postTransaction(testTxXdr, goatAsset.approvalServer);
+    PostTransactionResponse response = await service.postTransaction(
+      testTxXdr,
+      goatAsset.approvalServer,
+    );
 
     expect(response, isA<PostTransactionRevised>());
     PostTransactionRevised revised = response as PostTransactionRevised;
@@ -213,24 +233,27 @@ void main() {
   test('sep-08: postTransaction - pending response', () async {
     // Snippet from sep-08.md "Handling All Response Types" - pending case
     http.Client mockClient = MockClient((request) async {
-      if (request.url.toString().contains('goat') &&
-          request.method == 'POST') {
+      if (request.url.toString().contains('goat') && request.method == 'POST') {
         var result = {
           'status': 'pending',
           'timeout': 5000,
-          'message': 'Compliance check in progress'
+          'message': 'Compliance check in progress',
         };
         return http.Response(jsonEncode(result), 200);
       }
       return http.Response(json.encode({'error': 'Bad request'}), 400);
     });
 
-    RegulatedAssetsService service =
-        RegulatedAssetsService(toml, httpClient: mockClient);
+    RegulatedAssetsService service = RegulatedAssetsService(
+      toml,
+      httpClient: mockClient,
+    );
     RegulatedAsset goatAsset = service.regulatedAssets.first;
 
-    PostTransactionResponse response =
-        await service.postTransaction(testTxXdr, goatAsset.approvalServer);
+    PostTransactionResponse response = await service.postTransaction(
+      testTxXdr,
+      goatAsset.approvalServer,
+    );
 
     expect(response, isA<PostTransactionPending>());
     PostTransactionPending pending = response as PostTransactionPending;
@@ -244,26 +267,29 @@ void main() {
     String actionUrl = 'https://goat.io/kyc/action';
 
     http.Client mockClient = MockClient((request) async {
-      if (request.url.toString().contains('goat') &&
-          request.method == 'POST') {
+      if (request.url.toString().contains('goat') && request.method == 'POST') {
         var result = {
           'status': 'action_required',
           'message': 'Please provide KYC information',
           'action_url': actionUrl,
           'action_method': 'POST',
-          'action_fields': ['email_address', 'mobile_number']
+          'action_fields': ['email_address', 'mobile_number'],
         };
         return http.Response(jsonEncode(result), 200);
       }
       return http.Response(json.encode({'error': 'Bad request'}), 400);
     });
 
-    RegulatedAssetsService service =
-        RegulatedAssetsService(toml, httpClient: mockClient);
+    RegulatedAssetsService service = RegulatedAssetsService(
+      toml,
+      httpClient: mockClient,
+    );
     RegulatedAsset goatAsset = service.regulatedAssets.first;
 
-    PostTransactionResponse response =
-        await service.postTransaction(testTxXdr, goatAsset.approvalServer);
+    PostTransactionResponse response = await service.postTransaction(
+      testTxXdr,
+      goatAsset.approvalServer,
+    );
 
     expect(response, isA<PostTransactionActionRequired>());
     PostTransactionActionRequired actionRequired =
@@ -278,23 +304,26 @@ void main() {
   test('sep-08: postTransaction - rejected response', () async {
     // Snippet from sep-08.md "Handling All Response Types" - rejected case
     http.Client mockClient = MockClient((request) async {
-      if (request.url.toString().contains('goat') &&
-          request.method == 'POST') {
+      if (request.url.toString().contains('goat') && request.method == 'POST') {
         var result = {
           'status': 'rejected',
-          'error': 'Transaction not compliant with regulations'
+          'error': 'Transaction not compliant with regulations',
         };
         return http.Response(jsonEncode(result), 400);
       }
       return http.Response(json.encode({'error': 'Bad request'}), 400);
     });
 
-    RegulatedAssetsService service =
-        RegulatedAssetsService(toml, httpClient: mockClient);
+    RegulatedAssetsService service = RegulatedAssetsService(
+      toml,
+      httpClient: mockClient,
+    );
     RegulatedAsset goatAsset = service.regulatedAssets.first;
 
-    PostTransactionResponse response =
-        await service.postTransaction(testTxXdr, goatAsset.approvalServer);
+    PostTransactionResponse response = await service.postTransaction(
+      testTxXdr,
+      goatAsset.approvalServer,
+    );
 
     expect(response, isA<PostTransactionRejected>());
     PostTransactionRejected rejected = response as PostTransactionRejected;
@@ -319,16 +348,15 @@ void main() {
       return http.Response(json.encode({'error': 'Bad request'}), 400);
     });
 
-    RegulatedAssetsService service =
-        RegulatedAssetsService(toml, httpClient: mockClient);
-
-    PostActionResponse actionResponse = await service.postAction(
-      actionUrl,
-      {
-        'email_address': 'user@example.com',
-        'mobile_number': '+1234567890',
-      },
+    RegulatedAssetsService service = RegulatedAssetsService(
+      toml,
+      httpClient: mockClient,
     );
+
+    PostActionResponse actionResponse = await service.postAction(actionUrl, {
+      'email_address': 'user@example.com',
+      'mobile_number': '+1234567890',
+    });
 
     expect(actionResponse, isA<PostActionDone>());
   });
@@ -344,20 +372,21 @@ void main() {
         var result = {
           'result': 'follow_next_url',
           'next_url': nextUrl,
-          'message': 'Please complete verification in browser'
+          'message': 'Please complete verification in browser',
         };
         return http.Response(jsonEncode(result), 200);
       }
       return http.Response(json.encode({'error': 'Bad request'}), 400);
     });
 
-    RegulatedAssetsService service =
-        RegulatedAssetsService(toml, httpClient: mockClient);
-
-    PostActionResponse actionResponse = await service.postAction(
-      actionUrl,
-      {'email_address': 'user@example.com'},
+    RegulatedAssetsService service = RegulatedAssetsService(
+      toml,
+      httpClient: mockClient,
     );
+
+    PostActionResponse actionResponse = await service.postAction(actionUrl, {
+      'email_address': 'user@example.com',
+    });
 
     expect(actionResponse, isA<PostActionNextUrl>());
     PostActionNextUrl nextUrlResponse = actionResponse as PostActionNextUrl;
@@ -390,8 +419,10 @@ void main() {
       return http.Response('Internal Server Error', 500);
     });
 
-    RegulatedAssetsService service =
-        RegulatedAssetsService(toml, httpClient: mockClient);
+    RegulatedAssetsService service = RegulatedAssetsService(
+      toml,
+      httpClient: mockClient,
+    );
     RegulatedAsset goatAsset = service.regulatedAssets.first;
 
     expect(
@@ -406,8 +437,10 @@ void main() {
       return http.Response('Internal Server Error', 500);
     });
 
-    RegulatedAssetsService service =
-        RegulatedAssetsService(toml, httpClient: mockClient);
+    RegulatedAssetsService service = RegulatedAssetsService(
+      toml,
+      httpClient: mockClient,
+    );
 
     expect(
       () => service.postAction('https://goat.io/action', {'field': 'value'}),
@@ -428,8 +461,9 @@ void main() {
       approval_server="https://fake.io/tx_approve"
     ''';
 
-    RegulatedAssetsService service =
-        RegulatedAssetsService(StellarToml(fakeToml));
+    RegulatedAssetsService service = RegulatedAssetsService(
+      StellarToml(fakeToml),
+    );
     RegulatedAsset fakeAsset = service.regulatedAssets.first;
 
     expect(
@@ -453,14 +487,17 @@ void main() {
 
     // Build and sign the transaction
     KeyPair senderKeyPair = senderKp;
-    AccountResponse senderAccount =
-        await service.sdk.accounts.account(senderKeyPair.accountId);
+    AccountResponse senderAccount = await service.sdk.accounts.account(
+      senderKeyPair.accountId,
+    );
 
     Transaction tx = TransactionBuilder(senderAccount)
         .addOperation(
           PaymentOperationBuilder(
-                  destinationKp.accountId, regulatedAsset, '100')
-              .build(),
+            destinationKp.accountId,
+            regulatedAsset,
+            '100',
+          ).build(),
         )
         .build();
     tx.sign(senderKeyPair, service.network);
@@ -468,8 +505,7 @@ void main() {
 
     // Mock the approval server to return success
     http.Client mockClient = MockClient((request) async {
-      if (request.url.toString().contains('goat') &&
-          request.method == 'POST') {
+      if (request.url.toString().contains('goat') && request.method == 'POST') {
         String submittedTx = json.decode(request.body)['tx'];
         var result = {'status': 'success', 'tx': submittedTx};
         return http.Response(jsonEncode(result), 200);
@@ -480,8 +516,10 @@ void main() {
     service.httpClient = mockClient;
 
     // Submit for approval and handle response
-    PostTransactionResponse response =
-        await service.postTransaction(txXdr, regulatedAsset.approvalServer);
+    PostTransactionResponse response = await service.postTransaction(
+      txXdr,
+      regulatedAsset.approvalServer,
+    );
 
     String? approvedTxXdr;
 
@@ -506,107 +544,117 @@ void main() {
     expect(approvedTxXdr, txXdr);
   });
 
-  test('sep-08: postTransaction with action_required then postAction done flow',
-      () async {
-    // Snippet from sep-08.md "postAction - Handling Action Required" - full flow
-    String actionUrl = 'https://goat.io/kyc/action';
+  test(
+    'sep-08: postTransaction with action_required then postAction done flow',
+    () async {
+      // Snippet from sep-08.md "postAction - Handling Action Required" - full flow
+      String actionUrl = 'https://goat.io/kyc/action';
 
-    // First mock: approval server returns action_required
-    http.Client actionRequiredMock = MockClient((request) async {
-      if (request.url.toString().contains('goat.io/tx_approve') &&
-          request.method == 'POST') {
-        var result = {
-          'status': 'action_required',
-          'message': 'Please provide KYC information',
-          'action_url': actionUrl,
-          'action_method': 'POST',
-          'action_fields': ['email_address', 'mobile_number']
-        };
-        return http.Response(jsonEncode(result), 200);
-      }
-      return http.Response(json.encode({'error': 'Bad request'}), 400);
-    });
-
-    RegulatedAssetsService service =
-        RegulatedAssetsService(toml, httpClient: actionRequiredMock);
-    RegulatedAsset goatAsset = service.regulatedAssets.first;
-
-    PostTransactionResponse response =
-        await service.postTransaction(testTxXdr, goatAsset.approvalServer);
-    expect(response, isA<PostTransactionActionRequired>());
-
-    PostTransactionActionRequired actionRequired =
-        response as PostTransactionActionRequired;
-
-    if (actionRequired.actionMethod == 'POST') {
-      // Second mock: action endpoint returns done, then approval returns success
-      http.Client actionDoneMock = MockClient((request) async {
-        if (request.url.toString().contains(actionUrl) &&
-            request.method == 'POST') {
-          var result = {'result': 'no_further_action_required'};
-          return http.Response(jsonEncode(result), 200);
-        }
+      // First mock: approval server returns action_required
+      http.Client actionRequiredMock = MockClient((request) async {
         if (request.url.toString().contains('goat.io/tx_approve') &&
             request.method == 'POST') {
-          String tx = json.decode(request.body)['tx'];
-          var result = {'status': 'success', 'tx': tx};
+          var result = {
+            'status': 'action_required',
+            'message': 'Please provide KYC information',
+            'action_url': actionUrl,
+            'action_method': 'POST',
+            'action_fields': ['email_address', 'mobile_number'],
+          };
           return http.Response(jsonEncode(result), 200);
         }
         return http.Response(json.encode({'error': 'Bad request'}), 400);
       });
 
-      service.httpClient = actionDoneMock;
+      RegulatedAssetsService service = RegulatedAssetsService(
+        toml,
+        httpClient: actionRequiredMock,
+      );
+      RegulatedAsset goatAsset = service.regulatedAssets.first;
 
-      PostActionResponse actionResponse = await service.postAction(
-        actionRequired.actionUrl,
-        {
-          'email_address': 'user@example.com',
-          'mobile_number': '+1234567890',
-        },
+      PostTransactionResponse response = await service.postTransaction(
+        testTxXdr,
+        goatAsset.approvalServer,
+      );
+      expect(response, isA<PostTransactionActionRequired>());
+
+      PostTransactionActionRequired actionRequired =
+          response as PostTransactionActionRequired;
+
+      if (actionRequired.actionMethod == 'POST') {
+        // Second mock: action endpoint returns done, then approval returns success
+        http.Client actionDoneMock = MockClient((request) async {
+          if (request.url.toString().contains(actionUrl) &&
+              request.method == 'POST') {
+            var result = {'result': 'no_further_action_required'};
+            return http.Response(jsonEncode(result), 200);
+          }
+          if (request.url.toString().contains('goat.io/tx_approve') &&
+              request.method == 'POST') {
+            String tx = json.decode(request.body)['tx'];
+            var result = {'status': 'success', 'tx': tx};
+            return http.Response(jsonEncode(result), 200);
+          }
+          return http.Response(json.encode({'error': 'Bad request'}), 400);
+        });
+
+        service.httpClient = actionDoneMock;
+
+        PostActionResponse actionResponse = await service.postAction(
+          actionRequired.actionUrl,
+          {'email_address': 'user@example.com', 'mobile_number': '+1234567890'},
+        );
+
+        expect(actionResponse, isA<PostActionDone>());
+
+        // Resubmit original transaction after action done
+        PostTransactionResponse retryResponse = await service.postTransaction(
+          testTxXdr,
+          goatAsset.approvalServer,
+        );
+        expect(retryResponse, isA<PostTransactionSuccess>());
+      }
+    },
+  );
+
+  test(
+    'sep-08: Pending timeout is int in milliseconds, defaults to 0',
+    () async {
+      // Snippet from sep-08.md "Common Pitfalls" - timeout handling
+      http.Client mockClient = MockClient((request) async {
+        if (request.url.toString().contains('goat') &&
+            request.method == 'POST') {
+          // Server does not provide timeout
+          var result = {'status': 'pending'};
+          return http.Response(jsonEncode(result), 200);
+        }
+        return http.Response(json.encode({'error': 'Bad request'}), 400);
+      });
+
+      RegulatedAssetsService service = RegulatedAssetsService(
+        toml,
+        httpClient: mockClient,
+      );
+      RegulatedAsset goatAsset = service.regulatedAssets.first;
+
+      PostTransactionResponse response = await service.postTransaction(
+        testTxXdr,
+        goatAsset.approvalServer,
       );
 
-      expect(actionResponse, isA<PostActionDone>());
-
-      // Resubmit original transaction after action done
-      PostTransactionResponse retryResponse =
-          await service.postTransaction(testTxXdr, goatAsset.approvalServer);
-      expect(retryResponse, isA<PostTransactionSuccess>());
-    }
-  });
-
-  test('sep-08: Pending timeout is int in milliseconds, defaults to 0',
-      () async {
-    // Snippet from sep-08.md "Common Pitfalls" - timeout handling
-    http.Client mockClient = MockClient((request) async {
-      if (request.url.toString().contains('goat') &&
-          request.method == 'POST') {
-        // Server does not provide timeout
-        var result = {'status': 'pending'};
-        return http.Response(jsonEncode(result), 200);
-      }
-      return http.Response(json.encode({'error': 'Bad request'}), 400);
-    });
-
-    RegulatedAssetsService service =
-        RegulatedAssetsService(toml, httpClient: mockClient);
-    RegulatedAsset goatAsset = service.regulatedAssets.first;
-
-    PostTransactionResponse response =
-        await service.postTransaction(testTxXdr, goatAsset.approvalServer);
-
-    expect(response, isA<PostTransactionPending>());
-    PostTransactionPending pending = response as PostTransactionPending;
-    // timeout defaults to 0 when not provided by server
-    expect(pending.timeout, 0);
-    // message is nullable
-    expect(pending.message, isNull);
-  });
+      expect(response, isA<PostTransactionPending>());
+      PostTransactionPending pending = response as PostTransactionPending;
+      // timeout defaults to 0 when not provided by server
+      expect(pending.timeout, 0);
+      // message is nullable
+      expect(pending.message, isNull);
+    },
+  );
 
   test('sep-08: actionMethod defaults to GET when not provided', () async {
     // Snippet from sep-08.md "Common Pitfalls" - actionMethod default
     http.Client mockClient = MockClient((request) async {
-      if (request.url.toString().contains('goat') &&
-          request.method == 'POST') {
+      if (request.url.toString().contains('goat') && request.method == 'POST') {
         // Server does not provide action_method
         var result = {
           'status': 'action_required',
@@ -618,12 +666,16 @@ void main() {
       return http.Response(json.encode({'error': 'Bad request'}), 400);
     });
 
-    RegulatedAssetsService service =
-        RegulatedAssetsService(toml, httpClient: mockClient);
+    RegulatedAssetsService service = RegulatedAssetsService(
+      toml,
+      httpClient: mockClient,
+    );
     RegulatedAsset goatAsset = service.regulatedAssets.first;
 
-    PostTransactionResponse response =
-        await service.postTransaction(testTxXdr, goatAsset.approvalServer);
+    PostTransactionResponse response = await service.postTransaction(
+      testTxXdr,
+      goatAsset.approvalServer,
+    );
 
     expect(response, isA<PostTransactionActionRequired>());
     PostTransactionActionRequired actionRequired =

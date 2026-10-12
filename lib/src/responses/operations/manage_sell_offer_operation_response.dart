@@ -106,29 +106,30 @@ class ManageSellOfferOperationResponse extends OperationResponse {
   /// - [transaction] Full parent transaction
   /// - [sponsor] Account sponsoring the operation (if applicable)
   ManageSellOfferOperationResponse(
-      this.offerId,
-      this.amount,
-      this.price,
-      this.priceR,
-      this.buyingAssetType,
-      this.buyingAssetCode,
-      this.buyingAssetIssuer,
-      this.sellingAssetType,
-      this.sellingAssetCode,
-      this.sellingAssetIssuer,
-      super.links,
-      super.id,
-      super.pagingToken,
-      super.transactionSuccessful,
-      super.sourceAccount,
-      super.sourceAccountMuxed,
-      super.sourceAccountMuxedId,
-      super.type,
-      super.type_i,
-      super.createdAt,
-      super.transactionHash,
-      super.transaction,
-      super.sponsor);
+    this.offerId,
+    this.amount,
+    this.price,
+    this.priceR,
+    this.buyingAssetType,
+    this.buyingAssetCode,
+    this.buyingAssetIssuer,
+    this.sellingAssetType,
+    this.sellingAssetCode,
+    this.sellingAssetIssuer,
+    super.links,
+    super.id,
+    super.pagingToken,
+    super.transactionSuccessful,
+    super.sourceAccount,
+    super.sourceAccountMuxed,
+    super.sourceAccountMuxedId,
+    super.type,
+    super.type_i,
+    super.createdAt,
+    super.transactionHash,
+    super.transaction,
+    super.sponsor,
+  );
 
   /// Convenience getter to retrieve the buying asset as an [Asset] object.
   ///
@@ -158,31 +159,32 @@ class ManageSellOfferOperationResponse extends OperationResponse {
   ///
   /// Converts a JSON map from the Horizon API into a ManageSellOfferOperationResponse object.
   factory ManageSellOfferOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
-      ManageSellOfferOperationResponse(
-          json['offer_id'],
-          json['amount'],
-          json['price'],
-          Price.fromJson(json['price_r']),
-          json['buying_asset_type'],
-          json['buying_asset_code'],
-          json['buying_asset_issuer'],
-          json['selling_asset_type'],
-          json['selling_asset_code'],
-          json['selling_asset_issuer'],
-          OperationResponseLinks.fromJson(json['_links']),
-          json['id'],
-          json['paging_token'],
-          json['transaction_successful'],
-          json['source_account'],
-          json['source_account_muxed'],
-          json['source_account_muxed_id'],
-          json['type'],
-          json['type_i'],
-          json['created_at'],
-          json['transaction_hash'],
-          json['transaction'] == null
-              ? null
-              : TransactionResponse.fromJson(json['transaction']),
-          json['sponsor']);
+    Map<String, dynamic> json,
+  ) => ManageSellOfferOperationResponse(
+    json['offer_id'],
+    json['amount'],
+    json['price'],
+    Price.fromJson(json['price_r']),
+    json['buying_asset_type'],
+    json['buying_asset_code'],
+    json['buying_asset_issuer'],
+    json['selling_asset_type'],
+    json['selling_asset_code'],
+    json['selling_asset_issuer'],
+    OperationResponseLinks.fromJson(json['_links']),
+    json['id'],
+    json['paging_token'],
+    json['transaction_successful'],
+    json['source_account'],
+    json['source_account_muxed'],
+    json['source_account_muxed_id'],
+    json['type'],
+    json['type_i'],
+    json['created_at'],
+    json['transaction_hash'],
+    json['transaction'] == null
+        ? null
+        : TransactionResponse.fromJson(json['transaction']),
+    json['sponsor'],
+  );
 }

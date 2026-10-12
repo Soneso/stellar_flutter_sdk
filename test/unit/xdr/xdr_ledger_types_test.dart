@@ -34,8 +34,14 @@ void main() {
   group('XDR Ledger Types - XdrTrustLineFlags', () {
     test('XdrTrustLineFlags value mapping verification', () {
       expect(XdrTrustLineFlags.AUTHORIZED_FLAG.value, equals(1));
-      expect(XdrTrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG.value, equals(2));
-      expect(XdrTrustLineFlags.TRUSTLINE_CLAWBACK_ENABLED_FLAG.value, equals(4));
+      expect(
+        XdrTrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG.value,
+        equals(2),
+      );
+      expect(
+        XdrTrustLineFlags.TRUSTLINE_CLAWBACK_ENABLED_FLAG.value,
+        equals(4),
+      );
     });
 
     test('XdrTrustLineFlags decode invalid value throws exception', () {
@@ -51,7 +57,9 @@ void main() {
   group('XDR Ledger Types - XdrTrustLineEntry', () {
     test('XdrTrustLineEntry with zero balance and limit', () {
       var accountIdBytes = Uint8List.fromList(List<int>.filled(32, 0x04));
-      var accountId = XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      var accountId = XdrAccountID(
+        XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+      );
       accountId.accountID.setEd25519(XdrUint256(accountIdBytes));
 
       var asset = XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_NATIVE);
@@ -60,7 +68,14 @@ void main() {
       var flags = XdrUint32(0);
       var ext = XdrTrustLineEntryExt(0);
 
-      var original = XdrTrustLineEntry(accountId, asset, balance, limit, flags, ext);
+      var original = XdrTrustLineEntry(
+        accountId,
+        asset,
+        balance,
+        limit,
+        flags,
+        ext,
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTrustLineEntry.encode(output, original);
@@ -76,7 +91,9 @@ void main() {
 
     test('XdrTrustLineEntry with maximum values', () {
       var accountIdBytes = Uint8List.fromList(List<int>.filled(32, 0xFF));
-      var accountId = XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      var accountId = XdrAccountID(
+        XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+      );
       accountId.accountID.setEd25519(XdrUint256(accountIdBytes));
 
       var asset = XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_NATIVE);
@@ -85,7 +102,14 @@ void main() {
       var flags = XdrUint32(2147483647);
       var ext = XdrTrustLineEntryExt(0);
 
-      var original = XdrTrustLineEntry(accountId, asset, balance, limit, flags, ext);
+      var original = XdrTrustLineEntry(
+        accountId,
+        asset,
+        balance,
+        limit,
+        flags,
+        ext,
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTrustLineEntry.encode(output, original);
@@ -94,7 +118,10 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrTrustLineEntry.decode(input);
 
-      expect(decoded.balance.int64, equals(BigInt.parse('9223372036854775807')));
+      expect(
+        decoded.balance.int64,
+        equals(BigInt.parse('9223372036854775807')),
+      );
       expect(decoded.limit.int64, equals(BigInt.parse('9223372036854775807')));
       expect(decoded.flags.uint32, equals(2147483647));
     });
@@ -111,7 +138,9 @@ void main() {
 
       for (var ratio in priceRatios) {
         var sellerIdBytes = Uint8List.fromList(List<int>.filled(32, 0x0A));
-        var sellerId = XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+        var sellerId = XdrAccountID(
+          XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+        );
         sellerId.accountID.setEd25519(XdrUint256(sellerIdBytes));
 
         var offerId = XdrUint64(BigInt.from(1));
@@ -122,7 +151,16 @@ void main() {
         var flags = XdrUint32(0);
         var ext = XdrOfferEntryExt(0);
 
-        var original = XdrOfferEntry(sellerId, offerId, selling, buying, amount, price, flags, ext);
+        var original = XdrOfferEntry(
+          sellerId,
+          offerId,
+          selling,
+          buying,
+          amount,
+          price,
+          flags,
+          ext,
+        );
 
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOfferEntry.encode(output, original);
@@ -146,7 +184,9 @@ void main() {
   group('XDR Ledger Types - XdrDataEntry', () {
     test('XdrDataEntry with empty data value', () {
       var accountIdBytes = Uint8List.fromList(List<int>.filled(32, 0x0C));
-      var accountId = XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      var accountId = XdrAccountID(
+        XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+      );
       accountId.accountID.setEd25519(XdrUint256(accountIdBytes));
 
       var dataName = XdrString64('empty');
@@ -168,11 +208,15 @@ void main() {
 
     test('XdrDataEntry with large data value', () {
       var accountIdBytes = Uint8List.fromList(List<int>.filled(32, 0x0E));
-      var accountId = XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      var accountId = XdrAccountID(
+        XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+      );
       accountId.accountID.setEd25519(XdrUint256(accountIdBytes));
 
       var dataName = XdrString64('large_data');
-      var largeData = Uint8List.fromList(List<int>.generate(100, (i) => i % 256));
+      var largeData = Uint8List.fromList(
+        List<int>.generate(100, (i) => i % 256),
+      );
       var dataValue = XdrDataValue(largeData);
       var ext = XdrDataEntryExt(0);
 
@@ -222,7 +266,10 @@ void main() {
 
     test('XdrLedgerEntryData with TRUSTLINE discriminant', () {
       var data = XdrLedgerEntryData(XdrLedgerEntryType.TRUSTLINE);
-      expect(data.discriminant.value, equals(XdrLedgerEntryType.TRUSTLINE.value));
+      expect(
+        data.discriminant.value,
+        equals(XdrLedgerEntryType.TRUSTLINE.value),
+      );
     });
 
     test('XdrLedgerEntryData with OFFER discriminant', () {
@@ -244,7 +291,9 @@ void main() {
         var lastModifiedLedgerSeq = XdrUint32(seqValue);
 
         var accountIdBytes = Uint8List.fromList(List<int>.filled(32, 0x17));
-        var accountId = XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+        var accountId = XdrAccountID(
+          XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+        );
         accountId.accountID.setEd25519(XdrUint256(accountIdBytes));
 
         var dataName = XdrString64('test');
@@ -272,7 +321,9 @@ void main() {
 
     test('OfferEntry with zero amount', () {
       var sellerIdBytes = Uint8List.fromList(List<int>.filled(32, 0x19));
-      var sellerId = XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      var sellerId = XdrAccountID(
+        XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+      );
       sellerId.accountID.setEd25519(XdrUint256(sellerIdBytes));
 
       var offerId = XdrUint64(BigInt.from(1));
@@ -283,7 +334,16 @@ void main() {
       var flags = XdrUint32(0);
       var ext = XdrOfferEntryExt(0);
 
-      var original = XdrOfferEntry(sellerId, offerId, selling, buying, amount, price, flags, ext);
+      var original = XdrOfferEntry(
+        sellerId,
+        offerId,
+        selling,
+        buying,
+        amount,
+        price,
+        flags,
+        ext,
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrOfferEntry.encode(output, original);
@@ -297,7 +357,9 @@ void main() {
 
     test('DataEntry with special characters in name', () {
       var accountIdBytes = Uint8List.fromList(List<int>.filled(32, 0x1A));
-      var accountId = XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      var accountId = XdrAccountID(
+        XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+      );
       accountId.accountID.setEd25519(XdrUint256(accountIdBytes));
 
       var dataName = XdrString64('config.app.settings');
@@ -340,7 +402,9 @@ void main() {
 
     test('OfferEntry with very large offer ID', () {
       var sellerIdBytes = Uint8List.fromList(List<int>.filled(32, 0x1B));
-      var sellerId = XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      var sellerId = XdrAccountID(
+        XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+      );
       sellerId.accountID.setEd25519(XdrUint256(sellerIdBytes));
 
       var offerId = XdrUint64(BigInt.parse('18446744073709551615'));
@@ -351,7 +415,16 @@ void main() {
       var flags = XdrUint32(0);
       var ext = XdrOfferEntryExt(0);
 
-      var original = XdrOfferEntry(sellerId, offerId, selling, buying, amount, price, flags, ext);
+      var original = XdrOfferEntry(
+        sellerId,
+        offerId,
+        selling,
+        buying,
+        amount,
+        price,
+        flags,
+        ext,
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrOfferEntry.encode(output, original);
@@ -360,7 +433,10 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrOfferEntry.decode(input);
 
-      expect(decoded.offerID.uint64, equals(BigInt.parse('18446744073709551615')));
+      expect(
+        decoded.offerID.uint64,
+        equals(BigInt.parse('18446744073709551615')),
+      );
     });
 
     test('DataValue with single byte', () {
@@ -379,7 +455,9 @@ void main() {
 
     test('TrustLineEntry balance equals limit', () {
       var accountIdBytes = Uint8List.fromList(List<int>.filled(32, 0x1C));
-      var accountId = XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      var accountId = XdrAccountID(
+        XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+      );
       accountId.accountID.setEd25519(XdrUint256(accountIdBytes));
 
       var asset = XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_NATIVE);
@@ -388,7 +466,14 @@ void main() {
       var flags = XdrUint32(1);
       var ext = XdrTrustLineEntryExt(0);
 
-      var original = XdrTrustLineEntry(accountId, asset, balance, limit, flags, ext);
+      var original = XdrTrustLineEntry(
+        accountId,
+        asset,
+        balance,
+        limit,
+        flags,
+        ext,
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTrustLineEntry.encode(output, original);
@@ -402,7 +487,9 @@ void main() {
 
     test('OfferEntry price with equal numerator and denominator', () {
       var sellerIdBytes = Uint8List.fromList(List<int>.filled(32, 0x1D));
-      var sellerId = XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      var sellerId = XdrAccountID(
+        XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+      );
       sellerId.accountID.setEd25519(XdrUint256(sellerIdBytes));
 
       var offerId = XdrUint64(BigInt.from(100));
@@ -413,7 +500,16 @@ void main() {
       var flags = XdrUint32(0);
       var ext = XdrOfferEntryExt(0);
 
-      var original = XdrOfferEntry(sellerId, offerId, selling, buying, amount, price, flags, ext);
+      var original = XdrOfferEntry(
+        sellerId,
+        offerId,
+        selling,
+        buying,
+        amount,
+        price,
+        flags,
+        ext,
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrOfferEntry.encode(output, original);

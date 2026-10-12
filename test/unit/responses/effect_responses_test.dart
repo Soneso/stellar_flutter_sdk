@@ -42,10 +42,7 @@ void main() {
           },
         };
 
-        expect(
-          () => EffectResponse.fromJson(json),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => EffectResponse.fromJson(json), throwsA(isA<Exception>()));
       });
     });
 
@@ -81,10 +78,7 @@ void main() {
 
     group('AssetAmount', () {
       test('parses native asset amount from JSON', () {
-        final json = {
-          'amount': '100.0000000',
-          'asset': 'native',
-        };
+        final json = {'amount': '100.0000000', 'asset': 'native'};
 
         final assetAmount = AssetAmount.fromJson(json);
 
@@ -95,14 +89,18 @@ void main() {
       test('parses credit asset amount from JSON', () {
         final json = {
           'amount': '50.0000000',
-          'asset': 'USD:GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'asset':
+              'USD:GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
         };
 
         final assetAmount = AssetAmount.fromJson(json);
 
         expect(assetAmount.amount, equals('50.0000000'));
         expect(assetAmount.asset, isA<AssetTypeCreditAlphaNum4>());
-        expect((assetAmount.asset as AssetTypeCreditAlphaNum4).code, equals('USD'));
+        expect(
+          (assetAmount.asset as AssetTypeCreditAlphaNum4).code,
+          equals('USD'),
+        );
       });
     });
   });
@@ -132,7 +130,10 @@ void main() {
         expect(effect.type, equals('account_created'));
         expect(effect.createdAt, equals('2024-01-15T10:00:00Z'));
         expect(effect.pagingToken, equals('12884905985-1'));
-        expect(effect.account, equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
+        expect(
+          effect.account,
+          equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+        );
         expect(effect.startingBalance, equals('10000.0000000'));
         expect(effect.accountMuxed, isNull);
         expect(effect.accountMuxedId, isNull);
@@ -183,7 +184,10 @@ void main() {
 
         expect(effect.type_i, equals(1));
         expect(effect.type, equals('account_removed'));
-        expect(effect.account, equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
+        expect(
+          effect.account,
+          equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+        );
       });
     });
 
@@ -239,7 +243,10 @@ void main() {
         expect(effect.amount, equals('50.0000000'));
         expect(effect.assetType, equals('credit_alphanum4'));
         expect(effect.assetCode, equals('USD'));
-        expect(effect.assetIssuer, equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'));
+        expect(
+          effect.assetIssuer,
+          equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'),
+        );
       });
     });
 
@@ -367,7 +374,8 @@ void main() {
           },
         };
 
-        final effect = AccountInflationDestinationUpdatedEffectResponse.fromJson(json);
+        final effect =
+            AccountInflationDestinationUpdatedEffectResponse.fromJson(json);
 
         expect(effect.type_i, equals(7));
         expect(effect.type, equals('account_inflation_destination_updated'));
@@ -400,8 +408,14 @@ void main() {
         expect(effect.type_i, equals(10));
         expect(effect.type, equals('signer_created'));
         expect(effect.weight, equals(5));
-        expect(effect.publicKey, equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'));
-        expect(effect.key, equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'));
+        expect(
+          effect.publicKey,
+          equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'),
+        );
+        expect(
+          effect.key,
+          equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'),
+        );
       });
     });
 
@@ -487,7 +501,10 @@ void main() {
         expect(effect.type, equals('trustline_created'));
         expect(effect.assetType, equals('credit_alphanum4'));
         expect(effect.assetCode, equals('USD'));
-        expect(effect.assetIssuer, equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'));
+        expect(
+          effect.assetIssuer,
+          equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'),
+        );
         expect(effect.limit, equals('1000.0000000'));
       });
     });
@@ -570,7 +587,10 @@ void main() {
 
         expect(effect.type_i, equals(23));
         expect(effect.type, equals('trustline_authorized'));
-        expect(effect.trustor, equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'));
+        expect(
+          effect.trustor,
+          equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'),
+        );
         expect(effect.assetType, equals('credit_alphanum4'));
         expect(effect.assetCode, equals('USD'));
       });
@@ -621,10 +641,16 @@ void main() {
           },
         };
 
-        final effect = TrustlineAuthorizedToMaintainLiabilitiesEffectResponse.fromJson(json);
+        final effect =
+            TrustlineAuthorizedToMaintainLiabilitiesEffectResponse.fromJson(
+              json,
+            );
 
         expect(effect.type_i, equals(25));
-        expect(effect.type, equals('trustline_authorized_to_maintain_liabilities'));
+        expect(
+          effect.type,
+          equals('trustline_authorized_to_maintain_liabilities'),
+        );
       });
     });
 
@@ -747,7 +773,8 @@ void main() {
           'bought_amount': '50.0000000',
           'bought_asset_type': 'credit_alphanum4',
           'bought_asset_code': 'USD',
-          'bought_asset_issuer': 'GBISSUER1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMP',
+          'bought_asset_issuer':
+              'GBISSUER1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMP',
           '_links': {
             'operation': {'href': '/operations/123'},
             'precedes': {'href': '/effects?order=asc&cursor=123'},
@@ -759,14 +786,20 @@ void main() {
 
         expect(effect.type_i, equals(33));
         expect(effect.type, equals('trade'));
-        expect(effect.seller, equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'));
+        expect(
+          effect.seller,
+          equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'),
+        );
         expect(effect.offerId, equals('12345'));
         expect(effect.soldAmount, equals('100.0000000'));
         expect(effect.soldAssetType, equals('native'));
         expect(effect.boughtAmount, equals('50.0000000'));
         expect(effect.boughtAssetType, equals('credit_alphanum4'));
         expect(effect.boughtAssetCode, equals('USD'));
-        expect(effect.boughtAssetIssuer, equals('GBISSUER1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMP'));
+        expect(
+          effect.boughtAssetIssuer,
+          equals('GBISSUER1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMP'),
+        );
       });
     });
   });
@@ -889,7 +922,8 @@ void main() {
           'created_at': '2024-01-15T10:00:00Z',
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'balance_id': '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
+          'balance_id':
+              '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
           'asset': 'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
           'amount': '100.0000000',
           '_links': {
@@ -903,7 +937,12 @@ void main() {
 
         expect(effect.type_i, equals(50));
         expect(effect.type, equals('claimable_balance_created'));
-        expect(effect.balanceId, equals('00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be'));
+        expect(
+          effect.balanceId,
+          equals(
+            '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
+          ),
+        );
         expect(effect.amount, equals('100.0000000'));
         expect(effect.asset, isA<AssetTypeCreditAlphaNum4>());
       });
@@ -918,12 +957,11 @@ void main() {
           'created_at': '2024-01-15T10:00:00Z',
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'balance_id': '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
+          'balance_id':
+              '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
           'asset': 'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
           'amount': '100.0000000',
-          'predicate': {
-            'unconditional': true,
-          },
+          'predicate': {'unconditional': true},
           '_links': {
             'operation': {'href': '/operations/123'},
             'precedes': {'href': '/effects?order=asc&cursor=123'},
@@ -931,11 +969,18 @@ void main() {
           },
         };
 
-        final effect = ClaimableBalanceClaimantCreatedEffectResponse.fromJson(json);
+        final effect = ClaimableBalanceClaimantCreatedEffectResponse.fromJson(
+          json,
+        );
 
         expect(effect.type_i, equals(51));
         expect(effect.type, equals('claimable_balance_claimant_created'));
-        expect(effect.balanceId, equals('00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be'));
+        expect(
+          effect.balanceId,
+          equals(
+            '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
+          ),
+        );
         expect(effect.predicate, isNotNull);
       });
     });
@@ -949,7 +994,8 @@ void main() {
           'created_at': '2024-01-15T10:00:00Z',
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'balance_id': '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
+          'balance_id':
+              '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
           'asset': 'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
           'amount': '100.0000000',
           '_links': {
@@ -963,7 +1009,12 @@ void main() {
 
         expect(effect.type_i, equals(52));
         expect(effect.type, equals('claimable_balance_claimed'));
-        expect(effect.balanceId, equals('00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be'));
+        expect(
+          effect.balanceId,
+          equals(
+            '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
+          ),
+        );
       });
     });
 
@@ -976,7 +1027,8 @@ void main() {
           'created_at': '2024-01-15T10:00:00Z',
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'balance_id': '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
+          'balance_id':
+              '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
           '_links': {
             'operation': {'href': '/operations/123'},
             'precedes': {'href': '/effects?order=asc&cursor=123'},
@@ -988,7 +1040,12 @@ void main() {
 
         expect(effect.type_i, equals(80));
         expect(effect.type, equals('claimable_balance_clawed_back'));
-        expect(effect.balanceId, equals('00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be'));
+        expect(
+          effect.balanceId,
+          equals(
+            '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
+          ),
+        );
       });
     });
   });
@@ -1015,7 +1072,10 @@ void main() {
 
         expect(effect.type_i, equals(60));
         expect(effect.type, equals('account_sponsorship_created'));
-        expect(effect.sponsor, equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'));
+        expect(
+          effect.sponsor,
+          equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'),
+        );
       });
     });
 
@@ -1029,7 +1089,8 @@ void main() {
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'new_sponsor': 'GBNEW1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
-          'former_sponsor': 'GBOLD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
+          'former_sponsor':
+              'GBOLD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
           '_links': {
             'operation': {'href': '/operations/123'},
             'precedes': {'href': '/effects?order=asc&cursor=123'},
@@ -1041,8 +1102,14 @@ void main() {
 
         expect(effect.type_i, equals(61));
         expect(effect.type, equals('account_sponsorship_updated'));
-        expect(effect.newSponsor, equals('GBNEW1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'));
-        expect(effect.formerSponsor, equals('GBOLD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'));
+        expect(
+          effect.newSponsor,
+          equals('GBNEW1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'),
+        );
+        expect(
+          effect.formerSponsor,
+          equals('GBOLD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'),
+        );
       });
     });
 
@@ -1055,7 +1122,8 @@ void main() {
           'created_at': '2024-01-15T10:00:00Z',
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'former_sponsor': 'GBOLD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
+          'former_sponsor':
+              'GBOLD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
           '_links': {
             'operation': {'href': '/operations/123'},
             'precedes': {'href': '/effects?order=asc&cursor=123'},
@@ -1067,7 +1135,10 @@ void main() {
 
         expect(effect.type_i, equals(62));
         expect(effect.type, equals('account_sponsorship_removed'));
-        expect(effect.formerSponsor, equals('GBOLD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'));
+        expect(
+          effect.formerSponsor,
+          equals('GBOLD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'),
+        );
       });
     });
 
@@ -1094,7 +1165,10 @@ void main() {
 
         expect(effect.type_i, equals(63));
         expect(effect.type, equals('trustline_sponsorship_created'));
-        expect(effect.sponsor, equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'));
+        expect(
+          effect.sponsor,
+          equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'),
+        );
         expect(effect.assetType, equals('credit_alphanum4'));
       });
     });
@@ -1121,7 +1195,10 @@ void main() {
 
         expect(effect.type_i, equals(66));
         expect(effect.type, equals('data_sponsorship_created'));
-        expect(effect.sponsor, equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'));
+        expect(
+          effect.sponsor,
+          equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'),
+        );
         expect(effect.dataName, equals('my_data_key'));
       });
     });
@@ -1136,7 +1213,8 @@ void main() {
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'sponsor': 'GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL',
-          'balance_id': '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
+          'balance_id':
+              '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
           '_links': {
             'operation': {'href': '/operations/123'},
             'precedes': {'href': '/effects?order=asc&cursor=123'},
@@ -1144,12 +1222,21 @@ void main() {
           },
         };
 
-        final effect = ClaimableBalanceSponsorshipCreatedEffectResponse.fromJson(json);
+        final effect =
+            ClaimableBalanceSponsorshipCreatedEffectResponse.fromJson(json);
 
         expect(effect.type_i, equals(69));
         expect(effect.type, equals('claimable_balance_sponsorship_created'));
-        expect(effect.sponsor, equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'));
-        expect(effect.balanceId, equals('00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be'));
+        expect(
+          effect.sponsor,
+          equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'),
+        );
+        expect(
+          effect.balanceId,
+          equals(
+            '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
+          ),
+        );
       });
     });
 
@@ -1175,8 +1262,14 @@ void main() {
 
         expect(effect.type_i, equals(72));
         expect(effect.type, equals('signer_sponsorship_created'));
-        expect(effect.sponsor, equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'));
-        expect(effect.signer, equals('GBSIGNER1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE'));
+        expect(
+          effect.sponsor,
+          equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'),
+        );
+        expect(
+          effect.signer,
+          equals('GBSIGNER1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE'),
+        );
       });
     });
   });
@@ -1192,19 +1285,28 @@ void main() {
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'liquidity_pool': {
-            'id': 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+            'id':
+                'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
             'fee_bp': 30,
             'type': 'constant_product',
             'total_trustlines': '100',
             'total_shares': '10000.0000000',
             'reserves': [
               {'amount': '5000.0000000', 'asset': 'native'},
-              {'amount': '5000.0000000', 'asset': 'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'},
+              {
+                'amount': '5000.0000000',
+                'asset':
+                    'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
+              },
             ],
           },
           'reserves_deposited': [
             {'amount': '100.0000000', 'asset': 'native'},
-            {'amount': '100.0000000', 'asset': 'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'},
+            {
+              'amount': '100.0000000',
+              'asset':
+                  'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
+            },
           ],
           'shares_received': '200.0000000',
           '_links': {
@@ -1218,7 +1320,12 @@ void main() {
 
         expect(effect.type_i, equals(90));
         expect(effect.type, equals('liquidity_pool_deposited'));
-        expect(effect.liquidityPool.poolId, equals('dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7'));
+        expect(
+          effect.liquidityPool.poolId,
+          equals(
+            'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+          ),
+        );
         expect(effect.liquidityPool.fee, equals(30));
         expect(effect.liquidityPool.type, equals('constant_product'));
         expect(effect.liquidityPool.totalTrustlines, equals('100'));
@@ -1239,19 +1346,28 @@ void main() {
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'liquidity_pool': {
-            'id': 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+            'id':
+                'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
             'fee_bp': 30,
             'type': 'constant_product',
             'total_trustlines': '100',
             'total_shares': '9800.0000000',
             'reserves': [
               {'amount': '4900.0000000', 'asset': 'native'},
-              {'amount': '4900.0000000', 'asset': 'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'},
+              {
+                'amount': '4900.0000000',
+                'asset':
+                    'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
+              },
             ],
           },
           'reserves_received': [
             {'amount': '100.0000000', 'asset': 'native'},
-            {'amount': '100.0000000', 'asset': 'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'},
+            {
+              'amount': '100.0000000',
+              'asset':
+                  'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
+            },
           ],
           'shares_redeemed': '200.0000000',
           '_links': {
@@ -1280,18 +1396,26 @@ void main() {
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'liquidity_pool': {
-            'id': 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+            'id':
+                'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
             'fee_bp': 30,
             'type': 'constant_product',
             'total_trustlines': '100',
             'total_shares': '10000.0000000',
             'reserves': [
               {'amount': '5100.0000000', 'asset': 'native'},
-              {'amount': '4900.0000000', 'asset': 'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'},
+              {
+                'amount': '4900.0000000',
+                'asset':
+                    'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
+              },
             ],
           },
           'sold': {'amount': '100.0000000', 'asset': 'native'},
-          'bought': {'amount': '95.0000000', 'asset': 'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'},
+          'bought': {
+            'amount': '95.0000000',
+            'asset': 'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
+          },
           '_links': {
             'operation': {'href': '/operations/123'},
             'precedes': {'href': '/effects?order=asc&cursor=123'},
@@ -1318,14 +1442,19 @@ void main() {
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'liquidity_pool': {
-            'id': 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+            'id':
+                'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
             'fee_bp': 30,
             'type': 'constant_product',
             'total_trustlines': '1',
             'total_shares': '0.0000000',
             'reserves': [
               {'amount': '0.0000000', 'asset': 'native'},
-              {'amount': '0.0000000', 'asset': 'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'},
+              {
+                'amount': '0.0000000',
+                'asset':
+                    'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
+              },
             ],
           },
           '_links': {
@@ -1339,7 +1468,12 @@ void main() {
 
         expect(effect.type_i, equals(93));
         expect(effect.type, equals('liquidity_pool_created'));
-        expect(effect.liquidityPool.poolId, equals('dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7'));
+        expect(
+          effect.liquidityPool.poolId,
+          equals(
+            'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+          ),
+        );
       });
     });
 
@@ -1352,7 +1486,8 @@ void main() {
           'created_at': '2024-01-15T10:00:00Z',
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'liquidity_pool_id': 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+          'liquidity_pool_id':
+              'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
           '_links': {
             'operation': {'href': '/operations/123'},
             'precedes': {'href': '/effects?order=asc&cursor=123'},
@@ -1364,7 +1499,12 @@ void main() {
 
         expect(effect.type_i, equals(94));
         expect(effect.type, equals('liquidity_pool_removed'));
-        expect(effect.liquidityPoolId, equals('dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7'));
+        expect(
+          effect.liquidityPoolId,
+          equals(
+            'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+          ),
+        );
       });
     });
 
@@ -1378,26 +1518,34 @@ void main() {
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'liquidity_pool': {
-            'id': 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+            'id':
+                'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
             'fee_bp': 30,
             'type': 'constant_product',
             'total_trustlines': '0',
             'total_shares': '0.0000000',
             'reserves': [
               {'amount': '0.0000000', 'asset': 'native'},
-              {'amount': '0.0000000', 'asset': 'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'},
+              {
+                'amount': '0.0000000',
+                'asset':
+                    'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
+              },
             ],
           },
           'reserves_revoked': [
             {
               'amount': '100.0000000',
               'asset': 'native',
-              'claimable_balance_id': '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
+              'claimable_balance_id':
+                  '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
             },
             {
               'amount': '100.0000000',
-              'asset': 'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
-              'claimable_balance_id': '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5bf',
+              'asset':
+                  'USD:GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
+              'claimable_balance_id':
+                  '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5bf',
             },
           ],
           'shares_revoked': '200.0000000',
@@ -1430,7 +1578,8 @@ void main() {
           'created_at': '2024-01-15T10:00:00Z',
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'contract': 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+          'contract':
+              'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
           'amount': '100.0000000',
           'asset_type': 'native',
           '_links': {
@@ -1444,7 +1593,10 @@ void main() {
 
         expect(effect.type_i, equals(96));
         expect(effect.type, equals('contract_credited'));
-        expect(effect.contract, equals('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC'));
+        expect(
+          effect.contract,
+          equals('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC'),
+        );
         expect(effect.amount, equals('100.0000000'));
         expect(effect.assetType, equals('native'));
       });
@@ -1459,7 +1611,8 @@ void main() {
           'created_at': '2024-01-15T10:00:00Z',
           'paging_token': '123',
           'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'contract': 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+          'contract':
+              'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
           'amount': '50.0000000',
           'asset_type': 'credit_alphanum4',
           'asset_code': 'USD',
@@ -1475,11 +1628,17 @@ void main() {
 
         expect(effect.type_i, equals(97));
         expect(effect.type, equals('contract_debited'));
-        expect(effect.contract, equals('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC'));
+        expect(
+          effect.contract,
+          equals('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC'),
+        );
         expect(effect.amount, equals('50.0000000'));
         expect(effect.assetType, equals('credit_alphanum4'));
         expect(effect.assetCode, equals('USD'));
-        expect(effect.assetIssuer, equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'));
+        expect(
+          effect.assetIssuer,
+          equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'),
+        );
       });
     });
   });

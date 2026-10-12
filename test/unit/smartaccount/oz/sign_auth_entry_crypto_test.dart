@@ -37,11 +37,7 @@ XdrSorobanAuthorizationEntry _buildEntry({
     XdrSorobanAuthorizedFunctionType
         .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
   );
-  fn.contractFn = XdrInvokeContractArgs(
-    addrXdr,
-    'test',
-    <XdrSCVal>[],
-  );
+  fn.contractFn = XdrInvokeContractArgs(addrXdr, 'test', <XdrSCVal>[]);
   final invocation = XdrSorobanAuthorizedInvocation(
     fn,
     <XdrSorobanAuthorizedInvocation>[],
@@ -50,30 +46,35 @@ XdrSorobanAuthorizationEntry _buildEntry({
 }
 
 OZWebAuthnSignature _webauthn([int seed = 0]) => OZWebAuthnSignature(
-      authenticatorData: _bytes(16, seed),
-      clientData: _bytes(20, seed),
-      signature: _bytes(64, seed),
-    );
+  authenticatorData: _bytes(16, seed),
+  clientData: _bytes(20, seed),
+  signature: _bytes(64, seed),
+);
 
 void main() {
-  test('testSignAuthEntry_differentSignersProduceDistinctSerialisedEntries', () async {
-    // Two different signers signing the same entry produce two distinct serialised entries.
-    final entry = _buildEntry();
-    final out1 = await OZSmartAccountAuth.signAuthEntry(
-      entry: entry,
-      signer: OZDelegatedSigner(kValidGAddress),
-      signature: _webauthn(1),
-      expirationLedger: 100,
-    );
-    final out2 = await OZSmartAccountAuth.signAuthEntry(
-      entry: entry,
-      signer: OZExternalSigner(kValidContractId, _bytes(8)),
-      signature: _webauthn(2),
-      expirationLedger: 100,
-    );
-    expect(out1.toBase64EncodedXdrString(),
-        isNot(out2.toBase64EncodedXdrString()));
-  });
+  test(
+    'testSignAuthEntry_differentSignersProduceDistinctSerialisedEntries',
+    () async {
+      // Two different signers signing the same entry produce two distinct serialised entries.
+      final entry = _buildEntry();
+      final out1 = await OZSmartAccountAuth.signAuthEntry(
+        entry: entry,
+        signer: OZDelegatedSigner(kValidGAddress),
+        signature: _webauthn(1),
+        expirationLedger: 100,
+      );
+      final out2 = await OZSmartAccountAuth.signAuthEntry(
+        entry: entry,
+        signer: OZExternalSigner(kValidContractId, _bytes(8)),
+        signature: _webauthn(2),
+        expirationLedger: 100,
+      );
+      expect(
+        out1.toBase64EncodedXdrString(),
+        isNot(out2.toBase64EncodedXdrString()),
+      );
+    },
+  );
 
   test('testSignAuthEntry_payloadHashChangesWithDifferentNonce', () async {
     final e1 = _buildEntry(nonce: BigInt.from(1));
@@ -91,8 +92,7 @@ void main() {
     expect(h1, isNot(h2));
   });
 
-  test('testSignAuthEntry_payloadHashChangesWithDifferentExpiration',
-      () async {
+  test('testSignAuthEntry_payloadHashChangesWithDifferentExpiration', () async {
     final entry = _buildEntry();
     final h1 = await OZSmartAccountAuth.buildAuthPayloadHash(
       entry,

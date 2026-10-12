@@ -71,12 +71,17 @@ void main() {
       final uri = builder.buildUri();
 
       expect(
-          uri.queryParameters['liquidity_pool'], equals(testLiquidityPoolId));
+        uri.queryParameters['liquidity_pool'],
+        equals(testLiquidityPoolId),
+      );
     });
 
     test('combining forSigner with limit and order', () {
       final builder = AccountsRequestBuilder(httpClient, serverUri);
-      builder.forSigner(testAccountId).limit(10).order(RequestBuilderOrder.DESC);
+      builder
+          .forSigner(testAccountId)
+          .limit(10)
+          .order(RequestBuilderOrder.DESC);
       final uri = builder.buildUri();
 
       expect(uri.queryParameters['signer'], equals(testAccountId));
@@ -149,7 +154,10 @@ void main() {
       builder.forBuyingAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['buying_asset_type'], equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['buying_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['buying_asset_code'], equals('USD'));
       expect(uri.queryParameters['buying_asset_issuer'], equals(testIssuerId));
     });
@@ -160,7 +168,10 @@ void main() {
       builder.forSellingAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['selling_asset_type'], equals('credit_alphanum12'));
+      expect(
+        uri.queryParameters['selling_asset_type'],
+        equals('credit_alphanum12'),
+      );
       expect(uri.queryParameters['selling_asset_code'], equals('SILVERCOIN'));
       expect(uri.queryParameters['selling_asset_issuer'], equals(testIssuerId));
     });
@@ -172,7 +183,10 @@ void main() {
       builder.forBuyingAsset(buyAsset).forSellingAsset(sellAsset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['buying_asset_type'], equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['buying_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['selling_asset_type'], equals('native'));
     });
 
@@ -204,7 +218,8 @@ void main() {
 
     test('forTransaction sets path segments with tx id', () {
       final builder = OperationsRequestBuilder(httpClient, serverUri);
-      final txId = '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889';
+      final txId =
+          '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889';
       builder.forTransaction(txId);
       final uri = builder.buildUri();
 
@@ -221,7 +236,11 @@ void main() {
 
     test('combining forAccount with includeFailed and pagination', () {
       final builder = OperationsRequestBuilder(httpClient, serverUri);
-      builder.forAccount(testAccountId).includeFailed(false).limit(50).order(RequestBuilderOrder.ASC);
+      builder
+          .forAccount(testAccountId)
+          .includeFailed(false)
+          .limit(50)
+          .order(RequestBuilderOrder.ASC);
       final uri = builder.buildUri();
 
       expect(uri.path, contains('/accounts/$testAccountId/operations'));
@@ -258,7 +277,10 @@ void main() {
 
     test('combining forLedger with includeFailed and order', () {
       final builder = TransactionsRequestBuilder(httpClient, serverUri);
-      builder.forLedger(100000).includeFailed(true).order(RequestBuilderOrder.DESC);
+      builder
+          .forLedger(100000)
+          .includeFailed(true)
+          .order(RequestBuilderOrder.DESC);
       final uri = builder.buildUri();
 
       expect(uri.path, contains('/ledgers/100000/transactions'));
@@ -303,7 +325,10 @@ void main() {
       builder.baseAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['base_asset_type'], equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['base_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['base_asset_code'], equals('BTC'));
       expect(uri.queryParameters['base_asset_issuer'], equals(testIssuerId));
     });
@@ -323,7 +348,10 @@ void main() {
       builder.baseAsset(baseAsset).counterAsset(counterAsset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['base_asset_type'], equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['base_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['base_asset_code'], equals('USD'));
       expect(uri.queryParameters['counter_asset_type'], equals('native'));
     });
@@ -405,7 +433,10 @@ void main() {
       builder.buyingAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['buying_asset_type'], equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['buying_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['buying_asset_code'], equals('USDC'));
       expect(uri.queryParameters['buying_asset_issuer'], equals(testIssuerId));
     });
@@ -418,13 +449,19 @@ void main() {
       final uri = builder.buildUri();
 
       expect(uri.queryParameters['selling_asset_type'], equals('native'));
-      expect(uri.queryParameters['buying_asset_type'], equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['buying_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['buying_asset_code'], equals('EUR'));
     });
 
     test('with limit parameter', () {
       final builder = OrderBookRequestBuilder(httpClient, serverUri);
-      builder.sellingAsset(Asset.NATIVE).buyingAsset(AssetTypeCreditAlphaNum4('USD', testIssuerId)).limit(15);
+      builder
+          .sellingAsset(Asset.NATIVE)
+          .buyingAsset(AssetTypeCreditAlphaNum4('USD', testIssuerId))
+          .limit(15);
       final uri = builder.buildUri();
 
       expect(uri.queryParameters['limit'], equals('15'));
@@ -459,7 +496,10 @@ void main() {
 
     test('combining forAccount with order and limit', () {
       final builder = PaymentsRequestBuilder(httpClient, serverUri);
-      builder.forAccount(testAccountId).order(RequestBuilderOrder.DESC).limit(100);
+      builder
+          .forAccount(testAccountId)
+          .order(RequestBuilderOrder.DESC)
+          .limit(100);
       final uri = builder.buildUri();
 
       expect(uri.path, contains('/accounts/$testAccountId/payments'));
@@ -491,7 +531,10 @@ void main() {
 
       expect(uri.path, contains('/trade_aggregations'));
       expect(uri.queryParameters['base_asset_type'], equals('native'));
-      expect(uri.queryParameters['counter_asset_type'], equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['counter_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['counter_asset_code'], equals('USD'));
       expect(uri.queryParameters['start_time'], equals(startTime.toString()));
       expect(uri.queryParameters['end_time'], equals(endTime.toString()));
@@ -519,7 +562,10 @@ void main() {
       );
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['base_asset_type'], equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['base_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['base_asset_code'], equals('BTC'));
       expect(uri.queryParameters['counter_asset_code'], equals('USD'));
     });
@@ -596,18 +642,24 @@ void main() {
       builder.destinationAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['destination_asset_type'], equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['destination_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['destination_asset_code'], equals('USD'));
-      expect(uri.queryParameters['destination_asset_issuer'], equals(testIssuerId));
+      expect(
+        uri.queryParameters['destination_asset_issuer'],
+        equals(testIssuerId),
+      );
     });
 
     test('complete path request with all parameters', () {
       final builder = StrictReceivePathsRequestBuilder(httpClient, serverUri);
       final destAsset = AssetTypeCreditAlphaNum4('EUR', testIssuerId);
       builder
-        .sourceAccount(testAccountId)
-        .destinationAmount('250.00')
-        .destinationAsset(destAsset);
+          .sourceAccount(testAccountId)
+          .destinationAmount('250.00')
+          .destinationAsset(destAsset);
       final uri = builder.buildUri();
 
       expect(uri.queryParameters['source_account'], equals(testAccountId));
@@ -646,9 +698,9 @@ void main() {
       final builder = StrictSendPathsRequestBuilder(httpClient, serverUri);
       final srcAsset = AssetTypeCreditAlphaNum4('JPY', testIssuerId);
       builder
-        .destinationAccount(testAccountId)
-        .sourceAmount('1000.00')
-        .sourceAsset(srcAsset);
+          .destinationAccount(testAccountId)
+          .sourceAmount('1000.00')
+          .sourceAsset(srcAsset);
       final uri = builder.buildUri();
 
       expect(uri.queryParameters['destination_account'], equals(testAccountId));
@@ -692,10 +744,7 @@ void main() {
 
     test('chaining cursor, limit, and order together', () {
       final builder = EffectsRequestBuilder(httpClient, serverUri);
-      builder
-        .cursor('abc123xyz')
-        .limit(75)
-        .order(RequestBuilderOrder.ASC);
+      builder.cursor('abc123xyz').limit(75).order(RequestBuilderOrder.ASC);
       final uri = builder.buildUri();
 
       expect(uri.queryParameters['cursor'], equals('abc123xyz'));
@@ -722,10 +771,7 @@ void main() {
       final asset = AssetTypeCreditAlphaNum4('USD', testIssuerId);
       builder.forAsset(asset);
 
-      expect(
-        () => builder.forSigner(testAccountId),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => builder.forSigner(testAccountId), throwsA(isA<Exception>()));
     });
 
     test('forAsset throws exception when forSigner already called', () {
@@ -733,17 +779,15 @@ void main() {
       builder.forSigner(testAccountId);
       final asset = AssetTypeCreditAlphaNum4('USD', testIssuerId);
 
-      expect(
-        () => builder.forAsset(asset),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => builder.forAsset(asset), throwsA(isA<Exception>()));
     });
 
     test('forLiquidityPool decodes L-prefixed pool ID to hex', () {
       final builder = AccountsRequestBuilder(httpClient, serverUri);
       final poolHexId = testHashHex;
-      final poolIdWithPrefix =
-          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+      final poolIdWithPrefix = StrKey.encodeLiquidityPoolId(
+        Util.hexToBytes(poolHexId),
+      );
       builder.forLiquidityPool(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -756,7 +800,9 @@ void main() {
       final uri = builder.buildUri();
 
       expect(
-          uri.queryParameters['liquidity_pool'], equals(testLiquidityPoolId));
+        uri.queryParameters['liquidity_pool'],
+        equals(testLiquidityPoolId),
+      );
     });
 
     test('forSponsor can be combined with forAsset', () {
@@ -783,7 +829,10 @@ void main() {
       final result = builder.cursor('test_cursor');
 
       expect(result, same(builder));
-      expect(builder.buildUri().queryParameters['cursor'], equals('test_cursor'));
+      expect(
+        builder.buildUri().queryParameters['cursor'],
+        equals('test_cursor'),
+      );
     });
 
     test('limit returns builder instance for chaining', () {
@@ -902,8 +951,9 @@ void main() {
     test('forPoolId with L-prefixed ID', () {
       final builder = LiquidityPoolTradesRequestBuilder(httpClient, serverUri);
       final poolHexId = testHashHex;
-      final poolIdWithPrefix =
-          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+      final poolIdWithPrefix = StrKey.encodeLiquidityPoolId(
+        Util.hexToBytes(poolHexId),
+      );
       builder.forPoolId(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -966,8 +1016,10 @@ void main() {
       builder.forBuyingAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['buying_asset_type'],
-          equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['buying_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['buying_asset_code'], equals('USD'));
       expect(uri.queryParameters['buying_asset_issuer'], equals(testIssuerId));
     });
@@ -978,11 +1030,12 @@ void main() {
       builder.forBuyingAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['buying_asset_type'],
-          equals('credit_alphanum12'));
-      expect(uri.queryParameters['buying_asset_code'], equals('LONGASSET'));
       expect(
-          uri.queryParameters['buying_asset_issuer'], equals(testIssuerId));
+        uri.queryParameters['buying_asset_type'],
+        equals('credit_alphanum12'),
+      );
+      expect(uri.queryParameters['buying_asset_code'], equals('LONGASSET'));
+      expect(uri.queryParameters['buying_asset_issuer'], equals(testIssuerId));
     });
 
     test('forSellingAsset with native asset', () {
@@ -1001,11 +1054,12 @@ void main() {
       builder.forSellingAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['selling_asset_type'],
-          equals('credit_alphanum4'));
-      expect(uri.queryParameters['selling_asset_code'], equals('EUR'));
       expect(
-          uri.queryParameters['selling_asset_issuer'], equals(testIssuerId));
+        uri.queryParameters['selling_asset_type'],
+        equals('credit_alphanum4'),
+      );
+      expect(uri.queryParameters['selling_asset_code'], equals('EUR'));
+      expect(uri.queryParameters['selling_asset_issuer'], equals(testIssuerId));
     });
 
     test('forSponsor adds sponsor query parameter', () {
@@ -1081,11 +1135,14 @@ void main() {
     test('forClaimableBalance with B-prefixed ID', () {
       final builder = OperationsRequestBuilder(httpClient, serverUri);
       builder.forClaimableBalance(
-          StrKey.encodeClaimableBalanceIdHex(testHashHex));
+        StrKey.encodeClaimableBalanceIdHex(testHashHex),
+      );
       final uri = builder.buildUri();
 
-      expect(uri.path,
-          endsWith('/claimable_balances/00000000$testHashHex/operations'));
+      expect(
+        uri.path,
+        endsWith('/claimable_balances/00000000$testHashHex/operations'),
+      );
     });
 
     test('forClaimableBalance with a one byte tagged hex ID', () {
@@ -1093,8 +1150,10 @@ void main() {
       builder.forClaimableBalance('00$testHashHex');
       final uri = builder.buildUri();
 
-      expect(uri.path,
-          endsWith('/claimable_balances/00000000$testHashHex/operations'));
+      expect(
+        uri.path,
+        endsWith('/claimable_balances/00000000$testHashHex/operations'),
+      );
     });
 
     test('forClaimableBalance with hex ID', () {
@@ -1129,8 +1188,9 @@ void main() {
     test('forLiquidityPool with L-prefixed ID', () {
       final builder = OperationsRequestBuilder(httpClient, serverUri);
       final poolHexId = testHashHex;
-      final poolIdWithPrefix =
-          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+      final poolIdWithPrefix = StrKey.encodeLiquidityPoolId(
+        Util.hexToBytes(poolHexId),
+      );
       builder.forLiquidityPool(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1204,11 +1264,14 @@ void main() {
     test('forClaimableBalance with B-prefixed ID', () {
       final builder = TransactionsRequestBuilder(httpClient, serverUri);
       builder.forClaimableBalance(
-          StrKey.encodeClaimableBalanceIdHex(testHashHex));
+        StrKey.encodeClaimableBalanceIdHex(testHashHex),
+      );
       final uri = builder.buildUri();
 
-      expect(uri.path,
-          endsWith('/claimable_balances/00000000$testHashHex/transactions'));
+      expect(
+        uri.path,
+        endsWith('/claimable_balances/00000000$testHashHex/transactions'),
+      );
     });
 
     test('forClaimableBalance with a one byte tagged hex ID', () {
@@ -1216,8 +1279,10 @@ void main() {
       builder.forClaimableBalance('00$testHashHex');
       final uri = builder.buildUri();
 
-      expect(uri.path,
-          endsWith('/claimable_balances/00000000$testHashHex/transactions'));
+      expect(
+        uri.path,
+        endsWith('/claimable_balances/00000000$testHashHex/transactions'),
+      );
     });
 
     test('forClaimableBalance with hex ID', () {
@@ -1241,8 +1306,9 @@ void main() {
     test('forLiquidityPool with L-prefixed ID', () {
       final builder = TransactionsRequestBuilder(httpClient, serverUri);
       final poolHexId = testHashHex;
-      final poolIdWithPrefix =
-          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+      final poolIdWithPrefix = StrKey.encodeLiquidityPoolId(
+        Util.hexToBytes(poolHexId),
+      );
       builder.forLiquidityPool(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1424,8 +1490,9 @@ void main() {
     test('forPoolId decodes L-prefixed ID to hex', () {
       final builder = LiquidityPoolTradesRequestBuilder(httpClient, serverUri);
       final poolHexId = testHashHex;
-      final poolIdWithPrefix =
-          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+      final poolIdWithPrefix = StrKey.encodeLiquidityPoolId(
+        Util.hexToBytes(poolHexId),
+      );
       builder.forPoolId(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1498,7 +1565,10 @@ void main() {
       builder.forBuyingAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['buying_asset_type'], equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['buying_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['buying_asset_code'], equals('USD'));
       expect(uri.queryParameters['buying_asset_issuer'], equals(testIssuerId));
     });
@@ -1509,7 +1579,10 @@ void main() {
       builder.forSellingAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['selling_asset_type'], equals('credit_alphanum12'));
+      expect(
+        uri.queryParameters['selling_asset_type'],
+        equals('credit_alphanum12'),
+      );
       expect(uri.queryParameters['selling_asset_code'], equals('EURTEST'));
       expect(uri.queryParameters['selling_asset_issuer'], equals(testIssuerId));
     });
@@ -1609,8 +1682,9 @@ void main() {
     test('forLiquidityPool decodes L-prefixed ID to hex', () {
       final builder = OperationsRequestBuilder(httpClient, serverUri);
       final poolHexId = testHashHex;
-      final poolIdWithPrefix =
-          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+      final poolIdWithPrefix = StrKey.encodeLiquidityPoolId(
+        Util.hexToBytes(poolHexId),
+      );
       builder.forLiquidityPool(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1700,8 +1774,9 @@ void main() {
     test('forLiquidityPool decodes L-prefixed ID to hex', () {
       final builder = TransactionsRequestBuilder(httpClient, serverUri);
       final poolHexId = testHashHex;
-      final poolIdWithPrefix =
-          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+      final poolIdWithPrefix = StrKey.encodeLiquidityPoolId(
+        Util.hexToBytes(poolHexId),
+      );
       builder.forLiquidityPool(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1762,7 +1837,10 @@ void main() {
       builder.baseAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['base_asset_type'], equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['base_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['base_asset_code'], equals('BTC'));
       expect(uri.queryParameters['base_asset_issuer'], equals(testIssuerId));
     });
@@ -1781,7 +1859,10 @@ void main() {
       builder.counterAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['counter_asset_type'], equals('credit_alphanum12'));
+      expect(
+        uri.queryParameters['counter_asset_type'],
+        equals('credit_alphanum12'),
+      );
       expect(uri.queryParameters['counter_asset_code'], equals('EURTEST'));
       expect(uri.queryParameters['counter_asset_issuer'], equals(testIssuerId));
     });
@@ -1825,14 +1906,18 @@ void main() {
       builder.liquidityPoolId(testLiquidityPoolId);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['liquidity_pool_id'], equals(testLiquidityPoolId));
+      expect(
+        uri.queryParameters['liquidity_pool_id'],
+        equals(testLiquidityPoolId),
+      );
     });
 
     test('liquidityPoolId decodes L-prefixed ID to hex', () {
       final builder = TradesRequestBuilder(httpClient, serverUri);
       final poolHexId = testHashHex;
-      final poolIdWithPrefix =
-          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+      final poolIdWithPrefix = StrKey.encodeLiquidityPoolId(
+        Util.hexToBytes(poolHexId),
+      );
       builder.liquidityPoolId(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1915,8 +2000,9 @@ void main() {
     test('forLiquidityPool decodes L-prefixed ID to hex', () {
       final builder = EffectsRequestBuilder(httpClient, serverUri);
       final poolHexId = testHashHex;
-      final poolIdWithPrefix =
-          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+      final poolIdWithPrefix = StrKey.encodeLiquidityPoolId(
+        Util.hexToBytes(poolHexId),
+      );
       builder.forLiquidityPool(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1961,7 +2047,10 @@ void main() {
       builder.sellingAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['selling_asset_type'], equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['selling_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['selling_asset_code'], equals('XLM'));
       expect(uri.queryParameters['selling_asset_issuer'], equals(testIssuerId));
     });
@@ -1980,7 +2069,10 @@ void main() {
       builder.buyingAsset(asset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['buying_asset_type'], equals('credit_alphanum12'));
+      expect(
+        uri.queryParameters['buying_asset_type'],
+        equals('credit_alphanum12'),
+      );
       expect(uri.queryParameters['buying_asset_code'], equals('TESTASSET'));
       expect(uri.queryParameters['buying_asset_issuer'], equals(testIssuerId));
     });
@@ -1992,7 +2084,10 @@ void main() {
       builder.sellingAsset(sellingAsset).buyingAsset(buyingAsset);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['selling_asset_type'], equals('credit_alphanum4'));
+      expect(
+        uri.queryParameters['selling_asset_type'],
+        equals('credit_alphanum4'),
+      );
       expect(uri.queryParameters['selling_asset_code'], equals('USD'));
       expect(uri.queryParameters['buying_asset_type'], equals('native'));
     });

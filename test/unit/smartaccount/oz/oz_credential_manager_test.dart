@@ -92,8 +92,7 @@ void main() {
       final ids = pending.map((c) => c.credentialId).toSet();
       expect(ids, containsAll(<String>['cred-pending', 'cred-failed']));
 
-      final failed =
-          pending.firstWhere((c) => c.credentialId == 'cred-failed');
+      final failed = pending.firstWhere((c) => c.credentialId == 'cred-failed');
       expect(failed.deploymentStatus, OZCredentialDeploymentStatus.failed);
     });
 
@@ -164,13 +163,16 @@ void main() {
       expect(updated!.nickname, 'YubiKey 5');
     });
 
-    test('non-existent credential throws SmartAccountCredentialNotFound', () async {
-      final ctx = _newKitWithManager();
-      await expectLater(
-        ctx.manager.updateNickname('nonexistent', 'Name'),
-        throwsA(isA<SmartAccountCredentialNotFound>()),
-      );
-    });
+    test(
+      'non-existent credential throws SmartAccountCredentialNotFound',
+      () async {
+        final ctx = _newKitWithManager();
+        await expectLater(
+          ctx.manager.updateNickname('nonexistent', 'Name'),
+          throwsA(isA<SmartAccountCredentialNotFound>()),
+        );
+      },
+    );
   });
 
   group('OZCredentialManager.updateCredential', () {
@@ -199,37 +201,43 @@ void main() {
       expect(updated.deploymentStatus, OZCredentialDeploymentStatus.pending);
     });
 
-    test('non-existent credential throws SmartAccountCredentialNotFound', () async {
-      final ctx = _newKitWithManager();
-      await expectLater(
-        ctx.manager.updateCredential(
-          'nonexistent',
-          const OZStoredCredentialUpdate(nickname: 'Fail'),
-        ),
-        throwsA(isA<SmartAccountCredentialNotFound>()),
-      );
-    });
+    test(
+      'non-existent credential throws SmartAccountCredentialNotFound',
+      () async {
+        final ctx = _newKitWithManager();
+        await expectLater(
+          ctx.manager.updateCredential(
+            'nonexistent',
+            const OZStoredCredentialUpdate(nickname: 'Fail'),
+          ),
+          throwsA(isA<SmartAccountCredentialNotFound>()),
+        );
+      },
+    );
   });
 
   group('OZCredentialManager.createPendingCredential', () {
-    test('duplicate credentialId throws SmartAccountCredentialAlreadyExists', () async {
-      final ctx = _newKitWithManager();
+    test(
+      'duplicate credentialId throws SmartAccountCredentialAlreadyExists',
+      () async {
+        final ctx = _newKitWithManager();
 
-      await ctx.manager.createPendingCredential(
-        credentialId: 'dup-cred',
-        publicKey: _testPublicKey(),
-        contractId: _contractA,
-      );
-
-      await expectLater(
-        ctx.manager.createPendingCredential(
+        await ctx.manager.createPendingCredential(
           credentialId: 'dup-cred',
           publicKey: _testPublicKey(),
-          contractId: _contractB,
-        ),
-        throwsA(isA<SmartAccountCredentialAlreadyExists>()),
-      );
-    });
+          contractId: _contractA,
+        );
+
+        await expectLater(
+          ctx.manager.createPendingCredential(
+            credentialId: 'dup-cred',
+            publicKey: _testPublicKey(),
+            contractId: _contractB,
+          ),
+          throwsA(isA<SmartAccountCredentialAlreadyExists>()),
+        );
+      },
+    );
 
     test('isPrimary is false for newly-created pending credentials', () async {
       final ctx = _newKitWithManager();
@@ -365,8 +373,7 @@ void main() {
         contractId: _contractB,
       );
 
-      ctx.kit
-          .setConnectedState(credentialId: 'cred-1', contractId: _contractA);
+      ctx.kit.setConnectedState(credentialId: 'cred-1', contractId: _contractA);
 
       final result = await ctx.manager.getForConnectedWallet();
       expect(result.length, 1);
@@ -394,8 +401,7 @@ void main() {
   });
 
   group('OZCredentialManager.setPrimary', () {
-    test('unsets every previous primary before promoting the target',
-        () async {
+    test('unsets every previous primary before promoting the target', () async {
       final ctx = _newKitWithManager();
 
       // First credential ends up flagged isPrimary=true via the explicit
@@ -430,80 +436,90 @@ void main() {
       expect(credB!.isPrimary, true);
     });
 
-    test('non-existent credential throws SmartAccountCredentialNotFound', () async {
-      final ctx = _newKitWithManager();
-      await expectLater(
-        ctx.manager.setPrimary('nonexistent'),
-        throwsA(isA<SmartAccountCredentialNotFound>()),
-      );
-    });
+    test(
+      'non-existent credential throws SmartAccountCredentialNotFound',
+      () async {
+        final ctx = _newKitWithManager();
+        await expectLater(
+          ctx.manager.setPrimary('nonexistent'),
+          throwsA(isA<SmartAccountCredentialNotFound>()),
+        );
+      },
+    );
   });
 
   group('OZCredentialManager.sync swallowed-exception event emission', () {
     test(
-        'sync emits OZSmartAccountEventCredentialSyncFailed when getContractData throws Exception',
-        () async {
-      // The narrowed catch in `sync` keeps the stable boolean return
-      // contract for transient RPC failures while surfacing the swallowed
-      // exception through the kit's event emitter so consumers can
-      // observe it (logging, metrics, retry).
-      final mock = MockSorobanServer();
-      mock.getContractDataResponses
-          .add(Exception('connection reset by peer'));
+      'sync emits OZSmartAccountEventCredentialSyncFailed when getContractData throws Exception',
+      () async {
+        // The narrowed catch in `sync` keeps the stable boolean return
+        // contract for transient RPC failures while surfacing the swallowed
+        // exception through the kit's event emitter so consumers can
+        // observe it (logging, metrics, retry).
+        final mock = MockSorobanServer();
+        mock.getContractDataResponses.add(
+          Exception('connection reset by peer'),
+        );
 
-      final ctx = _newKitWithManager(sorobanServer: mock);
+        final ctx = _newKitWithManager(sorobanServer: mock);
 
-      await ctx.manager.createPendingCredential(
-        credentialId: 'sync-cred',
-        publicKey: _testPublicKey(),
-        contractId: _contractA,
-      );
+        await ctx.manager.createPendingCredential(
+          credentialId: 'sync-cred',
+          publicKey: _testPublicKey(),
+          contractId: _contractA,
+        );
 
-      final received = <OZSmartAccountEventCredentialSyncFailed>[];
-      ctx.kit.events.on<OZSmartAccountEventCredentialSyncFailed>(received.add);
+        final received = <OZSmartAccountEventCredentialSyncFailed>[];
+        ctx.kit.events.on<OZSmartAccountEventCredentialSyncFailed>(
+          received.add,
+        );
 
-      final isDeployed = await ctx.manager.sync('sync-cred');
-      expect(isDeployed, isFalse);
+        final isDeployed = await ctx.manager.sync('sync-cred');
+        expect(isDeployed, isFalse);
 
-      expect(received, hasLength(1));
-      expect(received.single.credentialId, 'sync-cred');
-      expect(received.single.error, isA<Exception>());
-      expect(
-        received.single.error.toString(),
-        contains('connection reset by peer'),
-      );
-    });
+        expect(received, hasLength(1));
+        expect(received.single.credentialId, 'sync-cred');
+        expect(received.single.error, isA<Exception>());
+        expect(
+          received.single.error.toString(),
+          contains('connection reset by peer'),
+        );
+      },
+    );
 
     test(
-        'sync does NOT emit when getContractData returns null (contract simply absent)',
-        () async {
-      // why: a `null` ledger entry means "no contract on-chain" — the
-      // expected outcome for a pending deploy. No exception is thrown,
-      // so no event is emitted; only the boolean return communicates
-      // the result.
-      final mock = MockSorobanServer();
-      mock.getContractDataResponses.add(<Object?>[null].first);
+      'sync does NOT emit when getContractData returns null (contract simply absent)',
+      () async {
+        // why: a `null` ledger entry means "no contract on-chain" — the
+        // expected outcome for a pending deploy. No exception is thrown,
+        // so no event is emitted; only the boolean return communicates
+        // the result.
+        final mock = MockSorobanServer();
+        mock.getContractDataResponses.add(<Object?>[null].first);
 
-      final ctx = _newKitWithManager(sorobanServer: mock);
+        final ctx = _newKitWithManager(sorobanServer: mock);
 
-      await ctx.manager.createPendingCredential(
-        credentialId: 'sync-cred-absent',
-        publicKey: _testPublicKey(),
-        contractId: _contractA,
-      );
+        await ctx.manager.createPendingCredential(
+          credentialId: 'sync-cred-absent',
+          publicKey: _testPublicKey(),
+          contractId: _contractA,
+        );
 
-      final received = <OZSmartAccountEventCredentialSyncFailed>[];
-      ctx.kit.events.on<OZSmartAccountEventCredentialSyncFailed>(received.add);
+        final received = <OZSmartAccountEventCredentialSyncFailed>[];
+        ctx.kit.events.on<OZSmartAccountEventCredentialSyncFailed>(
+          received.add,
+        );
 
-      final isDeployed = await ctx.manager.sync('sync-cred-absent');
-      expect(isDeployed, isFalse);
+        final isDeployed = await ctx.manager.sync('sync-cred-absent');
+        expect(isDeployed, isFalse);
 
-      expect(
-        received,
-        isEmpty,
-        reason: 'a null contract-data response is not an exception path',
-      );
-    });
+        expect(
+          received,
+          isEmpty,
+          reason: 'a null contract-data response is not an exception path',
+        );
+      },
+    );
   });
 
   // =========================================================================
@@ -535,41 +551,47 @@ void main() {
       );
     });
 
-    test('storage save throws rethrows SmartAccountStorageWriteFailed', () async {
-      final faulting = _FaultingStorageAdapter(
-        saveError: SmartAccountStorageException.writeFailed('cred-save-fail'),
-      );
-      final kit = FakePipelineKit(storage: faulting);
-      final manager = OZCredentialManager(kit);
+    test(
+      'storage save throws rethrows SmartAccountStorageWriteFailed',
+      () async {
+        final faulting = _FaultingStorageAdapter(
+          saveError: SmartAccountStorageException.writeFailed('cred-save-fail'),
+        );
+        final kit = FakePipelineKit(storage: faulting);
+        final manager = OZCredentialManager(kit);
 
-      await expectLater(
-        manager.createPendingCredential(
-          credentialId: 'cred-save-fail',
-          publicKey: _testPublicKey(),
-          contractId: _contractA,
-        ),
-        throwsA(isA<SmartAccountStorageWriteFailed>()),
-      );
-    });
+        await expectLater(
+          manager.createPendingCredential(
+            credentialId: 'cred-save-fail',
+            publicKey: _testPublicKey(),
+            contractId: _contractA,
+          ),
+          throwsA(isA<SmartAccountStorageWriteFailed>()),
+        );
+      },
+    );
 
-    test('storage save throws non-SmartAccountStorageException wraps as SmartAccountStorageWriteFailed', () async {
-      // Throwing a plain Exception (not SmartAccountStorageException) hits the generic
-      // catch (e) branch → wraps as SmartAccountStorageWriteFailed.
-      final faulting = _FaultingStorageAdapter(
-        saveError: Exception('generic io error'),
-      );
-      final kit = FakePipelineKit(storage: faulting);
-      final manager = OZCredentialManager(kit);
+    test(
+      'storage save throws non-SmartAccountStorageException wraps as SmartAccountStorageWriteFailed',
+      () async {
+        // Throwing a plain Exception (not SmartAccountStorageException) hits the generic
+        // catch (e) branch → wraps as SmartAccountStorageWriteFailed.
+        final faulting = _FaultingStorageAdapter(
+          saveError: Exception('generic io error'),
+        );
+        final kit = FakePipelineKit(storage: faulting);
+        final manager = OZCredentialManager(kit);
 
-      await expectLater(
-        manager.createPendingCredential(
-          credentialId: 'cred-generic-err',
-          publicKey: _testPublicKey(),
-          contractId: _contractA,
-        ),
-        throwsA(isA<SmartAccountStorageWriteFailed>()),
-      );
-    });
+        await expectLater(
+          manager.createPendingCredential(
+            credentialId: 'cred-generic-err',
+            publicKey: _testPublicKey(),
+            contractId: _contractA,
+          ),
+          throwsA(isA<SmartAccountStorageWriteFailed>()),
+        );
+      },
+    );
   });
 
   group('OZCredentialManager.saveCredential fault injection', () {
@@ -589,78 +611,90 @@ void main() {
       );
     });
 
-    test('storage throws non-SmartAccountStorageException wraps as SmartAccountStorageWriteFailed', () async {
-      final faulting = _FaultingStorageAdapter(
-        saveError: Exception('io error in saveCredential'),
-      );
-      final kit = FakePipelineKit(storage: faulting);
-      final manager = OZCredentialManager(kit);
+    test(
+      'storage throws non-SmartAccountStorageException wraps as SmartAccountStorageWriteFailed',
+      () async {
+        final faulting = _FaultingStorageAdapter(
+          saveError: Exception('io error in saveCredential'),
+        );
+        final kit = FakePipelineKit(storage: faulting);
+        final manager = OZCredentialManager(kit);
 
-      await expectLater(
-        manager.saveCredential(
-          credentialId: 'save-generic-err',
-          publicKey: _testPublicKey(),
-        ),
-        throwsA(isA<SmartAccountStorageWriteFailed>()),
-      );
-    });
+        await expectLater(
+          manager.saveCredential(
+            credentialId: 'save-generic-err',
+            publicKey: _testPublicKey(),
+          ),
+          throwsA(isA<SmartAccountStorageWriteFailed>()),
+        );
+      },
+    );
   });
 
   group('OZCredentialManager.markDeploymentFailed fault injection', () {
-    test('credential not found throws SmartAccountCredentialNotFound', () async {
-      final ctx = _newKitWithManager();
-      await expectLater(
-        ctx.manager.markDeploymentFailed(
-          credentialId: 'missing-cred',
-          error: 'some error',
-        ),
-        throwsA(isA<SmartAccountCredentialNotFound>()),
-      );
-    });
+    test(
+      'credential not found throws SmartAccountCredentialNotFound',
+      () async {
+        final ctx = _newKitWithManager();
+        await expectLater(
+          ctx.manager.markDeploymentFailed(
+            credentialId: 'missing-cred',
+            error: 'some error',
+          ),
+          throwsA(isA<SmartAccountCredentialNotFound>()),
+        );
+      },
+    );
 
-    test('storage update throws rethrows SmartAccountStorageException', () async {
-      final faulting = _FaultingStorageAdapter(
-        getResult: OZStoredCredential(
-          credentialId: 'fault-cred',
-          publicKey: _testPublicKey(),
-          contractId: _contractA,
-          createdAt: 1700000000000,
-        ),
-        updateError: SmartAccountStorageException.writeFailed('fault-cred'),
-      );
-      final kit = FakePipelineKit(storage: faulting);
-      final manager = OZCredentialManager(kit);
+    test(
+      'storage update throws rethrows SmartAccountStorageException',
+      () async {
+        final faulting = _FaultingStorageAdapter(
+          getResult: OZStoredCredential(
+            credentialId: 'fault-cred',
+            publicKey: _testPublicKey(),
+            contractId: _contractA,
+            createdAt: 1700000000000,
+          ),
+          updateError: SmartAccountStorageException.writeFailed('fault-cred'),
+        );
+        final kit = FakePipelineKit(storage: faulting);
+        final manager = OZCredentialManager(kit);
 
-      await expectLater(
-        manager.markDeploymentFailed(
-          credentialId: 'fault-cred',
-          error: 'deploy failed',
-        ),
-        throwsA(isA<SmartAccountStorageWriteFailed>()),
-      );
-    });
+        await expectLater(
+          manager.markDeploymentFailed(
+            credentialId: 'fault-cred',
+            error: 'deploy failed',
+          ),
+          throwsA(isA<SmartAccountStorageWriteFailed>()),
+        );
+      },
+    );
 
-    test('storage update throws non-SmartAccountStorageException wraps as SmartAccountStorageWriteFailed', () async {
-      final faulting = _FaultingStorageAdapter(
-        getResult: OZStoredCredential(
-          credentialId: 'fault-generic',
-          publicKey: _testPublicKey(),
-          contractId: _contractA,
-          createdAt: 1700000000000,
-        ),
-        updateError: Exception('update io error'),
-      );
-      final kit = FakePipelineKit(storage: faulting);
-      final manager = OZCredentialManager(kit);
+    test(
+      'storage update throws non-SmartAccountStorageException wraps as SmartAccountStorageWriteFailed',
+      () async {
+        final faulting = _FaultingStorageAdapter(
+          getResult: OZStoredCredential(
+            credentialId: 'fault-generic',
+            publicKey: _testPublicKey(),
+            contractId: _contractA,
+            createdAt: 1700000000000,
+          ),
+          updateError: Exception('update io error'),
+        );
+        final kit = FakePipelineKit(storage: faulting);
+        final manager = OZCredentialManager(kit);
 
-      await expectLater(
-        manager.markDeploymentFailed(
-          credentialId: 'fault-generic',
-          error: 'deploy failed',
-        ),
-        throwsA(isA<SmartAccountStorageWriteFailed>()),
-      );
-    });
+        await expectLater(
+          manager.markDeploymentFailed(
+            credentialId: 'fault-generic',
+            error: 'deploy failed',
+          ),
+          throwsA(isA<SmartAccountStorageWriteFailed>()),
+        );
+      },
+    );
   });
 
   group('OZCredentialManager.sync fault injection', () {
@@ -677,13 +711,16 @@ void main() {
       );
     });
 
-    test('sync on missing credential throws SmartAccountCredentialNotFound', () async {
-      final ctx = _newKitWithManager();
-      await expectLater(
-        ctx.manager.sync('no-such-cred'),
-        throwsA(isA<SmartAccountCredentialNotFound>()),
-      );
-    });
+    test(
+      'sync on missing credential throws SmartAccountCredentialNotFound',
+      () async {
+        final ctx = _newKitWithManager();
+        await expectLater(
+          ctx.manager.sync('no-such-cred'),
+          throwsA(isA<SmartAccountCredentialNotFound>()),
+        );
+      },
+    );
   });
 
   group('OZCredentialManager.deleteCredential fault injection', () {
@@ -708,13 +745,16 @@ void main() {
       expect(received.single.credentialId, 'del-success');
     });
 
-    test('deleting missing credential throws SmartAccountCredentialNotFound', () async {
-      final ctx = _newKitWithManager();
-      await expectLater(
-        ctx.manager.deleteCredential(credentialId: 'ghost-cred'),
-        throwsA(isA<SmartAccountCredentialNotFound>()),
-      );
-    });
+    test(
+      'deleting missing credential throws SmartAccountCredentialNotFound',
+      () async {
+        final ctx = _newKitWithManager();
+        await expectLater(
+          ctx.manager.deleteCredential(credentialId: 'ghost-cred'),
+          throwsA(isA<SmartAccountCredentialNotFound>()),
+        );
+      },
+    );
 
     test('credential_alreadyDeployed_throwsCredentialInvalid', () async {
       // When sync() returns true (contract deployed), deleteCredential throws
@@ -749,18 +789,21 @@ void main() {
       );
     });
 
-    test('storage get throws generic Exception wraps as SmartAccountStorageReadFailed', () async {
-      final faulting = _FaultingStorageAdapter(
-        getError: Exception('read error'),
-      );
-      final kit = FakePipelineKit(storage: faulting);
-      final manager = OZCredentialManager(kit);
+    test(
+      'storage get throws generic Exception wraps as SmartAccountStorageReadFailed',
+      () async {
+        final faulting = _FaultingStorageAdapter(
+          getError: Exception('read error'),
+        );
+        final kit = FakePipelineKit(storage: faulting);
+        final manager = OZCredentialManager(kit);
 
-      await expectLater(
-        manager.deleteCredential(credentialId: 'del-generic-err'),
-        throwsA(isA<SmartAccountStorageReadFailed>()),
-      );
-    });
+        await expectLater(
+          manager.deleteCredential(credentialId: 'del-generic-err'),
+          throwsA(isA<SmartAccountStorageReadFailed>()),
+        );
+      },
+    );
 
     test('storage delete throws SmartAccountStorageWriteFailed', () async {
       // sync() calls getContractData; return null (not deployed) so sync
@@ -773,12 +816,14 @@ void main() {
       );
       // Pre-populate so get() returns the credential and delete() faults.
       // saveError is not set on this adapter instance so save() delegates cleanly.
-      await faulting.save(OZStoredCredential(
-        credentialId: 'del-fault',
-        publicKey: _testPublicKey(),
-        contractId: _contractA,
-        createdAt: 1700000000000,
-      ));
+      await faulting.save(
+        OZStoredCredential(
+          credentialId: 'del-fault',
+          publicKey: _testPublicKey(),
+          contractId: _contractA,
+          createdAt: 1700000000000,
+        ),
+      );
 
       final kit = FakePipelineKit(storage: faulting, sorobanServer: mock);
       final manager = OZCredentialManager(kit);
@@ -789,28 +834,33 @@ void main() {
       );
     });
 
-    test('storage delete throws generic Exception wraps as SmartAccountStorageWriteFailed', () async {
-      final mock = MockSorobanServer();
-      mock.getContractDataResponses.add(null);
+    test(
+      'storage delete throws generic Exception wraps as SmartAccountStorageWriteFailed',
+      () async {
+        final mock = MockSorobanServer();
+        mock.getContractDataResponses.add(null);
 
-      final faulting = _FaultingStorageAdapter(
-        deleteError: Exception('delete io error'),
-      );
-      await faulting.save(OZStoredCredential(
-        credentialId: 'del-generic-fault',
-        publicKey: _testPublicKey(),
-        contractId: _contractA,
-        createdAt: 1700000000000,
-      ));
+        final faulting = _FaultingStorageAdapter(
+          deleteError: Exception('delete io error'),
+        );
+        await faulting.save(
+          OZStoredCredential(
+            credentialId: 'del-generic-fault',
+            publicKey: _testPublicKey(),
+            contractId: _contractA,
+            createdAt: 1700000000000,
+          ),
+        );
 
-      final kit = FakePipelineKit(storage: faulting, sorobanServer: mock);
-      final manager = OZCredentialManager(kit);
+        final kit = FakePipelineKit(storage: faulting, sorobanServer: mock);
+        final manager = OZCredentialManager(kit);
 
-      await expectLater(
-        manager.deleteCredential(credentialId: 'del-generic-fault'),
-        throwsA(isA<SmartAccountStorageWriteFailed>()),
-      );
-    });
+        await expectLater(
+          manager.deleteCredential(credentialId: 'del-generic-fault'),
+          throwsA(isA<SmartAccountStorageWriteFailed>()),
+        );
+      },
+    );
   });
 
   group('OZCredentialManager.syncAll', () {
@@ -932,12 +982,14 @@ void main() {
       final faulting = _FaultingStorageAdapter(
         updateError: Exception('generic update error'),
       );
-      await faulting.save(OZStoredCredential(
-        credentialId: 'update-generic-fault',
-        publicKey: _testPublicKey(),
-        contractId: _contractA,
-        createdAt: 1700000000000,
-      ));
+      await faulting.save(
+        OZStoredCredential(
+          credentialId: 'update-generic-fault',
+          publicKey: _testPublicKey(),
+          contractId: _contractA,
+          createdAt: 1700000000000,
+        ),
+      );
       final kit = FakePipelineKit(storage: faulting);
       final manager = OZCredentialManager(kit);
 
@@ -1024,18 +1076,21 @@ void main() {
   });
 
   group('OZCredentialManager read fault injection', () {
-    test('getCredential storage throws rethrows SmartAccountStorageReadFailed', () async {
-      final faulting = _FaultingStorageAdapter(
-        getError: SmartAccountStorageException.readFailed('read-fault'),
-      );
-      final kit = FakePipelineKit(storage: faulting);
-      final manager = OZCredentialManager(kit);
+    test(
+      'getCredential storage throws rethrows SmartAccountStorageReadFailed',
+      () async {
+        final faulting = _FaultingStorageAdapter(
+          getError: SmartAccountStorageException.readFailed('read-fault'),
+        );
+        final kit = FakePipelineKit(storage: faulting);
+        final manager = OZCredentialManager(kit);
 
-      await expectLater(
-        manager.getCredential('read-fault'),
-        throwsA(isA<SmartAccountStorageReadFailed>()),
-      );
-    });
+        await expectLater(
+          manager.getCredential('read-fault'),
+          throwsA(isA<SmartAccountStorageReadFailed>()),
+        );
+      },
+    );
 
     test('getCredential_genericException_wrapsAsStorageReadFailed', () async {
       final faulting = _FaultingStorageAdapter(
@@ -1050,57 +1105,73 @@ void main() {
       );
     });
 
-    test('getAllCredentials storage throws rethrows SmartAccountStorageReadFailed', () async {
-      final faulting = _FaultingStorageAdapter(
-        getAllError: SmartAccountStorageException.readFailed('all-read-fault'),
-      );
-      final kit = FakePipelineKit(storage: faulting);
-      final manager = OZCredentialManager(kit);
+    test(
+      'getAllCredentials storage throws rethrows SmartAccountStorageReadFailed',
+      () async {
+        final faulting = _FaultingStorageAdapter(
+          getAllError: SmartAccountStorageException.readFailed(
+            'all-read-fault',
+          ),
+        );
+        final kit = FakePipelineKit(storage: faulting);
+        final manager = OZCredentialManager(kit);
 
-      await expectLater(
-        manager.getAllCredentials(),
-        throwsA(isA<SmartAccountStorageReadFailed>()),
-      );
-    });
+        await expectLater(
+          manager.getAllCredentials(),
+          throwsA(isA<SmartAccountStorageReadFailed>()),
+        );
+      },
+    );
 
-    test('getAllCredentials_genericException_wrapsAsStorageReadFailed', () async {
-      final faulting = _FaultingStorageAdapter(
-        getAllError: Exception('generic getAll error'),
-      );
-      final kit = FakePipelineKit(storage: faulting);
-      final manager = OZCredentialManager(kit);
+    test(
+      'getAllCredentials_genericException_wrapsAsStorageReadFailed',
+      () async {
+        final faulting = _FaultingStorageAdapter(
+          getAllError: Exception('generic getAll error'),
+        );
+        final kit = FakePipelineKit(storage: faulting);
+        final manager = OZCredentialManager(kit);
 
-      await expectLater(
-        manager.getAllCredentials(),
-        throwsA(isA<SmartAccountStorageReadFailed>()),
-      );
-    });
+        await expectLater(
+          manager.getAllCredentials(),
+          throwsA(isA<SmartAccountStorageReadFailed>()),
+        );
+      },
+    );
 
-    test('getCredentialsByContract storage throws rethrows SmartAccountStorageReadFailed', () async {
-      final faulting = _FaultingStorageAdapter(
-        getByContractError: SmartAccountStorageException.readFailed('contract-read-fault'),
-      );
-      final kit = FakePipelineKit(storage: faulting);
-      final manager = OZCredentialManager(kit);
+    test(
+      'getCredentialsByContract storage throws rethrows SmartAccountStorageReadFailed',
+      () async {
+        final faulting = _FaultingStorageAdapter(
+          getByContractError: SmartAccountStorageException.readFailed(
+            'contract-read-fault',
+          ),
+        );
+        final kit = FakePipelineKit(storage: faulting);
+        final manager = OZCredentialManager(kit);
 
-      await expectLater(
-        manager.getCredentialsByContract(_contractA),
-        throwsA(isA<SmartAccountStorageReadFailed>()),
-      );
-    });
+        await expectLater(
+          manager.getCredentialsByContract(_contractA),
+          throwsA(isA<SmartAccountStorageReadFailed>()),
+        );
+      },
+    );
 
-    test('getCredentialsByContract_genericException_wrapsAsStorageReadFailed', () async {
-      final faulting = _FaultingStorageAdapter(
-        getByContractError: Exception('generic getByContract error'),
-      );
-      final kit = FakePipelineKit(storage: faulting);
-      final manager = OZCredentialManager(kit);
+    test(
+      'getCredentialsByContract_genericException_wrapsAsStorageReadFailed',
+      () async {
+        final faulting = _FaultingStorageAdapter(
+          getByContractError: Exception('generic getByContract error'),
+        );
+        final kit = FakePipelineKit(storage: faulting);
+        final manager = OZCredentialManager(kit);
 
-      await expectLater(
-        manager.getCredentialsByContract(_contractA),
-        throwsA(isA<SmartAccountStorageReadFailed>()),
-      );
-    });
+        await expectLater(
+          manager.getCredentialsByContract(_contractA),
+          throwsA(isA<SmartAccountStorageReadFailed>()),
+        );
+      },
+    );
   });
 }
 
@@ -1178,7 +1249,10 @@ class _FaultingStorageAdapter implements OZStorageAdapter {
   }
 
   @override
-  Future<void> update(String credentialId, OZStoredCredentialUpdate updates) async {
+  Future<void> update(
+    String credentialId,
+    OZStoredCredentialUpdate updates,
+  ) async {
     final err = updateError;
     if (err != null) throw err;
     await _delegate.update(credentialId, updates);

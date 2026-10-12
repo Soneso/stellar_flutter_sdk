@@ -10,19 +10,28 @@ void main() {
     late KeyPair issuerKeyPair;
 
     setUp(() {
-      sourceKeyPair = KeyPair.fromSecretSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
-      destinationKeyPair = KeyPair.fromSecretSeed('SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
-      issuerKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4');
+      sourceKeyPair = KeyPair.fromSecretSeed(
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+      );
+      destinationKeyPair = KeyPair.fromSecretSeed(
+        'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+      );
+      issuerKeyPair = KeyPair.fromSecretSeed(
+        'SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4',
+      );
     });
 
     test('create payment with native asset', () {
       final payment = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      expect(payment.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        payment.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
       expect(payment.asset, isA<AssetTypeNative>());
       expect(payment.amount, equals("100.0"));
       expect(payment.sourceAccount, isNull);
@@ -33,10 +42,13 @@ void main() {
       final payment = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         usd,
-        "50.75"
+        "50.75",
       ).build();
 
-      expect(payment.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        payment.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
       expect(payment.asset, isA<AssetTypeCreditAlphaNum4>());
       final creditAsset = payment.asset as AssetTypeCreditAlphaNum4;
       expect(creditAsset.code, equals("USD"));
@@ -45,14 +57,20 @@ void main() {
     });
 
     test('create payment with credit asset AlphaNum12', () {
-      final longAsset = AssetTypeCreditAlphaNum12("LONGASSET", issuerKeyPair.accountId);
+      final longAsset = AssetTypeCreditAlphaNum12(
+        "LONGASSET",
+        issuerKeyPair.accountId,
+      );
       final payment = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         longAsset,
-        "25.5"
+        "25.5",
       ).build();
 
-      expect(payment.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        payment.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
       expect(payment.asset, isA<AssetTypeCreditAlphaNum12>());
       final creditAsset = payment.asset as AssetTypeCreditAlphaNum12;
       expect(creditAsset.code, equals("LONGASSET"));
@@ -64,37 +82,55 @@ void main() {
       final payment = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).setSourceAccount(sourceKeyPair.accountId).build();
 
-      expect(payment.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        payment.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
       expect(payment.amount, equals("100.0"));
       expect(payment.sourceAccount, isNotNull);
-      expect(payment.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        payment.sourceAccount!.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
     });
 
     test('create payment with muxed source account', () {
-      final muxedSource = MuxedAccount(sourceKeyPair.accountId, BigInt.from(12345));
+      final muxedSource = MuxedAccount(
+        sourceKeyPair.accountId,
+        BigInt.from(12345),
+      );
       final payment = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).setMuxedSourceAccount(muxedSource).build();
 
       expect(payment.sourceAccount, isNotNull);
-      expect(payment.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        payment.sourceAccount!.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
       expect(payment.sourceAccount!.id, equals(BigInt.from(12345)));
     });
 
     test('create payment with muxed destination account', () {
-      final muxedDest = MuxedAccount(destinationKeyPair.accountId, BigInt.from(67890));
+      final muxedDest = MuxedAccount(
+        destinationKeyPair.accountId,
+        BigInt.from(67890),
+      );
       final payment = PaymentOperationBuilder.forMuxedDestinationAccount(
         muxedDest,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      expect(payment.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        payment.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
       expect(payment.destination.id, equals(BigInt.from(67890)));
       expect(payment.amount, equals("100.0"));
     });
@@ -103,7 +139,7 @@ void main() {
       final payment = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
       final xdrBody = payment.toOperationBody();
@@ -113,7 +149,10 @@ void main() {
       final restoredBuilder = PaymentOperation.builder(xdrBody.paymentOp!);
       final restored = restoredBuilder.build();
 
-      expect(restored.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        restored.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
       expect(restored.asset, isA<AssetTypeNative>());
       expect(restored.amount, equals("100"));
     });
@@ -123,14 +162,17 @@ void main() {
       final payment = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         usd,
-        "50.75"
+        "50.75",
       ).setSourceAccount(sourceKeyPair.accountId).build();
 
       final xdrBody = payment.toOperationBody();
       final restoredBuilder = PaymentOperation.builder(xdrBody.paymentOp!);
       final restored = restoredBuilder.build();
 
-      expect(restored.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        restored.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
       expect(restored.asset, isA<AssetTypeCreditAlphaNum4>());
       final creditAsset = restored.asset as AssetTypeCreditAlphaNum4;
       expect(creditAsset.code, equals("USD"));
@@ -146,12 +188,18 @@ void main() {
           amount,
         ).build();
 
-        final decoded = Operation.fromXdr(XdrOperation.decode(
-            XdrDataInputStream(base64Decode(payment.toXdrBase64()))));
+        final decoded = Operation.fromXdr(
+          XdrOperation.decode(
+            XdrDataInputStream(base64Decode(payment.toXdrBase64())),
+          ),
+        );
 
         expect(decoded, isA<PaymentOperation>());
-        expect((decoded as PaymentOperation).amount, equals(amount),
-            reason: 'expected "$amount" back unchanged from its encoding');
+        expect(
+          (decoded as PaymentOperation).amount,
+          equals(amount),
+          reason: 'expected "$amount" back unchanged from its encoding',
+        );
       }
     });
 
@@ -168,9 +216,13 @@ void main() {
         // every failure as an AssertionError.
         expect(
           () => payment.toXdr(),
-          throwsA(predicate((e) =>
-              e is Exception &&
-              e.toString().contains("Amount out of range"))),
+          throwsA(
+            predicate(
+              (e) =>
+                  e is Exception &&
+                  e.toString().contains("Amount out of range"),
+            ),
+          ),
           reason: 'expected "$amount" to be refused',
         );
       }
@@ -180,7 +232,7 @@ void main() {
       final payment = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "0.0000001"
+        "0.0000001",
       ).build();
 
       expect(payment.amount, equals("0.0000001"));
@@ -196,7 +248,7 @@ void main() {
       final payment = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "922337203685.4775807"
+        "922337203685.4775807",
       ).build();
 
       expect(payment.amount, equals("922337203685.4775807"));
@@ -212,15 +264,19 @@ void main() {
       final payment = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
-      )
-        .setSourceAccount(sourceKeyPair.accountId)
-        .build();
+        "100.0",
+      ).setSourceAccount(sourceKeyPair.accountId).build();
 
       expect(payment, isNotNull);
       expect(payment, isA<PaymentOperation>());
-      expect(payment.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
-      expect(payment.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        payment.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
+      expect(
+        payment.sourceAccount!.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
     });
 
     test('payment asset getter returns correct asset', () {
@@ -228,7 +284,7 @@ void main() {
       final payment = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         usd,
-        "100.0"
+        "100.0",
       ).build();
 
       final asset = payment.asset;
@@ -242,14 +298,16 @@ void main() {
     late KeyPair newAccountKeyPair;
 
     setUp(() {
-      sourceKeyPair = KeyPair.fromSecretSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
+      sourceKeyPair = KeyPair.fromSecretSeed(
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+      );
       newAccountKeyPair = KeyPair.random();
     });
 
     test('create account with starting balance', () {
       final createAccount = CreateAccountOperationBuilder(
         newAccountKeyPair.accountId,
-        "10.0"
+        "10.0",
       ).build();
 
       expect(createAccount.destination, equals(newAccountKeyPair.accountId));
@@ -260,38 +318,49 @@ void main() {
     test('create account with source account', () {
       final createAccount = CreateAccountOperationBuilder(
         newAccountKeyPair.accountId,
-        "10.0"
+        "10.0",
       ).setSourceAccount(sourceKeyPair.accountId).build();
 
       expect(createAccount.destination, equals(newAccountKeyPair.accountId));
       expect(createAccount.startingBalance, equals("10.0"));
       expect(createAccount.sourceAccount, isNotNull);
-      expect(createAccount.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        createAccount.sourceAccount!.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
     });
 
     test('create account with muxed source account', () {
-      final muxedSource = MuxedAccount(sourceKeyPair.accountId, BigInt.from(99999));
+      final muxedSource = MuxedAccount(
+        sourceKeyPair.accountId,
+        BigInt.from(99999),
+      );
       final createAccount = CreateAccountOperationBuilder(
         newAccountKeyPair.accountId,
-        "10.0"
+        "10.0",
       ).setMuxedSourceAccount(muxedSource).build();
 
       expect(createAccount.sourceAccount, isNotNull);
-      expect(createAccount.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        createAccount.sourceAccount!.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
       expect(createAccount.sourceAccount!.id, equals(BigInt.from(99999)));
     });
 
     test('create account XDR round-trip', () {
       final createAccount = CreateAccountOperationBuilder(
         newAccountKeyPair.accountId,
-        "10.0"
+        "10.0",
       ).build();
 
       final xdrBody = createAccount.toOperationBody();
       expect(xdrBody.discriminant, equals(XdrOperationType.CREATE_ACCOUNT));
       expect(xdrBody.createAccountOp, isNotNull);
 
-      final restoredBuilder = CreateAccountOperation.builder(xdrBody.createAccountOp!);
+      final restoredBuilder = CreateAccountOperation.builder(
+        xdrBody.createAccountOp!,
+      );
       final restored = restoredBuilder.build();
 
       expect(restored.destination, equals(newAccountKeyPair.accountId));
@@ -301,13 +370,15 @@ void main() {
     test('create account with minimum starting balance', () {
       final createAccount = CreateAccountOperationBuilder(
         newAccountKeyPair.accountId,
-        "1.0"
+        "1.0",
       ).build();
 
       expect(createAccount.startingBalance, equals("1.0"));
 
       final xdrBody = createAccount.toOperationBody();
-      final restoredBuilder = CreateAccountOperation.builder(xdrBody.createAccountOp!);
+      final restoredBuilder = CreateAccountOperation.builder(
+        xdrBody.createAccountOp!,
+      );
       final restored = restoredBuilder.build();
 
       expect(restored.startingBalance, equals("1"));
@@ -316,7 +387,7 @@ void main() {
     test('create account with large starting balance', () {
       final createAccount = CreateAccountOperationBuilder(
         newAccountKeyPair.accountId,
-        "1000000.0"
+        "1000000.0",
       ).build();
 
       expect(createAccount.startingBalance, equals("1000000.0"));
@@ -325,13 +396,15 @@ void main() {
     test('create account with decimal precision', () {
       final createAccount = CreateAccountOperationBuilder(
         newAccountKeyPair.accountId,
-        "10.5"
+        "10.5",
       ).build();
 
       expect(createAccount.startingBalance, equals("10.5"));
 
       final xdrBody = createAccount.toOperationBody();
-      final restoredBuilder = CreateAccountOperation.builder(xdrBody.createAccountOp!);
+      final restoredBuilder = CreateAccountOperation.builder(
+        xdrBody.createAccountOp!,
+      );
       final restored = restoredBuilder.build();
 
       expect(restored.startingBalance, equals("10.5"));
@@ -340,21 +413,22 @@ void main() {
     test('create account builder pattern', () {
       final createAccount = CreateAccountOperationBuilder(
         newAccountKeyPair.accountId,
-        "10.0"
-      )
-        .setSourceAccount(sourceKeyPair.accountId)
-        .build();
+        "10.0",
+      ).setSourceAccount(sourceKeyPair.accountId).build();
 
       expect(createAccount, isNotNull);
       expect(createAccount, isA<CreateAccountOperation>());
       expect(createAccount.destination, equals(newAccountKeyPair.accountId));
-      expect(createAccount.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        createAccount.sourceAccount!.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
     });
 
     test('create account destination getter returns correct value', () {
       final createAccount = CreateAccountOperationBuilder(
         newAccountKeyPair.accountId,
-        "10.0"
+        "10.0",
       ).build();
 
       expect(createAccount.destination, equals(newAccountKeyPair.accountId));
@@ -363,7 +437,7 @@ void main() {
     test('create account starting balance getter returns correct value', () {
       final createAccount = CreateAccountOperationBuilder(
         newAccountKeyPair.accountId,
-        "25.5"
+        "25.5",
       ).build();
 
       expect(createAccount.startingBalance, equals("25.5"));
@@ -375,53 +449,78 @@ void main() {
     late KeyPair destinationKeyPair;
 
     setUp(() {
-      sourceKeyPair = KeyPair.fromSecretSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
-      destinationKeyPair = KeyPair.fromSecretSeed('SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
+      sourceKeyPair = KeyPair.fromSecretSeed(
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+      );
+      destinationKeyPair = KeyPair.fromSecretSeed(
+        'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+      );
     });
 
     test('merge account to destination', () {
       final merge = AccountMergeOperationBuilder(
-        destinationKeyPair.accountId
+        destinationKeyPair.accountId,
       ).build();
 
-      expect(merge.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        merge.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
       expect(merge.sourceAccount, isNull);
     });
 
     test('merge account with source account', () {
       final merge = AccountMergeOperationBuilder(
-        destinationKeyPair.accountId
+        destinationKeyPair.accountId,
       ).setSourceAccount(sourceKeyPair.accountId).build();
 
-      expect(merge.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        merge.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
       expect(merge.sourceAccount, isNotNull);
-      expect(merge.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        merge.sourceAccount!.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
     });
 
     test('merge account with muxed source account', () {
-      final muxedSource = MuxedAccount(sourceKeyPair.accountId, BigInt.from(11111));
+      final muxedSource = MuxedAccount(
+        sourceKeyPair.accountId,
+        BigInt.from(11111),
+      );
       final merge = AccountMergeOperationBuilder(
-        destinationKeyPair.accountId
+        destinationKeyPair.accountId,
       ).setMuxedSourceAccount(muxedSource).build();
 
       expect(merge.sourceAccount, isNotNull);
-      expect(merge.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        merge.sourceAccount!.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
       expect(merge.sourceAccount!.id, equals(BigInt.from(11111)));
     });
 
     test('merge account with muxed destination account', () {
-      final muxedDest = MuxedAccount(destinationKeyPair.accountId, BigInt.from(22222));
+      final muxedDest = MuxedAccount(
+        destinationKeyPair.accountId,
+        BigInt.from(22222),
+      );
       final merge = AccountMergeOperationBuilder.forMuxedDestinationAccount(
-        muxedDest
+        muxedDest,
       ).build();
 
-      expect(merge.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        merge.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
       expect(merge.destination.id, equals(BigInt.from(22222)));
     });
 
     test('account merge XDR round-trip', () {
       final merge = AccountMergeOperationBuilder(
-        destinationKeyPair.accountId
+        destinationKeyPair.accountId,
       ).build();
 
       final xdrBody = merge.toOperationBody();
@@ -431,44 +530,63 @@ void main() {
       final restoredBuilder = AccountMergeOperation.builder(xdrBody);
       final restored = restoredBuilder.build();
 
-      expect(restored.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        restored.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
     });
 
     test('account merge XDR round-trip with muxed accounts', () {
-      final muxedDest = MuxedAccount(destinationKeyPair.accountId, BigInt.from(33333));
-      final muxedSource = MuxedAccount(sourceKeyPair.accountId, BigInt.from(44444));
+      final muxedDest = MuxedAccount(
+        destinationKeyPair.accountId,
+        BigInt.from(33333),
+      );
+      final muxedSource = MuxedAccount(
+        sourceKeyPair.accountId,
+        BigInt.from(44444),
+      );
 
       final merge = AccountMergeOperationBuilder.forMuxedDestinationAccount(
-        muxedDest
+        muxedDest,
       ).setMuxedSourceAccount(muxedSource).build();
 
       final xdrBody = merge.toOperationBody();
       final restoredBuilder = AccountMergeOperation.builder(xdrBody);
       final restored = restoredBuilder.build();
 
-      expect(restored.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        restored.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
       expect(restored.destination.id, equals(BigInt.from(33333)));
     });
 
     test('account merge builder pattern', () {
       final merge = AccountMergeOperationBuilder(
-        destinationKeyPair.accountId
-      )
-        .setSourceAccount(sourceKeyPair.accountId)
-        .build();
+        destinationKeyPair.accountId,
+      ).setSourceAccount(sourceKeyPair.accountId).build();
 
       expect(merge, isNotNull);
       expect(merge, isA<AccountMergeOperation>());
-      expect(merge.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
-      expect(merge.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        merge.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
+      expect(
+        merge.sourceAccount!.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
     });
 
     test('account merge destination getter returns correct value', () {
       final merge = AccountMergeOperationBuilder(
-        destinationKeyPair.accountId
+        destinationKeyPair.accountId,
       ).build();
 
-      expect(merge.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        merge.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
     });
   });
 
@@ -480,9 +598,15 @@ void main() {
     late Asset eur;
 
     setUp(() {
-      sourceKeyPair = KeyPair.fromSecretSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
-      destinationKeyPair = KeyPair.fromSecretSeed('SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
-      issuerKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4');
+      sourceKeyPair = KeyPair.fromSecretSeed(
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+      );
+      destinationKeyPair = KeyPair.fromSecretSeed(
+        'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+      );
+      issuerKeyPair = KeyPair.fromSecretSeed(
+        'SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4',
+      );
       usd = AssetTypeCreditAlphaNum4("USD", issuerKeyPair.accountId);
       eur = AssetTypeCreditAlphaNum4("EUR", issuerKeyPair.accountId);
     });
@@ -493,12 +617,15 @@ void main() {
         "150.0",
         destinationKeyPair.accountId,
         eur,
-        "100.0"
+        "100.0",
       ).build();
 
       expect(pathPayment.sendAsset, equals(usd));
       expect(pathPayment.sendMax, equals("150.0"));
-      expect(pathPayment.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        pathPayment.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
       expect(pathPayment.destAsset, equals(eur));
       expect(pathPayment.destAmount, equals("100.0"));
       expect(pathPayment.path.length, equals(0));
@@ -510,7 +637,7 @@ void main() {
         "150.0",
         destinationKeyPair.accountId,
         eur,
-        "100.0"
+        "100.0",
       ).setPath([Asset.NATIVE]).build();
 
       expect(pathPayment.path.length, equals(1));
@@ -526,13 +653,19 @@ void main() {
         "150.0",
         destinationKeyPair.accountId,
         eur,
-        "100.0"
+        "100.0",
       ).setPath([Asset.NATIVE, btc, eth]).build();
 
       expect(pathPayment.path.length, equals(3));
       expect(pathPayment.path[0], isA<AssetTypeNative>());
-      expect((pathPayment.path[1] as AssetTypeCreditAlphaNum4).code, equals("BTC"));
-      expect((pathPayment.path[2] as AssetTypeCreditAlphaNum4).code, equals("ETH"));
+      expect(
+        (pathPayment.path[1] as AssetTypeCreditAlphaNum4).code,
+        equals("BTC"),
+      );
+      expect(
+        (pathPayment.path[2] as AssetTypeCreditAlphaNum4).code,
+        equals("ETH"),
+      );
     });
 
     test('path payment with maximum path assets', () {
@@ -547,7 +680,7 @@ void main() {
         "150.0",
         destinationKeyPair.accountId,
         eur,
-        "100.0"
+        "100.0",
       ).setPath([asset1, asset2, asset3, asset4, asset5]).build();
 
       expect(pathPayment.path.length, equals(5));
@@ -559,35 +692,45 @@ void main() {
         "150.0",
         destinationKeyPair.accountId,
         eur,
-        "100.0"
+        "100.0",
       ).setSourceAccount(sourceKeyPair.accountId).build();
 
       expect(pathPayment.sourceAccount, isNotNull);
-      expect(pathPayment.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        pathPayment.sourceAccount!.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
     });
 
     test('path payment with muxed source account', () {
-      final muxedSource = MuxedAccount(sourceKeyPair.accountId, BigInt.from(55555));
+      final muxedSource = MuxedAccount(
+        sourceKeyPair.accountId,
+        BigInt.from(55555),
+      );
       final pathPayment = PathPaymentStrictReceiveOperationBuilder(
         usd,
         "150.0",
         destinationKeyPair.accountId,
         eur,
-        "100.0"
+        "100.0",
       ).setMuxedSourceAccount(muxedSource).build();
 
       expect(pathPayment.sourceAccount!.id, equals(BigInt.from(55555)));
     });
 
     test('path payment with muxed destination account', () {
-      final muxedDest = MuxedAccount(destinationKeyPair.accountId, BigInt.from(66666));
-      final pathPayment = PathPaymentStrictReceiveOperationBuilder.forMuxedDestinationAccount(
-        usd,
-        "150.0",
-        muxedDest,
-        eur,
-        "100.0"
-      ).build();
+      final muxedDest = MuxedAccount(
+        destinationKeyPair.accountId,
+        BigInt.from(66666),
+      );
+      final pathPayment =
+          PathPaymentStrictReceiveOperationBuilder.forMuxedDestinationAccount(
+            usd,
+            "150.0",
+            muxedDest,
+            eur,
+            "100.0",
+          ).build();
 
       expect(pathPayment.destination.id, equals(BigInt.from(66666)));
     });
@@ -598,20 +741,34 @@ void main() {
         "150.0",
         destinationKeyPair.accountId,
         eur,
-        "100.0"
+        "100.0",
       ).build();
 
       final xdrBody = pathPayment.toOperationBody();
-      expect(xdrBody.discriminant, equals(XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE));
+      expect(
+        xdrBody.discriminant,
+        equals(XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE),
+      );
       expect(xdrBody.pathPaymentStrictReceiveOp, isNotNull);
 
-      final restoredBuilder = PathPaymentStrictReceiveOperation.builder(xdrBody.pathPaymentStrictReceiveOp!);
+      final restoredBuilder = PathPaymentStrictReceiveOperation.builder(
+        xdrBody.pathPaymentStrictReceiveOp!,
+      );
       final restored = restoredBuilder.build();
 
-      expect((restored.sendAsset as AssetTypeCreditAlphaNum4).code, equals("USD"));
+      expect(
+        (restored.sendAsset as AssetTypeCreditAlphaNum4).code,
+        equals("USD"),
+      );
       expect(restored.sendMax, equals("150"));
-      expect(restored.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
-      expect((restored.destAsset as AssetTypeCreditAlphaNum4).code, equals("EUR"));
+      expect(
+        restored.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
+      expect(
+        (restored.destAsset as AssetTypeCreditAlphaNum4).code,
+        equals("EUR"),
+      );
       expect(restored.destAmount, equals("100"));
       expect(restored.path.length, equals(0));
     });
@@ -622,11 +779,13 @@ void main() {
         "150.0",
         destinationKeyPair.accountId,
         eur,
-        "100.0"
+        "100.0",
       ).setPath([Asset.NATIVE]).build();
 
       final xdrBody = pathPayment.toOperationBody();
-      final restoredBuilder = PathPaymentStrictReceiveOperation.builder(xdrBody.pathPaymentStrictReceiveOp!);
+      final restoredBuilder = PathPaymentStrictReceiveOperation.builder(
+        xdrBody.pathPaymentStrictReceiveOp!,
+      );
       final restored = restoredBuilder.build();
 
       expect(restored.path.length, equals(1));
@@ -639,13 +798,15 @@ void main() {
         "150.0000001",
         destinationKeyPair.accountId,
         eur,
-        "100.0"
+        "100.0",
       ).build();
 
       expect(pathPayment.sendMax, equals("150.0000001"));
 
       final xdrBody = pathPayment.toOperationBody();
-      final restoredBuilder = PathPaymentStrictReceiveOperation.builder(xdrBody.pathPaymentStrictReceiveOp!);
+      final restoredBuilder = PathPaymentStrictReceiveOperation.builder(
+        xdrBody.pathPaymentStrictReceiveOp!,
+      );
       final restored = restoredBuilder.build();
 
       expect(restored.sendMax, equals("150.0000001"));
@@ -657,34 +818,40 @@ void main() {
         "150.0",
         destinationKeyPair.accountId,
         eur,
-        "100.0000001"
+        "100.0000001",
       ).build();
 
       expect(pathPayment.destAmount, equals("100.0000001"));
 
       final xdrBody = pathPayment.toOperationBody();
-      final restoredBuilder = PathPaymentStrictReceiveOperation.builder(xdrBody.pathPaymentStrictReceiveOp!);
+      final restoredBuilder = PathPaymentStrictReceiveOperation.builder(
+        xdrBody.pathPaymentStrictReceiveOp!,
+      );
       final restored = restoredBuilder.build();
 
       expect(restored.destAmount, equals("100.0000001"));
     });
 
     test('path payment builder pattern', () {
-      final pathPayment = PathPaymentStrictReceiveOperationBuilder(
-        usd,
-        "150.0",
-        destinationKeyPair.accountId,
-        eur,
-        "100.0"
-      )
-        .setPath([Asset.NATIVE])
-        .setSourceAccount(sourceKeyPair.accountId)
-        .build();
+      final pathPayment =
+          PathPaymentStrictReceiveOperationBuilder(
+                usd,
+                "150.0",
+                destinationKeyPair.accountId,
+                eur,
+                "100.0",
+              )
+              .setPath([Asset.NATIVE])
+              .setSourceAccount(sourceKeyPair.accountId)
+              .build();
 
       expect(pathPayment, isNotNull);
       expect(pathPayment, isA<PathPaymentStrictReceiveOperation>());
       expect(pathPayment.path.length, equals(1));
-      expect(pathPayment.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        pathPayment.sourceAccount!.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
     });
   });
 
@@ -696,9 +863,15 @@ void main() {
     late Asset eur;
 
     setUp(() {
-      sourceKeyPair = KeyPair.fromSecretSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
-      destinationKeyPair = KeyPair.fromSecretSeed('SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
-      issuerKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4');
+      sourceKeyPair = KeyPair.fromSecretSeed(
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+      );
+      destinationKeyPair = KeyPair.fromSecretSeed(
+        'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+      );
+      issuerKeyPair = KeyPair.fromSecretSeed(
+        'SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4',
+      );
       usd = AssetTypeCreditAlphaNum4("USD", issuerKeyPair.accountId);
       eur = AssetTypeCreditAlphaNum4("EUR", issuerKeyPair.accountId);
     });
@@ -709,12 +882,15 @@ void main() {
         "100.0",
         destinationKeyPair.accountId,
         eur,
-        "90.0"
+        "90.0",
       ).build();
 
       expect(pathPayment.sendAsset, equals(usd));
       expect(pathPayment.sendAmount, equals("100.0"));
-      expect(pathPayment.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
+      expect(
+        pathPayment.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
       expect(pathPayment.destAsset, equals(eur));
       expect(pathPayment.destMin, equals("90.0"));
       expect(pathPayment.path.length, equals(0));
@@ -726,7 +902,7 @@ void main() {
         "100.0",
         destinationKeyPair.accountId,
         eur,
-        "90.0"
+        "90.0",
       ).setPath([Asset.NATIVE]).build();
 
       expect(pathPayment.path.length, equals(1));
@@ -742,13 +918,19 @@ void main() {
         "100.0",
         destinationKeyPair.accountId,
         eur,
-        "90.0"
+        "90.0",
       ).setPath([Asset.NATIVE, btc, eth]).build();
 
       expect(pathPayment.path.length, equals(3));
       expect(pathPayment.path[0], isA<AssetTypeNative>());
-      expect((pathPayment.path[1] as AssetTypeCreditAlphaNum4).code, equals("BTC"));
-      expect((pathPayment.path[2] as AssetTypeCreditAlphaNum4).code, equals("ETH"));
+      expect(
+        (pathPayment.path[1] as AssetTypeCreditAlphaNum4).code,
+        equals("BTC"),
+      );
+      expect(
+        (pathPayment.path[2] as AssetTypeCreditAlphaNum4).code,
+        equals("ETH"),
+      );
     });
 
     test('path payment strict send with maximum path assets', () {
@@ -763,7 +945,7 @@ void main() {
         "100.0",
         destinationKeyPair.accountId,
         eur,
-        "90.0"
+        "90.0",
       ).setPath([asset1, asset2, asset3, asset4, asset5]).build();
 
       expect(pathPayment.path.length, equals(5));
@@ -775,35 +957,45 @@ void main() {
         "100.0",
         destinationKeyPair.accountId,
         eur,
-        "90.0"
+        "90.0",
       ).setSourceAccount(sourceKeyPair.accountId).build();
 
       expect(pathPayment.sourceAccount, isNotNull);
-      expect(pathPayment.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        pathPayment.sourceAccount!.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
     });
 
     test('path payment strict send with muxed source account', () {
-      final muxedSource = MuxedAccount(sourceKeyPair.accountId, BigInt.from(77777));
+      final muxedSource = MuxedAccount(
+        sourceKeyPair.accountId,
+        BigInt.from(77777),
+      );
       final pathPayment = PathPaymentStrictSendOperationBuilder(
         usd,
         "100.0",
         destinationKeyPair.accountId,
         eur,
-        "90.0"
+        "90.0",
       ).setMuxedSourceAccount(muxedSource).build();
 
       expect(pathPayment.sourceAccount!.id, equals(BigInt.from(77777)));
     });
 
     test('path payment strict send with muxed destination account', () {
-      final muxedDest = MuxedAccount(destinationKeyPair.accountId, BigInt.from(88888));
-      final pathPayment = PathPaymentStrictSendOperationBuilder.forMuxedDestinationAccount(
-        usd,
-        "100.0",
-        muxedDest,
-        eur,
-        "90.0"
-      ).build();
+      final muxedDest = MuxedAccount(
+        destinationKeyPair.accountId,
+        BigInt.from(88888),
+      );
+      final pathPayment =
+          PathPaymentStrictSendOperationBuilder.forMuxedDestinationAccount(
+            usd,
+            "100.0",
+            muxedDest,
+            eur,
+            "90.0",
+          ).build();
 
       expect(pathPayment.destination.id, equals(BigInt.from(88888)));
     });
@@ -814,20 +1006,34 @@ void main() {
         "100.0",
         destinationKeyPair.accountId,
         eur,
-        "90.0"
+        "90.0",
       ).build();
 
       final xdrBody = pathPayment.toOperationBody();
-      expect(xdrBody.discriminant, equals(XdrOperationType.PATH_PAYMENT_STRICT_SEND));
+      expect(
+        xdrBody.discriminant,
+        equals(XdrOperationType.PATH_PAYMENT_STRICT_SEND),
+      );
       expect(xdrBody.pathPaymentStrictSendOp, isNotNull);
 
-      final restoredBuilder = PathPaymentStrictSendOperation.builder(xdrBody.pathPaymentStrictSendOp!);
+      final restoredBuilder = PathPaymentStrictSendOperation.builder(
+        xdrBody.pathPaymentStrictSendOp!,
+      );
       final restored = restoredBuilder.build();
 
-      expect((restored.sendAsset as AssetTypeCreditAlphaNum4).code, equals("USD"));
+      expect(
+        (restored.sendAsset as AssetTypeCreditAlphaNum4).code,
+        equals("USD"),
+      );
       expect(restored.sendAmount, equals("100"));
-      expect(restored.destination.ed25519AccountId, equals(destinationKeyPair.accountId));
-      expect((restored.destAsset as AssetTypeCreditAlphaNum4).code, equals("EUR"));
+      expect(
+        restored.destination.ed25519AccountId,
+        equals(destinationKeyPair.accountId),
+      );
+      expect(
+        (restored.destAsset as AssetTypeCreditAlphaNum4).code,
+        equals("EUR"),
+      );
       expect(restored.destMin, equals("90"));
       expect(restored.path.length, equals(0));
     });
@@ -838,69 +1044,85 @@ void main() {
         "100.0",
         destinationKeyPair.accountId,
         eur,
-        "90.0"
+        "90.0",
       ).setPath([Asset.NATIVE]).build();
 
       final xdrBody = pathPayment.toOperationBody();
-      final restoredBuilder = PathPaymentStrictSendOperation.builder(xdrBody.pathPaymentStrictSendOp!);
+      final restoredBuilder = PathPaymentStrictSendOperation.builder(
+        xdrBody.pathPaymentStrictSendOp!,
+      );
       final restored = restoredBuilder.build();
 
       expect(restored.path.length, equals(1));
       expect(restored.path[0], isA<AssetTypeNative>());
     });
 
-    test('path payment strict send sendAmount validation with decimal precision', () {
-      final pathPayment = PathPaymentStrictSendOperationBuilder(
-        usd,
-        "100.0000001",
-        destinationKeyPair.accountId,
-        eur,
-        "90.0"
-      ).build();
+    test(
+      'path payment strict send sendAmount validation with decimal precision',
+      () {
+        final pathPayment = PathPaymentStrictSendOperationBuilder(
+          usd,
+          "100.0000001",
+          destinationKeyPair.accountId,
+          eur,
+          "90.0",
+        ).build();
 
-      expect(pathPayment.sendAmount, equals("100.0000001"));
+        expect(pathPayment.sendAmount, equals("100.0000001"));
 
-      final xdrBody = pathPayment.toOperationBody();
-      final restoredBuilder = PathPaymentStrictSendOperation.builder(xdrBody.pathPaymentStrictSendOp!);
-      final restored = restoredBuilder.build();
+        final xdrBody = pathPayment.toOperationBody();
+        final restoredBuilder = PathPaymentStrictSendOperation.builder(
+          xdrBody.pathPaymentStrictSendOp!,
+        );
+        final restored = restoredBuilder.build();
 
-      expect(restored.sendAmount, equals("100.0000001"));
-    });
+        expect(restored.sendAmount, equals("100.0000001"));
+      },
+    );
 
-    test('path payment strict send destMin validation with decimal precision', () {
-      final pathPayment = PathPaymentStrictSendOperationBuilder(
-        usd,
-        "100.0",
-        destinationKeyPair.accountId,
-        eur,
-        "90.0000001"
-      ).build();
+    test(
+      'path payment strict send destMin validation with decimal precision',
+      () {
+        final pathPayment = PathPaymentStrictSendOperationBuilder(
+          usd,
+          "100.0",
+          destinationKeyPair.accountId,
+          eur,
+          "90.0000001",
+        ).build();
 
-      expect(pathPayment.destMin, equals("90.0000001"));
+        expect(pathPayment.destMin, equals("90.0000001"));
 
-      final xdrBody = pathPayment.toOperationBody();
-      final restoredBuilder = PathPaymentStrictSendOperation.builder(xdrBody.pathPaymentStrictSendOp!);
-      final restored = restoredBuilder.build();
+        final xdrBody = pathPayment.toOperationBody();
+        final restoredBuilder = PathPaymentStrictSendOperation.builder(
+          xdrBody.pathPaymentStrictSendOp!,
+        );
+        final restored = restoredBuilder.build();
 
-      expect(restored.destMin, equals("90.0000001"));
-    });
+        expect(restored.destMin, equals("90.0000001"));
+      },
+    );
 
     test('path payment strict send builder pattern', () {
-      final pathPayment = PathPaymentStrictSendOperationBuilder(
-        usd,
-        "100.0",
-        destinationKeyPair.accountId,
-        eur,
-        "90.0"
-      )
-        .setPath([Asset.NATIVE])
-        .setSourceAccount(sourceKeyPair.accountId)
-        .build();
+      final pathPayment =
+          PathPaymentStrictSendOperationBuilder(
+                usd,
+                "100.0",
+                destinationKeyPair.accountId,
+                eur,
+                "90.0",
+              )
+              .setPath([Asset.NATIVE])
+              .setSourceAccount(sourceKeyPair.accountId)
+              .build();
 
       expect(pathPayment, isNotNull);
       expect(pathPayment, isA<PathPaymentStrictSendOperation>());
       expect(pathPayment.path.length, equals(1));
-      expect(pathPayment.sourceAccount!.ed25519AccountId, equals(sourceKeyPair.accountId));
+      expect(
+        pathPayment.sourceAccount!.ed25519AccountId,
+        equals(sourceKeyPair.accountId),
+      );
     });
   });
 
@@ -909,15 +1131,19 @@ void main() {
     late KeyPair issuerKeyPair;
 
     setUp(() {
-      destinationKeyPair = KeyPair.fromSecretSeed('SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
-      issuerKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4');
+      destinationKeyPair = KeyPair.fromSecretSeed(
+        'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+      );
+      issuerKeyPair = KeyPair.fromSecretSeed(
+        'SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4',
+      );
     });
 
     test('payment operation with zero amount', () {
       final payment = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "0.0"
+        "0.0",
       ).build();
 
       expect(payment.amount, equals("0.0"));
@@ -926,7 +1152,7 @@ void main() {
     test('create account operation with zero starting balance', () {
       final createAccount = CreateAccountOperationBuilder(
         destinationKeyPair.accountId,
-        "0.0"
+        "0.0",
       ).build();
 
       expect(createAccount.startingBalance, equals("0.0"));
@@ -948,9 +1174,9 @@ void main() {
           "150.0",
           destinationKeyPair.accountId,
           eur,
-          "100.0"
+          "100.0",
         ).setPath([asset1, asset2, asset3, asset4, asset5, asset6]).build(),
-        throwsA(isA<Exception>())
+        throwsA(isA<Exception>()),
       );
     });
 
@@ -970,9 +1196,9 @@ void main() {
           "100.0",
           destinationKeyPair.accountId,
           eur,
-          "90.0"
+          "90.0",
         ).setPath([asset1, asset2, asset3, asset4, asset5, asset6]).build(),
-        throwsA(isA<Exception>())
+        throwsA(isA<Exception>()),
       );
     });
 
@@ -980,37 +1206,41 @@ void main() {
       final payment1 = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
       final payment2 = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         AssetTypeNative(),
-        "100.0"
+        "100.0",
       ).build();
 
       expect(payment1.asset.type, equals(payment2.asset.type));
     });
 
     test('operations can be added to transaction', () {
-      final sourceKeyPair = KeyPair.fromSecretSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
-      final sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(2908908335136768));
+      final sourceKeyPair = KeyPair.fromSecretSeed(
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+      );
+      final sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(2908908335136768),
+      );
 
       final payment = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
       final createAccount = CreateAccountOperationBuilder(
         KeyPair.random().accountId,
-        "10.0"
+        "10.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(payment)
-        .addOperation(createAccount)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(payment).addOperation(createAccount).build();
 
       expect(transaction.operations.length, equals(2));
       expect(transaction.operations[0], isA<PaymentOperation>());

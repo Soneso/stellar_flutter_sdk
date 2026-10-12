@@ -99,14 +99,16 @@ class OrderBookResponse extends Response {
   OrderBookResponse(this.base, this.counter, this.asks, this.bids);
 
   /// Constructs an OrderBookResponse from JSON returned by Horizon API.
-  factory OrderBookResponse.fromJson(Map<String, dynamic> json) => OrderBookResponse(
-      Asset.fromJson(json['base']),
-      Asset.fromJson(json['counter']),
-      (json['asks'] as List).map((e) => OrderBookRow.fromJson(e)).toList(),
-      (json['bids'] as List).map((e) => OrderBookRow.fromJson(e)).toList())
-    ..rateLimitLimit = convertInt(json['rateLimitLimit'])
-    ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
-    ..rateLimitReset = convertInt(json['rateLimitReset']);
+  factory OrderBookResponse.fromJson(Map<String, dynamic> json) =>
+      OrderBookResponse(
+          Asset.fromJson(json['base']),
+          Asset.fromJson(json['counter']),
+          (json['asks'] as List).map((e) => OrderBookRow.fromJson(e)).toList(),
+          (json['bids'] as List).map((e) => OrderBookRow.fromJson(e)).toList(),
+        )
+        ..rateLimitLimit = convertInt(json['rateLimitLimit'])
+        ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
+        ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
 /// Represents a single price level in an order book.
@@ -145,6 +147,9 @@ class OrderBookRow {
   OrderBookRow(this.amount, this.price, this.priceR);
 
   /// Constructs an OrderBookRow from JSON returned by Horizon API.
-  factory OrderBookRow.fromJson(Map<String, dynamic> json) => OrderBookRow(json['amount'], json['price'],
-      Price.fromJson(json['price_r']));
+  factory OrderBookRow.fromJson(Map<String, dynamic> json) => OrderBookRow(
+    json['amount'],
+    json['price'],
+    Price.fromJson(json['price_r']),
+  );
 }

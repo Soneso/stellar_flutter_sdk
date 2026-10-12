@@ -7,28 +7,31 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   group('WebAuthForContracts - jwtToken with Client Domain', () {
-    test('throws exception when client account is not a contract address', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response('', 200);
-      });
+    test(
+      'throws exception when client account is not a contract address',
+      () async {
+        final mockClient = MockClient((request) async {
+          return http.Response('', 200);
+        });
 
-      final webAuth = WebAuthForContracts(
-        'https://testanchor.stellar.org/auth',
-        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-        'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
-        'testanchor.stellar.org',
-        Network.TESTNET,
-        httpClient: mockClient,
-      );
+        final webAuth = WebAuthForContracts(
+          'https://testanchor.stellar.org/auth',
+          'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+          'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+          'testanchor.stellar.org',
+          Network.TESTNET,
+          httpClient: mockClient,
+        );
 
-      expect(
-        () => webAuth.jwtToken(
-          'GABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
-          [],
-        ),
-        throwsA(isA<ArgumentError>()),
-      );
-    });
+        expect(
+          () => webAuth.jwtToken(
+            'GABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+            [],
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+      },
+    );
   });
 
   group('WebAuthForContracts - Constructor with Port in URL', () {
@@ -100,15 +103,18 @@ void main() {
   });
 
   group('WebAuthForContracts - Exception Classes Coverage', () {
-    test('ContractChallengeRequestErrorResponse includes statusCode accessor', () {
-      final exception = ContractChallengeRequestErrorResponse(
-        'Test error',
-        statusCode: 403,
-      );
+    test(
+      'ContractChallengeRequestErrorResponse includes statusCode accessor',
+      () {
+        final exception = ContractChallengeRequestErrorResponse(
+          'Test error',
+          statusCode: 403,
+        );
 
-      expect(exception.statusCode, 403);
-      expect(exception.message, 'Test error');
-    });
+        expect(exception.statusCode, 403);
+        expect(exception.message, 'Test error');
+      },
+    );
 
     test('ContractChallengeRequestErrorResponse without status code', () {
       final exception = ContractChallengeRequestErrorResponse('Network error');
@@ -125,76 +131,90 @@ void main() {
   });
 
   group('WebAuthForContracts - Default Home Domain', () {
-    test('uses server home domain when homeDomain parameter not provided in getChallenge', () async {
-      final mockClient = MockClient((request) async {
-        expect(request.url.queryParameters['home_domain'], 'testanchor.stellar.org');
+    test(
+      'uses server home domain when homeDomain parameter not provided in getChallenge',
+      () async {
+        final mockClient = MockClient((request) async {
+          expect(
+            request.url.queryParameters['home_domain'],
+            'testanchor.stellar.org',
+          );
 
-        return http.Response(json.encode({
-          'authorization_entries': base64Encode(Uint8List(10)),
-        }), 200);
-      });
+          return http.Response(
+            json.encode({'authorization_entries': base64Encode(Uint8List(10))}),
+            200,
+          );
+        });
 
-      final webAuth = WebAuthForContracts(
-        'https://testanchor.stellar.org/auth',
-        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-        'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
-        'testanchor.stellar.org',
-        Network.TESTNET,
-        httpClient: mockClient,
-      );
+        final webAuth = WebAuthForContracts(
+          'https://testanchor.stellar.org/auth',
+          'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+          'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+          'testanchor.stellar.org',
+          Network.TESTNET,
+          httpClient: mockClient,
+        );
 
-      await webAuth.getChallenge(
-        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-      );
-    });
+        await webAuth.getChallenge(
+          'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+        );
+      },
+    );
   });
 
   group('WebAuthForContracts - HTTP Error Handling', () {
-    test('wraps network errors in ContractChallengeRequestErrorResponse', () async {
-      final mockClient = MockClient((request) async {
-        throw Exception('Network connection failed');
-      });
+    test(
+      'wraps network errors in ContractChallengeRequestErrorResponse',
+      () async {
+        final mockClient = MockClient((request) async {
+          throw Exception('Network connection failed');
+        });
 
-      final webAuth = WebAuthForContracts(
-        'https://testanchor.stellar.org/auth',
-        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-        'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
-        'testanchor.stellar.org',
-        Network.TESTNET,
-        httpClient: mockClient,
-      );
-
-      expect(
-        () => webAuth.getChallenge(
+        final webAuth = WebAuthForContracts(
+          'https://testanchor.stellar.org/auth',
           'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-        ),
-        throwsA(isA<ContractChallengeRequestErrorResponse>()),
-      );
-    });
+          'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+          'testanchor.stellar.org',
+          Network.TESTNET,
+          httpClient: mockClient,
+        );
 
-    test('preserves ContractChallengeRequestErrorResponse when already thrown', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Invalid parameters'
-        }), 400);
-      });
+        expect(
+          () => webAuth.getChallenge(
+            'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+          ),
+          throwsA(isA<ContractChallengeRequestErrorResponse>()),
+        );
+      },
+    );
 
-      final webAuth = WebAuthForContracts(
-        'https://testanchor.stellar.org/auth',
-        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-        'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
-        'testanchor.stellar.org',
-        Network.TESTNET,
-        httpClient: mockClient,
-      );
+    test(
+      'preserves ContractChallengeRequestErrorResponse when already thrown',
+      () async {
+        final mockClient = MockClient((request) async {
+          return http.Response(
+            json.encode({'error': 'Invalid parameters'}),
+            400,
+          );
+        });
 
-      expect(
-        () => webAuth.getChallenge(
+        final webAuth = WebAuthForContracts(
+          'https://testanchor.stellar.org/auth',
           'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-        ),
-        throwsA(isA<ContractChallengeRequestErrorResponse>()),
-      );
-    });
+          'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+          'testanchor.stellar.org',
+          Network.TESTNET,
+          httpClient: mockClient,
+        );
+
+        expect(
+          () => webAuth.getChallenge(
+            'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+          ),
+          throwsA(isA<ContractChallengeRequestErrorResponse>()),
+        );
+      },
+    );
   });
 
   group('WebAuthForContracts - Response JSON Parsing', () {
@@ -222,33 +242,44 @@ void main() {
   });
 
   group('WebAuthForContracts - Network Passphrase Validation', () {
-    test('throws ContractChallengeValidationErrorInvalidNetworkPassphrase when network mismatch', () async {
-      final mockClient = MockClient((request) async {
-        if (request.method == 'GET') {
-          return http.Response(json.encode({
-            'authorization_entries': base64Encode(Uint8List.fromList([0, 0, 0, 0])),
-            'network_passphrase': 'Public Global Stellar Network ; September 2015',
-          }), 200);
-        }
-        return http.Response('', 404);
-      });
+    test(
+      'throws ContractChallengeValidationErrorInvalidNetworkPassphrase when network mismatch',
+      () async {
+        final mockClient = MockClient((request) async {
+          if (request.method == 'GET') {
+            return http.Response(
+              json.encode({
+                'authorization_entries': base64Encode(
+                  Uint8List.fromList([0, 0, 0, 0]),
+                ),
+                'network_passphrase':
+                    'Public Global Stellar Network ; September 2015',
+              }),
+              200,
+            );
+          }
+          return http.Response('', 404);
+        });
 
-      final webAuth = WebAuthForContracts(
-        'https://testanchor.stellar.org/auth',
-        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-        'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
-        'testanchor.stellar.org',
-        Network.TESTNET,
-        httpClient: mockClient,
-      );
-
-      await expectLater(
-        webAuth.jwtToken(
+        final webAuth = WebAuthForContracts(
+          'https://testanchor.stellar.org/auth',
           'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-          [],
-        ),
-        throwsA(isA<ContractChallengeValidationErrorInvalidNetworkPassphrase>()),
-      );
-    });
+          'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+          'testanchor.stellar.org',
+          Network.TESTNET,
+          httpClient: mockClient,
+        );
+
+        await expectLater(
+          webAuth.jwtToken(
+            'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+            [],
+          ),
+          throwsA(
+            isA<ContractChallengeValidationErrorInvalidNetworkPassphrase>(),
+          ),
+        );
+      },
+    );
   });
 }

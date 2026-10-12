@@ -31,9 +31,13 @@ const _kPoolRefused =
     'liquidity pool address $_kLiquidityPoolId, which $_kHostProduced';
 
 /// Matches a ContractSpecException whose message contains every fragment.
-Matcher _throwsSpecMessage(List<String> fragments) =>
-    throwsA(isA<ContractSpecException>().having((ContractSpecException e) =>
-        e.message, 'message', allOf(fragments.map(contains).toList())));
+Matcher _throwsSpecMessage(List<String> fragments) => throwsA(
+  isA<ContractSpecException>().having(
+    (ContractSpecException e) => e.message,
+    'message',
+    allOf(fragments.map(contains).toList()),
+  ),
+);
 
 void main() {
   group('ContractSpec', () {
@@ -49,7 +53,7 @@ void main() {
       test('should get all functions', () {
         final functions = spec.funcs();
         expect(functions.length, greaterThan(0));
-        
+
         final functionNames = functions.map((f) => f.name).toList();
         expect(functionNames, contains('hello'));
         expect(functionNames, contains('add'));
@@ -67,11 +71,17 @@ void main() {
       test('should find entries by name', () {
         final helloEntry = spec.findEntry('hello');
         expect(helloEntry, isNotNull);
-        expect(helloEntry!.discriminant, equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0));
+        expect(
+          helloEntry!.discriminant,
+          equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0),
+        );
 
         final structEntry = spec.findEntry('TestStruct');
         expect(structEntry, isNotNull);
-        expect(structEntry!.discriminant, equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0));
+        expect(
+          structEntry!.discriminant,
+          equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0),
+        );
 
         final nonExistentEntry = spec.findEntry('nonExistent');
         expect(nonExistentEntry, isNull);
@@ -85,11 +95,17 @@ void main() {
       });
 
       test('should convert bool type', () {
-        final trueResult = spec.nativeToXdrSCVal(true,  XdrSCSpecTypeDef.forBool());
+        final trueResult = spec.nativeToXdrSCVal(
+          true,
+          XdrSCSpecTypeDef.forBool(),
+        );
         expect(trueResult.discriminant, equals(XdrSCValType.SCV_BOOL));
         expect(trueResult.b, equals(true));
 
-        final falseResult = spec.nativeToXdrSCVal(false, XdrSCSpecTypeDef.forBool());
+        final falseResult = spec.nativeToXdrSCVal(
+          false,
+          XdrSCSpecTypeDef.forBool(),
+        );
         expect(falseResult.discriminant, equals(XdrSCValType.SCV_BOOL));
         expect(falseResult.b, equals(false));
       });
@@ -106,12 +122,18 @@ void main() {
         expect(i32Result.i32!.int32, equals(-42));
 
         // u64
-        final u64Result = spec.nativeToXdrSCVal(12345678901234, XdrSCSpecTypeDef.forU64());
+        final u64Result = spec.nativeToXdrSCVal(
+          12345678901234,
+          XdrSCSpecTypeDef.forU64(),
+        );
         expect(u64Result.discriminant, equals(XdrSCValType.SCV_U64));
         expect(u64Result.u64!.uint64, equals(BigInt.from(12345678901234)));
 
         // i64
-        final i64Result = spec.nativeToXdrSCVal(-12345678901234, XdrSCSpecTypeDef.forI64());
+        final i64Result = spec.nativeToXdrSCVal(
+          -12345678901234,
+          XdrSCSpecTypeDef.forI64(),
+        );
         expect(i64Result.discriminant, equals(XdrSCValType.SCV_I64));
         expect(i64Result.i64!.int64, equals(BigInt.from(-12345678901234)));
       });
@@ -139,7 +161,8 @@ void main() {
           throwsA(isA<ContractSpecException>()),
         );
         expect(
-          () => spec.nativeToXdrSCVal(double.infinity, XdrSCSpecTypeDef.forI32()),
+          () =>
+              spec.nativeToXdrSCVal(double.infinity, XdrSCSpecTypeDef.forI32()),
           throwsA(isA<ContractSpecException>()),
         );
       });
@@ -147,33 +170,45 @@ void main() {
       test('should convert 128-bit integer types with BigInt', () {
         // u128 with BigInt
         final u128Value = BigInt.from(2).pow(100);
-        final u128Result = spec.nativeToXdrSCVal(u128Value, XdrSCSpecTypeDef.forU128());
+        final u128Result = spec.nativeToXdrSCVal(
+          u128Value,
+          XdrSCSpecTypeDef.forU128(),
+        );
         expect(u128Result.discriminant, equals(XdrSCValType.SCV_U128));
         expect(u128Result.u128, isNotNull);
-        
+
         // Verify roundtrip
         final u128Back = u128Result.toBigInt();
         expect(u128Back, equals(u128Value));
 
         // i128 with BigInt
         final i128Value = BigInt.parse('-123456789012345678901234567890');
-        final i128Result = spec.nativeToXdrSCVal(i128Value, XdrSCSpecTypeDef.forI128());
+        final i128Result = spec.nativeToXdrSCVal(
+          i128Value,
+          XdrSCSpecTypeDef.forI128(),
+        );
         expect(i128Result.discriminant, equals(XdrSCValType.SCV_I128));
         expect(i128Result.i128, isNotNull);
-        
+
         // Verify roundtrip
         final i128Back = i128Result.toBigInt();
         expect(i128Back, equals(i128Value));
 
         // u128 with small int (should still work)
-        final u128SmallResult = spec.nativeToXdrSCVal(42, XdrSCSpecTypeDef.forU128());
+        final u128SmallResult = spec.nativeToXdrSCVal(
+          42,
+          XdrSCSpecTypeDef.forU128(),
+        );
         expect(u128SmallResult.discriminant, equals(XdrSCValType.SCV_U128));
         expect(u128SmallResult.u128!.hi.uint64, equals(BigInt.zero));
         expect(u128SmallResult.u128!.lo.uint64, equals(BigInt.from(42)));
 
         // u128 with negative BigInt should fail
         expect(
-          () => spec.nativeToXdrSCVal(BigInt.from(-1), XdrSCSpecTypeDef.forU128()),
+          () => spec.nativeToXdrSCVal(
+            BigInt.from(-1),
+            XdrSCSpecTypeDef.forU128(),
+          ),
           throwsA(isA<ContractSpecException>()),
         );
       });
@@ -181,39 +216,54 @@ void main() {
       test('should convert 256-bit integer types with BigInt', () {
         // u256 with BigInt
         final u256Value = BigInt.from(2).pow(200);
-        final u256Result = spec.nativeToXdrSCVal(u256Value, XdrSCSpecTypeDef.forU256());
+        final u256Result = spec.nativeToXdrSCVal(
+          u256Value,
+          XdrSCSpecTypeDef.forU256(),
+        );
         expect(u256Result.discriminant, equals(XdrSCValType.SCV_U256));
         expect(u256Result.u256, isNotNull);
-        
+
         // Verify roundtrip
         final u256Back = u256Result.toBigInt();
         expect(u256Back, equals(u256Value));
 
         // i256 with BigInt
         final i256Value = -BigInt.from(2).pow(200);
-        final i256Result = spec.nativeToXdrSCVal(i256Value, XdrSCSpecTypeDef.forI256());
+        final i256Result = spec.nativeToXdrSCVal(
+          i256Value,
+          XdrSCSpecTypeDef.forI256(),
+        );
         expect(i256Result.discriminant, equals(XdrSCValType.SCV_I256));
         expect(i256Result.i256, isNotNull);
-        
+
         // Verify roundtrip
         final i256Back = i256Result.toBigInt();
         expect(i256Back, equals(i256Value));
 
         // u256 with small int (should work now)
-        final u256SmallResult = spec.nativeToXdrSCVal(42, XdrSCSpecTypeDef.forU256());
+        final u256SmallResult = spec.nativeToXdrSCVal(
+          42,
+          XdrSCSpecTypeDef.forU256(),
+        );
         expect(u256SmallResult.discriminant, equals(XdrSCValType.SCV_U256));
         expect(u256SmallResult.u256, isNotNull);
         expect(u256SmallResult.toBigInt(), equals(BigInt.from(42)));
 
         // i256 with small negative int (should work now)
-        final i256SmallResult = spec.nativeToXdrSCVal(-42, XdrSCSpecTypeDef.forI256());
+        final i256SmallResult = spec.nativeToXdrSCVal(
+          -42,
+          XdrSCSpecTypeDef.forI256(),
+        );
         expect(i256SmallResult.discriminant, equals(XdrSCValType.SCV_I256));
         expect(i256SmallResult.i256, isNotNull);
         expect(i256SmallResult.toBigInt(), equals(BigInt.from(-42)));
 
         // u256 with negative BigInt should fail
         expect(
-          () => spec.nativeToXdrSCVal(BigInt.from(-1), XdrSCSpecTypeDef.forU256()),
+          () => spec.nativeToXdrSCVal(
+            BigInt.from(-1),
+            XdrSCSpecTypeDef.forU256(),
+          ),
           throwsA(isA<ContractSpecException>()),
         );
 
@@ -225,35 +275,55 @@ void main() {
       });
 
       test('should convert string types', () {
-        final stringResult = spec.nativeToXdrSCVal('hello', XdrSCSpecTypeDef.forString());
+        final stringResult = spec.nativeToXdrSCVal(
+          'hello',
+          XdrSCSpecTypeDef.forString(),
+        );
         expect(stringResult.discriminant, equals(XdrSCValType.SCV_STRING));
         expect(stringResult.str, equals('hello'));
 
-        final symbolResult = spec.nativeToXdrSCVal('symbol', XdrSCSpecTypeDef.forSymbol());
+        final symbolResult = spec.nativeToXdrSCVal(
+          'symbol',
+          XdrSCSpecTypeDef.forSymbol(),
+        );
         expect(symbolResult.discriminant, equals(XdrSCValType.SCV_SYMBOL));
         expect(symbolResult.sym, equals('symbol'));
       });
 
       test('should convert bytes type', () {
         final bytes = Uint8List.fromList([1, 2, 3, 4]);
-        final result = spec.nativeToXdrSCVal(bytes, XdrSCSpecTypeDef.forBytes());
+        final result = spec.nativeToXdrSCVal(
+          bytes,
+          XdrSCSpecTypeDef.forBytes(),
+        );
         expect(result.discriminant, equals(XdrSCValType.SCV_BYTES));
         expect(result.bytes!.sCBytes, equals(bytes));
 
         // Test hex string conversion
-        final hexResult = spec.nativeToXdrSCVal('01020304', XdrSCSpecTypeDef.forBytes());
+        final hexResult = spec.nativeToXdrSCVal(
+          '01020304',
+          XdrSCSpecTypeDef.forBytes(),
+        );
         expect(hexResult.discriminant, equals(XdrSCValType.SCV_BYTES));
         expect(hexResult.bytes!.sCBytes, equals(bytes));
       });
 
       test('should convert address types', () {
-        final accountAddress = 'GAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSTVY';
-        final result = spec.nativeToXdrSCVal(accountAddress, XdrSCSpecTypeDef.forAddress());
+        final accountAddress =
+            'GAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSTVY';
+        final result = spec.nativeToXdrSCVal(
+          accountAddress,
+          XdrSCSpecTypeDef.forAddress(),
+        );
         expect(result.discriminant, equals(XdrSCValType.SCV_ADDRESS));
         expect(result.address, isNotNull);
 
-        final contractAddress = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
-        final contractResult = spec.nativeToXdrSCVal(contractAddress, XdrSCSpecTypeDef.forAddress());
+        final contractAddress =
+            'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+        final contractResult = spec.nativeToXdrSCVal(
+          contractAddress,
+          XdrSCSpecTypeDef.forAddress(),
+        );
         expect(contractResult.discriminant, equals(XdrSCValType.SCV_ADDRESS));
         expect(contractResult.address, isNotNull);
       });
@@ -262,7 +332,9 @@ void main() {
     group('Collection type conversions', () {
       test('should convert vector type', () {
         final elementTypeDef = XdrSCSpecTypeDef.forU32();
-        final vecTypeDef = XdrSCSpecTypeDef.forVec(XdrSCSpecTypeVec(elementTypeDef));
+        final vecTypeDef = XdrSCSpecTypeDef.forVec(
+          XdrSCSpecTypeVec(elementTypeDef),
+        );
 
         final result = spec.nativeToXdrSCVal([1, 2, 3], vecTypeDef);
         expect(result.discriminant, equals(XdrSCValType.SCV_VEC));
@@ -273,10 +345,12 @@ void main() {
       });
 
       test('should convert map type', () {
-        final mapTypeDef = XdrSCSpecTypeDef.forMap(XdrSCSpecTypeMap(
-          XdrSCSpecTypeDef.forString(),
-          XdrSCSpecTypeDef.forU32(),
-        ));
+        final mapTypeDef = XdrSCSpecTypeDef.forMap(
+          XdrSCSpecTypeMap(
+            XdrSCSpecTypeDef.forString(),
+            XdrSCSpecTypeDef.forU32(),
+          ),
+        );
 
         final result = spec.nativeToXdrSCVal({'a': 1, 'b': 2}, mapTypeDef);
         expect(result.discriminant, equals(XdrSCValType.SCV_MAP));
@@ -316,7 +390,7 @@ void main() {
       test('should convert function arguments correctly', () {
         final args = {'to': 'World'};
         final result = spec.funcArgsToXdrSCValues('hello', args);
-        
+
         expect(result.length, equals(1));
         expect(result[0].discriminant, equals(XdrSCValType.SCV_STRING));
         expect(result[0].str, equals('World'));
@@ -339,7 +413,7 @@ void main() {
       test('should convert multiple arguments in correct order', () {
         final args = {'a': 10, 'b': 20};
         final result = spec.funcArgsToXdrSCValues('add', args);
-        
+
         expect(result.length, equals(2));
         expect(result[0].discriminant, equals(XdrSCValType.SCV_U32));
         expect(result[0].u32!.uint32, equals(10));
@@ -356,7 +430,8 @@ void main() {
         );
 
         expect(
-          () => spec.nativeToXdrSCVal('not a number', XdrSCSpecTypeDef.forU32()),
+          () =>
+              spec.nativeToXdrSCVal('not a number', XdrSCSpecTypeDef.forU32()),
           throwsA(isA<ContractSpecException>()),
         );
       });
@@ -423,7 +498,10 @@ void main() {
     group('Edge cases', () {
       test('should handle already converted XdrSCVal values', () {
         final existingVal = XdrSCVal.forU32(42);
-        final result = spec.nativeToXdrSCVal(existingVal, XdrSCSpecTypeDef.forU32());
+        final result = spec.nativeToXdrSCVal(
+          existingVal,
+          XdrSCSpecTypeDef.forU32(),
+        );
         expect(result, equals(existingVal));
       });
 
@@ -456,39 +534,27 @@ List<XdrSCSpecEntry> _createTestSpecEntries() {
 
   // Hello function: hello(to: string) -> string
   final helloFunc = XdrSCSpecFunctionV0(
-    '', 
-    'hello', 
-    [
-      XdrSCSpecFunctionInputV0(
-        '', 
-        'to',
-          XdrSCSpecTypeDef.forString()
-      )
-    ], 
-    [XdrSCSpecTypeDef.forString()]
+    '',
+    'hello',
+    [XdrSCSpecFunctionInputV0('', 'to', XdrSCSpecTypeDef.forString())],
+    [XdrSCSpecTypeDef.forString()],
   );
 
-  final helloEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
+  final helloEntry = XdrSCSpecEntry(
+    XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
+  );
   helloEntry.functionV0 = helloFunc;
   entries.add(helloEntry);
 
   // Add function: add(a: u32, b: u32) -> u32
   final addFunc = XdrSCSpecFunctionV0(
-    '', 
-    'add', 
+    '',
+    'add',
     [
-      XdrSCSpecFunctionInputV0(
-        '', 
-        'a',
-          XdrSCSpecTypeDef.forU32()
-      ),
-      XdrSCSpecFunctionInputV0(
-        '', 
-        'b',
-          XdrSCSpecTypeDef.forU32()
-      ),
-    ], 
-    [XdrSCSpecTypeDef.forU32()]
+      XdrSCSpecFunctionInputV0('', 'a', XdrSCSpecTypeDef.forU32()),
+      XdrSCSpecFunctionInputV0('', 'b', XdrSCSpecTypeDef.forU32()),
+    ],
+    [XdrSCSpecTypeDef.forU32()],
   );
 
   final addEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
@@ -496,25 +562,14 @@ List<XdrSCSpecEntry> _createTestSpecEntries() {
   entries.add(addEntry);
 
   // Test struct: TestStruct { field1: string, field2: u32 }
-  final testStruct = XdrSCSpecUDTStructV0(
-    '', 
-    '', 
-    'TestStruct', 
-    [
-      XdrSCSpecUDTStructFieldV0(
-        '', 
-        'field1',
-          XdrSCSpecTypeDef.forString()
-      ),
-      XdrSCSpecUDTStructFieldV0(
-        '', 
-        'field2',
-          XdrSCSpecTypeDef.forU32()
-      ),
-    ]
-  );
+  final testStruct = XdrSCSpecUDTStructV0('', '', 'TestStruct', [
+    XdrSCSpecUDTStructFieldV0('', 'field1', XdrSCSpecTypeDef.forString()),
+    XdrSCSpecUDTStructFieldV0('', 'field2', XdrSCSpecTypeDef.forU32()),
+  ]);
 
-  final structEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0);
+  final structEntry = XdrSCSpecEntry(
+    XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0,
+  );
   structEntry.udtStructV0 = testStruct;
   entries.add(structEntry);
 
@@ -528,7 +583,9 @@ List<XdrSCSpecEntry> _createTestSpecEntries() {
 void _runRoundtripTests() {
   group('ContractSpec - Type Helpers', () {
     test('funcs returns all function entries', () {
-      final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
+      final funcEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
+      );
       funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'testFunc', [], []);
 
       final spec = ContractSpec([funcEntry]);
@@ -539,7 +596,9 @@ void _runRoundtripTests() {
     });
 
     test('funcs skips null function entries', () {
-      final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
+      final funcEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
+      );
       // functionV0 is null
 
       final spec = ContractSpec([funcEntry]);
@@ -549,7 +608,9 @@ void _runRoundtripTests() {
     });
 
     test('udtStructs returns all struct entries', () {
-      final structEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0);
+      final structEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0,
+      );
       structEntry.udtStructV0 = XdrSCSpecUDTStructV0('', '', 'TestStruct', []);
 
       final spec = ContractSpec([structEntry]);
@@ -560,7 +621,9 @@ void _runRoundtripTests() {
     });
 
     test('udtStructs skips null struct entries', () {
-      final structEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0);
+      final structEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0,
+      );
 
       final spec = ContractSpec([structEntry]);
       final structs = spec.udtStructs();
@@ -569,7 +632,9 @@ void _runRoundtripTests() {
     });
 
     test('udtUnions returns all union entries', () {
-      final unionEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0);
+      final unionEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0,
+      );
       unionEntry.udtUnionV0 = XdrSCSpecUDTUnionV0('', '', 'TestUnion', []);
 
       final spec = ContractSpec([unionEntry]);
@@ -580,7 +645,9 @@ void _runRoundtripTests() {
     });
 
     test('udtUnions skips null union entries', () {
-      final unionEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0);
+      final unionEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0,
+      );
 
       final spec = ContractSpec([unionEntry]);
       final unions = spec.udtUnions();
@@ -589,7 +656,9 @@ void _runRoundtripTests() {
     });
 
     test('udtEnums returns all enum entries', () {
-      final enumEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0);
+      final enumEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0,
+      );
       enumEntry.udtEnumV0 = XdrSCSpecUDTEnumV0('', '', 'TestEnum', []);
 
       final spec = ContractSpec([enumEntry]);
@@ -600,7 +669,9 @@ void _runRoundtripTests() {
     });
 
     test('udtEnums skips null enum entries', () {
-      final enumEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0);
+      final enumEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0,
+      );
 
       final spec = ContractSpec([enumEntry]);
       final enums = spec.udtEnums();
@@ -609,8 +680,15 @@ void _runRoundtripTests() {
     });
 
     test('udtErrorEnums returns all error enum entries', () {
-      final errorEnumEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0);
-      errorEnumEntry.udtErrorEnumV0 = XdrSCSpecUDTErrorEnumV0('', '', 'TestError', []);
+      final errorEnumEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0,
+      );
+      errorEnumEntry.udtErrorEnumV0 = XdrSCSpecUDTErrorEnumV0(
+        '',
+        '',
+        'TestError',
+        [],
+      );
 
       final spec = ContractSpec([errorEnumEntry]);
       final errorEnums = spec.udtErrorEnums();
@@ -620,7 +698,9 @@ void _runRoundtripTests() {
     });
 
     test('udtErrorEnums skips null error enum entries', () {
-      final errorEnumEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0);
+      final errorEnumEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0,
+      );
 
       final spec = ContractSpec([errorEnumEntry]);
       final errorEnums = spec.udtErrorEnums();
@@ -629,8 +709,17 @@ void _runRoundtripTests() {
     });
 
     test('events returns all event entries', () {
-      final eventEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0);
-      eventEntry.eventV0 = XdrSCSpecEventV0('', '', 'TestEvent', [], [], XdrSCSpecEventDataFormat.SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE);
+      final eventEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0,
+      );
+      eventEntry.eventV0 = XdrSCSpecEventV0(
+        '',
+        '',
+        'TestEvent',
+        [],
+        [],
+        XdrSCSpecEventDataFormat.SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE,
+      );
 
       final spec = ContractSpec([eventEntry]);
       final events = spec.events();
@@ -640,7 +729,9 @@ void _runRoundtripTests() {
     });
 
     test('events skips null event entries', () {
-      final eventEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0);
+      final eventEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0,
+      );
 
       final spec = ContractSpec([eventEntry]);
       final events = spec.events();
@@ -649,7 +740,9 @@ void _runRoundtripTests() {
     });
 
     test('getFunc finds function by name', () {
-      final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
+      final funcEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
+      );
       funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'transfer', [], []);
 
       final spec = ContractSpec([funcEntry]);
@@ -667,69 +760,111 @@ void _runRoundtripTests() {
     });
 
     test('findEntry finds function entry by name', () {
-      final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
+      final funcEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
+      );
       funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'transfer', [], []);
 
       final spec = ContractSpec([funcEntry]);
       final entry = spec.findEntry('transfer');
 
       expect(entry, isNotNull);
-      expect(entry!.discriminant, equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0));
+      expect(
+        entry!.discriminant,
+        equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0),
+      );
     });
 
     test('findEntry finds struct entry by name', () {
-      final structEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0);
+      final structEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0,
+      );
       structEntry.udtStructV0 = XdrSCSpecUDTStructV0('', '', 'TestStruct', []);
 
       final spec = ContractSpec([structEntry]);
       final entry = spec.findEntry('TestStruct');
 
       expect(entry, isNotNull);
-      expect(entry!.discriminant, equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0));
+      expect(
+        entry!.discriminant,
+        equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0),
+      );
     });
 
     test('findEntry finds union entry by name', () {
-      final unionEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0);
+      final unionEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0,
+      );
       unionEntry.udtUnionV0 = XdrSCSpecUDTUnionV0('', '', 'TestUnion', []);
 
       final spec = ContractSpec([unionEntry]);
       final entry = spec.findEntry('TestUnion');
 
       expect(entry, isNotNull);
-      expect(entry!.discriminant, equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0));
+      expect(
+        entry!.discriminant,
+        equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0),
+      );
     });
 
     test('findEntry finds enum entry by name', () {
-      final enumEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0);
+      final enumEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0,
+      );
       enumEntry.udtEnumV0 = XdrSCSpecUDTEnumV0('', '', 'TestEnum', []);
 
       final spec = ContractSpec([enumEntry]);
       final entry = spec.findEntry('TestEnum');
 
       expect(entry, isNotNull);
-      expect(entry!.discriminant, equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0));
+      expect(
+        entry!.discriminant,
+        equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0),
+      );
     });
 
     test('findEntry finds error enum entry by name', () {
-      final errorEnumEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0);
-      errorEnumEntry.udtErrorEnumV0 = XdrSCSpecUDTErrorEnumV0('', '', 'TestError', []);
+      final errorEnumEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0,
+      );
+      errorEnumEntry.udtErrorEnumV0 = XdrSCSpecUDTErrorEnumV0(
+        '',
+        '',
+        'TestError',
+        [],
+      );
 
       final spec = ContractSpec([errorEnumEntry]);
       final entry = spec.findEntry('TestError');
 
       expect(entry, isNotNull);
-      expect(entry!.discriminant, equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0));
+      expect(
+        entry!.discriminant,
+        equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0),
+      );
     });
 
     test('findEntry finds event entry by name', () {
-      final eventEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0);
-      eventEntry.eventV0 = XdrSCSpecEventV0('', '', 'TestEvent', [], [], XdrSCSpecEventDataFormat.SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE);
+      final eventEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0,
+      );
+      eventEntry.eventV0 = XdrSCSpecEventV0(
+        '',
+        '',
+        'TestEvent',
+        [],
+        [],
+        XdrSCSpecEventDataFormat.SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE,
+      );
 
       final spec = ContractSpec([eventEntry]);
       final entry = spec.findEntry('TestEvent');
 
       expect(entry, isNotNull);
-      expect(entry!.discriminant, equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0));
+      expect(
+        entry!.discriminant,
+        equals(XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0),
+      );
     });
 
     test('findEntry returns null when entry not found', () {
@@ -745,16 +880,13 @@ void _runRoundtripTests() {
       final u32Type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32);
       final stringType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_STRING);
 
-      final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
-      funcEntry.functionV0 = XdrSCSpecFunctionV0(
-        '',
-        'transfer',
-        [
-          XdrSCSpecFunctionInputV0('', 'amount', u32Type),
-          XdrSCSpecFunctionInputV0('', 'memo', stringType),
-        ],
-        [],
+      final funcEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
       );
+      funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'transfer', [
+        XdrSCSpecFunctionInputV0('', 'amount', u32Type),
+        XdrSCSpecFunctionInputV0('', 'memo', stringType),
+      ], []);
 
       final spec = ContractSpec([funcEntry]);
       final scValues = spec.funcArgsToXdrSCValues('transfer', {
@@ -779,13 +911,12 @@ void _runRoundtripTests() {
     test('throws when required argument missing', () {
       final u32Type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32);
 
-      final funcEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0);
-      funcEntry.functionV0 = XdrSCSpecFunctionV0(
-        '',
-        'transfer',
-        [XdrSCSpecFunctionInputV0('', 'amount', u32Type)],
-        [],
+      final funcEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
       );
+      funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'transfer', [
+        XdrSCSpecFunctionInputV0('', 'amount', u32Type),
+      ], []);
 
       final spec = ContractSpec([funcEntry]);
 
@@ -970,7 +1101,9 @@ void _runRoundtripTests() {
     });
 
     test('converts timepoint type', () {
-      final timepointType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT);
+      final timepointType = XdrSCSpecTypeDef(
+        XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT,
+      );
       final result = spec.nativeToXdrSCVal(1609459200, timepointType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_TIMEPOINT));
@@ -978,7 +1111,9 @@ void _runRoundtripTests() {
     });
 
     test('throws when timepoint is negative', () {
-      final timepointType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT);
+      final timepointType = XdrSCSpecTypeDef(
+        XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT,
+      );
 
       expect(
         () => spec.nativeToXdrSCVal(-1, timepointType),
@@ -987,7 +1122,9 @@ void _runRoundtripTests() {
     });
 
     test('converts duration type', () {
-      final durationType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_DURATION);
+      final durationType = XdrSCSpecTypeDef(
+        XdrSCSpecType.SC_SPEC_TYPE_DURATION,
+      );
       final result = spec.nativeToXdrSCVal(3600, durationType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_DURATION));
@@ -995,7 +1132,9 @@ void _runRoundtripTests() {
     });
 
     test('throws when duration is negative', () {
-      final durationType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_DURATION);
+      final durationType = XdrSCSpecTypeDef(
+        XdrSCSpecType.SC_SPEC_TYPE_DURATION,
+      );
 
       expect(
         () => spec.nativeToXdrSCVal(-1, durationType),
@@ -1047,7 +1186,10 @@ void _runRoundtripTests() {
 
     test('converts u128 from XdrUInt128Parts', () {
       final u128Type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U128);
-      final parts = XdrUInt128Parts(XdrUint64(BigInt.zero), XdrUint64(BigInt.from(42)));
+      final parts = XdrUInt128Parts(
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.from(42)),
+      );
       final result = spec.nativeToXdrSCVal(parts, u128Type);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_U128));
@@ -1088,7 +1230,10 @@ void _runRoundtripTests() {
 
     test('converts i128 from XdrInt128Parts', () {
       final i128Type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_I128);
-      final parts = XdrInt128Parts(XdrInt64(BigInt.zero), XdrUint64(BigInt.from(42)));
+      final parts = XdrInt128Parts(
+        XdrInt64(BigInt.zero),
+        XdrUint64(BigInt.from(42)),
+      );
       final result = spec.nativeToXdrSCVal(parts, i128Type);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_I128));
@@ -1118,7 +1263,12 @@ void _runRoundtripTests() {
 
     test('converts u256 from XdrUInt256Parts', () {
       final u256Type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U256);
-      final parts = XdrUInt256Parts(XdrUint64(BigInt.zero), XdrUint64(BigInt.zero), XdrUint64(BigInt.zero), XdrUint64(BigInt.from(42)));
+      final parts = XdrUInt256Parts(
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.from(42)),
+      );
       final result = spec.nativeToXdrSCVal(parts, u256Type);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_U256));
@@ -1159,7 +1309,12 @@ void _runRoundtripTests() {
 
     test('converts i256 from XdrInt256Parts', () {
       final i256Type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_I256);
-      final parts = XdrInt256Parts(XdrInt64(BigInt.zero), XdrUint64(BigInt.zero), XdrUint64(BigInt.zero), XdrUint64(BigInt.from(42)));
+      final parts = XdrInt256Parts(
+        XdrInt64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.from(42)),
+      );
       final result = spec.nativeToXdrSCVal(parts, i256Type);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_I256));
@@ -1210,7 +1365,10 @@ void _runRoundtripTests() {
       final result = spec.nativeToXdrSCVal('0102030405', bytesType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_BYTES));
-      expect(result.bytes!.sCBytes, equals(Uint8List.fromList([1, 2, 3, 4, 5])));
+      expect(
+        result.bytes!.sCBytes,
+        equals(Uint8List.fromList([1, 2, 3, 4, 5])),
+      );
     });
 
     test('throws when bytes string is invalid hex', () {
@@ -1241,7 +1399,8 @@ void _runRoundtripTests() {
 
     test('converts contract address', () {
       final addressType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_ADDRESS);
-      final contractId = 'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4';
+      final contractId =
+          'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4';
       final result = spec.nativeToXdrSCVal(contractId, addressType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_ADDRESS));
@@ -1249,7 +1408,8 @@ void _runRoundtripTests() {
 
     test('converts account address', () {
       final addressType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_ADDRESS);
-      final accountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final accountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
       final result = spec.nativeToXdrSCVal(accountId, addressType);
 
       expect(result.discriminant, equals(XdrSCValType.SCV_ADDRESS));
@@ -1291,36 +1451,47 @@ void _runRoundtripTests() {
 
     test('refuses every other value, naming the parameter type', () {
       final addressType = XdrSCSpecTypeDef.forAddress();
-      const takes = 'Address takes an account (G...) or contract (C...) address';
+      const takes =
+          'Address takes an account (G...) or contract (C...) address';
       for (final (val, given) in <(Object, String)>[
         (_kMuxedAccountId, 'needs a MuxedAddress parameter'),
         (_kMuxedContractId, 'needs a MuxedAddress parameter'),
-        (Address.forMuxedAccountId(_kMuxedAccountId),
-            'muxed address $_kMuxedAccountId'),
-        (Address.forMuxedContractId(_kMuxedContractId),
-            'muxed address $_kMuxedContractId'),
+        (
+          Address.forMuxedAccountId(_kMuxedAccountId),
+          'muxed address $_kMuxedAccountId',
+        ),
+        (
+          Address.forMuxedContractId(_kMuxedContractId),
+          'muxed address $_kMuxedContractId',
+        ),
         (_kClaimableBalanceId, _kBalanceRefused),
         (Address.forClaimableBalanceId(_kClaimableBalanceId), _kBalanceRefused),
         (_kLiquidityPoolId, _kPoolRefused),
         (Address.forLiquidityPoolId(_kLiquidityPoolId), _kPoolRefused),
         ('INVALID', 'Invalid address format: INVALID'),
-        (_kContractHashHex.substring(2),
-            'Invalid address format: ${_kContractHashHex.substring(2)}'),
+        (
+          _kContractHashHex.substring(2),
+          'Invalid address format: ${_kContractHashHex.substring(2)}',
+        ),
         (Address.forAccountId('GBAD'), 'got an Address that does not encode'),
         (123, 'got int'),
       ]) {
-        expect(() => spec.nativeToXdrSCVal(val, addressType),
-            _throwsSpecMessage([takes, given]),
-            reason: '$val');
+        expect(
+          () => spec.nativeToXdrSCVal(val, addressType),
+          _throwsSpecMessage([takes, given]),
+          reason: '$val',
+        );
       }
     });
   });
 
   group('ContractSpec - MuxedAddress Types', () {
     final spec = ContractSpec([]);
-    final muxedType =
-        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS);
-    const takes = 'MuxedAddress takes an account (G...), muxed account (M...), '
+    final muxedType = XdrSCSpecTypeDef(
+      XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS,
+    );
+    const takes =
+        'MuxedAddress takes an account (G...), muxed account (M...), '
         'contract (C...) or muxed contract (W...) address';
 
     test('accepts G, M, C and W strkeys and Address values', () {
@@ -1349,13 +1520,17 @@ void _runRoundtripTests() {
         (_kLiquidityPoolId, _kPoolRefused),
         (Address.forLiquidityPoolId(_kLiquidityPoolId), _kPoolRefused),
         ('INVALID', 'Invalid address format: INVALID'),
-        (_kContractHashHex.substring(2),
-            'Invalid address format: ${_kContractHashHex.substring(2)}'),
+        (
+          _kContractHashHex.substring(2),
+          'Invalid address format: ${_kContractHashHex.substring(2)}',
+        ),
         (123, 'got int'),
       ]) {
-        expect(() => spec.nativeToXdrSCVal(val, muxedType),
-            _throwsSpecMessage([takes, given]),
-            reason: '$val');
+        expect(
+          () => spec.nativeToXdrSCVal(val, muxedType),
+          _throwsSpecMessage([takes, given]),
+          reason: '$val',
+        );
       }
     });
 
@@ -1374,8 +1549,10 @@ void _runRoundtripTests() {
 
       expect(values.length, 3);
       expect(values[0].address!.toStrKey(), _kAccountId);
-      expect(values[1].address!.discriminant,
-          XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT);
+      expect(
+        values[1].address!.discriminant,
+        XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT,
+      );
       expect(values[1].address!.toStrKey(), _kMuxedContractId);
       expect(values[2].discriminant, XdrSCValType.SCV_I128);
     });
@@ -1607,7 +1784,8 @@ void _runRoundtripTests() {
       final bytesNType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_BYTES_N);
 
       expect(
-        () => spec.nativeToXdrSCVal(Uint8List.fromList([1, 2, 3, 4]), bytesNType),
+        () =>
+            spec.nativeToXdrSCVal(Uint8List.fromList([1, 2, 3, 4]), bytesNType),
         throwsA(isA<ContractSpecException>()),
       );
     });
@@ -1623,7 +1801,9 @@ void _runRoundtripTests() {
         XdrSCSpecUDTStructFieldV0('', 'memo', stringType),
       ]);
 
-      final structEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0);
+      final structEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0,
+      );
       structEntry.udtStructV0 = structDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1639,29 +1819,31 @@ void _runRoundtripTests() {
       expect(result.map!, hasLength(2));
     });
 
-    test('converts struct type with numeric fields (vector representation)', () {
-      final u32Type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32);
+    test(
+      'converts struct type with numeric fields (vector representation)',
+      () {
+        final u32Type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32);
 
-      final structDef = XdrSCSpecUDTStructV0('', '', 'TestStruct', [
-        XdrSCSpecUDTStructFieldV0('', '0', u32Type),
-        XdrSCSpecUDTStructFieldV0('', '1', u32Type),
-      ]);
+        final structDef = XdrSCSpecUDTStructV0('', '', 'TestStruct', [
+          XdrSCSpecUDTStructFieldV0('', '0', u32Type),
+          XdrSCSpecUDTStructFieldV0('', '1', u32Type),
+        ]);
 
-      final structEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0);
-      structEntry.udtStructV0 = structDef;
+        final structEntry = XdrSCSpecEntry(
+          XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0,
+        );
+        structEntry.udtStructV0 = structDef;
 
-      final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
-      udtType.udt = XdrSCSpecTypeUDT('TestStruct');
+        final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
+        udtType.udt = XdrSCSpecTypeUDT('TestStruct');
 
-      final spec = ContractSpec([structEntry]);
-      final result = spec.nativeToXdrSCVal({
-        '0': 100,
-        '1': 200,
-      }, udtType);
+        final spec = ContractSpec([structEntry]);
+        final result = spec.nativeToXdrSCVal({'0': 100, '1': 200}, udtType);
 
-      expect(result.discriminant, equals(XdrSCValType.SCV_VEC));
-      expect(result.vec!, hasLength(2));
-    });
+        expect(result.discriminant, equals(XdrSCValType.SCV_VEC));
+        expect(result.vec!, hasLength(2));
+      },
+    );
 
     test('throws when struct field is missing', () {
       final u32Type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32);
@@ -1670,7 +1852,9 @@ void _runRoundtripTests() {
         XdrSCSpecUDTStructFieldV0('', 'amount', u32Type),
       ]);
 
-      final structEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0);
+      final structEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0,
+      );
       structEntry.udtStructV0 = structDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1691,7 +1875,9 @@ void _runRoundtripTests() {
         XdrSCSpecUDTStructFieldV0('', 'amount', u32Type),
       ]);
 
-      final structEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0);
+      final structEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0,
+      );
       structEntry.udtStructV0 = structDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1711,7 +1897,9 @@ void _runRoundtripTests() {
         XdrSCSpecUDTEnumCaseV0('', 'FAILURE', XdrUint32(1)),
       ]);
 
-      final enumEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0);
+      final enumEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0,
+      );
       enumEntry.udtEnumV0 = enumDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1730,7 +1918,9 @@ void _runRoundtripTests() {
         XdrSCSpecUDTEnumCaseV0('', 'FAILURE', XdrUint32(1)),
       ]);
 
-      final enumEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0);
+      final enumEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0,
+      );
       enumEntry.udtEnumV0 = enumDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1748,7 +1938,9 @@ void _runRoundtripTests() {
         XdrSCSpecUDTEnumCaseV0('', 'SUCCESS', XdrUint32(0)),
       ]);
 
-      final enumEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0);
+      final enumEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0,
+      );
       enumEntry.udtEnumV0 = enumDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1767,7 +1959,9 @@ void _runRoundtripTests() {
         XdrSCSpecUDTEnumCaseV0('', 'SUCCESS', XdrUint32(0)),
       ]);
 
-      final enumEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0);
+      final enumEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0,
+      );
       enumEntry.udtEnumV0 = enumDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1786,7 +1980,9 @@ void _runRoundtripTests() {
         XdrSCSpecUDTEnumCaseV0('', 'SUCCESS', XdrUint32(0)),
       ]);
 
-      final enumEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0);
+      final enumEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0,
+      );
       enumEntry.udtEnumV0 = enumDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1801,12 +1997,16 @@ void _runRoundtripTests() {
     });
 
     test('converts union type with void case', () {
-      final voidCase = XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0);
+      final voidCase = XdrSCSpecUDTUnionCaseV0(
+        XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0,
+      );
       voidCase.voidCase = XdrSCSpecUDTUnionCaseVoidV0('', 'Success');
 
       final unionDef = XdrSCSpecUDTUnionV0('', '', 'TestUnion', [voidCase]);
 
-      final unionEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0);
+      final unionEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0,
+      );
       unionEntry.udtUnionV0 = unionDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1822,12 +2022,16 @@ void _runRoundtripTests() {
 
     test('converts union type with tuple case', () {
       final u32Type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32);
-      final tupleCase = XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0);
+      final tupleCase = XdrSCSpecUDTUnionCaseV0(
+        XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0,
+      );
       tupleCase.tupleCase = XdrSCSpecUDTUnionCaseTupleV0('', 'Data', [u32Type]);
 
       final unionDef = XdrSCSpecUDTUnionV0('', '', 'TestUnion', [tupleCase]);
 
-      final unionEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0);
+      final unionEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0,
+      );
       unionEntry.udtUnionV0 = unionDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1842,12 +2046,16 @@ void _runRoundtripTests() {
     });
 
     test('throws when union case not found', () {
-      final voidCase = XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0);
+      final voidCase = XdrSCSpecUDTUnionCaseV0(
+        XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0,
+      );
       voidCase.voidCase = XdrSCSpecUDTUnionCaseVoidV0('', 'Success');
 
       final unionDef = XdrSCSpecUDTUnionV0('', '', 'TestUnion', [voidCase]);
 
-      final unionEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0);
+      final unionEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0,
+      );
       unionEntry.udtUnionV0 = unionDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1864,12 +2072,16 @@ void _runRoundtripTests() {
 
     test('throws when union tuple case has null value', () {
       final u32Type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32);
-      final tupleCase = XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0);
+      final tupleCase = XdrSCSpecUDTUnionCaseV0(
+        XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0,
+      );
       tupleCase.tupleCase = XdrSCSpecUDTUnionCaseTupleV0('', 'Data', [u32Type]);
 
       final unionDef = XdrSCSpecUDTUnionV0('', '', 'TestUnion', [tupleCase]);
 
-      final unionEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0);
+      final unionEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0,
+      );
       unionEntry.udtUnionV0 = unionDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1886,12 +2098,16 @@ void _runRoundtripTests() {
 
     test('throws when union tuple case has wrong number of values', () {
       final u32Type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32);
-      final tupleCase = XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0);
+      final tupleCase = XdrSCSpecUDTUnionCaseV0(
+        XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0,
+      );
       tupleCase.tupleCase = XdrSCSpecUDTUnionCaseTupleV0('', 'Data', [u32Type]);
 
       final unionDef = XdrSCSpecUDTUnionV0('', '', 'TestUnion', [tupleCase]);
 
-      final unionEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0);
+      final unionEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0,
+      );
       unionEntry.udtUnionV0 = unionDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1907,12 +2123,16 @@ void _runRoundtripTests() {
     });
 
     test('throws when union type receives non-NativeUnionVal', () {
-      final voidCase = XdrSCSpecUDTUnionCaseV0(XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0);
+      final voidCase = XdrSCSpecUDTUnionCaseV0(
+        XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0,
+      );
       voidCase.voidCase = XdrSCSpecUDTUnionCaseVoidV0('', 'Success');
 
       final unionDef = XdrSCSpecUDTUnionV0('', '', 'TestUnion', [voidCase]);
 
-      final unionEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0);
+      final unionEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0,
+      );
       unionEntry.udtUnionV0 = unionDef;
 
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -1953,49 +2173,70 @@ void _runRoundtripTests() {
   group('ContractSpec - Type Inference', () {
     test('infers bool type', () {
       final spec = ContractSpec([]);
-      final result = spec.nativeToXdrSCVal(true, XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      final result = spec.nativeToXdrSCVal(
+        true,
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
 
       expect(result.discriminant, equals(XdrSCValType.SCV_BOOL));
     });
 
     test('infers u32 for small positive int', () {
       final spec = ContractSpec([]);
-      final result = spec.nativeToXdrSCVal(100, XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      final result = spec.nativeToXdrSCVal(
+        100,
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
 
       expect(result.discriminant, equals(XdrSCValType.SCV_U32));
     });
 
     test('infers i32 for small negative int', () {
       final spec = ContractSpec([]);
-      final result = spec.nativeToXdrSCVal(-100, XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      final result = spec.nativeToXdrSCVal(
+        -100,
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
 
       expect(result.discriminant, equals(XdrSCValType.SCV_I32));
     });
 
     test('infers i64 for large int', () {
       final spec = ContractSpec([]);
-      final result = spec.nativeToXdrSCVal(5000000000, XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      final result = spec.nativeToXdrSCVal(
+        5000000000,
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
 
       expect(result.discriminant, equals(XdrSCValType.SCV_I64));
     });
 
     test('infers string type', () {
       final spec = ContractSpec([]);
-      final result = spec.nativeToXdrSCVal('hello', XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      final result = spec.nativeToXdrSCVal(
+        'hello',
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
 
       expect(result.discriminant, equals(XdrSCValType.SCV_STRING));
     });
 
     test('infers vec type for list', () {
       final spec = ContractSpec([]);
-      final result = spec.nativeToXdrSCVal([1, 2, 3], XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      final result = spec.nativeToXdrSCVal([
+        1,
+        2,
+        3,
+      ], XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
 
       expect(result.discriminant, equals(XdrSCValType.SCV_VEC));
     });
 
     test('infers map type for map', () {
       final spec = ContractSpec([]);
-      final result = spec.nativeToXdrSCVal({'key': 'value'}, XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      final result = spec.nativeToXdrSCVal({
+        'key': 'value',
+      }, XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
 
       expect(result.discriminant, equals(XdrSCValType.SCV_MAP));
     });
@@ -2004,7 +2245,10 @@ void _runRoundtripTests() {
       final spec = ContractSpec([]);
 
       expect(
-        () => spec.nativeToXdrSCVal(Object(), XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL)),
+        () => spec.nativeToXdrSCVal(
+          Object(),
+          XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+        ),
         throwsA(isA<ContractSpecException>()),
       );
     });
@@ -2020,7 +2264,10 @@ void _runRoundtripTests() {
     });
 
     test('argumentNotFound creates correct exception', () {
-      final exception = ContractSpecException.argumentNotFound('amount', functionName: 'transfer');
+      final exception = ContractSpecException.argumentNotFound(
+        'amount',
+        functionName: 'transfer',
+      );
 
       expect(exception.message, contains('Required argument not found'));
       expect(exception.argumentName, equals('amount'));
@@ -2038,21 +2285,27 @@ void _runRoundtripTests() {
     });
 
     test('invalidType creates correct exception', () {
-      final exception = ContractSpecException.invalidType('Expected bool, got String');
+      final exception = ContractSpecException.invalidType(
+        'Expected bool, got String',
+      );
 
       expect(exception.message, contains('Invalid type'));
       expect(exception.toString(), contains('Expected bool'));
     });
 
     test('conversionFailed creates correct exception', () {
-      final exception = ContractSpecException.conversionFailed('Cannot convert to bytes');
+      final exception = ContractSpecException.conversionFailed(
+        'Cannot convert to bytes',
+      );
 
       expect(exception.message, contains('Conversion failed'));
       expect(exception.toString(), contains('Cannot convert'));
     });
 
     test('invalidEnumValue creates correct exception', () {
-      final exception = ContractSpecException.invalidEnumValue('Unknown case INVALID');
+      final exception = ContractSpecException.invalidEnumValue(
+        'Unknown case INVALID',
+      );
 
       expect(exception.message, contains('Invalid enum value'));
       expect(exception.toString(), contains('INVALID'));
@@ -2135,14 +2388,19 @@ void _runRoundtripTests() {
     test('toString for tuple case', () {
       final unionVal = NativeUnionVal.tupleCase('Data', [1, 2]);
 
-      expect(unionVal.toString(), equals('NativeUnionVal.tupleCase(Data, [1, 2])'));
+      expect(
+        unionVal.toString(),
+        equals('NativeUnionVal.tupleCase(Data, [1, 2])'),
+      );
     });
   });
 
   group('ContractSpec - Uncovered Error Paths and Edge Cases', () {
     test('nativeToXdrSCVal with unsupported default type throws', () {
       final spec = ContractSpec([]);
-      final unsupportedType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_BYTES_N);
+      final unsupportedType = XdrSCSpecTypeDef(
+        XdrSCSpecType.SC_SPEC_TYPE_BYTES_N,
+      );
 
       expect(
         () => spec.nativeToXdrSCVal(123, unsupportedType),
@@ -2161,7 +2419,9 @@ void _runRoundtripTests() {
 
     test('_handleValueType with unsupported value type throws', () {
       final spec = ContractSpec([]);
-      final unsupportedType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_BYTES_N);
+      final unsupportedType = XdrSCSpecTypeDef(
+        XdrSCSpecType.SC_SPEC_TYPE_BYTES_N,
+      );
 
       expect(
         () => spec.nativeToXdrSCVal('test', unsupportedType),
@@ -2222,7 +2482,9 @@ void _runRoundtripTests() {
     test('_handleVecType with non-List throws', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
-      vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32));
+      vecType.vec = XdrSCSpecTypeVec(
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32),
+      );
 
       expect(
         () => spec.nativeToXdrSCVal('not a list', vecType),
@@ -2247,7 +2509,9 @@ void _runRoundtripTests() {
     test('Vec<Val> element null returns void', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
-      vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      vecType.vec = XdrSCSpecTypeVec(
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
 
       final result = spec.nativeToXdrSCVal([null], vecType);
 
@@ -2259,7 +2523,9 @@ void _runRoundtripTests() {
     test('Vec<Val> element negative int in i32 range returns i32', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
-      vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      vecType.vec = XdrSCSpecTypeVec(
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
 
       final result = spec.nativeToXdrSCVal([-1000], vecType);
 
@@ -2269,7 +2535,9 @@ void _runRoundtripTests() {
     test('Vec<Val> element large positive int returns i64', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
-      vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      vecType.vec = XdrSCSpecTypeVec(
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
       final largeInt = 0xFFFFFFFF + 1;
 
       final result = spec.nativeToXdrSCVal([largeInt], vecType);
@@ -2280,9 +2548,13 @@ void _runRoundtripTests() {
     test('Vec<Val> element nested List', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
-      vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      vecType.vec = XdrSCSpecTypeVec(
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
 
-      final result = spec.nativeToXdrSCVal([[1, 2, 3]], vecType);
+      final result = spec.nativeToXdrSCVal([
+        [1, 2, 3],
+      ], vecType);
 
       expect(result.vec![0].discriminant, equals(XdrSCValType.SCV_VEC));
     });
@@ -2290,9 +2562,13 @@ void _runRoundtripTests() {
     test('Vec<Val> element nested Map', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
-      vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      vecType.vec = XdrSCSpecTypeVec(
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
 
-      final result = spec.nativeToXdrSCVal([{'key': 'value'}], vecType);
+      final result = spec.nativeToXdrSCVal([
+        {'key': 'value'},
+      ], vecType);
 
       expect(result.vec![0].discriminant, equals(XdrSCValType.SCV_MAP));
     });
@@ -2300,7 +2576,9 @@ void _runRoundtripTests() {
     test('Vec<Val> element unsupported type throws', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
-      vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      vecType.vec = XdrSCSpecTypeVec(
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
 
       expect(
         () => spec.nativeToXdrSCVal([DateTime.now()], vecType),
@@ -2311,7 +2589,9 @@ void _runRoundtripTests() {
     test('_handleOptionType with null returns void', () {
       final spec = ContractSpec([]);
       final optionType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_OPTION);
-      optionType.option = XdrSCSpecTypeOption(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32));
+      optionType.option = XdrSCSpecTypeOption(
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32),
+      );
 
       final result = spec.nativeToXdrSCVal(null, optionType);
 
@@ -2332,19 +2612,16 @@ void _runRoundtripTests() {
     });
 
     test('_handleStructType with missing field throws', () {
-      final structEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0);
-      structEntry.udtStructV0 = XdrSCSpecUDTStructV0(
-        '',
-        '',
-        'TestStruct',
-        [
-          XdrSCSpecUDTStructFieldV0(
-            '',
-            'field1',
-            XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32),
-          ),
-        ],
+      final structEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0,
       );
+      structEntry.udtStructV0 = XdrSCSpecUDTStructV0('', '', 'TestStruct', [
+        XdrSCSpecUDTStructFieldV0(
+          '',
+          'field1',
+          XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32),
+        ),
+      ]);
 
       final spec = ContractSpec([structEntry]);
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -2356,13 +2633,13 @@ void _runRoundtripTests() {
       );
     });
 
-    test('_handleStructType with numeric fields uses vector representation', () {
-      final structEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0);
-      structEntry.udtStructV0 = XdrSCSpecUDTStructV0(
-        '',
-        '',
-        'TestStruct',
-        [
+    test(
+      '_handleStructType with numeric fields uses vector representation',
+      () {
+        final structEntry = XdrSCSpecEntry(
+          XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0,
+        );
+        structEntry.udtStructV0 = XdrSCSpecUDTStructV0('', '', 'TestStruct', [
           XdrSCSpecUDTStructFieldV0(
             '',
             '0',
@@ -2373,32 +2650,29 @@ void _runRoundtripTests() {
             '1',
             XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32),
           ),
-        ],
-      );
+        ]);
 
-      final spec = ContractSpec([structEntry]);
-      final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
-      udtType.udt = XdrSCSpecTypeUDT('TestStruct');
+        final spec = ContractSpec([structEntry]);
+        final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
+        udtType.udt = XdrSCSpecTypeUDT('TestStruct');
 
-      final result = spec.nativeToXdrSCVal({'0': 10, '1': 20}, udtType);
+        final result = spec.nativeToXdrSCVal({'0': 10, '1': 20}, udtType);
 
-      expect(result.discriminant, equals(XdrSCValType.SCV_VEC));
-    });
+        expect(result.discriminant, equals(XdrSCValType.SCV_VEC));
+      },
+    );
 
     test('_handleStructType with numeric fields missing throws', () {
-      final structEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0);
-      structEntry.udtStructV0 = XdrSCSpecUDTStructV0(
-        '',
-        '',
-        'TestStruct',
-        [
-          XdrSCSpecUDTStructFieldV0(
-            '',
-            '0',
-            XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32),
-          ),
-        ],
+      final structEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0,
       );
+      structEntry.udtStructV0 = XdrSCSpecUDTStructV0('', '', 'TestStruct', [
+        XdrSCSpecUDTStructFieldV0(
+          '',
+          '0',
+          XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32),
+        ),
+      ]);
 
       final spec = ContractSpec([structEntry]);
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -2411,18 +2685,17 @@ void _runRoundtripTests() {
     });
 
     test('_handleUnionType with tuple case and null tuple case throws', () {
-      final unionEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0);
+      final unionEntry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0,
+      );
       final unionCase = XdrSCSpecUDTUnionCaseV0(
         XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0,
       );
       unionCase.tupleCase = null;
 
-      unionEntry.udtUnionV0 = XdrSCSpecUDTUnionV0(
-        '',
-        '',
-        'TestUnion',
-        [unionCase],
-      );
+      unionEntry.udtUnionV0 = XdrSCSpecUDTUnionV0('', '', 'TestUnion', [
+        unionCase,
+      ]);
 
       final spec = ContractSpec([unionEntry]);
       final udtType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_UDT);
@@ -2502,7 +2775,9 @@ void _runRoundtripTests() {
     test('Vec<Val> element XdrSCVal returns as-is', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
-      vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      vecType.vec = XdrSCSpecTypeVec(
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
       final scVal = XdrSCVal.forU32(42);
 
       final result = spec.nativeToXdrSCVal([scVal], vecType);
@@ -2513,7 +2788,9 @@ void _runRoundtripTests() {
     test('Vec<Val> element bool returns bool', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
-      vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      vecType.vec = XdrSCSpecTypeVec(
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
 
       final result = spec.nativeToXdrSCVal([true], vecType);
 
@@ -2524,7 +2801,9 @@ void _runRoundtripTests() {
     test('Vec<Val> element string returns string', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
-      vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
+      vecType.vec = XdrSCSpecTypeVec(
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL),
+      );
 
       final result = spec.nativeToXdrSCVal(['hello'], vecType);
 

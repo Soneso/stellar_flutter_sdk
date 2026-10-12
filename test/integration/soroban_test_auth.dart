@@ -11,8 +11,9 @@ void main() {
       ? SorobanServer("https://soroban-testnet.stellar.org")
       : SorobanServer("https://rpc-futurenet.stellar.org");
 
-  StellarSDK sdk =
-      testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+  StellarSDK sdk = testOn == 'testnet'
+      ? StellarSDK.TESTNET
+      : StellarSDK.FUTURENET;
 
   Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
@@ -31,15 +32,23 @@ void main() {
     try {
       await sdk.accounts.account(submitterId);
     } catch (e) {
-      await fundTestAccountAndAwaitVisibility(submitterId,
-          rpc: sorobanServer, horizon: sdk, useFuturenet: testOn != 'testnet');
+      await fundTestAccountAndAwaitVisibility(
+        submitterId,
+        rpc: sorobanServer,
+        horizon: sdk,
+        useFuturenet: testOn != 'testnet',
+      );
     }
 
     try {
       await sdk.accounts.account(invokerId);
     } catch (e) {
-      await fundTestAccountAndAwaitVisibility(invokerId,
-          rpc: sorobanServer, horizon: sdk, useFuturenet: testOn != 'testnet');
+      await fundTestAccountAndAwaitVisibility(
+        invokerId,
+        rpc: sorobanServer,
+        horizon: sdk,
+        useFuturenet: testOn != 'testnet',
+      );
     }
   });
 
@@ -74,34 +83,39 @@ void main() {
 
     UploadContractWasmHostFunction uploadFunction =
         UploadContractWasmHostFunction(contractCode);
-    InvokeHostFunctionOperation operation =
-        InvokeHostFuncOpBuilder(uploadFunction).build();
-    Transaction transaction =
-        new TransactionBuilder(accountA).addOperation(operation).build();
+    InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder(
+      uploadFunction,
+    ).build();
+    Transaction transaction = new TransactionBuilder(
+      accountA,
+    ).addOperation(operation).build();
 
     // simulate first to obtain the transaction data + resource fee
     var request = new SimulateTransactionRequest(transaction);
-    SimulateTransactionResponse simulateResponse =
-        await sorobanServer.simulateTransaction(request);
+    SimulateTransactionResponse simulateResponse = await sorobanServer
+        .simulateTransaction(request);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
 
     XdrSorobanTransactionData transactionData =
         simulateResponse.transactionData!;
-    transactionData.resources.footprint.readWrite
-        .addAll(transactionData.resources.footprint.readOnly);
-    transactionData.resources.footprint.readOnly =
-        List<XdrLedgerKey>.empty(growable: false);
+    transactionData.resources.footprint.readWrite.addAll(
+      transactionData.resources.footprint.readOnly,
+    );
+    transactionData.resources.footprint.readOnly = List<XdrLedgerKey>.empty(
+      growable: false,
+    );
 
     account = await sorobanServer.getAccount(submitterId);
     assert(account != null);
     accountA = account!;
 
-    RestoreFootprintOperation restoreOp =
-        RestoreFootprintOperationBuilder().build();
-    transaction =
-        new TransactionBuilder(accountA).addOperation(restoreOp).build();
+    RestoreFootprintOperation restoreOp = RestoreFootprintOperationBuilder()
+        .build();
+    transaction = new TransactionBuilder(
+      accountA,
+    ).addOperation(restoreOp).build();
     transaction.sorobanTransactionData = transactionData;
 
     // simulate first to obtain the transaction data + resource fee
@@ -119,22 +133,28 @@ void main() {
 
     // check transaction xdr encoding and decoding back and forth
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
-    assert(transactionEnvelopeXdr ==
-        AbstractTransaction.fromEnvelopeXdrString(transactionEnvelopeXdr)
-            .toEnvelopeXdrBase64());
+    assert(
+      transactionEnvelopeXdr ==
+          AbstractTransaction.fromEnvelopeXdrString(
+            transactionEnvelopeXdr,
+          ).toEnvelopeXdrBase64(),
+    );
 
     // send transaction to soroban rpc server
-    SendTransactionResponse sendResponse =
-        await sorobanServer.sendTransaction(transaction);
+    SendTransactionResponse sendResponse = await sorobanServer.sendTransaction(
+      transaction,
+    );
     assert(sendResponse.error == null);
     assert(sendResponse.hash != null);
     assert(sendResponse.status != null);
     assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-    GetTransactionResponse rpcTransactionResponse =
-        await pollStatus(sendResponse.hash!);
+    GetTransactionResponse rpcTransactionResponse = await pollStatus(
+      sendResponse.hash!,
+    );
     assert(
-        GetTransactionResponse.STATUS_SUCCESS == rpcTransactionResponse.status);
+      GetTransactionResponse.STATUS_SUCCESS == rpcTransactionResponse.status,
+    );
   }
 
   Future extendContractCodeFootprintTTL(String wasmId, int extendTo) async {
@@ -148,28 +168,37 @@ void main() {
     ExtendFootprintTTLOperation bumpFunction =
         ExtendFootprintTTLOperationBuilder(extendTo).build();
     // create transaction for bumping
-    Transaction transaction =
-        new TransactionBuilder(accountA).addOperation(bumpFunction).build();
+    Transaction transaction = new TransactionBuilder(
+      accountA,
+    ).addOperation(bumpFunction).build();
 
     List<XdrLedgerKey> readOnly = List<XdrLedgerKey>.empty(growable: true);
     List<XdrLedgerKey> readWrite = List<XdrLedgerKey>.empty(growable: false);
     XdrLedgerKey codeKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
-    codeKey.contractCode =
-        XdrLedgerKeyContractCode(XdrHash(Util.hexToBytes(wasmId)));
+    codeKey.contractCode = XdrLedgerKeyContractCode(
+      XdrHash(Util.hexToBytes(wasmId)),
+    );
     readOnly.add(codeKey);
 
     XdrLedgerFootprint footprint = XdrLedgerFootprint(readOnly, readWrite);
     XdrSorobanResources resources = XdrSorobanResources(
-        footprint, XdrUint32(0), XdrUint32(0), XdrUint32(0));
-    XdrSorobanTransactionData transactionData =
-        XdrSorobanTransactionData(XdrSorobanTransactionDataExt(0), resources, XdrInt64(BigInt.zero));
+      footprint,
+      XdrUint32(0),
+      XdrUint32(0),
+      XdrUint32(0),
+    );
+    XdrSorobanTransactionData transactionData = XdrSorobanTransactionData(
+      XdrSorobanTransactionDataExt(0),
+      resources,
+      XdrInt64(BigInt.zero),
+    );
 
     transaction.sorobanTransactionData = transactionData;
 
     // simulate first to obtain the transaction data + resource fee
     var request = new SimulateTransactionRequest(transaction);
-    SimulateTransactionResponse simulateResponse =
-        await sorobanServer.simulateTransaction(request);
+    SimulateTransactionResponse simulateResponse = await sorobanServer
+        .simulateTransaction(request);
     assert(simulateResponse.error == null);
     assert(simulateResponse.resultError == null);
     assert(simulateResponse.transactionData != null);
@@ -185,33 +214,40 @@ void main() {
 
     // check transaction xdr encoding and decoding back and forth
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
-    assert(transactionEnvelopeXdr ==
-        AbstractTransaction.fromEnvelopeXdrString(transactionEnvelopeXdr)
-            .toEnvelopeXdrBase64());
+    assert(
+      transactionEnvelopeXdr ==
+          AbstractTransaction.fromEnvelopeXdrString(
+            transactionEnvelopeXdr,
+          ).toEnvelopeXdrBase64(),
+    );
 
     // send transaction to soroban rpc server
-    SendTransactionResponse sendResponse =
-        await sorobanServer.sendTransaction(transaction);
+    SendTransactionResponse sendResponse = await sorobanServer.sendTransaction(
+      transaction,
+    );
     assert(sendResponse.error == null);
     assert(sendResponse.hash != null);
     assert(sendResponse.status != null);
     assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-    GetTransactionResponse rpcTransactionResponse =
-        await pollStatus(sendResponse.hash!);
+    GetTransactionResponse rpcTransactionResponse = await pollStatus(
+      sendResponse.hash!,
+    );
     assert(
-        GetTransactionResponse.STATUS_SUCCESS == rpcTransactionResponse.status);
+      GetTransactionResponse.STATUS_SUCCESS == rpcTransactionResponse.status,
+    );
 
     await Future.delayed(Duration(seconds: 5));
     // check horizon responses decoding
-    TransactionResponse transactionResponse =
-        await sdk.transactions.transaction(sendResponse.hash!);
+    TransactionResponse transactionResponse = await sdk.transactions
+        .transaction(sendResponse.hash!);
     assert(transactionResponse.operationCount == 1);
     assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
     // check operation response from horizon
-    Page<OperationResponse> operations =
-        await sdk.operations.forTransaction(sendResponse.hash!).execute();
+    Page<OperationResponse> operations = await sdk.operations
+        .forTransaction(sendResponse.hash!)
+        .execute();
     assert(operations.records.isNotEmpty);
     OperationResponse operationResponse = operations.records.first;
 
@@ -223,7 +259,6 @@ void main() {
   }
 
   group('all tests', () {
-
     test('test upload auth contract', () async {
       await Future.delayed(Duration(seconds: 5));
       // load account
@@ -235,17 +270,18 @@ void main() {
       Uint8List contractCode = await loadContractCode(authContractPath);
 
       // upload the contract
-      InvokeHostFunctionOperation operation =
-          InvokeHostFuncOpBuilder(UploadContractWasmHostFunction(contractCode))
-              .build();
+      InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder(
+        UploadContractWasmHostFunction(contractCode),
+      ).build();
       // create transaction for installing the contract
-      Transaction transaction =
-          new TransactionBuilder(submitter).addOperation(operation).build();
+      Transaction transaction = new TransactionBuilder(
+        submitter,
+      ).addOperation(operation).build();
 
       // simulate first to obtain the transaction data + resource fee
       var request = new SimulateTransactionRequest(transaction);
-      SimulateTransactionResponse simulateResponse =
-          await sorobanServer.simulateTransaction(request);
+      SimulateTransactionResponse simulateResponse = await sorobanServer
+          .simulateTransaction(request);
       assert(!simulateResponse.isErrorResponse);
       assert(simulateResponse.transactionData != null);
 
@@ -256,18 +292,22 @@ void main() {
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
-      assert(transactionEnvelopeXdr ==
-          AbstractTransaction.fromEnvelopeXdrString(transactionEnvelopeXdr)
-              .toEnvelopeXdrBase64());
+      assert(
+        transactionEnvelopeXdr ==
+            AbstractTransaction.fromEnvelopeXdrString(
+              transactionEnvelopeXdr,
+            ).toEnvelopeXdrBase64(),
+      );
 
       // send transaction to soroban rpc server
-      SendTransactionResponse sendResponse =
-          await sorobanServer.sendTransaction(transaction);
+      SendTransactionResponse sendResponse = await sorobanServer
+          .sendTransaction(transaction);
       assert(!sendResponse.isErrorResponse);
       assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-      GetTransactionResponse rpcTransactionResponse =
-          await pollStatus(sendResponse.hash!);
+      GetTransactionResponse rpcTransactionResponse = await pollStatus(
+        sendResponse.hash!,
+      );
       authContractWasmId = rpcTransactionResponse.getWasmId();
 
       assert(authContractWasmId != null);
@@ -287,18 +327,23 @@ void main() {
           Address.forAccountId(submitterId), authContractWasmId!);*/
       CreateContractWithConstructorHostFunction function =
           CreateContractWithConstructorHostFunction(
-              Address.forAccountId(submitterId), authContractWasmId!, []);
-      InvokeHostFunctionOperation operation =
-          InvokeHostFuncOpBuilder(function).build();
+            Address.forAccountId(submitterId),
+            authContractWasmId!,
+            [],
+          );
+      InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder(
+        function,
+      ).build();
 
       // build the transaction for creating the contract
-      Transaction transaction =
-          new TransactionBuilder(submitter).addOperation(operation).build();
+      Transaction transaction = new TransactionBuilder(
+        submitter,
+      ).addOperation(operation).build();
 
       // simulate first to obtain the transaction data + resource fee
       var request = new SimulateTransactionRequest(transaction);
-      SimulateTransactionResponse simulateResponse =
-          await sorobanServer.simulateTransaction(request);
+      SimulateTransactionResponse simulateResponse = await sorobanServer
+          .simulateTransaction(request);
       assert(!simulateResponse.isErrorResponse);
       assert(simulateResponse.resultError == null);
 
@@ -309,13 +354,14 @@ void main() {
       transaction.sign(submitterKeypair, network);
 
       // send transaction to soroban rpc server
-      SendTransactionResponse sendResponse =
-          await sorobanServer.sendTransaction(transaction);
+      SendTransactionResponse sendResponse = await sorobanServer
+          .sendTransaction(transaction);
       assert(!sendResponse.isErrorResponse);
       assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-      GetTransactionResponse rpcTransactionResponse =
-          await pollStatus(sendResponse.hash!);
+      GetTransactionResponse rpcTransactionResponse = await pollStatus(
+        sendResponse.hash!,
+      );
       authContractId = rpcTransactionResponse.getCreatedContractId();
       assert(authContractId != null);
     });
@@ -339,19 +385,23 @@ void main() {
       List<XdrSCVal> args = [invokerAddress.toXdrSCVal(), XdrSCVal.forU32(3)];
 
       InvokeContractHostFunction hostFunction = InvokeContractHostFunction(
-          authContractId!, functionName,
-          arguments: args);
+        authContractId!,
+        functionName,
+        arguments: args,
+      );
 
-      InvokeHostFunctionOperation operation =
-          InvokeHostFuncOpBuilder(hostFunction).build();
+      InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder(
+        hostFunction,
+      ).build();
 
-      Transaction transaction =
-          new TransactionBuilder(submitter).addOperation(operation).build();
+      Transaction transaction = new TransactionBuilder(
+        submitter,
+      ).addOperation(operation).build();
 
       // simulate first to obtain the transaction data + resource fee
       var request = new SimulateTransactionRequest(transaction);
-      SimulateTransactionResponse simulateResponse =
-          await sorobanServer.simulateTransaction(request);
+      SimulateTransactionResponse simulateResponse = await sorobanServer
+          .simulateTransaction(request);
 
       assert(simulateResponse.error == null);
       assert(simulateResponse.resultError == null);
@@ -364,8 +414,8 @@ void main() {
       // sign auth
       List<SorobanAuthorizationEntry>? auth = simulateResponse.sorobanAuth;
       assert(auth != null);
-      GetLatestLedgerResponse latestLedgerResponse =
-          await sorobanServer.getLatestLedger();
+      GetLatestLedgerResponse latestLedgerResponse = await sorobanServer
+          .getLatestLedger();
       for (SorobanAuthorizationEntry a in auth!) {
         // update signature expiration ledger
         a.credentials.innerAddressCredentials!.signatureExpirationLedger =
@@ -380,20 +430,24 @@ void main() {
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
 
       print("TX ENVELOPE: " + transactionEnvelopeXdr);
-      assert(transactionEnvelopeXdr ==
-          AbstractTransaction.fromEnvelopeXdrString(transactionEnvelopeXdr)
-              .toEnvelopeXdrBase64());
+      assert(
+        transactionEnvelopeXdr ==
+            AbstractTransaction.fromEnvelopeXdrString(
+              transactionEnvelopeXdr,
+            ).toEnvelopeXdrBase64(),
+      );
 
       // send the transaction
-      SendTransactionResponse sendResponse =
-          await sorobanServer.sendTransaction(transaction);
+      SendTransactionResponse sendResponse = await sorobanServer
+          .sendTransaction(transaction);
       assert(sendResponse.error == null);
       assert(sendResponse.hash != null);
       assert(sendResponse.status != null);
       assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-      GetTransactionResponse rpcTransactionResponse =
-          await pollStatus(sendResponse.hash!);
+      GetTransactionResponse rpcTransactionResponse = await pollStatus(
+        sendResponse.hash!,
+      );
       String status = rpcTransactionResponse.status!;
       assert(status == GetTransactionResponse.STATUS_SUCCESS);
 
@@ -402,27 +456,32 @@ void main() {
       print("Result: " + result.u32!.uint32.toString());
 
       // check horizon responses decoding
-      TransactionResponse transactionResponse =
-          await sdk.transactions.transaction(sendResponse.hash!);
+      TransactionResponse transactionResponse = await sdk.transactions
+          .transaction(sendResponse.hash!);
       assert(transactionResponse.operationCount == 1);
       assert(transactionEnvelopeXdr == transactionResponse.envelopeXdr);
 
       // check if meta can be parsed
       if (transactionResponse.resultMetaXdr != null) {
         XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
-            transactionResponse.resultMetaXdr!);
-        assert(meta.toBase64EncodedXdrString() ==
-            transactionResponse.resultMetaXdr!);
+          transactionResponse.resultMetaXdr!,
+        );
+        assert(
+          meta.toBase64EncodedXdrString() == transactionResponse.resultMetaXdr!,
+        );
       }
 
       // check operation response from horizon
-      Page<OperationResponse> operations =
-          await sdk.operations.forTransaction(sendResponse.hash!).execute();
+      Page<OperationResponse> operations = await sdk.operations
+          .forTransaction(sendResponse.hash!)
+          .execute();
       assert(operations.records.isNotEmpty);
       OperationResponse operationResponse = operations.records.first;
       if (operationResponse is InvokeHostFunctionOperationResponse) {
-        assert("HostFunctionTypeHostFunctionTypeInvokeContract" ==
-            operationResponse.function);
+        assert(
+          "HostFunctionTypeHostFunctionTypeInvokeContract" ==
+              operationResponse.function,
+        );
       } else {
         assert(false);
       }
@@ -443,19 +502,23 @@ void main() {
       List<XdrSCVal> args = [invokerAddress.toXdrSCVal(), XdrSCVal.forU32(3)];
 
       InvokeContractHostFunction hostFunction = InvokeContractHostFunction(
-          authContractId!, functionName,
-          arguments: args);
+        authContractId!,
+        functionName,
+        arguments: args,
+      );
 
-      InvokeHostFunctionOperation operation =
-          InvokeHostFuncOpBuilder(hostFunction).build();
+      InvokeHostFunctionOperation operation = InvokeHostFuncOpBuilder(
+        hostFunction,
+      ).build();
 
-      Transaction transaction =
-          new TransactionBuilder(invoker).addOperation(operation).build();
+      Transaction transaction = new TransactionBuilder(
+        invoker,
+      ).addOperation(operation).build();
 
       // simulate first to get transaction data
       var request = new SimulateTransactionRequest(transaction);
-      SimulateTransactionResponse simulateResponse =
-          await sorobanServer.simulateTransaction(request);
+      SimulateTransactionResponse simulateResponse = await sorobanServer
+          .simulateTransaction(request);
       assert(simulateResponse.error == null);
       assert(simulateResponse.resultError == null);
       assert(simulateResponse.footprint != null);
@@ -468,18 +531,22 @@ void main() {
 
       // check transaction xdr encoding and decoding back and forth
       String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
-      assert(transactionEnvelopeXdr ==
-          AbstractTransaction.fromEnvelopeXdrString(transactionEnvelopeXdr)
-              .toEnvelopeXdrBase64());
+      assert(
+        transactionEnvelopeXdr ==
+            AbstractTransaction.fromEnvelopeXdrString(
+              transactionEnvelopeXdr,
+            ).toEnvelopeXdrBase64(),
+      );
 
       // send the transaction
-      SendTransactionResponse sendResponse =
-          await sorobanServer.sendTransaction(transaction);
+      SendTransactionResponse sendResponse = await sorobanServer
+          .sendTransaction(transaction);
       assert(sendResponse.error == null);
       assert(sendResponse.status != SendTransactionResponse.STATUS_ERROR);
 
-      GetTransactionResponse rpcTransactionResponse =
-          await pollStatus(sendResponse.hash!);
+      GetTransactionResponse rpcTransactionResponse = await pollStatus(
+        sendResponse.hash!,
+      );
       String status = rpcTransactionResponse.status!;
       assert(status == GetTransactionResponse.STATUS_SUCCESS);
 

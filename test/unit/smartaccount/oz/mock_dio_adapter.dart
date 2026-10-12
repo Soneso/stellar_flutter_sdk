@@ -17,12 +17,12 @@ class MockDioAdapter implements dio.HttpClientAdapter {
   /// Constructs a mock adapter that always returns a `200 OK` response with
   /// the given JSON body.
   MockDioAdapter.json(String responseBody)
-      : _responseBody = responseBody,
-        _statusCode = 200,
-        _contentType = 'application/json',
-        _extraResponseHeaders = const <String, List<String>>{},
-        _throwOnFetch = null,
-        _responseDelay = Duration.zero;
+    : _responseBody = responseBody,
+      _statusCode = 200,
+      _contentType = 'application/json',
+      _extraResponseHeaders = const <String, List<String>>{},
+      _throwOnFetch = null,
+      _responseDelay = Duration.zero;
 
   /// Constructs a mock adapter that returns [responseBody] with the
   /// provided HTTP [statusCode] and [contentType]. Optional
@@ -37,34 +37,34 @@ class MockDioAdapter implements dio.HttpClientAdapter {
     Map<String, List<String>> extraResponseHeaders =
         const <String, List<String>>{},
     Duration responseDelay = Duration.zero,
-  })  : _responseBody = responseBody,
-        _statusCode = statusCode,
-        _contentType = contentType,
-        _extraResponseHeaders = extraResponseHeaders,
-        _throwOnFetch = null,
-        _responseDelay = responseDelay;
+  }) : _responseBody = responseBody,
+       _statusCode = statusCode,
+       _contentType = contentType,
+       _extraResponseHeaders = extraResponseHeaders,
+       _throwOnFetch = null,
+       _responseDelay = responseDelay;
 
   /// Constructs a mock adapter that throws [error] on every request. Used
   /// to simulate network failures and timeouts.
   MockDioAdapter.throwing(Object error)
-      : _responseBody = '',
-        _statusCode = 0,
-        _contentType = 'application/json',
-        _extraResponseHeaders = const <String, List<String>>{},
-        _throwOnFetch = error,
-        _responseDelay = Duration.zero;
+    : _responseBody = '',
+      _statusCode = 0,
+      _contentType = 'application/json',
+      _extraResponseHeaders = const <String, List<String>>{},
+      _throwOnFetch = error,
+      _responseDelay = Duration.zero;
 
   /// Constructs a mock adapter that waits [delay] before returning a
   /// `200 OK` response with the given JSON body. Used by cancellation
   /// tests to keep the request in flight long enough for the test to
   /// cancel its token.
   MockDioAdapter.delayed(String responseBody, Duration delay)
-      : _responseBody = responseBody,
-        _statusCode = 200,
-        _contentType = 'application/json',
-        _extraResponseHeaders = const <String, List<String>>{},
-        _throwOnFetch = null,
-        _responseDelay = delay;
+    : _responseBody = responseBody,
+      _statusCode = 200,
+      _contentType = 'application/json',
+      _extraResponseHeaders = const <String, List<String>>{},
+      _throwOnFetch = null,
+      _responseDelay = delay;
 
   final String _responseBody;
   final int _statusCode;
@@ -151,9 +151,7 @@ class MockDioAdapter implements dio.HttpClientAdapter {
       ];
       if (cancelFuture != null) {
         futures.add(
-          cancelFuture.then<Object?>(
-            (_) => _CancelSentinel.instance,
-          ),
+          cancelFuture.then<Object?>((_) => _CancelSentinel.instance),
         );
       }
       final winner = await Future.any(futures);

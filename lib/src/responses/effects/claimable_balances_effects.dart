@@ -50,19 +50,21 @@ class ClaimableBalanceCreatedEffectResponse extends EffectResponse {
   /// - [asset] Asset type and code of the claimable balance
   /// - [amount] Amount of the asset in the claimable balance
   ClaimableBalanceCreatedEffectResponse(
-      this.balanceId,
-      this.asset,
-      this.amount,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.balanceId,
+    this.asset,
+    this.amount,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory ClaimableBalanceCreatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       ClaimableBalanceCreatedEffectResponse(
           json['balance_id'],
           Asset.createFromCanonicalForm(json['asset'])!,
@@ -73,7 +75,8 @@ class ClaimableBalanceCreatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -125,20 +128,22 @@ class ClaimableBalanceClaimantCreatedEffectResponse extends EffectResponse {
   /// - [amount] Amount of the asset in the claimable balance
   /// - [predicate] Conditions that must be met to claim the balance
   ClaimableBalanceClaimantCreatedEffectResponse(
-      this.balanceId,
-      this.asset,
-      this.amount,
-      this.predicate,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.balanceId,
+    this.asset,
+    this.amount,
+    this.predicate,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory ClaimableBalanceClaimantCreatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       ClaimableBalanceClaimantCreatedEffectResponse(
           json['balance_id'],
           Asset.createFromCanonicalForm(json['asset'])!,
@@ -150,7 +155,8 @@ class ClaimableBalanceClaimantCreatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -198,19 +204,21 @@ class ClaimableBalanceClaimedEffectResponse extends EffectResponse {
   /// - [asset] Asset type and code of the claimed balance
   /// - [amount] Amount that was claimed
   ClaimableBalanceClaimedEffectResponse(
-      this.balanceId,
-      this.asset,
-      this.amount,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.balanceId,
+    this.asset,
+    this.amount,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory ClaimableBalanceClaimedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       ClaimableBalanceClaimedEffectResponse(
           json['balance_id'],
           Asset.createFromCanonicalForm(json['asset'])!,
@@ -221,7 +229,8 @@ class ClaimableBalanceClaimedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -260,17 +269,19 @@ class ClaimableBalanceClawedBackEffectResponse extends EffectResponse {
   /// Parameters:
   /// - [balanceId] Unique identifier of the clawed back claimable balance
   ClaimableBalanceClawedBackEffectResponse(
-      this.balanceId,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.balanceId,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory ClaimableBalanceClawedBackEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       ClaimableBalanceClawedBackEffectResponse(
           json['balance_id'],
           json['id'],
@@ -279,7 +290,8 @@ class ClaimableBalanceClawedBackEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }

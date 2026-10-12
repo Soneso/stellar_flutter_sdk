@@ -27,16 +27,16 @@ const String _credentialIdB64 = 'aGVsbG8tc21hcnQtYWNjb3VudA';
 /// Builds a connected kit with the supplied [contextRuleManager] and a
 /// mock transaction-operations layer. Returns the harness so tests can
 /// inspect captured submissions.
-({
-  FakePipelineKit kit,
-  MockOZTransactionOperations txOps,
-}) _buildHarness({
+({FakePipelineKit kit, MockOZTransactionOperations txOps}) _buildHarness({
   OZContextRuleManagerInterface? contextRuleManager,
 }) {
   final kit = FakePipelineKit(contextRuleManager: contextRuleManager);
   final txOps = MockOZTransactionOperations(kit);
   kit.setTransactionOperations(txOps);
-  kit.setConnected(credentialId: _credentialIdB64, contractId: _validContractId);
+  kit.setConnected(
+    credentialId: _credentialIdB64,
+    contractId: _validContractId,
+  );
   return (kit: kit, txOps: txOps);
 }
 
@@ -57,8 +57,7 @@ class _ScriptedRuleManager implements OZContextRuleManagerInterface {
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> signers,
     List<OZParsedContextRule> contextRules,
-  ) async =>
-      <int>[_rule.id];
+  ) async => <int>[_rule.id];
 
   @override
   Future<List<XdrSCVal>> getAllContextRules({int? maxScanId}) async =>
@@ -78,80 +77,78 @@ void main() {
 
   group('removeSignerBySigner', () {
     test(
-        'removeSigner_bySignerValue_resolvesToCorrectIdViaListContextRules',
-        () async {
-      // Given a context rule with three signers and known signerIds,
-      // verify that removing by signer value resolves to the correct
-      // numeric id and produces an identical XdrHostFunction to the
-      // ID-based removeSigner overload for the same target.
-      final signerA = OZDelegatedSigner(_accountAddressA);
-      final signerB = OZDelegatedSigner(_accountAddressB);
-      final signerC = OZDelegatedSigner(_accountAddressC);
+      'removeSigner_bySignerValue_resolvesToCorrectIdViaListContextRules',
+      () async {
+        // Given a context rule with three signers and known signerIds,
+        // verify that removing by signer value resolves to the correct
+        // numeric id and produces an identical XdrHostFunction to the
+        // ID-based removeSigner overload for the same target.
+        final signerA = OZDelegatedSigner(_accountAddressA);
+        final signerB = OZDelegatedSigner(_accountAddressB);
+        final signerC = OZDelegatedSigner(_accountAddressC);
 
-      final rule = OZParsedContextRule(
-        id: 0,
-        contextType: const OZContextRuleTypeDefault(),
-        name: 'rule',
-        signers: <OZSmartAccountSigner>[signerA, signerB, signerC],
-        signerIds: const <int>[10, 20, 30],
-        policies: const <String>[],
-        policyIds: const <int>[],
-      );
+        final rule = OZParsedContextRule(
+          id: 0,
+          contextType: const OZContextRuleTypeDefault(),
+          name: 'rule',
+          signers: <OZSmartAccountSigner>[signerA, signerB, signerC],
+          signerIds: const <int>[10, 20, 30],
+          policies: const <String>[],
+          policyIds: const <int>[],
+        );
 
-      final h = _buildHarness(contextRuleManager: _ScriptedRuleManager(rule));
-      final mgr = OZSignerManager(h.kit);
+        final h = _buildHarness(contextRuleManager: _ScriptedRuleManager(rule));
+        final mgr = OZSignerManager(h.kit);
 
-      // Resolve signerB to its id via removeSignerBySigner.
-      await mgr.removeSignerBySigner(
-        contextRuleId: 0,
-        signer: signerB,
-      );
+        // Resolve signerB to its id via removeSignerBySigner.
+        await mgr.removeSignerBySigner(contextRuleId: 0, signer: signerB);
 
-      // For comparison, call the ID-based overload directly.
-      await mgr.removeSigner(contextRuleId: 0, signerId: 20);
+        // For comparison, call the ID-based overload directly.
+        await mgr.removeSigner(contextRuleId: 0, signerId: 20);
 
-      expect(h.txOps.submitCalls.length, 2);
-      final first = h.txOps.submitCalls[0].hostFunction.invokeContract!;
-      final second = h.txOps.submitCalls[1].hostFunction.invokeContract!;
+        expect(h.txOps.submitCalls.length, 2);
+        final first = h.txOps.submitCalls[0].hostFunction.invokeContract!;
+        final second = h.txOps.submitCalls[1].hostFunction.invokeContract!;
 
-      // Same function name, same arg shape (U32, U32), same values.
-      expect(first.functionName, second.functionName);
-      expect(first.functionName, 'remove_signer');
-      expect(first.args.length, 2);
-      expect(first.args[0].u32?.uint32, second.args[0].u32?.uint32);
-      expect(first.args[1].u32?.uint32, second.args[1].u32?.uint32);
-      expect(first.args[1].u32?.uint32, 20);
-    });
+        // Same function name, same arg shape (U32, U32), same values.
+        expect(first.functionName, second.functionName);
+        expect(first.functionName, 'remove_signer');
+        expect(first.args.length, 2);
+        expect(first.args[0].u32?.uint32, second.args[0].u32?.uint32);
+        expect(first.args[1].u32?.uint32, second.args[1].u32?.uint32);
+        expect(first.args[1].u32?.uint32, 20);
+      },
+    );
 
-    test('removeSigner_bySignerValue_signerNotInRule_throwsValidation',
-        () async {
-      final ruleSigner = OZDelegatedSigner(_accountAddressA);
-      final missingSigner = OZDelegatedSigner(_accountAddressB);
+    test(
+      'removeSigner_bySignerValue_signerNotInRule_throwsValidation',
+      () async {
+        final ruleSigner = OZDelegatedSigner(_accountAddressA);
+        final missingSigner = OZDelegatedSigner(_accountAddressB);
 
-      final rule = OZParsedContextRule(
-        id: 0,
-        contextType: const OZContextRuleTypeDefault(),
-        name: 'rule',
-        signers: <OZSmartAccountSigner>[ruleSigner],
-        signerIds: const <int>[10],
-        policies: const <String>[],
-        policyIds: const <int>[],
-      );
+        final rule = OZParsedContextRule(
+          id: 0,
+          contextType: const OZContextRuleTypeDefault(),
+          name: 'rule',
+          signers: <OZSmartAccountSigner>[ruleSigner],
+          signerIds: const <int>[10],
+          policies: const <String>[],
+          policyIds: const <int>[],
+        );
 
-      final h = _buildHarness(contextRuleManager: _ScriptedRuleManager(rule));
-      final mgr = OZSignerManager(h.kit);
+        final h = _buildHarness(contextRuleManager: _ScriptedRuleManager(rule));
+        final mgr = OZSignerManager(h.kit);
 
-      await expectLater(
-        () => mgr.removeSignerBySigner(
-          contextRuleId: 0,
-          signer: missingSigner,
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
+        await expectLater(
+          () =>
+              mgr.removeSignerBySigner(contextRuleId: 0, signer: missingSigner),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
 
-      // No submission should have happened.
-      expect(h.txOps.submitCalls, isEmpty);
-    });
+        // No submission should have happened.
+        expect(h.txOps.submitCalls, isEmpty);
+      },
+    );
   });
 
   // =======================================================================
@@ -159,21 +156,23 @@ void main() {
   // =======================================================================
 
   group('OZSignerManager CRUD shape', () {
-    test('addPasskey rejects a public key whose first byte is not 0x04',
-        () async {
-      final h = _buildHarness();
-      final mgr = OZSignerManager(h.kit);
-      final pk = Uint8List(65);
-      pk[0] = 0x05;
-      await expectLater(
-        () => mgr.addPasskey(
-          contextRuleId: 0,
-          publicKey: pk,
-          credentialId: Uint8List.fromList(<int>[1, 2, 3]),
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+    test(
+      'addPasskey rejects a public key whose first byte is not 0x04',
+      () async {
+        final h = _buildHarness();
+        final mgr = OZSignerManager(h.kit);
+        final pk = Uint8List(65);
+        pk[0] = 0x05;
+        await expectLater(
+          () => mgr.addPasskey(
+            contextRuleId: 0,
+            publicKey: pk,
+            credentialId: Uint8List.fromList(<int>[1, 2, 3]),
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
 
     test('addPasskey rejects an empty credential id', () async {
       final h = _buildHarness();
@@ -190,123 +189,140 @@ void main() {
       );
     });
 
-    test('addEd25519 rejects a verifier address that is not a C-address',
-        () async {
-      final h = _buildHarness();
-      final mgr = OZSignerManager(h.kit);
-      await expectLater(
-        () => mgr.addEd25519(
-          contextRuleId: 0,
-          verifierAddress: _accountAddressA,
-          publicKey: Uint8List(32),
-        ),
-        throwsA(isA<SmartAccountInvalidAddress>()),
-      );
-    });
-
-    test('addDelegated emits add_signer with the correct address payload',
-        () async {
-      final h = _buildHarness();
-      final mgr = OZSignerManager(h.kit);
-      await mgr.addDelegated(contextRuleId: 0, address: _accountAddressA);
-      final args = h.txOps.submitCalls.single.hostFunction.invokeContract!.args;
-      expect(args[1].vec![0].sym, 'Delegated');
-      expect(args[1].vec![1].discriminant, XdrSCValType.SCV_ADDRESS);
-    });
-
-    test('addEd25519 emits add_signer with External + 32-byte keyData',
-        () async {
-      final h = _buildHarness();
-      final mgr = OZSignerManager(h.kit);
-      await mgr.addEd25519(
-        contextRuleId: 0,
-        verifierAddress: _verifierContract,
-        publicKey: Uint8List(32),
-      );
-      final args = h.txOps.submitCalls.single.hostFunction.invokeContract!.args;
-      expect(args[1].vec![0].sym, 'External');
-      expect(args[1].vec![2].discriminant, XdrSCValType.SCV_BYTES);
-      expect(args[1].vec![2].bytes!.sCBytes.length, 32);
-    });
+    test(
+      'addEd25519 rejects a verifier address that is not a C-address',
+      () async {
+        final h = _buildHarness();
+        final mgr = OZSignerManager(h.kit);
+        await expectLater(
+          () => mgr.addEd25519(
+            contextRuleId: 0,
+            verifierAddress: _accountAddressA,
+            publicKey: Uint8List(32),
+          ),
+          throwsA(isA<SmartAccountInvalidAddress>()),
+        );
+      },
+    );
 
     test(
-        'addPasskey emits add_signer with External + 65+credentialId.length keyData',
-        () async {
-      final h = _buildHarness();
-      final mgr = OZSignerManager(h.kit);
-      final pk = Uint8List(65);
-      pk[0] = 0x04;
-      final credentialId = Uint8List.fromList(<int>[1, 2, 3, 4, 5]);
-      await mgr.addPasskey(
-        contextRuleId: 0,
-        publicKey: pk,
-        credentialId: credentialId,
-      );
-      final args = h.txOps.submitCalls.single.hostFunction.invokeContract!.args;
-      expect(args[1].vec![0].sym, 'External');
-      // keyData is publicKey || credentialId.
-      expect(args[1].vec![2].bytes!.sCBytes.length, 65 + 5);
-    });
+      'addDelegated emits add_signer with the correct address payload',
+      () async {
+        final h = _buildHarness();
+        final mgr = OZSignerManager(h.kit);
+        await mgr.addDelegated(contextRuleId: 0, address: _accountAddressA);
+        final args =
+            h.txOps.submitCalls.single.hostFunction.invokeContract!.args;
+        expect(args[1].vec![0].sym, 'Delegated');
+        expect(args[1].vec![1].discriminant, XdrSCValType.SCV_ADDRESS);
+      },
+    );
 
-    test('removeSigner ID-overload arg order is (contextRuleId, signerId)',
-        () async {
-      final h = _buildHarness();
-      final mgr = OZSignerManager(h.kit);
-      await mgr.removeSigner(contextRuleId: 9, signerId: 13);
-      final args = h.txOps.submitCalls.single.hostFunction.invokeContract!.args;
-      expect(args.length, 2);
-      expect(args[0].u32?.uint32, 9);
-      expect(args[1].u32?.uint32, 13);
-    });
-
-    test('addPasskey rejects a public key whose length is not 65 bytes',
-        () async {
-      final h = _buildHarness();
-      final mgr = OZSignerManager(h.kit);
-      final shortKey = Uint8List(64);
-      shortKey[0] = 0x04;
-      await expectLater(
-        () => mgr.addPasskey(
-          contextRuleId: 0,
-          publicKey: shortKey,
-          credentialId: Uint8List.fromList(<int>[1]),
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-      // Repeat with 66 bytes — same expectation.
-      final longKey = Uint8List(66);
-      longKey[0] = 0x04;
-      await expectLater(
-        () => mgr.addPasskey(
-          contextRuleId: 0,
-          publicKey: longKey,
-          credentialId: Uint8List.fromList(<int>[1]),
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
-
-    test('addEd25519 rejects a public key whose length is not 32 bytes',
-        () async {
-      final h = _buildHarness();
-      final mgr = OZSignerManager(h.kit);
-      await expectLater(
-        () => mgr.addEd25519(
+    test(
+      'addEd25519 emits add_signer with External + 32-byte keyData',
+      () async {
+        final h = _buildHarness();
+        final mgr = OZSignerManager(h.kit);
+        await mgr.addEd25519(
           contextRuleId: 0,
           verifierAddress: _verifierContract,
-          publicKey: Uint8List(31),
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-      await expectLater(
-        () => mgr.addEd25519(
+          publicKey: Uint8List(32),
+        );
+        final args =
+            h.txOps.submitCalls.single.hostFunction.invokeContract!.args;
+        expect(args[1].vec![0].sym, 'External');
+        expect(args[1].vec![2].discriminant, XdrSCValType.SCV_BYTES);
+        expect(args[1].vec![2].bytes!.sCBytes.length, 32);
+      },
+    );
+
+    test(
+      'addPasskey emits add_signer with External + 65+credentialId.length keyData',
+      () async {
+        final h = _buildHarness();
+        final mgr = OZSignerManager(h.kit);
+        final pk = Uint8List(65);
+        pk[0] = 0x04;
+        final credentialId = Uint8List.fromList(<int>[1, 2, 3, 4, 5]);
+        await mgr.addPasskey(
           contextRuleId: 0,
-          verifierAddress: _verifierContract,
-          publicKey: Uint8List(33),
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+          publicKey: pk,
+          credentialId: credentialId,
+        );
+        final args =
+            h.txOps.submitCalls.single.hostFunction.invokeContract!.args;
+        expect(args[1].vec![0].sym, 'External');
+        // keyData is publicKey || credentialId.
+        expect(args[1].vec![2].bytes!.sCBytes.length, 65 + 5);
+      },
+    );
+
+    test(
+      'removeSigner ID-overload arg order is (contextRuleId, signerId)',
+      () async {
+        final h = _buildHarness();
+        final mgr = OZSignerManager(h.kit);
+        await mgr.removeSigner(contextRuleId: 9, signerId: 13);
+        final args =
+            h.txOps.submitCalls.single.hostFunction.invokeContract!.args;
+        expect(args.length, 2);
+        expect(args[0].u32?.uint32, 9);
+        expect(args[1].u32?.uint32, 13);
+      },
+    );
+
+    test(
+      'addPasskey rejects a public key whose length is not 65 bytes',
+      () async {
+        final h = _buildHarness();
+        final mgr = OZSignerManager(h.kit);
+        final shortKey = Uint8List(64);
+        shortKey[0] = 0x04;
+        await expectLater(
+          () => mgr.addPasskey(
+            contextRuleId: 0,
+            publicKey: shortKey,
+            credentialId: Uint8List.fromList(<int>[1]),
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+        // Repeat with 66 bytes — same expectation.
+        final longKey = Uint8List(66);
+        longKey[0] = 0x04;
+        await expectLater(
+          () => mgr.addPasskey(
+            contextRuleId: 0,
+            publicKey: longKey,
+            credentialId: Uint8List.fromList(<int>[1]),
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
+
+    test(
+      'addEd25519 rejects a public key whose length is not 32 bytes',
+      () async {
+        final h = _buildHarness();
+        final mgr = OZSignerManager(h.kit);
+        await expectLater(
+          () => mgr.addEd25519(
+            contextRuleId: 0,
+            verifierAddress: _verifierContract,
+            publicKey: Uint8List(31),
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+        await expectLater(
+          () => mgr.addEd25519(
+            contextRuleId: 0,
+            verifierAddress: _verifierContract,
+            publicKey: Uint8List(33),
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
 
     test('addDelegated rejects an obviously invalid address', () async {
       final h = _buildHarness();
@@ -344,10 +360,7 @@ void main() {
       final mgr = OZSignerManager(h.kit);
 
       await expectLater(
-        () => mgr.removeSignerBySigner(
-          contextRuleId: 0,
-          signer: signerB,
-        ),
+        () => mgr.removeSignerBySigner(contextRuleId: 0, signer: signerB),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
 
@@ -390,10 +403,7 @@ void main() {
       final mgr = OZSignerManager(kit);
 
       await expectLater(
-        () => mgr.addDelegated(
-          contextRuleId: 0,
-          address: _accountAddressA,
-        ),
+        () => mgr.addDelegated(contextRuleId: 0, address: _accountAddressA),
         throwsA(isA<SmartAccountWalletNotConnected>()),
       );
       expect(txOps.submitCalls, isEmpty);
@@ -430,74 +440,70 @@ void main() {
     });
 
     test(
-        'addNewPasskeySigner_notConnected_throwsWalletNotConnectedBeforeWebAuthn',
-        () async {
-      // why: addNewPasskeySigner is the end-to-end registration entry
-      // point. Pinning the requireConnected gate here keeps it in place
-      // even if the kit-side implementation is later refactored to do
-      // its WebAuthn ceremony before the connection check.
-      final kit = FakePipelineKit();
-      final txOps = MockOZTransactionOperations(kit);
-      kit.setTransactionOperations(txOps);
-      final mgr = OZSignerManager(kit);
+      'addNewPasskeySigner_notConnected_throwsWalletNotConnectedBeforeWebAuthn',
+      () async {
+        // why: addNewPasskeySigner is the end-to-end registration entry
+        // point. Pinning the requireConnected gate here keeps it in place
+        // even if the kit-side implementation is later refactored to do
+        // its WebAuthn ceremony before the connection check.
+        final kit = FakePipelineKit();
+        final txOps = MockOZTransactionOperations(kit);
+        kit.setTransactionOperations(txOps);
+        final mgr = OZSignerManager(kit);
 
-      await expectLater(
-        () => mgr.addNewPasskeySigner(
-          contextRuleId: 0,
-          userName: 'test-user',
-        ),
-        throwsA(isA<SmartAccountWalletNotConnected>()),
-      );
-      expect(txOps.submitCalls, isEmpty);
-    });
-
-    test(
-        'addNewPasskeySigner_noWebAuthnProvider_throwsWebAuthnNotSupported',
-        () async {
-      final h = _buildHarness();
-      final mgr = OZSignerManager(h.kit);
-      // Kit config has no webauthnProvider (default null).
-
-      await expectLater(
-        () => mgr.addNewPasskeySigner(
-          contextRuleId: 0,
-          userName: 'user',
-        ),
-        throwsA(isA<WebAuthnNotSupported>()),
-      );
-    });
+        await expectLater(
+          () =>
+              mgr.addNewPasskeySigner(contextRuleId: 0, userName: 'test-user'),
+          throwsA(isA<SmartAccountWalletNotConnected>()),
+        );
+        expect(txOps.submitCalls, isEmpty);
+      },
+    );
 
     test(
-        'addNewPasskeySigner_registrationThrows_wrapsAsRegistrationFailed',
-        () async {
-      final webauthn = RecordingWebAuthnProvider();
-      webauthn.registerResponses
-          .add(WebAuthnException.registrationFailed('simulated failure'));
+      'addNewPasskeySigner_noWebAuthnProvider_throwsWebAuthnNotSupported',
+      () async {
+        final h = _buildHarness();
+        final mgr = OZSignerManager(h.kit);
+        // Kit config has no webauthnProvider (default null).
 
-      final kit = FakePipelineKit(
-        config: OZSmartAccountConfig(
-          rpcUrl: 'https://soroban-testnet.stellar.org',
-          networkPassphrase: Network.TESTNET.networkPassphrase,
-          accountWasmHash: '0' * 64,
-          webauthnVerifierAddress:
-              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
-          webauthnProvider: webauthn,
-        ),
-      );
-      kit.setConnected(
-        credentialId: _credentialIdB64,
-        contractId: _validContractId,
-      );
-      final mgr = OZSignerManager(kit);
+        await expectLater(
+          () => mgr.addNewPasskeySigner(contextRuleId: 0, userName: 'user'),
+          throwsA(isA<WebAuthnNotSupported>()),
+        );
+      },
+    );
 
-      await expectLater(
-        () => mgr.addNewPasskeySigner(
-          contextRuleId: 0,
-          userName: 'user',
-        ),
-        throwsA(isA<WebAuthnRegistrationFailed>()),
-      );
-    });
+    test(
+      'addNewPasskeySigner_registrationThrows_wrapsAsRegistrationFailed',
+      () async {
+        final webauthn = RecordingWebAuthnProvider();
+        webauthn.registerResponses.add(
+          WebAuthnException.registrationFailed('simulated failure'),
+        );
+
+        final kit = FakePipelineKit(
+          config: OZSmartAccountConfig(
+            rpcUrl: 'https://soroban-testnet.stellar.org',
+            networkPassphrase: Network.TESTNET.networkPassphrase,
+            accountWasmHash: '0' * 64,
+            webauthnVerifierAddress:
+                'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+            webauthnProvider: webauthn,
+          ),
+        );
+        kit.setConnected(
+          credentialId: _credentialIdB64,
+          contractId: _validContractId,
+        );
+        final mgr = OZSignerManager(kit);
+
+        await expectLater(
+          () => mgr.addNewPasskeySigner(contextRuleId: 0, userName: 'user'),
+          throwsA(isA<WebAuthnRegistrationFailed>()),
+        );
+      },
+    );
   });
 
   group('OZAddPasskeySignerResult equality and hashCode', () {
@@ -635,8 +641,9 @@ void main() {
       validKey[0] = 0x04;
       // keyData = publicKey (65) + credentialId (192) = 257 bytes, one over
       // the OZConstants.maxExternalKeySize limit.
-      final credentialId =
-          Uint8List(OZConstants.maxExternalKeySize + 1 - validKey.length);
+      final credentialId = Uint8List(
+        OZConstants.maxExternalKeySize + 1 - validKey.length,
+      );
 
       await expectLater(
         () => mgr.addPasskey(
@@ -681,8 +688,10 @@ void main() {
     test('addDelegated_withSelectedSigners_routesToMultiSigner', () async {
       final h = _buildHarness();
       final mockMulti = MockOZMultiSignerManager(h.kit);
-      mockMulti.submitWithMultipleSignersDefault =
-          const OZTransactionResult(success: true, hash: 'd');
+      mockMulti.submitWithMultipleSignersDefault = const OZTransactionResult(
+        success: true,
+        hash: 'd',
+      );
       h.kit.setMultiSignerManager(mockMulti);
       final mgr = OZSignerManager(h.kit);
 
@@ -698,8 +707,10 @@ void main() {
     test('addEd25519_withSelectedSigners_routesToMultiSigner', () async {
       final h = _buildHarness();
       final mockMulti = MockOZMultiSignerManager(h.kit);
-      mockMulti.submitWithMultipleSignersDefault =
-          const OZTransactionResult(success: true, hash: 'e');
+      mockMulti.submitWithMultipleSignersDefault = const OZTransactionResult(
+        success: true,
+        hash: 'e',
+      );
       h.kit.setMultiSignerManager(mockMulti);
       final mgr = OZSignerManager(h.kit);
 

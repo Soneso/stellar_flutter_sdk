@@ -56,11 +56,8 @@ class OZAddPasskeySignerResult {
   }
 
   @override
-  int get hashCode => Object.hash(
-        credentialId,
-        Object.hashAll(publicKey),
-        transactionResult,
-      );
+  int get hashCode =>
+      Object.hash(credentialId, Object.hashAll(publicKey), transactionResult);
 
   @override
   String toString() =>
@@ -138,7 +135,8 @@ class OZSignerManager {
     final webauthnProvider = _kit.config.webauthnProvider;
     if (webauthnProvider == null) {
       throw WebAuthnException.notSupported(
-        details: 'No WebAuthnProvider configured. Set webauthnProvider '
+        details:
+            'No WebAuthnProvider configured. Set webauthnProvider '
             'in config before calling addNewPasskeySigner().',
       );
     }
@@ -154,14 +152,12 @@ class OZSignerManager {
         userName: userName,
       );
     } catch (e) {
-      throw WebAuthnException.registrationFailed(
-        e.toString(),
-        cause: e,
-      );
+      throw WebAuthnException.registrationFailed(e.toString(), cause: e);
     }
 
-    final credentialIdBase64url =
-        ozBase64UrlEncode(registrationResult.credentialId);
+    final credentialIdBase64url = ozBase64UrlEncode(
+      registrationResult.credentialId,
+    );
 
     final credential = await _credentialManager.createPendingCredential(
       credentialId: credentialIdBase64url,
@@ -373,7 +369,12 @@ class OZSignerManager {
       ),
     );
 
-    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(
+      _kit as OZSmartAccountWalletKitInterface,
+      hostFunction,
+      selectedSigners,
+      forceMethod,
+    );
   }
 
   /// Removes a signer from [contextRuleId] by matching the [signer]
@@ -468,7 +469,11 @@ class OZSignerManager {
       ),
     );
 
-    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(
+      _kit as OZSmartAccountWalletKitInterface,
+      hostFunction,
+      selectedSigners,
+      forceMethod,
+    );
   }
-
 }

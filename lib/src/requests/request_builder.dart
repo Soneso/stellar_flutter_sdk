@@ -186,7 +186,7 @@ abstract class RequestBuilder {
   late Map<String, String> queryParameters;
   static final Map<String, String> headers = Map<String, String>.unmodifiable({
     "X-Client-Name": "stellar_flutter_sdk",
-    "X-Client-Version": StellarSDK.versionNumber
+    "X-Client-Version": StellarSDK.versionNumber,
   });
 
   /// Creates a new RequestBuilder for Horizon API queries.
@@ -199,7 +199,10 @@ abstract class RequestBuilder {
   /// This is a base class constructor. Subclasses implement specific
   /// endpoint builders (accounts, transactions, payments, etc.).
   RequestBuilder(
-      http.Client httpClient, Uri serverURI, List<String>? defaultSegment) {
+    http.Client httpClient,
+    Uri serverURI,
+    List<String>? defaultSegment,
+  ) {
     this.httpClient = httpClient;
     uriBuilder = serverURI;
     _segments = [];
@@ -221,7 +224,8 @@ abstract class RequestBuilder {
       return XdrClaimableBalanceID.forId(claimableBalanceId).paddedBalanceIdHex;
     } on FormatException catch (e) {
       throw ArgumentError(
-          "invalid claimable balance id: $claimableBalanceId (${e.message})");
+        "invalid claimable balance id: $claimableBalanceId (${e.message})",
+      );
     }
   }
 
@@ -234,10 +238,12 @@ abstract class RequestBuilder {
   static String liquidityPoolIdHorizonHex(String liquidityPoolId) {
     try {
       return Util.bytesToHex(
-          Util.liquidityPoolIdToXdrHash(liquidityPoolId).hash);
+        Util.liquidityPoolIdToXdrHash(liquidityPoolId).hash,
+      );
     } on FormatException catch (e) {
       throw ArgumentError(
-          "invalid liquidity pool id: $liquidityPoolId (${e.message})");
+        "invalid liquidity pool id: $liquidityPoolId (${e.message})",
+      );
     }
   }
 
@@ -346,18 +352,12 @@ abstract class RequestBuilder {
 
     if (_segments.length > 0) {
       build = build.replace(
-        pathSegments: [
-          ...build.pathSegments,
-          ..._segments,
-        ],
+        pathSegments: [...build.pathSegments, ..._segments],
       );
     }
     if (queryParameters.length > 0) {
       build = build.replace(
-        queryParameters: {
-          ...build.queryParameters,
-          ...queryParameters,
-        },
+        queryParameters: {...build.queryParameters, ...queryParameters},
       );
     }
 
@@ -427,10 +427,7 @@ abstract class RequestBuilder {
         return;
       }
       source?.close();
-      source = await EventSource.connect(
-        this.buildUri(),
-        client: httpClient,
-      );
+      source = await EventSource.connect(this.buildUri(), client: httpClient);
       source!.listen((Event event) async {
         if (cancelled) {
           return null;

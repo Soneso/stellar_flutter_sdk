@@ -147,14 +147,16 @@ class PBKDF2 {
   /// - [iterationCount] Number of PBKDF2 iterations (defaults to 2048 per BIP-39)
   /// - [desiredKeyLength] Length of derived key in bytes (defaults to 64 for 512-bit seed)
   /// - [salt] Salt string for key derivation (defaults to "mnemonic", often with passphrase appended)
-  PBKDF2(
-      {this.blockLength = MnemonicConstants.PBKDF2_BLOCK_LENGTH_BYTES,
-      this.iterationCount = MnemonicConstants.PBKDF2_ITERATION_COUNT,
-      this.desiredKeyLength = MnemonicConstants.PBKDF2_KEY_LENGTH_BYTES,
-      String salt = "mnemonic"}) {
+  PBKDF2({
+    this.blockLength = MnemonicConstants.PBKDF2_BLOCK_LENGTH_BYTES,
+    this.iterationCount = MnemonicConstants.PBKDF2_ITERATION_COUNT,
+    this.desiredKeyLength = MnemonicConstants.PBKDF2_KEY_LENGTH_BYTES,
+    String salt = "mnemonic",
+  }) {
     _salt = Uint8List.fromList(utf8.encode(salt));
-    _derivator = new PBKDF2KeyDerivator(new HMac(new SHA512Digest(), blockLength))
-      ..init(new Pbkdf2Parameters(_salt, iterationCount, desiredKeyLength));
+    _derivator = new PBKDF2KeyDerivator(
+      new HMac(new SHA512Digest(), blockLength),
+    )..init(new Pbkdf2Parameters(_salt, iterationCount, desiredKeyLength));
   }
 
   /// Derives 64-byte seed from mnemonic using PBKDF2-HMAC-SHA512.
@@ -199,8 +201,11 @@ Uint8List _randomBytes(int size) {
 /// - [wordList] Word list for the mnemonic language
 ///
 /// Returns: Space-separated mnemonic phrase
-String generateMnemonic(
-    {int strength = MnemonicConstants.MNEMONIC_ENTROPY_BITS_12_WORDS, RandomBytes randomBytes = _randomBytes, required List<String> wordList}) {
+String generateMnemonic({
+  int strength = MnemonicConstants.MNEMONIC_ENTROPY_BITS_12_WORDS,
+  RandomBytes randomBytes = _randomBytes,
+  required List<String> wordList,
+}) {
   assert(strength % MnemonicConstants.MNEMONIC_ENTROPY_MULTIPLE_BITS == 0);
   final entropy = randomBytes(strength ~/ 8);
   HexCodec hexCodec = HexCodec();
@@ -227,9 +232,14 @@ String entropyToMnemonic(String entropyString, List<String> wordlist) {
   final checksumBits = _deriveChecksumBits(Uint8List.fromList(entropy));
   final bits = entropyBits + checksumBits;
   final regex = new RegExp(r".{1,11}", caseSensitive: false, multiLine: false);
-  final chunks = regex.allMatches(bits).map((match) => match.group(0)).toList(growable: false);
+  final chunks = regex
+      .allMatches(bits)
+      .map((match) => match.group(0))
+      .toList(growable: false);
   //List<String> wordlist = WordList.englishWords();
-  String words = chunks.map((binary) => wordlist[_binaryToByte(binary!)]).join(' ');
+  String words = chunks
+      .map((binary) => wordlist[_binaryToByte(binary!)])
+      .join(' ');
   return words;
 }
 
@@ -277,9 +287,11 @@ Uint8List mnemonicToSeed(String mnemonic, {String passphrase = ''}) {
 ///
 /// Returns: 128-character hex string (64 bytes / 512 bits)
 String mnemonicToSeedHex(String mnemonic, {String passphrase = ''}) {
-  return mnemonicToSeed(mnemonic, passphrase: passphrase).map((byte) {
-    return byte.toRadixString(16).padLeft(2, '0');
-  }).join('');
+  return mnemonicToSeed(mnemonic, passphrase: passphrase)
+      .map((byte) {
+        return byte.toRadixString(16).padLeft(2, '0');
+      })
+      .join('');
 }
 
 /// Validates a BIP-39 mnemonic phrase.
@@ -318,34 +330,43 @@ String mnemonicToEntropy(mnemonic, List<String> wordList) {
   }
   //final wordlist = WordList.englishWords();
   // convert word indices to 11 bit binary strings
-  final bits = words.map((word) {
-    final index = wordList.indexOf(word);
-    if (index == -1) {
-      throw new ArgumentError('Invalid mnemonic');
-    }
-    return index.toRadixString(2).padLeft(11, '0');
-  }).join('');
+  final bits = words
+      .map((word) {
+        final index = wordList.indexOf(word);
+        if (index == -1) {
+          throw new ArgumentError('Invalid mnemonic');
+        }
+        return index.toRadixString(2).padLeft(11, '0');
+      })
+      .join('');
   // split the binary string into ENT/CS
-  final dividerIndex = (bits.length / MnemonicConstants.MNEMONIC_DIVIDER_RATIO).floor() * MnemonicConstants.MNEMONIC_ENTROPY_MULTIPLE_BITS;
+  final dividerIndex =
+      (bits.length / MnemonicConstants.MNEMONIC_DIVIDER_RATIO).floor() *
+      MnemonicConstants.MNEMONIC_ENTROPY_MULTIPLE_BITS;
   final entropyBits = bits.substring(0, dividerIndex);
   final checksumBits = bits.substring(dividerIndex);
 
   // calculate the checksum and compare
   final regex = RegExp(r".{1,8}");
-  final entropyBytes = Uint8List.fromList(regex
-      .allMatches(entropyBits)
-      .map((match) => _binaryToByte(match.group(0)!))
-      .toList(growable: false));
+  final entropyBytes = Uint8List.fromList(
+    regex
+        .allMatches(entropyBits)
+        .map((match) => _binaryToByte(match.group(0)!))
+        .toList(growable: false),
+  );
   if (entropyBytes.length < MnemonicConstants.MNEMONIC_MIN_ENTROPY_BYTES ||
       entropyBytes.length > MnemonicConstants.MNEMONIC_MAX_ENTROPY_BYTES ||
-      entropyBytes.length % MnemonicConstants.MNEMONIC_ENTROPY_MULTIPLE_BYTES != 0) {
+      entropyBytes.length % MnemonicConstants.MNEMONIC_ENTROPY_MULTIPLE_BYTES !=
+          0) {
     throw StateError('Invalid entropy');
   }
   final newChecksum = _deriveChecksumBits(entropyBytes);
   if (newChecksum != checksumBits) {
     throw StateError('Invalid mnemonic checksum');
   }
-  return entropyBytes.map((byte) {
-    return byte.toRadixString(16).padLeft(2, '0');
-  }).join('');
+  return entropyBytes
+      .map((byte) {
+        return byte.toRadixString(16).padLeft(2, '0');
+      })
+      .join('');
 }

@@ -96,9 +96,10 @@ class ClawbackOperation extends Operation {
   /// Returns: A builder configured with asset, from account, and amount from the XDR.
   static ClawbackOperationBuilder builder(XdrClawbackOp op) {
     return ClawbackOperationBuilder.forMuxedFromAccount(
-        Asset.fromXdr(op.asset),
-        MuxedAccount.fromXdr(op.from),
-        Util.stroopsToDecimalString(op.amount.int64));
+      Asset.fromXdr(op.asset),
+      MuxedAccount.fromXdr(op.from),
+      Util.stroopsToDecimalString(op.amount.int64),
+    );
   }
 }
 
@@ -139,7 +140,10 @@ class ClawbackOperationBuilder
   /// - [_from] MuxedAccount of the account from which the asset will be clawed back.
   /// - [_amount] The amount to claw back in decimal string format.
   ClawbackOperationBuilder.forMuxedFromAccount(
-      this._asset, this._from, this._amount);
+    this._asset,
+    this._from,
+    this._amount,
+  );
 
   /// Builds the clawback operation.
   ///

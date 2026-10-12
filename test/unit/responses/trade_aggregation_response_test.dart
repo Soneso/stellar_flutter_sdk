@@ -24,7 +24,7 @@ void main() {
         'close_r': {'n': 13, 'd': 25},
         'rateLimitLimit': 200,
         'rateLimitRemaining': 150,
-        'rateLimitReset': 1609459800
+        'rateLimitReset': 1609459800,
       };
 
       final response = TradeAggregationResponse.fromJson(json);
@@ -121,7 +121,7 @@ void main() {
         'core_supported_protocol_version': 20,
         'rateLimitLimit': 300,
         'rateLimitRemaining': 250,
-        'rateLimitReset': 1609459800
+        'rateLimitReset': 1609459800,
       };
 
       final response = RootResponse.fromJson(json);
@@ -130,12 +130,16 @@ void main() {
       expect(response.stellarCoreVersion, equals('v19.14.0'));
       expect(response.ingestLatestLedger, equals(123456));
       expect(response.historyLatestLedger, equals(123456));
-      expect(response.historyLatestLedgerClosedAt,
-          equals('2025-10-05T12:34:56Z'));
+      expect(
+        response.historyLatestLedgerClosedAt,
+        equals('2025-10-05T12:34:56Z'),
+      );
       expect(response.historyElderLedger, equals(2));
       expect(response.coreLatestLedger, equals(123456));
-      expect(response.networkPassphrase,
-          equals('Test SDF Network ; September 2015'));
+      expect(
+        response.networkPassphrase,
+        equals('Test SDF Network ; September 2015'),
+      );
       expect(response.currentProtocolVersion, equals(20));
       expect(response.supportedProtocolVersion, equals(20));
       expect(response.coreSupportedProtocolVersion, equals(20));
@@ -165,8 +169,10 @@ void main() {
       expect(response.stellarCoreVersion, equals('v20.0.0'));
       expect(response.ingestLatestLedger, equals(50000000));
       expect(response.historyLatestLedger, equals(50000000));
-      expect(response.networkPassphrase,
-          equals('Public Global Stellar Network ; September 2015'));
+      expect(
+        response.networkPassphrase,
+        equals('Public Global Stellar Network ; September 2015'),
+      );
       expect(response.currentProtocolVersion, equals(21));
     });
 
@@ -310,7 +316,7 @@ void main() {
         'ledger': 123456,
         'rateLimitLimit': 100,
         'rateLimitRemaining': 50,
-        'rateLimitReset': 1609459800
+        'rateLimitReset': 1609459800,
       };
 
       final response = SubmitTransactionResponse.fromJson(json);
@@ -332,9 +338,9 @@ void main() {
           'fee_meta_xdr': 'EEEEE...',
           'result_codes': {
             'transaction': 'tx_failed',
-            'operations': ['op_underfunded', 'op_success']
-          }
-        }
+            'operations': ['op_underfunded', 'op_success'],
+          },
+        },
       };
 
       final response = SubmitTransactionResponse.fromJson(json);
@@ -346,15 +352,23 @@ void main() {
       expect(response.extras!.strMetaXdr, equals('DDDDD...'));
       expect(response.extras!.strFeeMetaXdr, equals('EEEEE...'));
       expect(response.extras!.resultCodes, isNotNull);
-      expect(response.extras!.resultCodes!.transactionResultCode,
-          equals('tx_failed'));
+      expect(
+        response.extras!.resultCodes!.transactionResultCode,
+        equals('tx_failed'),
+      );
       expect(response.extras!.resultCodes!.operationsResultCodes, isNotNull);
-      expect(response.extras!.resultCodes!.operationsResultCodes!.length,
-          equals(2));
-      expect(response.extras!.resultCodes!.operationsResultCodes![0],
-          equals('op_underfunded'));
-      expect(response.extras!.resultCodes!.operationsResultCodes![1],
-          equals('op_success'));
+      expect(
+        response.extras!.resultCodes!.operationsResultCodes!.length,
+        equals(2),
+      );
+      expect(
+        response.extras!.resultCodes!.operationsResultCodes![0],
+        equals('op_underfunded'),
+      );
+      expect(
+        response.extras!.resultCodes!.operationsResultCodes![1],
+        equals('op_success'),
+      );
     });
   });
 
@@ -362,7 +376,7 @@ void main() {
     test('parses result codes with operations', () {
       final json = {
         'transaction': 'tx_bad_seq',
-        'operations': ['op_underfunded', 'op_no_destination', 'op_line_full']
+        'operations': ['op_underfunded', 'op_no_destination', 'op_line_full'],
       };
 
       final codes = ExtrasResultCodes.fromJson(json);
@@ -376,9 +390,7 @@ void main() {
     });
 
     test('parses result codes without operations', () {
-      final json = {
-        'transaction': 'tx_insufficient_balance',
-      };
+      final json = {'transaction': 'tx_insufficient_balance'};
 
       final codes = ExtrasResultCodes.fromJson(json);
 
@@ -387,10 +399,7 @@ void main() {
     });
 
     test('parses result codes with empty operations', () {
-      final json = {
-        'transaction': 'tx_failed',
-        'operations': []
-      };
+      final json = {'transaction': 'tx_failed', 'operations': []};
 
       final codes = ExtrasResultCodes.fromJson(json);
 
@@ -407,11 +416,12 @@ void main() {
         'title': 'Timeout',
         'status': 504,
         'detail': 'Transaction submission timeout',
-        'extras': {'hash': 'timeout123abc'}
+        'extras': {'hash': 'timeout123abc'},
       };
 
-      final exception =
-          SubmitTransactionTimeoutResponseException.fromJson(json);
+      final exception = SubmitTransactionTimeoutResponseException.fromJson(
+        json,
+      );
 
       expect(exception.type, equals('timeout'));
       expect(exception.title, equals('Timeout'));
@@ -428,8 +438,9 @@ void main() {
         'detail': 'Transaction submission timeout',
       };
 
-      final exception =
-          SubmitTransactionTimeoutResponseException.fromJson(json);
+      final exception = SubmitTransactionTimeoutResponseException.fromJson(
+        json,
+      );
 
       expect(exception.type, equals('timeout'));
       expect(exception.hash, isNull);
@@ -455,67 +466,59 @@ void main() {
 
   group('SubmitAsyncTransactionResponse', () {
     test('parses PENDING status', () {
-      final json = {
-        'tx_status': 'PENDING',
-        'hash': 'async123',
-      };
+      final json = {'tx_status': 'PENDING', 'hash': 'async123'};
 
-      final response =
-          SubmitAsyncTransactionResponse.fromJson(json, 201);
+      final response = SubmitAsyncTransactionResponse.fromJson(json, 201);
 
       expect(response.txStatus, equals('PENDING'));
       expect(response.hash, equals('async123'));
       expect(response.httpStatusCode, equals(201));
-      expect(response.txStatus,
-          equals(SubmitAsyncTransactionResponse.txStatusPending));
+      expect(
+        response.txStatus,
+        equals(SubmitAsyncTransactionResponse.txStatusPending),
+      );
     });
 
     test('parses ERROR status', () {
-      final json = {
-        'tx_status': 'ERROR',
-        'hash': 'error123',
-      };
+      final json = {'tx_status': 'ERROR', 'hash': 'error123'};
 
-      final response =
-          SubmitAsyncTransactionResponse.fromJson(json, 400);
+      final response = SubmitAsyncTransactionResponse.fromJson(json, 400);
 
       expect(response.txStatus, equals('ERROR'));
       expect(response.hash, equals('error123'));
       expect(response.httpStatusCode, equals(400));
-      expect(response.txStatus,
-          equals(SubmitAsyncTransactionResponse.txStatusError));
+      expect(
+        response.txStatus,
+        equals(SubmitAsyncTransactionResponse.txStatusError),
+      );
     });
 
     test('parses DUPLICATE status', () {
-      final json = {
-        'tx_status': 'DUPLICATE',
-        'hash': 'duplicate123',
-      };
+      final json = {'tx_status': 'DUPLICATE', 'hash': 'duplicate123'};
 
-      final response =
-          SubmitAsyncTransactionResponse.fromJson(json, 409);
+      final response = SubmitAsyncTransactionResponse.fromJson(json, 409);
 
       expect(response.txStatus, equals('DUPLICATE'));
       expect(response.hash, equals('duplicate123'));
       expect(response.httpStatusCode, equals(409));
-      expect(response.txStatus,
-          equals(SubmitAsyncTransactionResponse.txStatusDuplicate));
+      expect(
+        response.txStatus,
+        equals(SubmitAsyncTransactionResponse.txStatusDuplicate),
+      );
     });
 
     test('parses TRY_AGAIN_LATER status', () {
-      final json = {
-        'tx_status': 'TRY_AGAIN_LATER',
-        'hash': 'retry123',
-      };
+      final json = {'tx_status': 'TRY_AGAIN_LATER', 'hash': 'retry123'};
 
-      final response =
-          SubmitAsyncTransactionResponse.fromJson(json, 503);
+      final response = SubmitAsyncTransactionResponse.fromJson(json, 503);
 
       expect(response.txStatus, equals('TRY_AGAIN_LATER'));
       expect(response.hash, equals('retry123'));
       expect(response.httpStatusCode, equals(503));
-      expect(response.txStatus,
-          equals(SubmitAsyncTransactionResponse.txStatusTryAgainLater));
+      expect(
+        response.txStatus,
+        equals(SubmitAsyncTransactionResponse.txStatusTryAgainLater),
+      );
     });
   });
 
@@ -526,7 +529,7 @@ void main() {
         'title': 'Transaction Failed',
         'status': 400,
         'detail': 'Transaction was malformed',
-        'extras': {'envelope_xdr': 'XXXXX...'}
+        'extras': {'envelope_xdr': 'XXXXX...'},
       };
 
       final problem = SubmitAsyncTransactionProblem.fromJson(json);
@@ -550,7 +553,9 @@ void main() {
       final str = problem.toString();
 
       expect(
-          str, contains('Submit async transaction problem response from Horizon'));
+        str,
+        contains('Submit async transaction problem response from Horizon'),
+      );
       expect(str, contains('type: invalid_transaction'));
       expect(str, contains('title:Invalid Transaction'));
       expect(str, contains('status:400'));
@@ -560,10 +565,7 @@ void main() {
 
   group('EffectResponse - AssetAmount', () {
     test('parses asset amount with native asset', () {
-      final json = {
-        'amount': '100.5000000',
-        'asset': 'native',
-      };
+      final json = {'amount': '100.5000000', 'asset': 'native'};
 
       final assetAmount = AssetAmount.fromJson(json);
 
@@ -575,7 +577,8 @@ void main() {
     test('parses asset amount with credit asset', () {
       final json = {
         'amount': '250.0000000',
-        'asset': 'USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        'asset':
+            'USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
       };
 
       final assetAmount = AssetAmount.fromJson(json);
@@ -588,10 +591,7 @@ void main() {
     });
 
     test('parses asset amount with null asset', () {
-      final json = {
-        'amount': '10.0000000',
-        'asset': null,
-      };
+      final json = {'amount': '10.0000000', 'asset': null};
 
       final assetAmount = AssetAmount.fromJson(json);
 

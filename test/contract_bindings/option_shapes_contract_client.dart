@@ -21,7 +21,9 @@ enum OptionShapesContractOptUnionKind {
   factory OptionShapesContractOptUnionKind.fromValue(String value) {
     return OptionShapesContractOptUnionKind.values.firstWhere(
       (e) => e.value == value,
-      orElse: () => throw ArgumentError('Unknown OptionShapesContractOptUnionKind value: $value'),
+      orElse: () => throw ArgumentError(
+        'Unknown OptionShapesContractOptUnionKind value: $value',
+      ),
     );
   }
 }
@@ -31,12 +33,11 @@ class OptionShapesContractOptUnion {
   final OptionShapesContractOptUnionKind kind;
   final int? maybe;
 
-  const OptionShapesContractOptUnion._({
-    required this.kind,
-    this.maybe,
-  });
+  const OptionShapesContractOptUnion._({required this.kind, this.maybe});
   factory OptionShapesContractOptUnion.nothing() {
-    return OptionShapesContractOptUnion._(kind: OptionShapesContractOptUnionKind.Nothing);
+    return OptionShapesContractOptUnion._(
+      kind: OptionShapesContractOptUnionKind.Nothing,
+    );
   }
   factory OptionShapesContractOptUnion.maybe(int? value) {
     return OptionShapesContractOptUnion._(
@@ -59,14 +60,18 @@ class OptionShapesContractOptUnion {
 
   factory OptionShapesContractOptUnion.fromScVal(XdrSCVal val) {
     final vec = val.vec!;
-    final kind = OptionShapesContractOptUnionKind.fromValue(vec[0].sym!.toString());
+    final kind = OptionShapesContractOptUnionKind.fromValue(
+      vec[0].sym!.toString(),
+    );
 
     switch (kind) {
       case OptionShapesContractOptUnionKind.Nothing:
         return OptionShapesContractOptUnion.nothing();
       case OptionShapesContractOptUnionKind.Maybe:
         return OptionShapesContractOptUnion.maybe(
-          vec[1].discriminant == XdrSCValType.SCV_VOID ? null : vec[1].u32!.uint32
+          vec[1].discriminant == XdrSCValType.SCV_VOID
+              ? null
+              : vec[1].u32!.uint32,
         );
     }
   }
@@ -108,14 +113,15 @@ class OptionShapesContractMaybeStruct {
 
   XdrSCVal toScVal() {
     final fields = <XdrSCMapEntry>[];
-    fields.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('flag'),
-      XdrSCVal.forU32(flag),
-    ));
-    fields.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('maybe'),
-      maybe == null ? XdrSCVal.forVoid() : XdrSCVal.forU32(maybe!),
-    ));
+    fields.add(
+      XdrSCMapEntry(XdrSCVal.forSymbol('flag'), XdrSCVal.forU32(flag)),
+    );
+    fields.add(
+      XdrSCMapEntry(
+        XdrSCVal.forSymbol('maybe'),
+        maybe == null ? XdrSCVal.forVoid() : XdrSCVal.forU32(maybe!),
+      ),
+    );
     return XdrSCVal.forMap(fields);
   }
 
@@ -128,7 +134,9 @@ class OptionShapesContractMaybeStruct {
 
     return OptionShapesContractMaybeStruct(
       flag: fieldsMap['flag']!.u32!.uint32,
-      maybe: fieldsMap['maybe']!.discriminant == XdrSCValType.SCV_VOID ? null : fieldsMap['maybe']!.u32!.uint32,
+      maybe: fieldsMap['maybe']!.discriminant == XdrSCValType.SCV_VOID
+          ? null
+          : fieldsMap['maybe']!.u32!.uint32,
     );
   }
 
@@ -140,10 +148,7 @@ class OptionShapesContractMaybeStruct {
           maybe == other.maybe;
 
   @override
-  int get hashCode => Object.hashAll([
-      flag,
-      maybe
-  ]);
+  int get hashCode => Object.hashAll([flag, maybe]);
 }
 
 /// Client for interacting with the OptionShapesContract contract
@@ -192,9 +197,7 @@ class OptionShapesContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU32(value),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU32(value)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -219,9 +222,7 @@ class OptionShapesContract {
     required int value,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forU32(value),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forU32(value)];
 
     return await _client.buildInvokeMethodTx(
       name: 'default',
@@ -240,7 +241,18 @@ class OptionShapesContract {
     bool force = false,
   }) async {
     final List<XdrSCVal> args = [
-      XdrSCVal.forMap((map.entries.toList()..sort((a, b) => a.key.compareTo(b.key))).map((e) => XdrSCMapEntry(XdrSCVal.forU32(e.key), e.value == null ? XdrSCVal.forVoid() : XdrSCVal.forU32(e.value!))).toList()),
+      XdrSCVal.forMap(
+        (map.entries.toList()..sort((a, b) => a.key.compareTo(b.key)))
+            .map(
+              (e) => XdrSCMapEntry(
+                XdrSCVal.forU32(e.key),
+                e.value == null
+                    ? XdrSCVal.forVoid()
+                    : XdrSCVal.forU32(e.value!),
+              ),
+            )
+            .toList(),
+      ),
     ];
 
     final methodOptions = MethodOptions(
@@ -257,7 +269,16 @@ class OptionShapesContract {
       methodOptions: methodOptions,
     );
 
-    return Map.fromEntries(result.map!.map((e) => MapEntry(e.key.u32!.uint32, e.val.discriminant == XdrSCValType.SCV_VOID ? null : e.val.u32!.uint32)));
+    return Map.fromEntries(
+      result.map!.map(
+        (e) => MapEntry(
+          e.key.u32!.uint32,
+          e.val.discriminant == XdrSCValType.SCV_VOID
+              ? null
+              : e.val.u32!.uint32,
+        ),
+      ),
+    );
   }
 
   /// Builds an AssembledTransaction for the opt_map method.
@@ -267,7 +288,18 @@ class OptionShapesContract {
     MethodOptions? methodOptions,
   }) async {
     final List<XdrSCVal> args = [
-      XdrSCVal.forMap((map.entries.toList()..sort((a, b) => a.key.compareTo(b.key))).map((e) => XdrSCMapEntry(XdrSCVal.forU32(e.key), e.value == null ? XdrSCVal.forVoid() : XdrSCVal.forU32(e.value!))).toList()),
+      XdrSCVal.forMap(
+        (map.entries.toList()..sort((a, b) => a.key.compareTo(b.key)))
+            .map(
+              (e) => XdrSCMapEntry(
+                XdrSCVal.forU32(e.key),
+                e.value == null
+                    ? XdrSCVal.forVoid()
+                    : XdrSCVal.forU32(e.value!),
+              ),
+            )
+            .toList(),
+      ),
     ];
 
     return await _client.buildInvokeMethodTx(
@@ -287,7 +319,10 @@ class OptionShapesContract {
     bool force = false,
   }) async {
     final List<XdrSCVal> args = [
-      XdrSCVal.forVec([tuple.$1 == null ? XdrSCVal.forVoid() : XdrSCVal.forU32(tuple.$1!), XdrSCVal.forU32(tuple.$2)]),
+      XdrSCVal.forVec([
+        tuple.$1 == null ? XdrSCVal.forVoid() : XdrSCVal.forU32(tuple.$1!),
+        XdrSCVal.forU32(tuple.$2),
+      ]),
     ];
 
     final methodOptions = MethodOptions(
@@ -304,7 +339,12 @@ class OptionShapesContract {
       methodOptions: methodOptions,
     );
 
-    return (result.vec![0].discriminant == XdrSCValType.SCV_VOID ? null : result.vec![0].u32!.uint32, result.vec![1].u32!.uint32);
+    return (
+      result.vec![0].discriminant == XdrSCValType.SCV_VOID
+          ? null
+          : result.vec![0].u32!.uint32,
+      result.vec![1].u32!.uint32,
+    );
   }
 
   /// Builds an AssembledTransaction for the opt_tuple method.
@@ -314,7 +354,10 @@ class OptionShapesContract {
     MethodOptions? methodOptions,
   }) async {
     final List<XdrSCVal> args = [
-      XdrSCVal.forVec([tuple.$1 == null ? XdrSCVal.forVoid() : XdrSCVal.forU32(tuple.$1!), XdrSCVal.forU32(tuple.$2)]),
+      XdrSCVal.forVec([
+        tuple.$1 == null ? XdrSCVal.forVoid() : XdrSCVal.forU32(tuple.$1!),
+        XdrSCVal.forU32(tuple.$2),
+      ]),
     ];
 
     return await _client.buildInvokeMethodTx(
@@ -333,9 +376,7 @@ class OptionShapesContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      union.toScVal(),
-    ];
+    final List<XdrSCVal> args = [union.toScVal()];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -360,9 +401,7 @@ class OptionShapesContract {
     required OptionShapesContractOptUnion union,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      union.toScVal(),
-    ];
+    final List<XdrSCVal> args = [union.toScVal()];
 
     return await _client.buildInvokeMethodTx(
       name: 'opt_union',
@@ -380,9 +419,7 @@ class OptionShapesContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      strukt.toScVal(),
-    ];
+    final List<XdrSCVal> args = [strukt.toScVal()];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -407,9 +444,7 @@ class OptionShapesContract {
     required OptionShapesContractMaybeStruct strukt,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      strukt.toScVal(),
-    ];
+    final List<XdrSCVal> args = [strukt.toScVal()];
 
     return await _client.buildInvokeMethodTx(
       name: 'opt_strukt',

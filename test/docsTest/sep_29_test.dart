@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -14,8 +13,9 @@ void main() {
     KeyPair exchangeKeyPair = KeyPair.random();
     await FriendBot.fundTestAccount(exchangeKeyPair.accountId);
 
-    AccountResponse exchangeAccount =
-        await sdk.accounts.account(exchangeKeyPair.accountId);
+    AccountResponse exchangeAccount = await sdk.accounts.account(
+      exchangeKeyPair.accountId,
+    );
 
     // Set memo_required flag
     ManageDataOperation setMemoRequired = ManageDataOperationBuilder(
@@ -23,18 +23,20 @@ void main() {
       Uint8List.fromList(utf8.encode("1")),
     ).build();
 
-    Transaction transaction = TransactionBuilder(exchangeAccount)
-        .addOperation(setMemoRequired)
-        .build();
+    Transaction transaction = TransactionBuilder(
+      exchangeAccount,
+    ).addOperation(setMemoRequired).build();
 
     transaction.sign(exchangeKeyPair, Network.TESTNET);
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     expect(response.success, true);
 
     // Verify the data entry was set
-    AccountResponse updatedAccount =
-        await sdk.accounts.account(exchangeKeyPair.accountId);
+    AccountResponse updatedAccount = await sdk.accounts.account(
+      exchangeKeyPair.accountId,
+    );
     expect(updatedAccount.data.keys.contains("config.memo_required"), true);
   });
 
@@ -44,46 +46,46 @@ void main() {
     await FriendBot.fundTestAccount(exchangeKeyPair.accountId);
 
     // First set the memo requirement
-    AccountResponse exchangeAccount =
-        await sdk.accounts.account(exchangeKeyPair.accountId);
+    AccountResponse exchangeAccount = await sdk.accounts.account(
+      exchangeKeyPair.accountId,
+    );
 
     ManageDataOperation setMemoRequired = ManageDataOperationBuilder(
       "config.memo_required",
       Uint8List.fromList(utf8.encode("1")),
     ).build();
 
-    Transaction setTx = TransactionBuilder(exchangeAccount)
-        .addOperation(setMemoRequired)
-        .build();
+    Transaction setTx = TransactionBuilder(
+      exchangeAccount,
+    ).addOperation(setMemoRequired).build();
 
     setTx.sign(exchangeKeyPair, Network.TESTNET);
-    SubmitTransactionResponse setResponse =
-        await sdk.submitTransaction(setTx);
+    SubmitTransactionResponse setResponse = await sdk.submitTransaction(setTx);
     expect(setResponse.success, true);
 
     // Now remove it
-    exchangeAccount =
-        await sdk.accounts.account(exchangeKeyPair.accountId);
+    exchangeAccount = await sdk.accounts.account(exchangeKeyPair.accountId);
 
     ManageDataOperation removeMemoRequired = ManageDataOperationBuilder(
       "config.memo_required",
       null,
     ).build();
 
-    Transaction removeTx = TransactionBuilder(exchangeAccount)
-        .addOperation(removeMemoRequired)
-        .build();
+    Transaction removeTx = TransactionBuilder(
+      exchangeAccount,
+    ).addOperation(removeMemoRequired).build();
 
     removeTx.sign(exchangeKeyPair, Network.TESTNET);
-    SubmitTransactionResponse removeResponse =
-        await sdk.submitTransaction(removeTx);
+    SubmitTransactionResponse removeResponse = await sdk.submitTransaction(
+      removeTx,
+    );
     expect(removeResponse.success, true);
 
     // Verify the data entry was removed
-    AccountResponse updatedAccount =
-        await sdk.accounts.account(exchangeKeyPair.accountId);
-    expect(
-        updatedAccount.data.keys.contains("config.memo_required"), false);
+    AccountResponse updatedAccount = await sdk.accounts.account(
+      exchangeKeyPair.accountId,
+    );
+    expect(updatedAccount.data.keys.contains("config.memo_required"), false);
   });
 
   test('sep-29: Quick Example', () async {
@@ -96,13 +98,14 @@ void main() {
 
     // Snippet from sep-29.md "Quick Example"
     String destinationId = destinationKeyPair.accountId;
-    AccountResponse senderAccount =
-        await sdk.accounts.account(senderKeyPair.accountId);
+    AccountResponse senderAccount = await sdk.accounts.account(
+      senderKeyPair.accountId,
+    );
 
     Transaction transaction = TransactionBuilder(senderAccount)
         .addOperation(
-            PaymentOperationBuilder(destinationId, Asset.NATIVE, "100.0")
-                .build())
+          PaymentOperationBuilder(destinationId, Asset.NATIVE, "100.0").build(),
+        )
         .build();
     transaction.sign(senderKeyPair, Network.TESTNET);
 
@@ -119,14 +122,15 @@ void main() {
     senderAccount = await sdk.accounts.account(senderKeyPair.accountId);
     transaction = TransactionBuilder(senderAccount)
         .addOperation(
-            PaymentOperationBuilder(destinationId, Asset.NATIVE, "100.0")
-                .build())
+          PaymentOperationBuilder(destinationId, Asset.NATIVE, "100.0").build(),
+        )
         .addMemo(MemoText("user-123"))
         .build();
     transaction.sign(senderKeyPair, Network.TESTNET);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     expect(response.success, true);
   });
 
@@ -141,16 +145,25 @@ void main() {
     await _setMemoRequired(sdk, exchangeKeyPair);
 
     // Snippet from sep-29.md "Checking Multiple Destinations"
-    AccountResponse senderAccount =
-        await sdk.accounts.account(senderKeyPair.accountId);
+    AccountResponse senderAccount = await sdk.accounts.account(
+      senderKeyPair.accountId,
+    );
 
     Transaction transaction = TransactionBuilder(senderAccount)
-        .addOperation(PaymentOperationBuilder(
-                walletKeyPair.accountId, Asset.NATIVE, "10.0")
-            .build())
-        .addOperation(PaymentOperationBuilder(
-                exchangeKeyPair.accountId, Asset.NATIVE, "25.0")
-            .build())
+        .addOperation(
+          PaymentOperationBuilder(
+            walletKeyPair.accountId,
+            Asset.NATIVE,
+            "10.0",
+          ).build(),
+        )
+        .addOperation(
+          PaymentOperationBuilder(
+            exchangeKeyPair.accountId,
+            Asset.NATIVE,
+            "25.0",
+          ).build(),
+        )
         .build();
     transaction.sign(senderKeyPair, Network.TESTNET);
 
@@ -175,12 +188,13 @@ void main() {
 
     // Snippet from sep-29.md "Account Merge"
     String destinationId = destinationKeyPair.accountId;
-    AccountResponse sourceAccount =
-        await sdk.accounts.account(sourceKeyPair.accountId);
+    AccountResponse sourceAccount = await sdk.accounts.account(
+      sourceKeyPair.accountId,
+    );
 
-    Transaction transaction = TransactionBuilder(sourceAccount)
-        .addOperation(AccountMergeOperationBuilder(destinationId).build())
-        .build();
+    Transaction transaction = TransactionBuilder(
+      sourceAccount,
+    ).addOperation(AccountMergeOperationBuilder(destinationId).build()).build();
     transaction.sign(sourceKeyPair, Network.TESTNET);
 
     try {
@@ -200,8 +214,9 @@ void main() {
         .build();
     transaction.sign(sourceKeyPair, Network.TESTNET);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     expect(response.success, true);
   });
 
@@ -214,24 +229,32 @@ void main() {
     await _setMemoRequired(sdk, baseKeyPair);
 
     // Snippet from sep-29.md "Multiplexed Accounts (M-addresses)"
-    AccountResponse senderAccount =
-        await sdk.accounts.account(senderKeyPair.accountId);
+    AccountResponse senderAccount = await sdk.accounts.account(
+      senderKeyPair.accountId,
+    );
 
     // The muxed id identifies the customer, so no memo is needed
-    MuxedAccount muxedDestination =
-        MuxedAccount(baseKeyPair.accountId, BigInt.from(12345));
+    MuxedAccount muxedDestination = MuxedAccount(
+      baseKeyPair.accountId,
+      BigInt.from(12345),
+    );
     expect(muxedDestination.accountId.startsWith("M"), true);
 
     Transaction transaction = TransactionBuilder(senderAccount)
-        .addOperation(PaymentOperationBuilder.forMuxedDestinationAccount(
-                muxedDestination, Asset.NATIVE, "100.0")
-            .build())
+        .addOperation(
+          PaymentOperationBuilder.forMuxedDestinationAccount(
+            muxedDestination,
+            Asset.NATIVE,
+            "100.0",
+          ).build(),
+        )
         .build();
     transaction.sign(senderKeyPair, Network.TESTNET);
 
     // Muxed destinations are not looked up; the payment is submitted
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     expect(response.success, true);
   });
 
@@ -247,20 +270,20 @@ void main() {
 
     // Snippet from sep-29.md "Fee Bump Transactions"
     String destinationId = destinationKeyPair.accountId;
-    AccountResponse senderAccount =
-        await sdk.accounts.account(senderKeyPair.accountId);
+    AccountResponse senderAccount = await sdk.accounts.account(
+      senderKeyPair.accountId,
+    );
 
     Transaction innerTransaction = TransactionBuilder(senderAccount)
         .addOperation(
-            PaymentOperationBuilder(destinationId, Asset.NATIVE, "100.0")
-                .build())
+          PaymentOperationBuilder(destinationId, Asset.NATIVE, "100.0").build(),
+        )
         .build();
     innerTransaction.sign(senderKeyPair, Network.TESTNET);
 
-    FeeBumpTransaction feeBump = FeeBumpTransactionBuilder(innerTransaction)
-        .setBaseFee(200)
-        .setFeeAccount(feePayerKeyPair.accountId)
-        .build();
+    FeeBumpTransaction feeBump = FeeBumpTransactionBuilder(
+      innerTransaction,
+    ).setBaseFee(200).setFeeAccount(feePayerKeyPair.accountId).build();
     feeBump.sign(feePayerKeyPair, Network.TESTNET);
 
     // The inner transaction is checked: it has no memo
@@ -284,19 +307,26 @@ void main() {
     await _setMemoRequired(sdk, destinationKeyPair);
 
     // Snippet from sep-29.md "Skipping the Check"
-    AccountResponse senderAccount =
-        await sdk.accounts.account(senderKeyPair.accountId);
+    AccountResponse senderAccount = await sdk.accounts.account(
+      senderKeyPair.accountId,
+    );
 
     Transaction transaction = TransactionBuilder(senderAccount)
-        .addOperation(PaymentOperationBuilder(
-                destinationKeyPair.accountId, Asset.NATIVE, "100.0")
-            .build())
+        .addOperation(
+          PaymentOperationBuilder(
+            destinationKeyPair.accountId,
+            Asset.NATIVE,
+            "100.0",
+          ).build(),
+        )
         .build();
     transaction.sign(senderKeyPair, Network.TESTNET);
 
     // No destination lookup; the network does not enforce SEP-29
-    SubmitTransactionResponse response = await sdk
-        .submitTransaction(transaction, skipMemoRequiredCheck: true);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+      skipMemoRequiredCheck: true,
+    );
     expect(response.success, true);
   });
 
@@ -338,13 +368,14 @@ void main() {
     // Snippet from sep-29.md "Error Handling"
     // A valid account id that does not exist on the network
     String destinationId = KeyPair.random().accountId;
-    AccountResponse senderAccount =
-        await sdk.accounts.account(senderKeyPair.accountId);
+    AccountResponse senderAccount = await sdk.accounts.account(
+      senderKeyPair.accountId,
+    );
 
     Transaction transaction = TransactionBuilder(senderAccount)
         .addOperation(
-            PaymentOperationBuilder(destinationId, Asset.NATIVE, "10.0")
-                .build())
+          PaymentOperationBuilder(destinationId, Asset.NATIVE, "10.0").build(),
+        )
         .build();
     transaction.sign(senderKeyPair, Network.TESTNET);
 
@@ -352,11 +383,14 @@ void main() {
     await sdk.checkMemoRequired(transaction);
 
     // The network rejects the payment to the missing account
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     expect(response.success, false);
-    expect(response.extras?.resultCodes?.operationsResultCodes,
-        contains("op_no_destination"));
+    expect(
+      response.extras?.resultCodes?.operationsResultCodes,
+      contains("op_no_destination"),
+    );
   });
 }
 
@@ -370,13 +404,13 @@ Future<Map<String, dynamic>> sendPayment(
 }) async {
   // Load the sender on every call so each transaction uses the current
   // sequence number
-  AccountResponse senderAccount =
-      await sdk.accounts.account(senderKeyPair.accountId);
+  AccountResponse senderAccount = await sdk.accounts.account(
+    senderKeyPair.accountId,
+  );
 
-  TransactionBuilder builder = TransactionBuilder(senderAccount)
-      .addOperation(
-          PaymentOperationBuilder(destinationId, Asset.NATIVE, amount)
-              .build());
+  TransactionBuilder builder = TransactionBuilder(senderAccount).addOperation(
+    PaymentOperationBuilder(destinationId, Asset.NATIVE, amount).build(),
+  );
   if (memo != null) {
     builder.addMemo(MemoText(memo));
   }
@@ -385,8 +419,9 @@ Future<Map<String, dynamic>> sendPayment(
   transaction.sign(senderKeyPair, Network.TESTNET);
 
   try {
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     return {'success': response.success, 'hash': response.hash};
   } on AccountRequiresMemoException catch (e) {
     return {
@@ -400,16 +435,18 @@ Future<Map<String, dynamic>> sendPayment(
 
 /// Test setup: sets `config.memo_required` to `1` on [accountKeyPair].
 Future<void> _setMemoRequired(StellarSDK sdk, KeyPair accountKeyPair) async {
-  AccountResponse account =
-      await sdk.accounts.account(accountKeyPair.accountId);
+  AccountResponse account = await sdk.accounts.account(
+    accountKeyPair.accountId,
+  );
   Transaction transaction = TransactionBuilder(account)
-      .addOperation(ManageDataOperationBuilder(
-        "config.memo_required",
-        Uint8List.fromList(utf8.encode("1")),
-      ).build())
+      .addOperation(
+        ManageDataOperationBuilder(
+          "config.memo_required",
+          Uint8List.fromList(utf8.encode("1")),
+        ).build(),
+      )
       .build();
   transaction.sign(accountKeyPair, Network.TESTNET);
-  SubmitTransactionResponse response =
-      await sdk.submitTransaction(transaction);
+  SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
   expect(response.success, true);
 }

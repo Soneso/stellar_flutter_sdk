@@ -9,10 +9,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 void main() {
   group('XDR Other Types - Deep Branch Testing', () {
     test('XdrPrice encode/decode with negative values', () {
-      var original = XdrPrice(
-        XdrInt32(-100),
-        XdrInt32(50),
-      );
+      var original = XdrPrice(XdrInt32(-100), XdrInt32(50));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrPrice.encode(output, original);
@@ -26,10 +23,7 @@ void main() {
     });
 
     test('XdrPrice encode/decode with large values', () {
-      var original = XdrPrice(
-        XdrInt32(2147483647),
-        XdrInt32(1),
-      );
+      var original = XdrPrice(XdrInt32(2147483647), XdrInt32(1));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrPrice.encode(output, original);
@@ -62,7 +56,10 @@ void main() {
       expect(decoded.txSetHash.hash, equals(original.txSetHash.hash));
       expect(decoded.closeTime.uint64, equals(original.closeTime.uint64));
       expect(decoded.upgrades, isEmpty);
-      expect(decoded.ext.discriminant, equals(XdrStellarValueType.STELLAR_VALUE_BASIC));
+      expect(
+        decoded.ext.discriminant,
+        equals(XdrStellarValueType.STELLAR_VALUE_BASIC),
+      );
     });
 
     test('XdrStellarValue encode/decode round-trip with upgrades', () {
@@ -88,7 +85,10 @@ void main() {
       expect(decoded.closeTime.uint64, equals(original.closeTime.uint64));
       expect(decoded.upgrades.length, equals(1));
       expect(decoded.upgrades[0].upgradeType, equals(upgrade.upgradeType));
-      expect(decoded.ext.discriminant, equals(XdrStellarValueType.STELLAR_VALUE_BASIC));
+      expect(
+        decoded.ext.discriminant,
+        equals(XdrStellarValueType.STELLAR_VALUE_BASIC),
+      );
     });
 
     test('XdrStellarValue encode/decode with multiple upgrades', () {
@@ -116,13 +116,18 @@ void main() {
       expect(decoded.upgrades.length, equals(2));
       expect(decoded.upgrades[0].upgradeType, equals(upgrade1.upgradeType));
       expect(decoded.upgrades[1].upgradeType, equals(upgrade2.upgradeType));
-      expect(decoded.ext.discriminant, equals(XdrStellarValueType.STELLAR_VALUE_BASIC));
+      expect(
+        decoded.ext.discriminant,
+        equals(XdrStellarValueType.STELLAR_VALUE_BASIC),
+      );
     });
 
     test('XdrClaimOfferAtomV0 with different asset types', () {
       var assetCode = XdrAssetAlphaNum4(
         Uint8List.fromList('USD '.codeUnits),
-        XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'),
+        XdrAccountID.forAccountId(
+          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+        ),
       );
       var asset = XdrAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
       asset.alphaNum4 = assetCode;
@@ -143,9 +148,15 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrClaimOfferAtomV0.decode(input);
 
-      expect(decoded.sellerEd25519.uint256, equals(original.sellerEd25519.uint256));
+      expect(
+        decoded.sellerEd25519.uint256,
+        equals(original.sellerEd25519.uint256),
+      );
       expect(decoded.offerID.uint64, equals(original.offerID.uint64));
-      expect(decoded.assetSold.discriminant, equals(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4));
+      expect(
+        decoded.assetSold.discriminant,
+        equals(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4),
+      );
       expect(decoded.amountSold.int64, equals(original.amountSold.int64));
       expect(decoded.amountBought.int64, equals(original.amountBought.int64));
     });
@@ -214,7 +225,9 @@ void main() {
 
       for (var versionStr in versionStrings) {
         var peerID = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
-        peerID.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x11))));
+        peerID.setEd25519(
+          XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x11))),
+        );
         var nodeID = XdrNodeID(peerID);
 
         var cert = XdrAuthCert(
@@ -248,10 +261,7 @@ void main() {
     });
 
     test('XdrPrice with zero denominator edge case', () {
-      var original = XdrPrice(
-        XdrInt32(100),
-        XdrInt32(0),
-      );
+      var original = XdrPrice(XdrInt32(100), XdrInt32(0));
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrPrice.encode(output, original);

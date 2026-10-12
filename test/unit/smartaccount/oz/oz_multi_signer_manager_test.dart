@@ -53,7 +53,6 @@ OZMultiSignerManager _manager(FakePipelineKit kit) => OZMultiSignerManager(kit);
 OZSelectedSignerPasskey _passkeyStub() => const OZSelectedSignerPasskey();
 
 void main() {
-
   group('multiSignerExecuteAndSubmit not-connected', () {
     test('notConnected_throwsWalletNotConnected', () async {
       final manager = _manager(_buildKit());
@@ -153,8 +152,7 @@ void main() {
         expect(
           e.message.contains('signer'),
           isTrue,
-          reason:
-              'Exception message must reference signers, got: ${e.message}',
+          reason: 'Exception message must reference signers, got: ${e.message}',
         );
       }
     });
@@ -283,8 +281,7 @@ void main() {
         expect(
           e.message.contains('signer'),
           isTrue,
-          reason:
-              'Exception message must reference signers, got: ${e.message}',
+          reason: 'Exception message must reference signers, got: ${e.message}',
         );
       }
     });
@@ -492,8 +489,11 @@ void main() {
           negativeCount++;
         }
         // Sanity: |nonce| must fit in signed 64-bit.
-        expect(nonce.abs() <= twoTo63, isTrue,
-            reason: 'Nonce $nonce overflows signed 64-bit range');
+        expect(
+          nonce.abs() <= twoTo63,
+          isTrue,
+          reason: 'Nonce $nonce overflows signed 64-bit range',
+        );
       }
       // Expected ~500/1000 negatives. The 40% lower bound below leaves
       // generous headroom for the binomial tails (per-test failure
@@ -501,7 +501,8 @@ void main() {
       expect(
         negativeCount,
         greaterThanOrEqualTo(400),
-        reason: 'Expected ~50% of nonces to have the high bit set, '
+        reason:
+            'Expected ~50% of nonces to have the high bit set, '
             'got $negativeCount/$draws negatives',
       );
     });
@@ -513,8 +514,11 @@ void main() {
       final seen = <BigInt>{};
       for (var i = 0; i < 1000; i++) {
         final n = manager.generateNonceForTest().int64;
-        expect(seen.add(n), isTrue,
-            reason: 'Duplicate nonce $n at draw $i — entropy collapse');
+        expect(
+          seen.add(n),
+          isTrue,
+          reason: 'Duplicate nonce $n at draw $i — entropy collapse',
+        );
       }
     });
   });
@@ -540,9 +544,7 @@ void main() {
       expect(signer.transports, orderedEquals(transports));
     });
 
-    test(
-        'transports_listIdentityIsPreservedThroughEqualityAndHash',
-        () {
+    test('transports_listIdentityIsPreservedThroughEqualityAndHash', () {
       final a = OZSelectedSignerPasskey(
         credentialIdBytes: Uint8List.fromList(<int>[9]),
         keyData: Uint8List(97),
@@ -571,9 +573,7 @@ void main() {
       expect(a, isNot(equals(b)));
     });
 
-    test(
-        'transportsAllowCredentialBuilder_includesTransportsWhenIdSupplied',
-        () {
+    test('transportsAllowCredentialBuilder_includesTransportsWhenIdSupplied', () {
       // Mirrors the inline WebAuthnAllowCredential construction in submitWithMultipleSigners;
       // the production pipeline does not extract a helper to invoke directly.
       final credBytes = Uint8List.fromList(<int>[42, 43, 44]);
@@ -597,24 +597,25 @@ void main() {
     });
 
     test(
-        'transportsAllowCredentialBuilder_dropsAllowCredentialsWhenIdMissing',
-        () {
-      // When credentialIdBytes is null the entire allowCredentials list
-      // becomes null; the transports field is dropped along with it because
-      // there is no credential to associate them with.
-      final signer = OZSelectedSignerPasskey(
-        transports: const <String>['internal'],
-      );
-      final allowCreds = signer.credentialIdBytes != null
-          ? <WebAuthnAllowCredential>[
-              WebAuthnAllowCredential(
-                id: signer.credentialIdBytes!,
-                transports: signer.transports,
-              ),
-            ]
-          : null;
-      expect(allowCreds, isNull);
-    });
+      'transportsAllowCredentialBuilder_dropsAllowCredentialsWhenIdMissing',
+      () {
+        // When credentialIdBytes is null the entire allowCredentials list
+        // becomes null; the transports field is dropped along with it because
+        // there is no credential to associate them with.
+        final signer = OZSelectedSignerPasskey(
+          transports: const <String>['internal'],
+        );
+        final allowCreds = signer.credentialIdBytes != null
+            ? <WebAuthnAllowCredential>[
+                WebAuthnAllowCredential(
+                  id: signer.credentialIdBytes!,
+                  transports: signer.transports,
+                ),
+              ]
+            : null;
+        expect(allowCreds, isNull);
+      },
+    );
   });
 
   group('OZSelectedSignerEd25519 construction and equality', () {
@@ -635,8 +636,11 @@ void main() {
       );
 
       expect(a == b, isTrue, reason: 'Byte-equal instances must be equal');
-      expect(a == c, isFalse,
-          reason: 'Differing verifier address must break equality');
+      expect(
+        a == c,
+        isFalse,
+        reason: 'Differing verifier address must break equality',
+      );
 
       final altPk = Uint8List.fromList(
         List<int>.generate(32, (i) => (i + 1) & 0xFF),
@@ -645,8 +649,11 @@ void main() {
         verifierAddress: _verifierA,
         publicKey: altPk,
       );
-      expect(a == d, isFalse,
-          reason: 'Differing public key must break equality');
+      expect(
+        a == d,
+        isFalse,
+        reason: 'Differing public key must break equality',
+      );
     });
 
     test('test_selectedSignerEd25519_hashCodeStableAcrossInstances', () {
@@ -661,8 +668,11 @@ void main() {
         publicKey: Uint8List.fromList(pk),
       );
 
-      expect(a.hashCode, equals(b.hashCode),
-          reason: 'Hash codes must be stable for byte-equivalent instances');
+      expect(
+        a.hashCode,
+        equals(b.hashCode),
+        reason: 'Hash codes must be stable for byte-equivalent instances',
+      );
 
       final c = OZSelectedSignerEd25519(
         verifierAddress: _verifierB,
@@ -675,9 +685,7 @@ void main() {
   });
 
   group('validateSignerSet Ed25519', () {
-    test(
-        'test_validateSignerSet_ed25519WithRegisteredSigner_passes',
-        () async {
+    test('test_validateSignerSet_ed25519WithRegisteredSigner_passes', () async {
       // Wire a connected kit with an OZExternalSignerManager that has an
       // Ed25519 signer registered.
       final extManager = OZExternalSignerManager(
@@ -690,10 +698,7 @@ void main() {
       );
 
       final kit = FakePipelineKit(externalSigners: extManager);
-      kit.setConnected(
-        credentialId: 'test-cred',
-        contractId: _validContractId,
-      );
+      kit.setConnected(credentialId: 'test-cred', contractId: _validContractId);
 
       // submitWithMultipleSigners validates before RPC; we expect a
       // simulation-related error here (NullServer), which proves validation
@@ -716,181 +721,191 @@ void main() {
     });
 
     test(
-        'test_validateSignerSet_ed25519WithoutRegisteredSigner_throwsInvalidInputSelectedSigners',
-        () async {
-      final extManager = OZExternalSignerManager(
-        networkPassphrase: _testNetworkPassphrase,
-      );
+      'test_validateSignerSet_ed25519WithoutRegisteredSigner_throwsInvalidInputSelectedSigners',
+      () async {
+        final extManager = OZExternalSignerManager(
+          networkPassphrase: _testNetworkPassphrase,
+        );
 
-      final kit = FakePipelineKit(externalSigners: extManager);
-      kit.setConnected(
-        credentialId: 'test-cred',
-        contractId: _validContractId,
-      );
+        final kit = FakePipelineKit(externalSigners: extManager);
+        kit.setConnected(
+          credentialId: 'test-cred',
+          contractId: _validContractId,
+        );
 
-      final manager = OZMultiSignerManager(kit);
-      final unregisteredKey =
-          Uint8List.fromList(KeyPair.random().publicKey);
+        final manager = OZMultiSignerManager(kit);
+        final unregisteredKey = Uint8List.fromList(KeyPair.random().publicKey);
 
-      await expectLater(
-        () => manager.submitWithMultipleSigners(
-          hostFunction: _stubHostFunction(),
-          selectedSigners: [
-            OZSelectedSignerEd25519(
-              verifierAddress: _verifierA,
-              publicKey: unregisteredKey,
-            ),
-          ],
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
-
-    test(
-        'test_validateSignerSet_ed25519InvalidPublicKeyLength_throws',
-        () async {
-      final extManager = OZExternalSignerManager(
-        networkPassphrase: _testNetworkPassphrase,
-      );
-
-      final kit = FakePipelineKit(externalSigners: extManager);
-      kit.setConnected(
-        credentialId: 'test-cred',
-        contractId: _validContractId,
-      );
-
-      final manager = OZMultiSignerManager(kit);
-
-      await expectLater(
-        () => manager.submitWithMultipleSigners(
-          hostFunction: _stubHostFunction(),
-          selectedSigners: [
-            OZSelectedSignerEd25519(
-              verifierAddress: _verifierA,
-              // 16 bytes is not a valid Ed25519 public key.
-              publicKey: Uint8List(16),
-            ),
-          ],
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+        await expectLater(
+          () => manager.submitWithMultipleSigners(
+            hostFunction: _stubHostFunction(),
+            selectedSigners: [
+              OZSelectedSignerEd25519(
+                verifierAddress: _verifierA,
+                publicKey: unregisteredKey,
+              ),
+            ],
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
 
     test(
-        'test_validateSignerSet_ed25519InvalidVerifierAddress_throws',
-        () async {
-      final extManager = OZExternalSignerManager(
-        networkPassphrase: _testNetworkPassphrase,
-      );
-      final rawSeed = Uint8List.fromList(List<int>.generate(32, (i) => i + 1));
-      final publicKey = extManager.addEd25519FromRawKey(
-        secretKeyBytes: rawSeed,
-        verifierAddress: _verifierA,
-      );
+      'test_validateSignerSet_ed25519InvalidPublicKeyLength_throws',
+      () async {
+        final extManager = OZExternalSignerManager(
+          networkPassphrase: _testNetworkPassphrase,
+        );
 
-      final kit = FakePipelineKit(externalSigners: extManager);
-      kit.setConnected(
-        credentialId: 'test-cred',
-        contractId: _validContractId,
-      );
+        final kit = FakePipelineKit(externalSigners: extManager);
+        kit.setConnected(
+          credentialId: 'test-cred',
+          contractId: _validContractId,
+        );
 
-      final manager = OZMultiSignerManager(kit);
+        final manager = OZMultiSignerManager(kit);
 
-      await expectLater(
-        () => manager.submitWithMultipleSigners(
-          hostFunction: _stubHostFunction(),
-          selectedSigners: [
-            OZSelectedSignerEd25519(
-              verifierAddress: 'G${'A' * 55}', // G-address, not C-address
-              publicKey: publicKey,
-            ),
-          ],
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+        await expectLater(
+          () => manager.submitWithMultipleSigners(
+            hostFunction: _stubHostFunction(),
+            selectedSigners: [
+              OZSelectedSignerEd25519(
+                verifierAddress: _verifierA,
+                // 16 bytes is not a valid Ed25519 public key.
+                publicKey: Uint8List(16),
+              ),
+            ],
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
 
     test(
-        'test_validateSignerSet_ed25519SamePubkeyDifferentVerifiers_resolvedByTuple',
-        () async {
-      final extManager = OZExternalSignerManager(
-        networkPassphrase: _testNetworkPassphrase,
-      );
-      final rawSeed = Uint8List.fromList(List<int>.generate(32, (i) => i + 2));
-
-      // Same raw seed, two different verifier addresses — two distinct entries.
-      final pk1 = extManager.addEd25519FromRawKey(
-        secretKeyBytes: rawSeed,
-        verifierAddress: _verifierA,
-      );
-      extManager.addEd25519FromRawKey(
-        secretKeyBytes: rawSeed,
-        verifierAddress: _verifierB,
-      );
-
-      // Both can sign despite sharing the same underlying public key bytes.
-      expect(
-        extManager.canSignEd25519For(
+      'test_validateSignerSet_ed25519InvalidVerifierAddress_throws',
+      () async {
+        final extManager = OZExternalSignerManager(
+          networkPassphrase: _testNetworkPassphrase,
+        );
+        final rawSeed = Uint8List.fromList(
+          List<int>.generate(32, (i) => i + 1),
+        );
+        final publicKey = extManager.addEd25519FromRawKey(
+          secretKeyBytes: rawSeed,
           verifierAddress: _verifierA,
-          publicKey: pk1,
-        ),
-        isTrue,
-      );
-      expect(
-        extManager.canSignEd25519For(
+        );
+
+        final kit = FakePipelineKit(externalSigners: extManager);
+        kit.setConnected(
+          credentialId: 'test-cred',
+          contractId: _validContractId,
+        );
+
+        final manager = OZMultiSignerManager(kit);
+
+        await expectLater(
+          () => manager.submitWithMultipleSigners(
+            hostFunction: _stubHostFunction(),
+            selectedSigners: [
+              OZSelectedSignerEd25519(
+                verifierAddress: 'G${'A' * 55}', // G-address, not C-address
+                publicKey: publicKey,
+              ),
+            ],
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
+
+    test(
+      'test_validateSignerSet_ed25519SamePubkeyDifferentVerifiers_resolvedByTuple',
+      () async {
+        final extManager = OZExternalSignerManager(
+          networkPassphrase: _testNetworkPassphrase,
+        );
+        final rawSeed = Uint8List.fromList(
+          List<int>.generate(32, (i) => i + 2),
+        );
+
+        // Same raw seed, two different verifier addresses — two distinct entries.
+        final pk1 = extManager.addEd25519FromRawKey(
+          secretKeyBytes: rawSeed,
+          verifierAddress: _verifierA,
+        );
+        extManager.addEd25519FromRawKey(
+          secretKeyBytes: rawSeed,
           verifierAddress: _verifierB,
-          publicKey: pk1,
-        ),
-        isTrue,
-      );
-    });
+        );
+
+        // Both can sign despite sharing the same underlying public key bytes.
+        expect(
+          extManager.canSignEd25519For(
+            verifierAddress: _verifierA,
+            publicKey: pk1,
+          ),
+          isTrue,
+        );
+        expect(
+          extManager.canSignEd25519For(
+            verifierAddress: _verifierB,
+            publicKey: pk1,
+          ),
+          isTrue,
+        );
+      },
+    );
 
     test(
-        'test_validateSignerSet_ed25519PubkeyMatchesWalletGAddressBytes_noFalseMatch',
-        () async {
-      final extManager = OZExternalSignerManager(
-        networkPassphrase: _testNetworkPassphrase,
-      );
+      'test_validateSignerSet_ed25519PubkeyMatchesWalletGAddressBytes_noFalseMatch',
+      () async {
+        final extManager = OZExternalSignerManager(
+          networkPassphrase: _testNetworkPassphrase,
+        );
 
-      // Raw seed whose derived public key will be used as the Ed25519 signer.
-      final ed25519RawSeed =
-          Uint8List.fromList(List<int>.generate(32, (i) => i + 3));
-      final ed25519PublicKey = Uint8List.fromList(
-        KeyPair.fromSecretSeedList(ed25519RawSeed).publicKey,
-      );
+        // Raw seed whose derived public key will be used as the Ed25519 signer.
+        final ed25519RawSeed = Uint8List.fromList(
+          List<int>.generate(32, (i) => i + 3),
+        );
+        final ed25519PublicKey = Uint8List.fromList(
+          KeyPair.fromSecretSeedList(ed25519RawSeed).publicKey,
+        );
 
-      extManager.addEd25519FromRawKey(
-        secretKeyBytes: ed25519RawSeed,
-        verifierAddress: _verifierA,
-      );
-
-      final kit = FakePipelineKit(externalSigners: extManager);
-      kit.setConnected(
-        credentialId: 'test-cred',
-        contractId: _validContractId,
-      );
-
-      // canSignEd25519For uses the (verifierAddress, publicKey) tuple key;
-      // the matching wallet-signer storage keyed by G-address is unaffected.
-      expect(
-        extManager.canSignEd25519For(
+        extManager.addEd25519FromRawKey(
+          secretKeyBytes: ed25519RawSeed,
           verifierAddress: _verifierA,
-          publicKey: ed25519PublicKey,
-        ),
-        isTrue,
-      );
+        );
 
-      // canSignFor (wallet path) for the G-address derived from the same raw seed
-      // must return false because no wallet signer was added.
-      final derivedAccountId =
-          KeyPair.fromSecretSeedList(ed25519RawSeed).accountId;
-      expect(
-        await extManager.canSignFor(derivedAccountId),
-        isFalse,
-        reason:
-            'Ed25519 registry must not bleed into the wallet canSignFor path',
-      );
-    });
+        final kit = FakePipelineKit(externalSigners: extManager);
+        kit.setConnected(
+          credentialId: 'test-cred',
+          contractId: _validContractId,
+        );
+
+        // canSignEd25519For uses the (verifierAddress, publicKey) tuple key;
+        // the matching wallet-signer storage keyed by G-address is unaffected.
+        expect(
+          extManager.canSignEd25519For(
+            verifierAddress: _verifierA,
+            publicKey: ed25519PublicKey,
+          ),
+          isTrue,
+        );
+
+        // canSignFor (wallet path) for the G-address derived from the same raw seed
+        // must return false because no wallet signer was added.
+        final derivedAccountId = KeyPair.fromSecretSeedList(
+          ed25519RawSeed,
+        ).accountId;
+        expect(
+          await extManager.canSignFor(derivedAccountId),
+          isFalse,
+          reason:
+              'Ed25519 registry must not bleed into the wallet canSignFor path',
+        );
+      },
+    );
   });
 
   // ==========================================================================
@@ -907,22 +922,21 @@ void main() {
       MockOZMultiSignerManager multi,
       MockOZTransactionOperations txOps,
       OZExternalSignerManager extManager,
-    }) buildEd25519Harness({bool registerSigner = true}) {
+    })
+    buildEd25519Harness({bool registerSigner = true}) {
       final extManager = OZExternalSignerManager(
         networkPassphrase: _testNetworkPassphrase,
       );
       if (registerSigner) {
         extManager.addEd25519FromRawKey(
-          secretKeyBytes:
-              Uint8List.fromList(List<int>.generate(32, (i) => i + 10)),
+          secretKeyBytes: Uint8List.fromList(
+            List<int>.generate(32, (i) => i + 10),
+          ),
           verifierAddress: _verifierA,
         );
       }
       final kit = FakePipelineKit(externalSigners: extManager);
-      kit.setConnected(
-        credentialId: 'test-cred',
-        contractId: _validContractId,
-      );
+      kit.setConnected(credentialId: 'test-cred', contractId: _validContractId);
       final txOps = MockOZTransactionOperations(kit);
       kit.setTransactionOperations(txOps);
       final multi = MockOZMultiSignerManager(kit);
@@ -931,179 +945,196 @@ void main() {
     }
 
     test(
-        'test_submitWithMultipleSigners_ed25519Only_producesCorrectAuthPayloadSignatureBytes',
-        () async {
-      final h = buildEd25519Harness();
-      final rawSeed =
-          Uint8List.fromList(List<int>.generate(32, (i) => i + 20));
-      final publicKey = h.extManager.addEd25519FromRawKey(
-        secretKeyBytes: rawSeed,
-        verifierAddress: _verifierA,
-      );
+      'test_submitWithMultipleSigners_ed25519Only_producesCorrectAuthPayloadSignatureBytes',
+      () async {
+        final h = buildEd25519Harness();
+        final rawSeed = Uint8List.fromList(
+          List<int>.generate(32, (i) => i + 20),
+        );
+        final publicKey = h.extManager.addEd25519FromRawKey(
+          secretKeyBytes: rawSeed,
+          verifierAddress: _verifierA,
+        );
 
-      final ed25519Signer = OZSelectedSignerEd25519(
-        verifierAddress: _verifierA,
-        publicKey: publicKey,
-      );
-
-      // Route through OZSignerManager so the selected signer is forwarded
-      // to the mock multi-signer manager.
-      final signerMgr = OZSignerManager(h.kit);
-      await signerMgr.removeSigner(
-        contextRuleId: 0,
-        signerId: 1,
-        selectedSigners: [ed25519Signer],
-      );
-
-      expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
-      final call = h.multi.submitWithMultipleSignersCalls.single;
-      expect(call.selectedSigners.length, equals(1));
-      expect(call.selectedSigners.single, isA<OZSelectedSignerEd25519>());
-      final forwarded = call.selectedSigners.single as OZSelectedSignerEd25519;
-      expect(forwarded.verifierAddress, equals(_verifierA));
-      expect(forwarded.publicKey, orderedEquals(publicKey));
-
-      // Verify OZEd25519Signature.toScVal() produces Bytes (not a Map)
-      // and toAuthPayloadBytes() returns exactly 64 raw bytes (no XDR
-      // envelope). The Ed25519 verifier contract expects BytesN<64>.
-      final rawSig = Uint8List(64)..fillRange(0, 64, 0xAB);
-      final ed25519Sig = OZEd25519Signature(
-        publicKey: publicKey,
-        signature: rawSig,
-      );
-      final scVal = ed25519Sig.toScVal();
-      expect(scVal.discriminant, equals(XdrSCValType.SCV_BYTES));
-      expect(scVal.bytes!.sCBytes, orderedEquals(rawSig));
-      final sigBytes = ed25519Sig.toAuthPayloadBytes();
-      expect(sigBytes.length, equals(64),
-          reason: 'Ed25519 signatureBytes must be exactly 64 bytes (no XDR envelope)');
-      expect(sigBytes, orderedEquals(rawSig),
-          reason: 'signatureBytes must equal the original raw Ed25519 signature');
-    });
-
-    test(
-        'test_submitWithMultipleSigners_mixedPasskeyEd25519Wallet_allSlotsFilled',
-        () async {
-      final h = buildEd25519Harness();
-      final rawSeed =
-          Uint8List.fromList(List<int>.generate(32, (i) => i + 21));
-      final publicKey = h.extManager.addEd25519FromRawKey(
-        secretKeyBytes: rawSeed,
-        verifierAddress: _verifierA,
-      );
-
-      final selected = <OZSelectedSigner>[
-        OZSelectedSignerPasskey(
-          credentialId: 'pk-a',
-          credentialIdBytes: Uint8List.fromList(<int>[1, 2, 3, 4]),
-          keyData: _passkeyKeyDataLocal(seed: 1),
-        ),
-        OZSelectedSignerEd25519(
+        final ed25519Signer = OZSelectedSignerEd25519(
           verifierAddress: _verifierA,
           publicKey: publicKey,
-        ),
-        OZSelectedSignerWallet(_validAccountAddress),
-      ];
+        );
 
-      final signerMgr = OZSignerManager(h.kit);
-      await signerMgr.removeSigner(
-        contextRuleId: 0,
-        signerId: 2,
-        selectedSigners: selected,
-      );
+        // Route through OZSignerManager so the selected signer is forwarded
+        // to the mock multi-signer manager.
+        final signerMgr = OZSignerManager(h.kit);
+        await signerMgr.removeSigner(
+          contextRuleId: 0,
+          signerId: 1,
+          selectedSigners: [ed25519Signer],
+        );
 
-      expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
-      final call = h.multi.submitWithMultipleSignersCalls.single;
-      expect(call.selectedSigners.length, equals(3));
-      expect(call.selectedSigners[0], isA<OZSelectedSignerPasskey>());
-      expect(call.selectedSigners[1], isA<OZSelectedSignerEd25519>());
-      expect(call.selectedSigners[2], isA<OZSelectedSignerWallet>());
-    });
+        expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
+        final call = h.multi.submitWithMultipleSignersCalls.single;
+        expect(call.selectedSigners.length, equals(1));
+        expect(call.selectedSigners.single, isA<OZSelectedSignerEd25519>());
+        final forwarded =
+            call.selectedSigners.single as OZSelectedSignerEd25519;
+        expect(forwarded.verifierAddress, equals(_verifierA));
+        expect(forwarded.publicKey, orderedEquals(publicKey));
 
-    test(
-        'test_submitWithMultipleSigners_mixedRuleEd25519AndPasskeyAtSameIndex_routesCorrectly',
-        () async {
-      final h = buildEd25519Harness();
-      final rawSeed =
-          Uint8List.fromList(List<int>.generate(32, (i) => i + 22));
-      final publicKey = h.extManager.addEd25519FromRawKey(
-        secretKeyBytes: rawSeed,
-        verifierAddress: _verifierA,
-      );
-
-      final selected = <OZSelectedSigner>[
-        OZSelectedSignerEd25519(
-          verifierAddress: _verifierA,
+        // Verify OZEd25519Signature.toScVal() produces Bytes (not a Map)
+        // and toAuthPayloadBytes() returns exactly 64 raw bytes (no XDR
+        // envelope). The Ed25519 verifier contract expects BytesN<64>.
+        final rawSig = Uint8List(64)..fillRange(0, 64, 0xAB);
+        final ed25519Sig = OZEd25519Signature(
           publicKey: publicKey,
-        ),
-        OZSelectedSignerPasskey(
-          credentialId: 'pk-b',
-          credentialIdBytes: Uint8List.fromList(<int>[9, 8, 7, 6]),
-          keyData: _passkeyKeyDataLocal(seed: 2),
-        ),
-      ];
-
-      final ctxMgr = OZContextRuleManager(h.kit);
-      await ctxMgr.updateName(
-        id: 1,
-        name: 'mixed-ed25519-pk',
-        selectedSigners: selected,
-      );
-
-      expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
-      final call = h.multi.submitWithMultipleSignersCalls.single;
-      expect(call.selectedSigners.length, equals(2));
-      expect(call.selectedSigners[0], isA<OZSelectedSignerEd25519>());
-      expect(call.selectedSigners[1], isA<OZSelectedSignerPasskey>());
-    });
+          signature: rawSig,
+        );
+        final scVal = ed25519Sig.toScVal();
+        expect(scVal.discriminant, equals(XdrSCValType.SCV_BYTES));
+        expect(scVal.bytes!.sCBytes, orderedEquals(rawSig));
+        final sigBytes = ed25519Sig.toAuthPayloadBytes();
+        expect(
+          sigBytes.length,
+          equals(64),
+          reason:
+              'Ed25519 signatureBytes must be exactly 64 bytes (no XDR envelope)',
+        );
+        expect(
+          sigBytes,
+          orderedEquals(rawSig),
+          reason:
+              'signatureBytes must equal the original raw Ed25519 signature',
+        );
+      },
+    );
 
     test(
-        'test_submitWithMultipleSigners_ed25519AdapterReachableForSigning',
-        () async {
-      // Constructs manager with an Ed25519 adapter at construction time, then
-      // verifies that canSignEd25519For returns true for the registered key.
-      final publicKey = Uint8List.fromList(KeyPair.random().publicKey);
-      final extManager = OZExternalSignerManager(
-        networkPassphrase: _testNetworkPassphrase,
-        ed25519Adapter: _ZeroBytesAdapter(publicKey: publicKey),
-      );
-
-      final kit = FakePipelineKit(externalSigners: extManager);
-      kit.setConnected(
-        credentialId: 'test-cred',
-        contractId: _validContractId,
-      );
-
-      expect(
-        extManager.canSignEd25519For(
+      'test_submitWithMultipleSigners_mixedPasskeyEd25519Wallet_allSlotsFilled',
+      () async {
+        final h = buildEd25519Harness();
+        final rawSeed = Uint8List.fromList(
+          List<int>.generate(32, (i) => i + 21),
+        );
+        final publicKey = h.extManager.addEd25519FromRawKey(
+          secretKeyBytes: rawSeed,
           verifierAddress: _verifierA,
-          publicKey: publicKey,
-        ),
-        isTrue,
-        reason:
-            'canSignEd25519For must return true when the adapter claims it can sign',
-      );
-    });
+        );
+
+        final selected = <OZSelectedSigner>[
+          OZSelectedSignerPasskey(
+            credentialId: 'pk-a',
+            credentialIdBytes: Uint8List.fromList(<int>[1, 2, 3, 4]),
+            keyData: _passkeyKeyDataLocal(seed: 1),
+          ),
+          OZSelectedSignerEd25519(
+            verifierAddress: _verifierA,
+            publicKey: publicKey,
+          ),
+          OZSelectedSignerWallet(_validAccountAddress),
+        ];
+
+        final signerMgr = OZSignerManager(h.kit);
+        await signerMgr.removeSigner(
+          contextRuleId: 0,
+          signerId: 2,
+          selectedSigners: selected,
+        );
+
+        expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
+        final call = h.multi.submitWithMultipleSignersCalls.single;
+        expect(call.selectedSigners.length, equals(3));
+        expect(call.selectedSigners[0], isA<OZSelectedSignerPasskey>());
+        expect(call.selectedSigners[1], isA<OZSelectedSignerEd25519>());
+        expect(call.selectedSigners[2], isA<OZSelectedSignerWallet>());
+      },
+    );
 
     test(
-        'test_submitWithMultipleSigners_ed25519PolicyOnlyAuth_succeedsWithZeroSelectedSigners',
-        () async {
-      // Verify that a rule with zero selectedSigners is forwarded correctly.
-      // The mock returns success; on-chain policy evaluation is not exercised
-      // in unit tests.
-      final h = buildEd25519Harness(registerSigner: false);
-      final ctxMgr = OZContextRuleManager(h.kit);
+      'test_submitWithMultipleSigners_mixedRuleEd25519AndPasskeyAtSameIndex_routesCorrectly',
+      () async {
+        final h = buildEd25519Harness();
+        final rawSeed = Uint8List.fromList(
+          List<int>.generate(32, (i) => i + 22),
+        );
+        final publicKey = h.extManager.addEd25519FromRawKey(
+          secretKeyBytes: rawSeed,
+          verifierAddress: _verifierA,
+        );
 
-      await ctxMgr.updateName(
-        id: 0,
-        name: 'policy-only',
-        selectedSigners: const <OZSelectedSigner>[],
-      );
+        final selected = <OZSelectedSigner>[
+          OZSelectedSignerEd25519(
+            verifierAddress: _verifierA,
+            publicKey: publicKey,
+          ),
+          OZSelectedSignerPasskey(
+            credentialId: 'pk-b',
+            credentialIdBytes: Uint8List.fromList(<int>[9, 8, 7, 6]),
+            keyData: _passkeyKeyDataLocal(seed: 2),
+          ),
+        ];
 
-      // With zero selectedSigners the call goes directly through the passkey
-      // path (no multi-signer fanout) so the mock is not invoked.
-      expect(h.multi.submitWithMultipleSignersCalls, isEmpty);
-    });
+        final ctxMgr = OZContextRuleManager(h.kit);
+        await ctxMgr.updateName(
+          id: 1,
+          name: 'mixed-ed25519-pk',
+          selectedSigners: selected,
+        );
+
+        expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
+        final call = h.multi.submitWithMultipleSignersCalls.single;
+        expect(call.selectedSigners.length, equals(2));
+        expect(call.selectedSigners[0], isA<OZSelectedSignerEd25519>());
+        expect(call.selectedSigners[1], isA<OZSelectedSignerPasskey>());
+      },
+    );
+
+    test(
+      'test_submitWithMultipleSigners_ed25519AdapterReachableForSigning',
+      () async {
+        // Constructs manager with an Ed25519 adapter at construction time, then
+        // verifies that canSignEd25519For returns true for the registered key.
+        final publicKey = Uint8List.fromList(KeyPair.random().publicKey);
+        final extManager = OZExternalSignerManager(
+          networkPassphrase: _testNetworkPassphrase,
+          ed25519Adapter: _ZeroBytesAdapter(publicKey: publicKey),
+        );
+
+        final kit = FakePipelineKit(externalSigners: extManager);
+        kit.setConnected(
+          credentialId: 'test-cred',
+          contractId: _validContractId,
+        );
+
+        expect(
+          extManager.canSignEd25519For(
+            verifierAddress: _verifierA,
+            publicKey: publicKey,
+          ),
+          isTrue,
+          reason:
+              'canSignEd25519For must return true when the adapter claims it can sign',
+        );
+      },
+    );
+
+    test(
+      'test_submitWithMultipleSigners_ed25519PolicyOnlyAuth_succeedsWithZeroSelectedSigners',
+      () async {
+        // Verify that a rule with zero selectedSigners is forwarded correctly.
+        // The mock returns success; on-chain policy evaluation is not exercised
+        // in unit tests.
+        final h = buildEd25519Harness(registerSigner: false);
+        final ctxMgr = OZContextRuleManager(h.kit);
+
+        await ctxMgr.updateName(
+          id: 0,
+          name: 'policy-only',
+          selectedSigners: const <OZSelectedSigner>[],
+        );
+
+        // With zero selectedSigners the call goes directly through the passkey
+        // path (no multi-signer fanout) so the mock is not invoked.
+        expect(h.multi.submitWithMultipleSignersCalls, isEmpty);
+      },
+    );
   });
 
   group('submitWithMultipleSigners validation guards', () {
@@ -1116,10 +1147,7 @@ void main() {
           walletAdapter: _NeverSignWallet(),
         ),
       );
-      kit.setConnected(
-        credentialId: 'test-cred',
-        contractId: _validContractId,
-      );
+      kit.setConnected(credentialId: 'test-cred', contractId: _validContractId);
       final manager = OZMultiSignerManager(kit);
 
       await expectLater(
@@ -1149,33 +1177,36 @@ void main() {
       );
     });
 
-    test('walletSigner_noKeypairOrAdapter_errorMessageContainsRemedies', () async {
-      // Verify the not-found error message text contains both remedies so
-      // consumers know how to register a signing source.
-      final kit = _buildConnectedKit();
-      final manager = OZMultiSignerManager(kit);
+    test(
+      'walletSigner_noKeypairOrAdapter_errorMessageContainsRemedies',
+      () async {
+        // Verify the not-found error message text contains both remedies so
+        // consumers know how to register a signing source.
+        final kit = _buildConnectedKit();
+        final manager = OZMultiSignerManager(kit);
 
-      try {
-        await manager.submitWithMultipleSigners(
-          hostFunction: _stubHostFunction(),
-          selectedSigners: <OZSelectedSigner>[
-            OZSelectedSignerWallet(_validAccountAddress),
-          ],
-        );
-        fail('Expected SmartAccountInvalidInput');
-      } on SmartAccountInvalidInput catch (e) {
-        expect(
-          e.message.contains('addFromSecret'),
-          isTrue,
-          reason: 'Error must mention addFromSecret remedy',
-        );
-        expect(
-          e.message.contains('config.externalWallet'),
-          isTrue,
-          reason: 'Error must mention config.externalWallet remedy',
-        );
-      }
-    });
+        try {
+          await manager.submitWithMultipleSigners(
+            hostFunction: _stubHostFunction(),
+            selectedSigners: <OZSelectedSigner>[
+              OZSelectedSignerWallet(_validAccountAddress),
+            ],
+          );
+          fail('Expected SmartAccountInvalidInput');
+        } on SmartAccountInvalidInput catch (e) {
+          expect(
+            e.message.contains('addFromSecret'),
+            isTrue,
+            reason: 'Error must mention addFromSecret remedy',
+          );
+          expect(
+            e.message.contains('config.externalWallet'),
+            isTrue,
+            reason: 'Error must mention config.externalWallet remedy',
+          );
+        }
+      },
+    );
 
     test('walletSigner_inMemoryKeypairOnly_noAdapter_passesValidation', () async {
       // A wallet signer backed only by an in-memory keypair (no wallet
@@ -1189,10 +1220,7 @@ void main() {
       await extManager.addFromSecret(keypair.secretSeed);
 
       final kit = FakePipelineKit(externalSigners: extManager);
-      kit.setConnected(
-        credentialId: 'test-cred',
-        contractId: _validContractId,
-      );
+      kit.setConnected(credentialId: 'test-cred', contractId: _validContractId);
       final manager = OZMultiSignerManager(kit);
 
       // Validation passes (no SmartAccountInvalidInput for the wallet signer path).
@@ -1251,10 +1279,7 @@ void main() {
         networkPassphrase: _testNetworkPassphrase,
       );
       final kit = FakePipelineKit(externalSigners: extManager);
-      kit.setConnected(
-        credentialId: 'test-cred',
-        contractId: _validContractId,
-      );
+      kit.setConnected(credentialId: 'test-cred', contractId: _validContractId);
       final manager = OZMultiSignerManager(kit);
       final pubKey = Uint8List.fromList(KeyPair.random().publicKey);
 
@@ -1296,10 +1321,7 @@ void main() {
       );
 
       final kit = FakePipelineKit(externalSigners: extManager);
-      kit.setConnected(
-        credentialId: 'test-cred',
-        contractId: _validContractId,
-      );
+      kit.setConnected(credentialId: 'test-cred', contractId: _validContractId);
 
       // canSignEd25519For returns true via the adapter path.
       expect(
@@ -1341,10 +1363,7 @@ void main() {
       );
 
       final kit = FakePipelineKit(externalSigners: extManager);
-      kit.setConnected(
-        credentialId: 'test-cred',
-        contractId: _validContractId,
-      );
+      kit.setConnected(credentialId: 'test-cred', contractId: _validContractId);
       final manager = OZMultiSignerManager(kit);
 
       await expectLater(
@@ -1425,44 +1444,54 @@ void main() {
       );
     });
 
-    test('simulationReturnsErrorString_throwsTransactionSimulationFailed', () async {
-      final mock = MockSorobanServer();
-      mock.getAccountDefault = Account(_validAccountAddress, BigInt.from(1));
-      final simResp = SimulateTransactionResponse(<String, dynamic>{});
-      simResp.resultError = 'contract trap: simulated failure';
-      mock.simulateDefault = simResp;
-      final kit = FakePipelineKit(sorobanServer: mock)
-        ..setConnected(credentialId: 'cred', contractId: _validContractId);
-      final manager = OZMultiSignerManager(kit);
+    test(
+      'simulationReturnsErrorString_throwsTransactionSimulationFailed',
+      () async {
+        final mock = MockSorobanServer();
+        mock.getAccountDefault = Account(_validAccountAddress, BigInt.from(1));
+        final simResp = SimulateTransactionResponse(<String, dynamic>{});
+        simResp.resultError = 'contract trap: simulated failure';
+        mock.simulateDefault = simResp;
+        final kit = FakePipelineKit(sorobanServer: mock)
+          ..setConnected(credentialId: 'cred', contractId: _validContractId);
+        final manager = OZMultiSignerManager(kit);
 
-      await expectLater(
-        () => manager.submitWithMultipleSigners(
-          hostFunction: _stubHostFunction(),
-          selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
-        ),
-        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
-      );
-    });
+        await expectLater(
+          () => manager.submitWithMultipleSigners(
+            hostFunction: _stubHostFunction(),
+            selectedSigners: <OZSelectedSigner>[
+              const OZSelectedSignerPasskey(),
+            ],
+          ),
+          throwsA(isA<SmartAccountTransactionSimulationFailed>()),
+        );
+      },
+    );
 
-    test('simulationReturnsNullSorobanAuth_throwsTransactionSimulationFailed', () async {
-      final mock = MockSorobanServer();
-      mock.getAccountDefault = Account(_validAccountAddress, BigInt.from(1));
-      // Empty results → sorobanAuth is null/empty.
-      final simResp = SimulateTransactionResponse(<String, dynamic>{});
-      simResp.results = <SimulateTransactionResult>[];
-      mock.simulateDefault = simResp;
-      final kit = FakePipelineKit(sorobanServer: mock)
-        ..setConnected(credentialId: 'cred', contractId: _validContractId);
-      final manager = OZMultiSignerManager(kit);
+    test(
+      'simulationReturnsNullSorobanAuth_throwsTransactionSimulationFailed',
+      () async {
+        final mock = MockSorobanServer();
+        mock.getAccountDefault = Account(_validAccountAddress, BigInt.from(1));
+        // Empty results → sorobanAuth is null/empty.
+        final simResp = SimulateTransactionResponse(<String, dynamic>{});
+        simResp.results = <SimulateTransactionResult>[];
+        mock.simulateDefault = simResp;
+        final kit = FakePipelineKit(sorobanServer: mock)
+          ..setConnected(credentialId: 'cred', contractId: _validContractId);
+        final manager = OZMultiSignerManager(kit);
 
-      await expectLater(
-        () => manager.submitWithMultipleSigners(
-          hostFunction: _stubHostFunction(),
-          selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
-        ),
-        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
-      );
-    });
+        await expectLater(
+          () => manager.submitWithMultipleSigners(
+            hostFunction: _stubHostFunction(),
+            selectedSigners: <OZSelectedSigner>[
+              const OZSelectedSignerPasskey(),
+            ],
+          ),
+          throwsA(isA<SmartAccountTransactionSimulationFailed>()),
+        );
+      },
+    );
 
     test('passkeyKeyDataNull_throwsInvalidInput', () async {
       // Build a simulation response with one auth entry targeting the smart account.
@@ -1470,10 +1499,14 @@ void main() {
       final mock = MockSorobanServer();
       mock.getAccountDefault = Account(deployer.accountId, BigInt.from(1));
 
-      final authEntry = _makeAddressCredsEntry(contractAddress: _validContractId);
+      final authEntry = _makeAddressCredsEntry(
+        contractAddress: _validContractId,
+      );
       final simResp = SimulateTransactionResponse(<String, dynamic>{});
       simResp.results = <SimulateTransactionResult>[
-        SimulateTransactionResult('', <String>[authEntry.toBase64EncodedXdrString()]),
+        SimulateTransactionResult('', <String>[
+          authEntry.toBase64EncodedXdrString(),
+        ]),
       ];
       mock.simulateDefault = simResp;
 
@@ -1513,19 +1546,24 @@ void main() {
       );
     });
 
-    test('multiSignerContractCall_emptyFunctionName_throwsInvalidInput', () async {
-      final kit = _buildConnectedKit();
-      final manager = OZMultiSignerManager(kit);
+    test(
+      'multiSignerContractCall_emptyFunctionName_throwsInvalidInput',
+      () async {
+        final kit = _buildConnectedKit();
+        final manager = OZMultiSignerManager(kit);
 
-      await expectLater(
-        () => manager.multiSignerContractCall(
-          target: _validTargetContract,
-          targetFn: '',
-          selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+        await expectLater(
+          () => manager.multiSignerContractCall(
+            target: _validTargetContract,
+            targetFn: '',
+            selectedSigners: <OZSelectedSigner>[
+              const OZSelectedSignerPasskey(),
+            ],
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
   });
 }
 
@@ -1649,10 +1687,7 @@ class _ZeroBytesAdapter extends OZExternalEd25519SignerAdapter {
   }
 
   @override
-  Future<Uint8List> signAuthDigest(
-    Uint8List authDigest,
-    Uint8List pk,
-  ) async {
+  Future<Uint8List> signAuthDigest(Uint8List authDigest, Uint8List pk) async {
     return Uint8List(64); // all zeros — fails Ed25519 verification
   }
 }

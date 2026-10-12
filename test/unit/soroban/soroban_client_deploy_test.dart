@@ -38,20 +38,22 @@ dio.ResponseBody jsonRpcResponse(dynamic id, Map<String, dynamic> result) {
     jsonEncode({'jsonrpc': '2.0', 'id': id, 'result': result}),
     200,
     headers: {
-      'content-type': [dio.Headers.jsonContentType]
+      'content-type': [dio.Headers.jsonContentType],
     },
   );
 }
 
 dio.ResponseBody ledgerEntryResponse(
-    Map<String, dynamic> requestBody, XdrLedgerEntryData entryData) {
+  Map<String, dynamic> requestBody,
+  XdrLedgerEntryData entryData,
+) {
   return jsonRpcResponse(requestBody['id'], {
     'entries': [
       {
         'key': (requestBody['params']['keys'] as List)[0],
         'xdr': entryData.toBase64EncodedXdrString(),
         'lastModifiedLedgerSeq': 99999,
-      }
+      },
     ],
     'latestLedger': 100000,
   });
@@ -85,17 +87,25 @@ XdrLedgerEntryData accountEntry(KeyPair keyPair) {
 XdrLedgerEntryData contractCodeEntry(Uint8List wasmHashBytes, Uint8List code) {
   final entryData = XdrLedgerEntryData(XdrLedgerEntryType.CONTRACT_CODE);
   entryData.contractCode = XdrContractCodeEntry(
-      XdrContractCodeEntryExt(0), XdrHash(wasmHashBytes), code);
+    XdrContractCodeEntryExt(0),
+    XdrHash(wasmHashBytes),
+    code,
+  );
   return entryData;
 }
 
 XdrLedgerEntryData contractInstanceEntry(
-    Uint8List contractIdBytes, Uint8List wasmHashBytes) {
-  final executable =
-      XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
+  Uint8List contractIdBytes,
+  Uint8List wasmHashBytes,
+) {
+  final executable = XdrContractExecutable(
+    XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+  );
   executable.wasmHash = XdrHash(wasmHashBytes);
   final instance = XdrSCContractInstance(executable, null);
-  final contractAddress = XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
+  final contractAddress = XdrSCAddress(
+    XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT,
+  );
   contractAddress.contractId = XdrHash(contractIdBytes);
   final entryData = XdrLedgerEntryData(XdrLedgerEntryType.CONTRACT_DATA);
   entryData.contractData = XdrContractDataEntry(
@@ -114,24 +124,39 @@ XdrSorobanTransactionData transactionDataWithWrites(KeyPair keyPair) {
   final key = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
   key.account = XdrLedgerKeyAccount(XdrAccountID(keyPair.xdrPublicKey));
   final resources = XdrSorobanResources(
-      XdrLedgerFootprint([], [key]), XdrUint32(0), XdrUint32(0), XdrUint32(0));
+    XdrLedgerFootprint([], [key]),
+    XdrUint32(0),
+    XdrUint32(0),
+    XdrUint32(0),
+  );
   return XdrSorobanTransactionData(
-      XdrSorobanTransactionDataExt(0), resources, XdrInt64(BigInt.zero));
+    XdrSorobanTransactionDataExt(0),
+    resources,
+    XdrInt64(BigInt.zero),
+  );
 }
 
 /// A SUCCESS getTransaction result whose meta returns the created contract
 /// address, as required by [GetTransactionResponse.getCreatedContractId].
 Map<String, dynamic> deploySuccessResult(Uint8List createdContractIdBytes) {
-  final createdAddress = XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
+  final createdAddress = XdrSCAddress(
+    XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT,
+  );
   createdAddress.contractId = XdrHash(createdContractIdBytes);
   final sorobanMeta = XdrSorobanTransactionMeta(
-      XdrSorobanTransactionMetaExt(0),
-      [],
-      XdrSCVal.forAddress(createdAddress),
-      []);
+    XdrSorobanTransactionMetaExt(0),
+    [],
+    XdrSCVal.forAddress(createdAddress),
+    [],
+  );
   final meta = XdrTransactionMeta(3);
-  meta.v3 = XdrTransactionMetaV3(XdrExtensionPoint(0),
-      XdrLedgerEntryChanges([]), [], XdrLedgerEntryChanges([]), sorobanMeta);
+  meta.v3 = XdrTransactionMetaV3(
+    XdrExtensionPoint(0),
+    XdrLedgerEntryChanges([]),
+    [],
+    XdrLedgerEntryChanges([]),
+    sorobanMeta,
+  );
   return {
     'status': 'SUCCESS',
     'ledger': 99999,
@@ -151,8 +176,9 @@ void main() {
   final wasmHash = Util.bytesToHex(wasmHashBytes);
   final createdContractIdBytes = Uint8List(32);
   final createdContractId = StrKey.encodeContractId(createdContractIdBytes);
-  final helloWasm =
-      File('test/wasm/soroban_hello_world_contract.wasm').readAsBytesSync();
+  final helloWasm = File(
+    'test/wasm/soroban_hello_world_contract.wasm',
+  ).readAsBytesSync();
 
   /// Serves the full deploy flow. Ledger-entry requests are dispatched on the
   /// requested key type; the wasm code entry answer per request is taken from
@@ -187,12 +213,16 @@ void main() {
               return emptyLedgerEntriesResponse(requestBody);
             }
             return ledgerEntryResponse(
-                requestBody, contractCodeEntry(wasmHashBytes, answer));
+              requestBody,
+              contractCodeEntry(wasmHashBytes, answer),
+            );
           }
           if (key.discriminant == XdrLedgerEntryType.CONTRACT_DATA) {
             requestLog.add('contractData');
-            return ledgerEntryResponse(requestBody,
-                contractInstanceEntry(createdContractIdBytes, wasmHashBytes));
+            return ledgerEntryResponse(
+              requestBody,
+              contractInstanceEntry(createdContractIdBytes, wasmHashBytes),
+            );
           }
           requestLog.add('account');
           return ledgerEntryResponse(requestBody, accountEntry(keyPair));
@@ -205,14 +235,15 @@ void main() {
               {
                 'auth': [],
                 'xdr': XdrSCVal.forU32(42).toBase64EncodedXdrString(),
-              }
+              },
             ],
             'latestLedger': 100000,
           });
         case 'sendTransaction':
           requestLog.add('send');
-          capturedEnvelopes
-              ?.add(requestBody['params']['transaction'] as String);
+          capturedEnvelopes?.add(
+            requestBody['params']['transaction'] as String,
+          );
           return jsonRpcResponse(requestBody['id'], {
             'status': 'PENDING',
             'hash': txHash,
@@ -222,7 +253,9 @@ void main() {
         case 'getTransaction':
           requestLog.add('getTx');
           return jsonRpcResponse(
-              requestBody['id'], deploySuccessResult(createdContractIdBytes));
+            requestBody['id'],
+            deploySuccessResult(createdContractIdBytes),
+          );
         default:
           fail('Unexpected RPC method: ${requestBody['method']}');
       }
@@ -241,14 +274,14 @@ void main() {
   }
 
   group('SorobanClient.deploy spec loading', () {
-    test('loads the spec from the wasm code entry before submitting',
-        () async {
+    test('loads the spec from the wasm code entry before submitting', () async {
       final keyPair = KeyPair.random();
       final requestLog = <String>[];
       final server = deployFlowMockServer(keyPair, [helloWasm], requestLog);
 
       final client = await SorobanClient.deploy(
-          deployRequest: deployRequest(keyPair, server));
+        deployRequest: deployRequest(keyPair, server),
+      );
 
       expect(client.getContractId(), createdContractId);
       expect(client.getMethodNames(), contains('hello'));
@@ -258,36 +291,46 @@ void main() {
       expect(requestLog.indexOf('code'), lessThan(requestLog.indexOf('send')));
     });
 
-    test('falls back to loading by contract id when the code entry is missing',
-        () async {
-      final keyPair = KeyPair.random();
-      final requestLog = <String>[];
-      final server =
-          deployFlowMockServer(keyPair, [null, helloWasm], requestLog);
+    test(
+      'falls back to loading by contract id when the code entry is missing',
+      () async {
+        final keyPair = KeyPair.random();
+        final requestLog = <String>[];
+        final server = deployFlowMockServer(keyPair, [
+          null,
+          helloWasm,
+        ], requestLog);
 
-      final client = await SorobanClient.deploy(
-          deployRequest: deployRequest(keyPair, server));
+        final client = await SorobanClient.deploy(
+          deployRequest: deployRequest(keyPair, server),
+        );
 
-      expect(client.getContractId(), createdContractId);
-      expect(client.getMethodNames(), contains('hello'));
-      expect(requestLog, contains('contractData'));
-    });
+        expect(client.getContractId(), createdContractId);
+        expect(client.getMethodNames(), contains('hello'));
+        expect(requestLog, contains('contractData'));
+      },
+    );
 
-    test('falls back to loading by contract id when the code has no parseable spec',
-        () async {
-      final keyPair = KeyPair.random();
-      final requestLog = <String>[];
-      final unparseable = Uint8List.fromList([1, 2, 3, 4]);
-      final server =
-          deployFlowMockServer(keyPair, [unparseable, helloWasm], requestLog);
+    test(
+      'falls back to loading by contract id when the code has no parseable spec',
+      () async {
+        final keyPair = KeyPair.random();
+        final requestLog = <String>[];
+        final unparseable = Uint8List.fromList([1, 2, 3, 4]);
+        final server = deployFlowMockServer(keyPair, [
+          unparseable,
+          helloWasm,
+        ], requestLog);
 
-      final client = await SorobanClient.deploy(
-          deployRequest: deployRequest(keyPair, server));
+        final client = await SorobanClient.deploy(
+          deployRequest: deployRequest(keyPair, server),
+        );
 
-      expect(client.getContractId(), createdContractId);
-      expect(client.getMethodNames(), contains('hello'));
-      expect(requestLog, contains('contractData'));
-    });
+        expect(client.getContractId(), createdContractId);
+        expect(client.getMethodNames(), contains('hello'));
+        expect(requestLog, contains('contractData'));
+      },
+    );
 
     test('submits the V2 create-contract host function with an empty '
         'constructor vector', () async {
@@ -296,16 +339,22 @@ void main() {
       final keyPair = KeyPair.random();
       final requestLog = <String>[];
       final capturedEnvelopes = <String>[];
-      final server = deployFlowMockServer(keyPair, [helloWasm], requestLog,
-          capturedEnvelopes: capturedEnvelopes);
+      final server = deployFlowMockServer(
+        keyPair,
+        [helloWasm],
+        requestLog,
+        capturedEnvelopes: capturedEnvelopes,
+      );
 
       final client = await SorobanClient.deploy(
-          deployRequest: deployRequest(keyPair, server));
+        deployRequest: deployRequest(keyPair, server),
+      );
 
       expect(client.getContractId(), createdContractId);
       expect(capturedEnvelopes, hasLength(1));
-      final tx =
-          AbstractTransaction.fromEnvelopeXdrString(capturedEnvelopes[0]);
+      final tx = AbstractTransaction.fromEnvelopeXdrString(
+        capturedEnvelopes[0],
+      );
       expect(tx, isA<Transaction>());
       final op = (tx as Transaction).operations[0];
       expect(op, isA<InvokeHostFunctionOperation>());

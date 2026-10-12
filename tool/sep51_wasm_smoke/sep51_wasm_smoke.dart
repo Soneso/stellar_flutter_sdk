@@ -41,8 +41,7 @@ Object? nestedValue(int containers) {
 
 /// The JSON text [nestedValue] renders to, built directly so the text form can
 /// be pushed past the depth the value form refuses to render.
-String nestedText(int containers) =>
-    '${'[' * containers}0${']' * containers}';
+String nestedText(int containers) => '${'[' * containers}0${']' * containers}';
 
 void main() {
   final int cap = XdrJsonHelper.maxDepth;
@@ -72,8 +71,10 @@ void main() {
   } on FormatException {
     refusedOnEncode = true;
   }
-  check('a document past the cap is refused before the encoder',
-      refusedOnEncode);
+  check(
+    'a document past the cap is refused before the encoder',
+    refusedOnEncode,
+  );
 
   bool refusedOnDecode = false;
   try {
@@ -81,8 +82,10 @@ void main() {
   } on FormatException {
     refusedOnDecode = true;
   }
-  check('a document past the cap is refused before the parser',
-      refusedOnDecode);
+  check(
+    'a document past the cap is refused before the parser',
+    refusedOnDecode,
+  );
 
   // Depth well past anything the host stack survives. The guard counts the
   // text without recursing, so this is refused the same way as the first level

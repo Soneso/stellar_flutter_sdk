@@ -97,8 +97,11 @@ void main() {
 
       expect(parts.length, equals(2));
       // For negative numbers, hi part should be negative (sign extended)
-      expect(parts[0].isNegative, isTrue,
-          reason: 'Hi part should be negative for negative number');
+      expect(
+        parts[0].isNegative,
+        isTrue,
+        reason: 'Hi part should be negative for negative number',
+      );
     });
 
     test('bigInt256Parts handles negative numbers correctly', () {
@@ -108,8 +111,11 @@ void main() {
 
       expect(parts.length, equals(4));
       // For negative numbers, hiHi part should be negative (sign extended)
-      expect(parts[0].isNegative, isTrue,
-          reason: 'HiHi part should be negative for negative number');
+      expect(
+        parts[0].isNegative,
+        isTrue,
+        reason: 'HiHi part should be negative for negative number',
+      );
     });
 
     test('edge case: maximum 64-bit values', () {
@@ -185,7 +191,9 @@ void main() {
         List<int> bytes = outputStream.bytes;
 
         // Decode from XDR bytes
-        XdrDataInputStream inputStream = XdrDataInputStream(Uint8List.fromList(bytes));
+        XdrDataInputStream inputStream = XdrDataInputStream(
+          Uint8List.fromList(bytes),
+        );
         XdrSCVal decoded = XdrSCVal.decode(inputStream);
 
         expect(decoded.discriminant, equals(XdrSCValType.SCV_U128));
@@ -193,8 +201,11 @@ void main() {
         // Re-encode and compare bytes (the authoritative test)
         XdrDataOutputStream reencodeStream = XdrDataOutputStream();
         XdrSCVal.encode(reencodeStream, decoded);
-        expect(reencodeStream.bytes, equals(bytes),
-            reason: 'XDR roundtrip should preserve bytes for $originalValue');
+        expect(
+          reencodeStream.bytes,
+          equals(bytes),
+          reason: 'XDR roundtrip should preserve bytes for $originalValue',
+        );
       }
     });
 
@@ -218,7 +229,9 @@ void main() {
         List<int> bytes = outputStream.bytes;
 
         // Decode from XDR bytes
-        XdrDataInputStream inputStream = XdrDataInputStream(Uint8List.fromList(bytes));
+        XdrDataInputStream inputStream = XdrDataInputStream(
+          Uint8List.fromList(bytes),
+        );
         XdrSCVal decoded = XdrSCVal.decode(inputStream);
 
         expect(decoded.discriminant, equals(XdrSCValType.SCV_I128));
@@ -226,8 +239,11 @@ void main() {
         // Re-encode and compare bytes
         XdrDataOutputStream reencodeStream = XdrDataOutputStream();
         XdrSCVal.encode(reencodeStream, decoded);
-        expect(reencodeStream.bytes, equals(bytes),
-            reason: 'XDR roundtrip should preserve bytes for $originalValue');
+        expect(
+          reencodeStream.bytes,
+          equals(bytes),
+          reason: 'XDR roundtrip should preserve bytes for $originalValue',
+        );
       }
     });
 
@@ -245,15 +261,20 @@ void main() {
         XdrSCVal.encode(outputStream, original);
         List<int> bytes = outputStream.bytes;
 
-        XdrDataInputStream inputStream = XdrDataInputStream(Uint8List.fromList(bytes));
+        XdrDataInputStream inputStream = XdrDataInputStream(
+          Uint8List.fromList(bytes),
+        );
         XdrSCVal decoded = XdrSCVal.decode(inputStream);
 
         expect(decoded.discriminant, equals(XdrSCValType.SCV_U256));
 
         XdrDataOutputStream reencodeStream = XdrDataOutputStream();
         XdrSCVal.encode(reencodeStream, decoded);
-        expect(reencodeStream.bytes, equals(bytes),
-            reason: 'XDR roundtrip should preserve bytes for $originalValue');
+        expect(
+          reencodeStream.bytes,
+          equals(bytes),
+          reason: 'XDR roundtrip should preserve bytes for $originalValue',
+        );
       }
     });
 
@@ -272,15 +293,20 @@ void main() {
         XdrSCVal.encode(outputStream, original);
         List<int> bytes = outputStream.bytes;
 
-        XdrDataInputStream inputStream = XdrDataInputStream(Uint8List.fromList(bytes));
+        XdrDataInputStream inputStream = XdrDataInputStream(
+          Uint8List.fromList(bytes),
+        );
         XdrSCVal decoded = XdrSCVal.decode(inputStream);
 
         expect(decoded.discriminant, equals(XdrSCValType.SCV_I256));
 
         XdrDataOutputStream reencodeStream = XdrDataOutputStream();
         XdrSCVal.encode(reencodeStream, decoded);
-        expect(reencodeStream.bytes, equals(bytes),
-            reason: 'XDR roundtrip should preserve bytes for $originalValue');
+        expect(
+          reencodeStream.bytes,
+          equals(bytes),
+          reason: 'XDR roundtrip should preserve bytes for $originalValue',
+        );
       }
     });
 
@@ -303,26 +329,38 @@ void main() {
         // Test U128
         XdrSCVal u128Val = XdrSCVal.forU128BigInt(originalValue);
         BigInt? u128Result = u128Val.toBigInt();
-        expect(u128Result, equals(originalValue),
-               reason: 'U128 toBigInt failed for $originalValue');
+        expect(
+          u128Result,
+          equals(originalValue),
+          reason: 'U128 toBigInt failed for $originalValue',
+        );
 
         // Test I128
         XdrSCVal i128Val = XdrSCVal.forI128BigInt(originalValue);
         BigInt? i128Result = i128Val.toBigInt();
-        expect(i128Result, equals(originalValue),
-               reason: 'I128 toBigInt failed for $originalValue');
+        expect(
+          i128Result,
+          equals(originalValue),
+          reason: 'I128 toBigInt failed for $originalValue',
+        );
 
         // Test U256
         XdrSCVal u256Val = XdrSCVal.forU256BigInt(originalValue);
         BigInt? u256Result = u256Val.toBigInt();
-        expect(u256Result, equals(originalValue),
-               reason: 'U256 toBigInt failed for $originalValue');
+        expect(
+          u256Result,
+          equals(originalValue),
+          reason: 'U256 toBigInt failed for $originalValue',
+        );
 
         // Test I256
         XdrSCVal i256Val = XdrSCVal.forI256BigInt(originalValue);
         BigInt? i256Result = i256Val.toBigInt();
-        expect(i256Result, equals(originalValue),
-               reason: 'I256 toBigInt failed for $originalValue');
+        expect(
+          i256Result,
+          equals(originalValue),
+          reason: 'I256 toBigInt failed for $originalValue',
+        );
       }
     });
 
@@ -339,13 +377,19 @@ void main() {
       for (BigInt originalValue in testValues) {
         XdrSCVal i128Val = XdrSCVal.forI128BigInt(originalValue);
         BigInt? i128Result = i128Val.toBigInt();
-        expect(i128Result, equals(originalValue),
-               reason: 'I128 toBigInt failed for $originalValue');
+        expect(
+          i128Result,
+          equals(originalValue),
+          reason: 'I128 toBigInt failed for $originalValue',
+        );
 
         XdrSCVal i256Val = XdrSCVal.forI256BigInt(originalValue);
         BigInt? i256Result = i256Val.toBigInt();
-        expect(i256Result, equals(originalValue),
-               reason: 'I256 toBigInt failed for $originalValue');
+        expect(
+          i256Result,
+          equals(originalValue),
+          reason: 'I256 toBigInt failed for $originalValue',
+        );
       }
     });
 
@@ -364,16 +408,22 @@ void main() {
         if (originalValue < BigInt.from(2).pow(128)) {
           XdrSCVal u128Val = XdrSCVal.forU128BigInt(originalValue);
           BigInt? u128Result = u128Val.toBigInt();
-          expect(u128Result, equals(originalValue),
-                 reason: 'U128 toBigInt failed for $originalValue');
+          expect(
+            u128Result,
+            equals(originalValue),
+            reason: 'U128 toBigInt failed for $originalValue',
+          );
         }
 
         // Test 256-bit unsigned values
         if (originalValue < BigInt.from(2).pow(256)) {
           XdrSCVal u256Val = XdrSCVal.forU256BigInt(originalValue);
           BigInt? u256Result = u256Val.toBigInt();
-          expect(u256Result, equals(originalValue),
-                 reason: 'U256 toBigInt failed for $originalValue');
+          expect(
+            u256Result,
+            equals(originalValue),
+            reason: 'U256 toBigInt failed for $originalValue',
+          );
         }
       }
 
@@ -385,19 +435,27 @@ void main() {
 
       for (BigInt originalValue in signedTestValues) {
         // Test 128-bit signed values
-        if (originalValue >= -BigInt.from(2).pow(127) && originalValue < BigInt.from(2).pow(127)) {
+        if (originalValue >= -BigInt.from(2).pow(127) &&
+            originalValue < BigInt.from(2).pow(127)) {
           XdrSCVal i128Val = XdrSCVal.forI128BigInt(originalValue);
           BigInt? i128Result = i128Val.toBigInt();
-          expect(i128Result, equals(originalValue),
-                 reason: 'I128 toBigInt failed for $originalValue');
+          expect(
+            i128Result,
+            equals(originalValue),
+            reason: 'I128 toBigInt failed for $originalValue',
+          );
         }
 
         // Test 256-bit signed values
-        if (originalValue >= -BigInt.from(2).pow(255) && originalValue < BigInt.from(2).pow(255)) {
+        if (originalValue >= -BigInt.from(2).pow(255) &&
+            originalValue < BigInt.from(2).pow(255)) {
           XdrSCVal i256Val = XdrSCVal.forI256BigInt(originalValue);
           BigInt? i256Result = i256Val.toBigInt();
-          expect(i256Result, equals(originalValue),
-                 reason: 'I256 toBigInt failed for $originalValue');
+          expect(
+            i256Result,
+            equals(originalValue),
+            reason: 'I256 toBigInt failed for $originalValue',
+          );
         }
       }
     });

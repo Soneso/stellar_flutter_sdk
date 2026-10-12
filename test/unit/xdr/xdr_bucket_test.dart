@@ -19,14 +19,29 @@ void main() {
     });
 
     test('XdrBucketEntryType toString', () {
-      expect(XdrBucketEntryType.METAENTRY.toString(), contains('BucketEntryType'));
-      expect(XdrBucketEntryType.LIVEENTRY.toString(), contains('BucketEntryType'));
-      expect(XdrBucketEntryType.DEADENTRY.toString(), contains('BucketEntryType'));
-      expect(XdrBucketEntryType.INITENTRY.toString(), contains('BucketEntryType'));
+      expect(
+        XdrBucketEntryType.METAENTRY.toString(),
+        contains('BucketEntryType'),
+      );
+      expect(
+        XdrBucketEntryType.LIVEENTRY.toString(),
+        contains('BucketEntryType'),
+      );
+      expect(
+        XdrBucketEntryType.DEADENTRY.toString(),
+        contains('BucketEntryType'),
+      );
+      expect(
+        XdrBucketEntryType.INITENTRY.toString(),
+        contains('BucketEntryType'),
+      );
     });
 
     test('XdrBucketEntry METAENTRY encode/decode', () {
-      var bucketMetadata = XdrBucketMetadata(XdrUint32(21), XdrBucketMetadataExt(0));
+      var bucketMetadata = XdrBucketMetadata(
+        XdrUint32(21),
+        XdrBucketMetadataExt(0),
+      );
 
       var original = XdrBucketEntry(XdrBucketEntryType.METAENTRY);
       original.metaEntry = bucketMetadata;
@@ -38,7 +53,10 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrBucketEntry.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrBucketEntryType.METAENTRY.value));
+      expect(
+        decoded.discriminant.value,
+        equals(XdrBucketEntryType.METAENTRY.value),
+      );
       expect(decoded.metaEntry, isNotNull);
       expect(decoded.metaEntry!.ledgerVersion.uint32, equals(21));
       expect(decoded.liveEntry, isNull);
@@ -54,7 +72,9 @@ void main() {
     });
 
     test('XdrBucketEntry liveEntry getter/setter', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var accountId = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       var accountData = XdrAccountEntry(
         accountId,
         XdrInt64(BigInt.from(5000000)),
@@ -70,17 +90,26 @@ void main() {
 
       var ledgerData = XdrLedgerEntryData(XdrLedgerEntryType.ACCOUNT);
       ledgerData.account = accountData;
-      var ledgerEntry = XdrLedgerEntry(XdrUint32(0), ledgerData, XdrLedgerEntryExt(0));
+      var ledgerEntry = XdrLedgerEntry(
+        XdrUint32(0),
+        ledgerData,
+        XdrLedgerEntryExt(0),
+      );
 
       var entry = XdrBucketEntry(XdrBucketEntryType.LIVEENTRY);
       entry.liveEntry = ledgerEntry;
 
       expect(entry.liveEntry, isNotNull);
-      expect(entry.liveEntry!.data.account!.balance.int64, equals(BigInt.from(5000000)));
+      expect(
+        entry.liveEntry!.data.account!.balance.int64,
+        equals(BigInt.from(5000000)),
+      );
     });
 
     test('XdrBucketEntry deadEntry getter/setter', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var accountId = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       var ledgerKey = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
       ledgerKey.account = XdrLedgerKeyAccount(accountId);
 
@@ -88,11 +117,16 @@ void main() {
       entry.deadEntry = ledgerKey;
 
       expect(entry.deadEntry, isNotNull);
-      expect(entry.deadEntry!.discriminant.value, equals(XdrLedgerEntryType.ACCOUNT.value));
+      expect(
+        entry.deadEntry!.discriminant.value,
+        equals(XdrLedgerEntryType.ACCOUNT.value),
+      );
     });
 
     test('XdrBucketEntry with TRUSTLINE liveEntry', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var accountId = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       var asset = XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_NATIVE);
       var ext = XdrTrustLineEntryExt(0);
       var trustlineEntry = XdrTrustLineEntry(
@@ -106,7 +140,11 @@ void main() {
 
       var ledgerData = XdrLedgerEntryData(XdrLedgerEntryType.TRUSTLINE);
       ledgerData.trustLine = trustlineEntry;
-      var ledgerEntry = XdrLedgerEntry(XdrUint32(0), ledgerData, XdrLedgerEntryExt(0));
+      var ledgerEntry = XdrLedgerEntry(
+        XdrUint32(0),
+        ledgerData,
+        XdrLedgerEntryExt(0),
+      );
 
       var original = XdrBucketEntry(XdrBucketEntryType.LIVEENTRY);
       original.liveEntry = ledgerEntry;
@@ -118,13 +156,21 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrBucketEntry.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrBucketEntryType.LIVEENTRY.value));
+      expect(
+        decoded.discriminant.value,
+        equals(XdrBucketEntryType.LIVEENTRY.value),
+      );
       expect(decoded.liveEntry, isNotNull);
-      expect(decoded.liveEntry!.data.trustLine!.balance.int64, equals(BigInt.from(1000000)));
+      expect(
+        decoded.liveEntry!.data.trustLine!.balance.int64,
+        equals(BigInt.from(1000000)),
+      );
     });
 
     test('XdrBucketEntry with TRUSTLINE deadEntry', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var accountId = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       var asset = XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_NATIVE);
 
       var ledgerKey = XdrLedgerKey(XdrLedgerEntryType.TRUSTLINE);
@@ -140,16 +186,27 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrBucketEntry.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrBucketEntryType.DEADENTRY.value));
+      expect(
+        decoded.discriminant.value,
+        equals(XdrBucketEntryType.DEADENTRY.value),
+      );
       expect(decoded.deadEntry, isNotNull);
-      expect(decoded.deadEntry!.discriminant.value, equals(XdrLedgerEntryType.TRUSTLINE.value));
+      expect(
+        decoded.deadEntry!.discriminant.value,
+        equals(XdrLedgerEntryType.TRUSTLINE.value),
+      );
     });
 
     test('XdrBucketEntry with OFFER deadEntry', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var accountId = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
 
       var ledgerKey = XdrLedgerKey(XdrLedgerEntryType.OFFER);
-      ledgerKey.offer = XdrLedgerKeyOffer(accountId, XdrUint64(BigInt.from(12345)));
+      ledgerKey.offer = XdrLedgerKeyOffer(
+        accountId,
+        XdrUint64(BigInt.from(12345)),
+      );
 
       var original = XdrBucketEntry(XdrBucketEntryType.DEADENTRY);
       original.deadEntry = ledgerKey;
@@ -161,14 +218,25 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrBucketEntry.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrBucketEntryType.DEADENTRY.value));
+      expect(
+        decoded.discriminant.value,
+        equals(XdrBucketEntryType.DEADENTRY.value),
+      );
       expect(decoded.deadEntry, isNotNull);
-      expect(decoded.deadEntry!.discriminant.value, equals(XdrLedgerEntryType.OFFER.value));
-      expect(decoded.deadEntry!.offer!.offerID.uint64, equals(BigInt.from(12345)));
+      expect(
+        decoded.deadEntry!.discriminant.value,
+        equals(XdrLedgerEntryType.OFFER.value),
+      );
+      expect(
+        decoded.deadEntry!.offer!.offerID.uint64,
+        equals(BigInt.from(12345)),
+      );
     });
 
     test('XdrBucketEntry with DATA deadEntry', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var accountId = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       var dataName = XdrString64('testdata');
 
       var ledgerKey = XdrLedgerKey(XdrLedgerEntryType.DATA);
@@ -184,13 +252,21 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrBucketEntry.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrBucketEntryType.DEADENTRY.value));
+      expect(
+        decoded.discriminant.value,
+        equals(XdrBucketEntryType.DEADENTRY.value),
+      );
       expect(decoded.deadEntry, isNotNull);
-      expect(decoded.deadEntry!.discriminant.value, equals(XdrLedgerEntryType.DATA.value));
+      expect(
+        decoded.deadEntry!.discriminant.value,
+        equals(XdrLedgerEntryType.DATA.value),
+      );
     });
 
     test('Multiple XdrBucketEntry encode/decode in sequence', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var accountId = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
 
       var liveEntry = XdrBucketEntry(XdrBucketEntryType.LIVEENTRY);
       var accountData = XdrAccountEntry(
@@ -207,7 +283,11 @@ void main() {
       );
       var ledgerData = XdrLedgerEntryData(XdrLedgerEntryType.ACCOUNT);
       ledgerData.account = accountData;
-      var ledgerEntry = XdrLedgerEntry(XdrUint32(0), ledgerData, XdrLedgerEntryExt(0));
+      var ledgerEntry = XdrLedgerEntry(
+        XdrUint32(0),
+        ledgerData,
+        XdrLedgerEntryExt(0),
+      );
       liveEntry.liveEntry = ledgerEntry;
 
       var deadEntry = XdrBucketEntry(XdrBucketEntryType.DEADENTRY);
@@ -224,8 +304,14 @@ void main() {
       var decoded1 = XdrBucketEntry.decode(input);
       var decoded2 = XdrBucketEntry.decode(input);
 
-      expect(decoded1.discriminant.value, equals(XdrBucketEntryType.LIVEENTRY.value));
-      expect(decoded2.discriminant.value, equals(XdrBucketEntryType.DEADENTRY.value));
+      expect(
+        decoded1.discriminant.value,
+        equals(XdrBucketEntryType.LIVEENTRY.value),
+      );
+      expect(
+        decoded2.discriminant.value,
+        equals(XdrBucketEntryType.DEADENTRY.value),
+      );
     });
   });
 }

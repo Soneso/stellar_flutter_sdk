@@ -86,16 +86,18 @@ XdrSorobanAuthorizationEntry _makeAddressCredsEntry(String contractAddress) {
   );
 }
 
-WebAuthnAuthenticationResult _fakeAuthResult({
-  Uint8List? credentialIdBytes,
-}) {
-  final credIdBytes = credentialIdBytes ??
+WebAuthnAuthenticationResult _fakeAuthResult({Uint8List? credentialIdBytes}) {
+  final credIdBytes =
+      credentialIdBytes ??
       base64Url.decode(base64Url.normalize(_credentialIdB64));
   final sig = Uint8List.fromList(<int>[
-    0x30, 0x44,
-    0x02, 0x20,
+    0x30,
+    0x44,
+    0x02,
+    0x20,
     ..._bytes(32, 1),
-    0x02, 0x20,
+    0x02,
+    0x20,
     ..._bytes(32, 2),
   ]);
   return WebAuthnAuthenticationResult(
@@ -123,13 +125,15 @@ Uint8List _passkeyKeyData() {
 }
 
 Future<
-    ({
-      FakePipelineKit kit,
-      MockSorobanServer soroban,
-      RecordingWebAuthnProvider provider,
-      KeyPair deployer,
-      OZStoredCredential stored,
-    })> _harness() async {
+  ({
+    FakePipelineKit kit,
+    MockSorobanServer soroban,
+    RecordingWebAuthnProvider provider,
+    KeyPair deployer,
+    OZStoredCredential stored,
+  })
+>
+_harness() async {
   final soroban = MockSorobanServer();
   final provider = RecordingWebAuthnProvider();
   final deployer = KeyPair.random();
@@ -178,10 +182,10 @@ class _AlwaysSignWallet extends OZExternalWalletAdapter {
 
   @override
   Future<OZConnectedWallet?> connect() async => OZConnectedWallet(
-        address: _address,
-        walletId: 'test-wallet',
-        walletName: 'Test Wallet',
-      );
+    address: _address,
+    walletId: 'test-wallet',
+    walletName: 'Test Wallet',
+  );
 
   @override
   Future<void> disconnect() async {}
@@ -191,12 +195,12 @@ class _AlwaysSignWallet extends OZExternalWalletAdapter {
 
   @override
   List<OZConnectedWallet> getConnectedWallets() => <OZConnectedWallet>[
-        OZConnectedWallet(
-          address: _address,
-          walletId: 'test-wallet',
-          walletName: 'Test Wallet',
-        ),
-      ];
+    OZConnectedWallet(
+      address: _address,
+      walletId: 'test-wallet',
+      walletName: 'Test Wallet',
+    ),
+  ];
 
   @override
   OZConnectedWallet? getWalletForAddress(String address) {
@@ -231,10 +235,12 @@ void main() {
       // Deployer account.
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
       // Initial simulation returns one auth entry targeting the smart account.
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(_contractA),
-        minResourceFee: 100,
-      ));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(_contractA),
+          minResourceFee: 100,
+        ),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(1000));
       // WebAuthn provider returns a valid auth result.
       h.provider.authenticateResponses.add(_fakeAuthResult());
@@ -256,7 +262,9 @@ void main() {
 
       final keyData = _passkeyKeyData();
       // Also provide credentialIdBytes to cover the allowCredentials branch.
-      final credentialIdBytes = base64Url.decode(base64Url.normalize(_credentialIdB64));
+      final credentialIdBytes = base64Url.decode(
+        base64Url.normalize(_credentialIdB64),
+      );
       final result = await manager.submitWithMultipleSigners(
         hostFunction: hostFn,
         selectedSigners: <OZSelectedSigner>[
@@ -277,10 +285,12 @@ void main() {
       final h = await _harness();
 
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(_contractA),
-        minResourceFee: 100,
-      ));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(_contractA),
+          minResourceFee: 100,
+        ),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(500));
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
@@ -318,10 +328,12 @@ void main() {
       final h = await _harness();
 
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(_contractA),
-        minResourceFee: 100,
-      ));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(_contractA),
+          minResourceFee: 100,
+        ),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(800));
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
@@ -348,10 +360,12 @@ void main() {
       final h = await _harness();
 
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(_contractA),
-        minResourceFee: 100,
-      ));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(_contractA),
+          minResourceFee: 100,
+        ),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(300));
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
@@ -462,10 +476,12 @@ void main() {
       final h = await _harness();
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
       // Smart-account auth entry (points at _contractA, the connected contract).
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(_contractA),
-        minResourceFee: 100,
-      ));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(_contractA),
+          minResourceFee: 100,
+        ),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(600));
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
@@ -494,64 +510,157 @@ void main() {
       expect(result.success, isTrue);
     });
 
-    test('walletSigner_authEntryForUnmatchedAddress_throwsSigningFailed', () async {
-      // When auth entry address is neither the smart-account contract nor
-      // a wallet signer address, line 382 throws SmartAccountTransactionSigningFailed.
-      final walletAddress =
-          'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7';
-      final unmatchedAddress =
-          'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54';
-      final walletAdapter = _AlwaysSignWallet(walletAddress);
+    test(
+      'walletSigner_authEntryForUnmatchedAddress_throwsSigningFailed',
+      () async {
+        // When auth entry address is neither the smart-account contract nor
+        // a wallet signer address, line 382 throws SmartAccountTransactionSigningFailed.
+        final walletAddress =
+            'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7';
+        final unmatchedAddress =
+            'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54';
+        final walletAdapter = _AlwaysSignWallet(walletAddress);
 
-      // Auth entry for an address not in selectedSigners.
-      final addrXdr = Address.forAccountId(unmatchedAddress).toXdr();
-      final invArgs = XdrInvokeContractArgs(
-        Address.forContractId(_contractB).toXdr(),
-        'noop',
-        const <XdrSCVal>[],
-      );
-      final inv = XdrSorobanAuthorizedInvocation(
-        XdrSorobanAuthorizedFunction.forInvokeContractArgs(invArgs),
-        <XdrSorobanAuthorizedInvocation>[],
-      );
-      final addrCreds = XdrSorobanAddressCredentials(
-        addrXdr,
-        XdrInt64(BigInt.from(0)),
-        XdrUint32(0),
-        XdrSCVal(XdrSCValType.SCV_VOID),
-      );
-      final entry = XdrSorobanAuthorizationEntry(
-        XdrSorobanCredentials.forAddressCredentials(addrCreds),
-        inv,
-      );
+        // Auth entry for an address not in selectedSigners.
+        final addrXdr = Address.forAccountId(unmatchedAddress).toXdr();
+        final invArgs = XdrInvokeContractArgs(
+          Address.forContractId(_contractB).toXdr(),
+          'noop',
+          const <XdrSCVal>[],
+        );
+        final inv = XdrSorobanAuthorizedInvocation(
+          XdrSorobanAuthorizedFunction.forInvokeContractArgs(invArgs),
+          <XdrSorobanAuthorizedInvocation>[],
+        );
+        final addrCreds = XdrSorobanAddressCredentials(
+          addrXdr,
+          XdrInt64(BigInt.from(0)),
+          XdrUint32(0),
+          XdrSCVal(XdrSCValType.SCV_VOID),
+        );
+        final entry = XdrSorobanAuthorizationEntry(
+          XdrSorobanCredentials.forAddressCredentials(addrCreds),
+          inv,
+        );
 
-      final deployer = KeyPair.random();
-      final mock = MockSorobanServer();
-      mock.getAccountResponses.add(_deployerAccount(deployer));
-      final simResp = SimulateTransactionResponse(<String, dynamic>{});
-      simResp.results = <SimulateTransactionResult>[
-        SimulateTransactionResult('', <String>[entry.toBase64EncodedXdrString()]),
-      ];
-      mock.simulateResponses.add(simResp);
-      mock.latestLedgerResponses.add(_latestLedger(50));
+        final deployer = KeyPair.random();
+        final mock = MockSorobanServer();
+        mock.getAccountResponses.add(_deployerAccount(deployer));
+        final simResp = SimulateTransactionResponse(<String, dynamic>{});
+        simResp.results = <SimulateTransactionResult>[
+          SimulateTransactionResult('', <String>[
+            entry.toBase64EncodedXdrString(),
+          ]),
+        ];
+        mock.simulateResponses.add(simResp);
+        mock.latestLedgerResponses.add(_latestLedger(50));
 
-      final config = OZSmartAccountConfig(
-        rpcUrl: 'https://soroban-testnet.stellar.org',
-        networkPassphrase: Network.TESTNET.networkPassphrase,
-        accountWasmHash: '0' * 64,
-        webauthnVerifierAddress: _contractA,
-      );
-      final kit = FakePipelineKit(
-        config: config,
-        sorobanServer: mock,
-        deployer: deployer,
-      );
-      kit.setExternalWallet(walletAdapter);
-      kit.setConnected(credentialId: _credentialIdB64, contractId: _contractA);
+        final config = OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress: _contractA,
+        );
+        final kit = FakePipelineKit(
+          config: config,
+          sorobanServer: mock,
+          deployer: deployer,
+        );
+        kit.setExternalWallet(walletAdapter);
+        kit.setConnected(
+          credentialId: _credentialIdB64,
+          contractId: _contractA,
+        );
 
-      final manager = OZMultiSignerManager(kit);
-      await expectLater(
-        () => manager.submitWithMultipleSigners(
+        final manager = OZMultiSignerManager(kit);
+        await expectLater(
+          () => manager.submitWithMultipleSigners(
+            hostFunction: XdrHostFunction.forInvokingContractWithArgs(
+              XdrInvokeContractArgs(
+                Address.forContractId(_contractB).toXdr(),
+                'noop',
+                const <XdrSCVal>[],
+              ),
+            ),
+            selectedSigners: <OZSelectedSigner>[
+              OZSelectedSignerWallet(
+                walletAddress,
+              ), // wallet signs walletAddress entries
+              // but the auth entry points to unmatchedAddress - no match
+            ],
+          ),
+          throwsA(isA<SmartAccountTransactionSigningFailed>()),
+        );
+      },
+    );
+
+    test(
+      'walletSigner_withSourceAccountEntry_passthroughWithoutWalletSign',
+      () async {
+        // When the only selected signer is a wallet signer and all auth entries
+        // are source-account type (not targeting a wallet address), the entries
+        // pass through unsigned. The wallet signer's address is added to the
+        // smartAccountSigners list for context-rule resolution (lines 339-340).
+        final sourceAccountEntry = XdrSorobanAuthorizationEntry(
+          XdrSorobanCredentials.forSourceAccount(),
+          XdrSorobanAuthorizedInvocation(
+            XdrSorobanAuthorizedFunction.forInvokeContractArgs(
+              XdrInvokeContractArgs(
+                Address.forContractId(_contractB).toXdr(),
+                'noop',
+                const <XdrSCVal>[],
+              ),
+            ),
+            <XdrSorobanAuthorizedInvocation>[],
+          ),
+        );
+        final entryXdr = sourceAccountEntry.toBase64EncodedXdrString();
+
+        final deployer = KeyPair.random();
+        final mock = MockSorobanServer();
+        mock.getAccountResponses.add(_deployerAccount(deployer));
+        final simResp = SimulateTransactionResponse(<String, dynamic>{});
+        simResp.results = <SimulateTransactionResult>[
+          SimulateTransactionResult('', <String>[entryXdr]),
+        ];
+        mock.simulateResponses.add(simResp);
+        mock.latestLedgerResponses.add(_latestLedger(100));
+
+        // Re-simulate.
+        mock.getAccountResponses.add(_deployerAccount(deployer, seq: 2));
+        mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 50));
+
+        // submit + poll.
+        final sendResp = SendTransactionResponse(<String, dynamic>{});
+        sendResp.hash = 'wallet-hash';
+        sendResp.status = SendTransactionResponse.STATUS_PENDING;
+        mock.sendResponses.add(sendResp);
+        mock.pollResponses.add(_txSuccess(ledger: 200));
+
+        // A wallet adapter that can sign for the wallet address.
+        final walletAddress =
+            'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7';
+        final walletAdapter = _AlwaysSignWallet(walletAddress);
+
+        final config = OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress: _contractA,
+        );
+        final kit = FakePipelineKit(
+          config: config,
+          sorobanServer: mock,
+          deployer: deployer,
+        );
+        kit.setExternalWallet(walletAdapter);
+        kit.setConnected(
+          credentialId: _credentialIdB64,
+          contractId: _contractA,
+        );
+
+        final manager = OZMultiSignerManager(kit);
+        final result = await manager.submitWithMultipleSigners(
           hostFunction: XdrHostFunction.forInvokingContractWithArgs(
             XdrInvokeContractArgs(
               Address.forContractId(_contractB).toXdr(),
@@ -560,90 +669,13 @@ void main() {
             ),
           ),
           selectedSigners: <OZSelectedSigner>[
-            OZSelectedSignerWallet(walletAddress), // wallet signs walletAddress entries
-            // but the auth entry points to unmatchedAddress - no match
+            OZSelectedSignerWallet(walletAddress),
           ],
-        ),
-        throwsA(isA<SmartAccountTransactionSigningFailed>()),
-      );
-    });
+        );
 
-    test('walletSigner_withSourceAccountEntry_passthroughWithoutWalletSign', () async {
-      // When the only selected signer is a wallet signer and all auth entries
-      // are source-account type (not targeting a wallet address), the entries
-      // pass through unsigned. The wallet signer's address is added to the
-      // smartAccountSigners list for context-rule resolution (lines 339-340).
-      final sourceAccountEntry = XdrSorobanAuthorizationEntry(
-        XdrSorobanCredentials.forSourceAccount(),
-        XdrSorobanAuthorizedInvocation(
-          XdrSorobanAuthorizedFunction.forInvokeContractArgs(
-            XdrInvokeContractArgs(
-              Address.forContractId(_contractB).toXdr(),
-              'noop',
-              const <XdrSCVal>[],
-            ),
-          ),
-          <XdrSorobanAuthorizedInvocation>[],
-        ),
-      );
-      final entryXdr = sourceAccountEntry.toBase64EncodedXdrString();
-
-      final deployer = KeyPair.random();
-      final mock = MockSorobanServer();
-      mock.getAccountResponses.add(_deployerAccount(deployer));
-      final simResp = SimulateTransactionResponse(<String, dynamic>{});
-      simResp.results = <SimulateTransactionResult>[
-        SimulateTransactionResult('', <String>[entryXdr]),
-      ];
-      mock.simulateResponses.add(simResp);
-      mock.latestLedgerResponses.add(_latestLedger(100));
-
-      // Re-simulate.
-      mock.getAccountResponses.add(_deployerAccount(deployer, seq: 2));
-      mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 50));
-
-      // submit + poll.
-      final sendResp = SendTransactionResponse(<String, dynamic>{});
-      sendResp.hash = 'wallet-hash';
-      sendResp.status = SendTransactionResponse.STATUS_PENDING;
-      mock.sendResponses.add(sendResp);
-      mock.pollResponses.add(_txSuccess(ledger: 200));
-
-      // A wallet adapter that can sign for the wallet address.
-      final walletAddress =
-          'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7';
-      final walletAdapter = _AlwaysSignWallet(walletAddress);
-
-      final config = OZSmartAccountConfig(
-        rpcUrl: 'https://soroban-testnet.stellar.org',
-        networkPassphrase: Network.TESTNET.networkPassphrase,
-        accountWasmHash: '0' * 64,
-        webauthnVerifierAddress: _contractA,
-      );
-      final kit = FakePipelineKit(
-        config: config,
-        sorobanServer: mock,
-        deployer: deployer,
-      );
-      kit.setExternalWallet(walletAdapter);
-      kit.setConnected(credentialId: _credentialIdB64, contractId: _contractA);
-
-      final manager = OZMultiSignerManager(kit);
-      final result = await manager.submitWithMultipleSigners(
-        hostFunction: XdrHostFunction.forInvokingContractWithArgs(
-          XdrInvokeContractArgs(
-            Address.forContractId(_contractB).toXdr(),
-            'noop',
-            const <XdrSCVal>[],
-          ),
-        ),
-        selectedSigners: <OZSelectedSigner>[
-          OZSelectedSignerWallet(walletAddress),
-        ],
-      );
-
-      expect(result.success, isTrue);
-    });
+        expect(result.success, isTrue);
+      },
+    );
 
     test('ed25519Signer_fullPipeline_signsSmartAccountEntry', () async {
       // Full pipeline with Ed25519 signer + smart-account auth entry.
@@ -661,10 +693,12 @@ void main() {
       final mock = MockSorobanServer();
       mock.getAccountResponses.add(_deployerAccount(deployer));
       // Smart-account auth entry targeting _contractA (the connected contract).
-      mock.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(_contractA),
-        minResourceFee: 100,
-      ));
+      mock.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(_contractA),
+          minResourceFee: 100,
+        ),
+      );
       mock.latestLedgerResponses.add(_latestLedger(300));
       // Re-simulate after signing.
       mock.getAccountResponses.add(_deployerAccount(deployer, seq: 2));
@@ -738,10 +772,12 @@ void main() {
           <XdrSorobanAuthorizedInvocation>[],
         ),
       );
-      mock.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: sourceAccountEntry,
-        minResourceFee: 100,
-      ));
+      mock.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: sourceAccountEntry,
+          minResourceFee: 100,
+        ),
+      );
       mock.latestLedgerResponses.add(_latestLedger(500));
       mock.getAccountResponses.add(_deployerAccount(deployer, seq: 2));
       mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 80));
@@ -801,10 +837,12 @@ void main() {
           <XdrSorobanAuthorizedInvocation>[],
         ),
       );
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: sourceAccountEntry,
-        minResourceFee: 100,
-      ));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: sourceAccountEntry,
+          minResourceFee: 100,
+        ),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(100));
       // No WebAuthn needed since source-account entry passes through.
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
@@ -842,14 +880,16 @@ void main() {
     /// smart-account auth entry and returns the delegated `__check_auth`
     /// entry the pipeline appended plus the wallet adapter that signed it.
     Future<({XdrSorobanAuthorizationEntry delegated, _AlwaysSignWallet wallet})>
-        runWalletSubmission({required bool useUpgradedAuth}) async {
+    runWalletSubmission({required bool useUpgradedAuth}) async {
       final deployer = KeyPair.random();
       final mock = MockSorobanServer();
       mock.getAccountResponses.add(_deployerAccount(deployer));
-      mock.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(_contractA),
-        minResourceFee: 100,
-      ));
+      mock.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(_contractA),
+          minResourceFee: 100,
+        ),
+      );
       mock.latestLedgerResponses.add(_latestLedger(600));
       mock.getAccountResponses.add(_deployerAccount(deployer, seq: 2));
       mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 80));
@@ -908,8 +948,11 @@ void main() {
         equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2),
       );
       expect(outcome.delegated.credentials.addressV2, isNotNull);
-      expect(outcome.delegated.credentials.address, isNull,
-          reason: 'the legacy arm must be empty on an ADDRESS_V2 entry');
+      expect(
+        outcome.delegated.credentials.address,
+        isNull,
+        reason: 'the legacy arm must be empty on an ADDRESS_V2 entry',
+      );
     });
 
     test('delegatedWalletEntry_optOutConfig_carriesLegacyAddress', () async {
@@ -971,10 +1014,12 @@ void main() {
       final deployer = KeyPair.random();
       final mock = MockSorobanServer();
       mock.getAccountResponses.add(_deployerAccount(deployer));
-      mock.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(_contractA),
-        minResourceFee: 100,
-      ));
+      mock.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(_contractA),
+          minResourceFee: 100,
+        ),
+      );
       mock.latestLedgerResponses.add(_latestLedger(600));
       mock.getAccountResponses.add(_deployerAccount(deployer, seq: 2));
       mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 80));
@@ -995,8 +1040,7 @@ void main() {
       kit.setExternalWallet(_AlwaysSignWallet(walletAddress));
       kit.setConnected(credentialId: _credentialIdB64, contractId: _contractA);
 
-      final result =
-          await OZMultiSignerManager(kit).submitWithMultipleSigners(
+      final result = await OZMultiSignerManager(kit).submitWithMultipleSigners(
         hostFunction: XdrHostFunction.forInvokingContractWithArgs(
           XdrInvokeContractArgs(
             Address.forContractId(_contractB).toXdr(),
@@ -1012,27 +1056,35 @@ void main() {
       return mock.simulateCalls;
     }
 
-    test('multiSignerSubmission_optOutConfig_simulateRequestsLegacyEntries',
-        () async {
-      final calls = await runSubmission(useUpgradedAuth: false);
+    test(
+      'multiSignerSubmission_optOutConfig_simulateRequestsLegacyEntries',
+      () async {
+        final calls = await runSubmission(useUpgradedAuth: false);
 
-      expect(calls, hasLength(2));
-      for (final call in calls) {
-        expect(call.getRequestArgs()['useUpgradedAuth'], isFalse,
-            reason: 'the initial simulation and the signed re-simulation '
-                'must both request legacy entries');
-      }
-    });
+        expect(calls, hasLength(2));
+        for (final call in calls) {
+          expect(
+            call.getRequestArgs()['useUpgradedAuth'],
+            isFalse,
+            reason:
+                'the initial simulation and the signed re-simulation '
+                'must both request legacy entries',
+          );
+        }
+      },
+    );
 
-    test('multiSignerSubmission_defaultConfig_simulateRequestsUpgradedEntries',
-        () async {
-      final calls = await runSubmission(useUpgradedAuth: true);
+    test(
+      'multiSignerSubmission_defaultConfig_simulateRequestsUpgradedEntries',
+      () async {
+        final calls = await runSubmission(useUpgradedAuth: true);
 
-      expect(calls, hasLength(2));
-      for (final call in calls) {
-        expect(call.getRequestArgs()['useUpgradedAuth'], isTrue);
-      }
-    });
+        expect(calls, hasLength(2));
+        for (final call in calls) {
+          expect(call.getRequestArgs()['useUpgradedAuth'], isTrue);
+        }
+      },
+    );
   });
 }
 

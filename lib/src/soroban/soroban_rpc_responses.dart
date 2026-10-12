@@ -7,7 +7,7 @@ import '../xdr/xdr.dart';
 /// Abstract class for soroban rpc responses.
 abstract class SorobanRpcResponse {
   Map<String, dynamic>
-      jsonResponse; // JSON response received from the rpc server
+  jsonResponse; // JSON response received from the rpc server
   SorobanRpcErrorResponse? error;
 
   /// Creates a SorobanRpcResponse with JSON response data.
@@ -105,7 +105,7 @@ class GetVersionInfoResponse extends SorobanRpcResponse {
   ///
   /// Contains version information for RPC server and Captive Core.
   GetVersionInfoResponse(Map<String, dynamic> jsonResponse)
-      : super(jsonResponse);
+    : super(jsonResponse);
 
   factory GetVersionInfoResponse.fromJson(Map<String, dynamic> json) {
     GetVersionInfoResponse response = GetVersionInfoResponse(json);
@@ -175,12 +175,14 @@ class GetFeeStatsResponse extends SorobanRpcResponse {
     GetFeeStatsResponse response = GetFeeStatsResponse(json);
     if (json['result'] != null) {
       if (json['result']['sorobanInclusionFee'] != null) {
-        response.sorobanInclusionFee =
-            InclusionFee.fromJson(json['result']['sorobanInclusionFee']);
+        response.sorobanInclusionFee = InclusionFee.fromJson(
+          json['result']['sorobanInclusionFee'],
+        );
       }
       if (json['result']['inclusionFee'] != null) {
-        response.inclusionFee =
-            InclusionFee.fromJson(json['result']['inclusionFee']);
+        response.inclusionFee = InclusionFee.fromJson(
+          json['result']['inclusionFee'],
+        );
       }
       if (json['result']['latestLedger'] != null) {
         response.latestLedger = json['result']['latestLedger'];
@@ -283,21 +285,22 @@ class InclusionFee {
   ///
   /// Contains percentile-based fee recommendations for transaction inclusion.
   InclusionFee(
-      this.max,
-      this.min,
-      this.mode,
-      this.p10,
-      this.p20,
-      this.p30,
-      this.p40,
-      this.p50,
-      this.p60,
-      this.p70,
-      this.p80,
-      this.p90,
-      this.p99,
-      this.transactionCount,
-      this.ledgerCount);
+    this.max,
+    this.min,
+    this.mode,
+    this.p10,
+    this.p20,
+    this.p30,
+    this.p40,
+    this.p50,
+    this.p60,
+    this.p70,
+    this.p80,
+    this.p90,
+    this.p99,
+    this.transactionCount,
+    this.ledgerCount,
+  );
 
   factory InclusionFee.fromJson(Map<String, dynamic> json) {
     return InclusionFee(
@@ -344,7 +347,7 @@ class GetLatestLedgerResponse extends SorobanRpcResponse {
   ///
   /// Contains the latest ledger sequence and hash information.
   GetLatestLedgerResponse(Map<String, dynamic> jsonResponse)
-      : super(jsonResponse);
+    : super(jsonResponse);
 
   factory GetLatestLedgerResponse.fromJson(Map<String, dynamic> json) {
     GetLatestLedgerResponse response = GetLatestLedgerResponse(json);
@@ -369,7 +372,7 @@ class GetLatestLedgerResponse extends SorobanRpcResponse {
 /// Error response.
 class SorobanRpcErrorResponse {
   Map<String, dynamic>
-      jsonResponse; // JSON response received from the rpc server
+  jsonResponse; // JSON response received from the rpc server
   String? code; // error code
   String? message;
   Map<String, dynamic>? data;
@@ -451,14 +454,15 @@ class GetLedgerEntriesResponse extends SorobanRpcResponse {
   ///
   /// Contains ledger entries retrieved from the network.
   GetLedgerEntriesResponse(Map<String, dynamic> jsonResponse)
-      : super(jsonResponse);
+    : super(jsonResponse);
 
   factory GetLedgerEntriesResponse.fromJson(Map<String, dynamic> json) {
     GetLedgerEntriesResponse response = GetLedgerEntriesResponse(json);
 
     if (json['result'] != null) {
       response.entries = List<LedgerEntry>.from(
-          json['result']['entries'].map((e) => LedgerEntry.fromJson(e)));
+        json['result']['entries'].map((e) => LedgerEntry.fromJson(e)),
+      );
       response.latestLedger = json['result']['latestLedger'];
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);
@@ -547,8 +551,13 @@ class LedgerEntry {
   /// Creates a LedgerEntry with entry data.
   ///
   /// Contains ledger entry key, value, and TTL information.
-  LedgerEntry(this.key, this.xdr, this.lastModifiedLedgerSeq,
-      this.liveUntilLedgerSeq, this.ext);
+  LedgerEntry(
+    this.key,
+    this.xdr,
+    this.lastModifiedLedgerSeq,
+    this.liveUntilLedgerSeq,
+    this.ext,
+  );
 
   factory LedgerEntry.fromJson(Map<String, dynamic> json) {
     String key = json['key'];
@@ -556,7 +565,12 @@ class LedgerEntry {
     int lastModifiedLedgerSeq = json['lastModifiedLedgerSeq'];
     int? liveUntilLedgerSeq = json['liveUntilLedgerSeq'];
     return LedgerEntry(
-        key, xdr, lastModifiedLedgerSeq, liveUntilLedgerSeq, json['ext']);
+      key,
+      xdr,
+      lastModifiedLedgerSeq,
+      liveUntilLedgerSeq,
+      json['ext'],
+    );
   }
 
   XdrLedgerEntryData get ledgerEntryData =>

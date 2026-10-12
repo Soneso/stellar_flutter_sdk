@@ -264,10 +264,7 @@ class StellarToml {
           "Replacing [ACCOUNTS] with [[ACCOUNTS]]. The [ACCOUNTS] value is invalid, please contact the issuer of the stellar.toml file and ask them to fix their stellar.toml file.",
           name: "stellar_flutter_sdk",
         );
-        lines[i] = lines[i].replaceFirst(
-          "[ACCOUNTS]",
-          "[[ACCOUNTS]]",
-        );
+        lines[i] = lines[i].replaceFirst("[ACCOUNTS]", "[[ACCOUNTS]]");
       }
       if (trimmedLine.startsWith("[[DOCUMENTATION]]")) {
         log(
@@ -284,30 +281,21 @@ class StellarToml {
           "Replacing [PRINCIPALS] with [[PRINCIPALS]]. The [PRINCIPALS] value is invalid, please contact the issuer of the stellar.toml file and ask them to fix their stellar.toml file.",
           name: "stellar_flutter_sdk",
         );
-        lines[i] = lines[i].replaceFirst(
-          "[PRINCIPALS]",
-          "[[PRINCIPALS]]",
-        );
+        lines[i] = lines[i].replaceFirst("[PRINCIPALS]", "[[PRINCIPALS]]");
       }
       if (trimmedLine.startsWith("[CURRENCIES]")) {
         log(
           "Replacing [CURRENCIES] with [[CURRENCIES]]. The [CURRENCIES] value is invalid, please contact the issuer of the stellar.toml file and ask them to fix their stellar.toml file.",
           name: "stellar_flutter_sdk",
         );
-        lines[i] = lines[i].replaceFirst(
-          "[CURRENCIES]",
-          "[[CURRENCIES]]",
-        );
+        lines[i] = lines[i].replaceFirst("[CURRENCIES]", "[[CURRENCIES]]");
       }
       if (trimmedLine.startsWith("[VALIDATORS]")) {
         log(
           "Replacing [VALIDATORS] with [[VALIDATORS]]. The [VALIDATORS] value is invalid, please contact the issuer of the stellar.toml file and ask them to fix their stellar.toml file.",
           name: "stellar_flutter_sdk",
         );
-        lines[i] = lines[i].replaceFirst(
-          "[VALIDATORS]",
-          "[[VALIDATORS]]",
-        );
+        lines[i] = lines[i].replaceFirst("[VALIDATORS]", "[[VALIDATORS]]");
       }
     }
     return lines.join('\n');
@@ -362,14 +350,18 @@ class StellarToml {
   ///   httpRequestHeaders: {'User-Agent': 'MyWallet/1.0'},
   /// );
   /// ```
-  static Future<StellarToml> fromDomain(String domain,
-      {http.Client? httpClient, Map<String, String>? httpRequestHeaders}) async {
+  static Future<StellarToml> fromDomain(
+    String domain, {
+    http.Client? httpClient,
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     Uri uri = Uri.parse("https://" + domain + "/.well-known/stellar.toml");
     http.Client client = httpClient == null ? http.Client() : httpClient;
     return await client.get(uri, headers: httpRequestHeaders).then((response) {
       if (response.statusCode != 200) {
         throw Exception(
-            "Stellar toml not found, response status code ${response.statusCode}");
+          "Stellar toml not found, response status code ${response.statusCode}",
+        );
       }
       return new StellarToml(response.body);
     });
@@ -416,8 +408,11 @@ class StellarToml {
   ///   }
   /// }
   /// ```
-  static Future<Currency> currencyFromUrl(String toml,
-      {http.Client? httpClient, Map<String, String>? httpRequestHeaders}) async {
+  static Future<Currency> currencyFromUrl(
+    String toml, {
+    http.Client? httpClient,
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     Uri uri = Uri.parse(toml);
 
     http.Client client = httpClient == null ? http.Client() : httpClient;
@@ -425,7 +420,8 @@ class StellarToml {
     return await client.get(uri, headers: httpRequestHeaders).then((response) {
       if (response.statusCode != 200) {
         throw Exception(
-            "Currency toml not found, response status code ${response.statusCode}");
+          "Currency toml not found, response status code ${response.statusCode}",
+        );
       }
       // var parser = new TomlParser();
       // var document = parser.parse(response.body).value;

@@ -123,48 +123,51 @@ class LedgerResponse extends Response {
   /// - [headerXdr] Base64-encoded XDR ledger header
   /// - [links] Hypermedia links to related resources
   LedgerResponse(
-      this.sequence,
-      this.hash,
-      this.id,
-      this.pagingToken,
-      this.prevHash,
-      this.successfulTransactionCount,
-      this.failedTransactionCount,
-      this.operationCount,
-      this.txSetOperationCount,
-      this.closedAt,
-      this.totalCoins,
-      this.feePool,
-      this.baseFeeInStroops,
-      this.baseReserveInStroops,
-      this.maxTxSetSize,
-      this.protocolVersion,
-      this.headerXdr,
-      this.links);
+    this.sequence,
+    this.hash,
+    this.id,
+    this.pagingToken,
+    this.prevHash,
+    this.successfulTransactionCount,
+    this.failedTransactionCount,
+    this.operationCount,
+    this.txSetOperationCount,
+    this.closedAt,
+    this.totalCoins,
+    this.feePool,
+    this.baseFeeInStroops,
+    this.baseReserveInStroops,
+    this.maxTxSetSize,
+    this.protocolVersion,
+    this.headerXdr,
+    this.links,
+  );
 
   /// Creates a ledger response from Horizon API JSON.
-  factory LedgerResponse.fromJson(Map<String, dynamic> json) => LedgerResponse(
-      convertInt(json['sequence'])!,
-      json['hash'],
-      json['id'],
-      json['paging_token'],
-      json['prev_hash'],
-      convertInt(json['successful_transaction_count'])!,
-      convertInt(json['failed_transaction_count'])!,
-      convertInt(json['operation_count'])!,
-      convertInt(json['tx_set_operation_count'])!,
-      json['closed_at'],
-      json['total_coins'],
-      json['fee_pool'],
-      convertInt(json['base_fee_in_stroops'])!,
-      convertInt(json['base_reserve_in_stroops'])!,
-      convertInt(json['max_tx_set_size'])!,
-      convertInt(json['protocol_version'])!,
-      json['header_xdr'],
-      LedgerResponseLinks.fromJson(json['_links']))
-    ..rateLimitLimit = convertInt(json['rateLimitLimit'])
-    ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
-    ..rateLimitReset = convertInt(json['rateLimitReset']);
+  factory LedgerResponse.fromJson(Map<String, dynamic> json) =>
+      LedgerResponse(
+          convertInt(json['sequence'])!,
+          json['hash'],
+          json['id'],
+          json['paging_token'],
+          json['prev_hash'],
+          convertInt(json['successful_transaction_count'])!,
+          convertInt(json['failed_transaction_count'])!,
+          convertInt(json['operation_count'])!,
+          convertInt(json['tx_set_operation_count'])!,
+          json['closed_at'],
+          json['total_coins'],
+          json['fee_pool'],
+          convertInt(json['base_fee_in_stroops'])!,
+          convertInt(json['base_reserve_in_stroops'])!,
+          convertInt(json['max_tx_set_size'])!,
+          convertInt(json['protocol_version'])!,
+          json['header_xdr'],
+          LedgerResponseLinks.fromJson(json['_links']),
+        )
+        ..rateLimitLimit = convertInt(json['rateLimitLimit'])
+        ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
+        ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
 /// HAL links for navigating related ledger resources.
@@ -208,13 +211,21 @@ class LedgerResponseLinks {
   /// - [self] Link to this ledger's details
   /// - [transactions] Link to transactions in this ledger
   /// - [payments] Link to payment operations in this ledger
-  LedgerResponseLinks(this.effects, this.operations, this.self, this.transactions, this.payments);
+  LedgerResponseLinks(
+    this.effects,
+    this.operations,
+    this.self,
+    this.transactions,
+    this.payments,
+  );
 
   /// Creates ledger response links from Horizon API JSON.
-  factory LedgerResponseLinks.fromJson(Map<String, dynamic> json) => LedgerResponseLinks(
-      Link.fromJson(json['effects']),
-      Link.fromJson(json['operations']),
-      Link.fromJson(json['self']),
-      Link.fromJson(json['transactions']),
-      Link.fromJson(json['payments']));
+  factory LedgerResponseLinks.fromJson(Map<String, dynamic> json) =>
+      LedgerResponseLinks(
+        Link.fromJson(json['effects']),
+        Link.fromJson(json['operations']),
+        Link.fromJson(json['self']),
+        Link.fromJson(json['transactions']),
+        Link.fromJson(json['payments']),
+      );
 }

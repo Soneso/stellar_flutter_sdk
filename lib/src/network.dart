@@ -51,23 +51,26 @@ class Network {
   ///
   /// Use this for real transactions with actual funds. Transactions on this
   /// network have real economic value and cannot be reversed.
-  static final Network PUBLIC =
-      new Network("Public Global Stellar Network ; September 2015");
+  static final Network PUBLIC = new Network(
+    "Public Global Stellar Network ; September 2015",
+  );
 
   /// The test network for development and testing.
   ///
   /// Use this for development and testing. Test XLM can be obtained from
   /// friendbot and has no real value. Always test your application thoroughly
   /// on TESTNET before deploying to PUBLIC.
-  static final Network TESTNET =
-      new Network("Test SDF Network ; September 2015");
+  static final Network TESTNET = new Network(
+    "Test SDF Network ; September 2015",
+  );
 
   /// The future network for testing upcoming protocol features.
   ///
   /// This network is used to test protocol changes before they are released
   /// to TESTNET and PUBLIC. It may be reset periodically.
-  static final Network FUTURENET =
-      new Network("Test SDF Future Network ; October 2022");
+  static final Network FUTURENET = new Network(
+    "Test SDF Future Network ; October 2022",
+  );
 
   String _networkPassphrase;
 

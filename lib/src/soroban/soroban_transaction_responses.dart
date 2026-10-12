@@ -32,7 +32,8 @@ class RestorePreamble {
   factory RestorePreamble.fromJson(Map<String, dynamic> json) {
     XdrSorobanTransactionData transactionData =
         XdrSorobanTransactionData.fromBase64EncodedXdrString(
-            json['transactionData']);
+          json['transactionData'],
+        );
 
     int minResourceFee = convertInt(json['minResourceFee'])!;
     return RestorePreamble(transactionData, minResourceFee);
@@ -112,7 +113,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
   ///
   /// Contains simulation results, resource estimates, and auth requirements.
   SimulateTransactionResponse(Map<String, dynamic> jsonResponse)
-      : super(jsonResponse);
+    : super(jsonResponse);
 
   /// (optional) only present if the transaction failed.
   /// This field will include more details from stellar-core about why the invoke host function call failed.
@@ -123,9 +124,11 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
     if (json['result'] != null) {
       response.resultError = json['result']['error'];
       if (json['result']['results'] != null) {
-        response.results = List<SimulateTransactionResult>.from(json['result']
-                ['results']
-            .map((e) => SimulateTransactionResult.fromJson(e)));
+        response.results = List<SimulateTransactionResult>.from(
+          json['result']['results'].map(
+            (e) => SimulateTransactionResult.fromJson(e),
+          ),
+        );
       }
 
       response.latestLedger = json['result']['latestLedger'];
@@ -134,23 +137,28 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
           json['result']['transactionData'].trim() != "") {
         response.transactionData =
             XdrSorobanTransactionData.fromBase64EncodedXdrString(
-                json['result']['transactionData']);
+              json['result']['transactionData'],
+            );
       }
 
       if (json['result']['events'] != null) {
-        response.events =
-            List<String>.from(json['result']['events'].map((e) => e));
+        response.events = List<String>.from(
+          json['result']['events'].map((e) => e),
+        );
       }
 
       if (json['result']['restorePreamble'] != null) {
-        response.restorePreamble =
-            RestorePreamble.fromJson(json['result']['restorePreamble']);
+        response.restorePreamble = RestorePreamble.fromJson(
+          json['result']['restorePreamble'],
+        );
       }
 
       if (json['result']['stateChanges'] != null) {
-        response.stateChanges = List<LedgerEntryChange>.from(json['result']
-                ['stateChanges']
-            .map((e) => LedgerEntryChange.fromJson(e)));
+        response.stateChanges = List<LedgerEntryChange>.from(
+          json['result']['stateChanges'].map(
+            (e) => LedgerEntryChange.fromJson(e),
+          ),
+        );
       }
 
       response.minResourceFee = convertInt(json['result']['minResourceFee']);
@@ -190,8 +198,9 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
   /// Returns null if the simulation reported no events.
   List<XdrDiagnosticEvent>? getDiagnosticEvents() {
     if (events != null && events!.length > 0) {
-      List<XdrDiagnosticEvent> result =
-          List<XdrDiagnosticEvent>.empty(growable: true);
+      List<XdrDiagnosticEvent> result = List<XdrDiagnosticEvent>.empty(
+        growable: true,
+      );
       for (String nextXdr in events!) {
         result.add(XdrDiagnosticEvent.fromBase64EncodedXdrString(nextXdr));
       }
@@ -269,7 +278,7 @@ class SendTransactionResponse extends SorobanRpcResponse {
   ///
   /// Contains transaction hash and submission status.
   SendTransactionResponse(Map<String, dynamic> jsonResponse)
-      : super(jsonResponse);
+    : super(jsonResponse);
 
   factory SendTransactionResponse.fromJson(Map<String, dynamic> json) {
     SendTransactionResponse response = SendTransactionResponse(json);
@@ -281,12 +290,15 @@ class SendTransactionResponse extends SorobanRpcResponse {
       response.errorResultXdr = json['result']['errorResultXdr'];
       if (json['result']['diagnosticEventsXdr'] != null) {
         List<String> xdrList = List<String>.from(
-            json['result']['diagnosticEventsXdr'].map((e) => e));
-        response.diagnosticEvents =
-            List<XdrDiagnosticEvent>.empty(growable: true);
+          json['result']['diagnosticEventsXdr'].map((e) => e),
+        );
+        response.diagnosticEvents = List<XdrDiagnosticEvent>.empty(
+          growable: true,
+        );
         for (String nextXdr in xdrList) {
-          response.diagnosticEvents!
-              .add(XdrDiagnosticEvent.fromBase64EncodedXdrString(nextXdr));
+          response.diagnosticEvents!.add(
+            XdrDiagnosticEvent.fromBase64EncodedXdrString(nextXdr),
+          );
         }
       }
     } else if (json['error'] != null) {
@@ -353,7 +365,7 @@ class GetTransactionResponse extends SorobanRpcResponse {
   ///
   /// Contains transaction status and execution details.
   GetTransactionResponse(Map<String, dynamic> jsonResponse)
-      : super(jsonResponse);
+    : super(jsonResponse);
 
   factory GetTransactionResponse.fromJson(Map<String, dynamic> json) {
     GetTransactionResponse response = GetTransactionResponse(json);
@@ -365,16 +377,18 @@ class GetTransactionResponse extends SorobanRpcResponse {
       response.oldestLedgerCloseTime = json['result']['oldestLedgerCloseTime'];
       response.ledger = json['result']['ledger'];
       response.createdAt = json['result']['createdAt'];
-      response.applicationOrder =
-          convertToInt(json['result']['applicationOrder']);
+      response.applicationOrder = convertToInt(
+        json['result']['applicationOrder'],
+      );
       response.feeBump = json['result']['feeBump'];
       response.envelopeXdr = json['result']['envelopeXdr'];
       response.resultXdr = json['result']['resultXdr'];
       response.resultMetaXdr = json['result']['resultMetaXdr'];
       response.txHash = json['result']['txHash'];
       if (json['result']['diagnosticEventsXdr'] != null) {
-        response.diagnosticEventsXdr =
-            List<String>.from(json['result']['diagnosticEventsXdr']);
+        response.diagnosticEventsXdr = List<String>.from(
+          json['result']['diagnosticEventsXdr'],
+        );
       }
       if (json['result']['events'] != null) {
         response.events = TransactionEvents.fromJson(json['result']['events']);
@@ -430,8 +444,9 @@ class GetTransactionResponse extends SorobanRpcResponse {
       return null;
     }
 
-    XdrTransactionMeta meta =
-        XdrTransactionMeta.fromBase64EncodedXdrString(resultMetaXdr!);
+    XdrTransactionMeta meta = XdrTransactionMeta.fromBase64EncodedXdrString(
+      resultMetaXdr!,
+    );
 
     if (meta.v3 != null) {
       return meta.v3!.sorobanMeta?.returnValue;
@@ -533,15 +548,17 @@ class GetTransactionsResponse extends SorobanRpcResponse {
   ///
   /// Contains paginated list of transactions with metadata.
   GetTransactionsResponse(Map<String, dynamic> jsonResponse)
-      : super(jsonResponse);
+    : super(jsonResponse);
 
   factory GetTransactionsResponse.fromJson(Map<String, dynamic> json) {
     GetTransactionsResponse response = GetTransactionsResponse(json);
     if (json['result'] != null) {
       if (json['result']['transactions'] != null) {
-        response.transactions = List<TransactionInfo>.from(json['result']
-                ['transactions']
-            .map((e) => TransactionInfo.fromJson(e)));
+        response.transactions = List<TransactionInfo>.from(
+          json['result']['transactions'].map(
+            (e) => TransactionInfo.fromJson(e),
+          ),
+        );
       }
       response.latestLedger = json['result']['latestLedger'];
       response.latestLedgerCloseTimestamp =
@@ -673,17 +690,18 @@ class TransactionInfo {
   ///
   /// Contains complete transaction metadata including status, XDR, and events.
   TransactionInfo(
-      this.status,
-      this.applicationOrder,
-      this.feeBump,
-      this.envelopeXdr,
-      this.resultXdr,
-      this.resultMetaXdr,
-      this.ledger,
-      this.createdAt,
-      this.txHash,
-      this.diagnosticEventsXdr,
-      this.events);
+    this.status,
+    this.applicationOrder,
+    this.feeBump,
+    this.envelopeXdr,
+    this.resultXdr,
+    this.resultMetaXdr,
+    this.ledger,
+    this.createdAt,
+    this.txHash,
+    this.diagnosticEventsXdr,
+    this.events,
+  );
 
   factory TransactionInfo.fromJson(Map<String, dynamic> json) {
     List<String>? diagnosticEventsXdr = json.containsKey('diagnosticEventsXdr')
@@ -817,8 +835,9 @@ class TransactionInfo {
 /// - [XdrDiagnosticEvent] for decoding diagnostic events
 class TransactionEvents {
   @Deprecated(
-      'stellar-rpc does not send this field; read diagnosticEventsXdr of '
-      'GetTransactionResponse or TransactionInfo.')
+    'stellar-rpc does not send this field; read diagnosticEventsXdr of '
+    'GetTransactionResponse or TransactionInfo.',
+  )
   List<String>? diagnosticEventsXdr;
   List<String>? transactionEventsXdr;
   List<List<String>>? contractEventsXdr;
@@ -826,8 +845,11 @@ class TransactionEvents {
   /// Creates a TransactionEvents with event XDR lists.
   ///
   /// Contains transaction and contract event data.
-  TransactionEvents(this.diagnosticEventsXdr, this.transactionEventsXdr,
-      this.contractEventsXdr);
+  TransactionEvents(
+    this.diagnosticEventsXdr,
+    this.transactionEventsXdr,
+    this.contractEventsXdr,
+  );
 
   factory TransactionEvents.fromJson(Map<String, dynamic> json) {
     List<String>? diagnosticEventsXdr = json.containsKey('diagnosticEventsXdr')
@@ -835,13 +857,14 @@ class TransactionEvents {
         : null;
     List<String>? transactionEventsXdr =
         json.containsKey('transactionEventsXdr')
-            ? List<String>.from(json['transactionEventsXdr'].map((e) => e))
-            : null;
+        ? List<String>.from(json['transactionEventsXdr'].map((e) => e))
+        : null;
 
     List<List<String>>? contractEventsXdr;
     if (json.containsKey('contractEventsXdr')) {
-      final allContractEvents =
-          List<dynamic>.from(json['contractEventsXdr'].map((e) => e));
+      final allContractEvents = List<dynamic>.from(
+        json['contractEventsXdr'].map((e) => e),
+      );
       contractEventsXdr = List<List<String>>.empty(growable: true);
       for (final entry in allContractEvents) {
         if (entry is List) {
@@ -856,7 +879,10 @@ class TransactionEvents {
       }
     }
     return TransactionEvents(
-        diagnosticEventsXdr, transactionEventsXdr, contractEventsXdr);
+      diagnosticEventsXdr,
+      transactionEventsXdr,
+      contractEventsXdr,
+    );
   }
 }
 
@@ -885,8 +911,9 @@ class Footprint {
 
   /// if found, returns the contract code ledger key as base64 encoded xdr string
   String? getContractCodeLedgerKey() {
-    return _findFirstKeyOfType(XdrLedgerEntryType.CONTRACT_CODE)
-        ?.toBase64EncodedXdrString();
+    return _findFirstKeyOfType(
+      XdrLedgerEntryType.CONTRACT_CODE,
+    )?.toBase64EncodedXdrString();
   }
 
   /// if found, returns the contract code ledger key as XdrLedgerKey
@@ -896,8 +923,9 @@ class Footprint {
 
   /// if found, returns the contract data ledger key as base64 encoded xdr string
   String? getContractDataLedgerKey() {
-    return _findFirstKeyOfType(XdrLedgerEntryType.CONTRACT_DATA)
-        ?.toBase64EncodedXdrString();
+    return _findFirstKeyOfType(
+      XdrLedgerEntryType.CONTRACT_DATA,
+    )?.toBase64EncodedXdrString();
   }
 
   /// if found, returns the contract code ledger key as XdrLedgerKey

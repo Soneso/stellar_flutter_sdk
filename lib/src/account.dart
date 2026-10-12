@@ -35,8 +35,11 @@ class Account implements TransactionBuilderAccount {
   /// - [_accountId] The account's public key (G... address)
   /// - [_mSequenceNumber] The current sequence number
   /// - [muxedAccountMed25519Id] Optional muxed account ID for multiplexing
-  Account(this._accountId, this._mSequenceNumber,
-      {BigInt? muxedAccountMed25519Id}) {
+  Account(
+    this._accountId,
+    this._mSequenceNumber, {
+    BigInt? muxedAccountMed25519Id,
+  }) {
     this._muxedAccount = MuxedAccount(this._accountId, muxedAccountMed25519Id);
   }
 
@@ -51,8 +54,11 @@ class Account implements TransactionBuilderAccount {
   /// Returns: A new [Account] instance
   static Account fromAccountId(String accountId, BigInt sequenceNumber) {
     MuxedAccount mux = MuxedAccount.fromAccountId(accountId)!;
-    return new Account(mux.ed25519AccountId, sequenceNumber,
-        muxedAccountMed25519Id: mux.id);
+    return new Account(
+      mux.ed25519AccountId,
+      sequenceNumber,
+      muxedAccountMed25519Id: mux.id,
+    );
   }
 
   @override
@@ -69,6 +75,6 @@ class Account implements TransactionBuilderAccount {
 
   /// Increments sequence number in this account object by one.
   void incrementSequenceNumber() {
-    _mSequenceNumber = _mSequenceNumber +  BigInt.one;
+    _mSequenceNumber = _mSequenceNumber + BigInt.one;
   }
 }

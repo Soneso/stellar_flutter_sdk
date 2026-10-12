@@ -37,14 +37,15 @@ class SequenceBumpedEffectResponse extends EffectResponse {
 
   /// Creates a [SequenceBumpedEffectResponse] with new sequence number and effect details.
   SequenceBumpedEffectResponse(
-      this.newSequence,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.newSequence,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory SequenceBumpedEffectResponse.fromJson(Map<String, dynamic> json) =>
       SequenceBumpedEffectResponse(
@@ -55,7 +56,8 @@ class SequenceBumpedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }

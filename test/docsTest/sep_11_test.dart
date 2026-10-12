@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -12,14 +11,21 @@ void main() {
     String txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdrBase64);
 
     expect(txRep, contains('type: ENVELOPE_TYPE_TX'));
-    expect(txRep,
-        contains('tx.sourceAccount: GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN'));
+    expect(
+      txRep,
+      contains(
+        'tx.sourceAccount: GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN',
+      ),
+    );
     expect(txRep, contains('tx.fee: 100'));
     expect(txRep, contains('tx.seqNum: 46489056724385793'));
     expect(txRep, contains('tx.memo.type: MEMO_TEXT'));
     expect(txRep, contains('tx.memo.text: "Enjoy this transaction"'));
     expect(txRep, contains('tx.operations[0].body.type: PAYMENT'));
-    expect(txRep, contains('tx.operations[0].body.paymentOp.amount: 400004000'));
+    expect(
+      txRep,
+      contains('tx.operations[0].body.paymentOp.amount: 400004000'),
+    );
   });
 
   test('sep-11: Fee bump transaction XDR to Txrep', () {
@@ -74,8 +80,9 @@ signatures[0].signature: defb4f1fad1c279327b55af184fdcddf73f4f7a8cb40e7e534a71d7
 
     // Convert XDR -> Txrep -> XDR
     String txRep = TxRep.fromTransactionEnvelopeXdrBase64(originalXdr);
-    String reconstructedXdr =
-        TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+    String reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+      txRep,
+    );
 
     expect(originalXdr, equals(reconstructedXdr));
   });
@@ -90,7 +97,9 @@ signatures[0].signature: defb4f1fad1c279327b55af184fdcddf73f4f7a8cb40e7e534a71d7
 
   test('sep-11: Error handling - invalid Txrep', () {
     expect(
-      () => TxRep.transactionEnvelopeXdrBase64FromTxRep('this is not valid txrep'),
+      () => TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        'this is not valid txrep',
+      ),
       throwsA(anything),
     );
   });

@@ -17,20 +17,30 @@ void main() {
   final String jwtToken =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJHQTZVSVhYUEVXWUZJTE5VSVdBQzM3WTRRUEVaTVFWREpIREtWV0ZaSjJLQ1dVQklVNUlYWk5EQSIsImp0aSI6IjE0NGQzNjdiY2IwZTcyY2FiZmRiZGU2MGVhZTBhZDczM2NjNjVkMmE2NTg3MDgzZGFiM2Q2MTZmODg1MTkwMjQiLCJpc3MiOiJodHRwczovL2ZsYXBweS1iaXJkLWRhcHAuZmlyZWJhc2VhcHAuY29tLyIsImlhdCI6MTUzNDI1Nzk5NCwiZXhwIjoxNTM0MzQ0Mzk0fQ.8nbB83Z6vGBgC1X9r3N6oQCFTBzDiITAfCJasRft0z0";
 
-  var senderAddrAuth = SEP30AuthMethod("stellar_address",
-      "GBUCAAMD7DYS7226CWUUOZ5Y2QF4JBJWIYU3UWJAFDGJVCR6EU5NJM5H");
+  var senderAddrAuth = SEP30AuthMethod(
+    "stellar_address",
+    "GBUCAAMD7DYS7226CWUUOZ5Y2QF4JBJWIYU3UWJAFDGJVCR6EU5NJM5H",
+  );
   var senderPhoneAuth = SEP30AuthMethod("phone_number", "+10000000001");
   var senderEmailAuth = SEP30AuthMethod("email", "person1@example.com");
 
-  var receiverAddrAuth = SEP30AuthMethod("stellar_address",
-      "GDIL76BC2XGDWLDPXCZVYB3AIZX4MYBN6JUBQPAX5OHRWPSNX3XMLNCS");
+  var receiverAddrAuth = SEP30AuthMethod(
+    "stellar_address",
+    "GDIL76BC2XGDWLDPXCZVYB3AIZX4MYBN6JUBQPAX5OHRWPSNX3XMLNCS",
+  );
   var receiverPhoneAuth = SEP30AuthMethod("phone_number", "+10000000002");
   var receiverEmailAuth = SEP30AuthMethod("email", "person2@example.com");
 
-  var senderIdentity = SEP30RequestIdentity(
-      "sender", [senderAddrAuth, senderPhoneAuth, senderEmailAuth]);
-  var receiverIdentity = SEP30RequestIdentity(
-      "receiver", [receiverAddrAuth, receiverPhoneAuth, receiverEmailAuth]);
+  var senderIdentity = SEP30RequestIdentity("sender", [
+    senderAddrAuth,
+    senderPhoneAuth,
+    senderEmailAuth,
+  ]);
+  var receiverIdentity = SEP30RequestIdentity("receiver", [
+    receiverAddrAuth,
+    receiverPhoneAuth,
+    receiverEmailAuth,
+  ]);
 
   String requestRegisterSuccess() {
     return "{  \"address\": \"GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP\",  \"identities\": [    { \"role\": \"sender\" },    { \"role\": \"receiver\" }  ],  \"signers\": [    { \"key\": \"GDRUPBJM7YIJ2NUNAIQJDJ2DQ2JDERY5SJVJVMM6MGE4UBDAMXBHARIA\" }  ]}";
@@ -72,8 +82,11 @@ void main() {
     });
 
     var request = SEP30Request([senderIdentity, receiverIdentity]);
-    SEP30AccountResponse response =
-        await service.registerAccount(addressA, request, jwtToken);
+    SEP30AccountResponse response = await service.registerAccount(
+      addressA,
+      request,
+      jwtToken,
+    );
     assert(addressA == response.address);
     assert(2 == response.identities.length);
     assert(1 == response.signers.length);
@@ -98,8 +111,11 @@ void main() {
     });
 
     var request = SEP30Request([senderIdentity, receiverIdentity]);
-    SEP30AccountResponse response =
-        await service.updateIdentitiesForAccount(addressA, request, jwtToken);
+    SEP30AccountResponse response = await service.updateIdentitiesForAccount(
+      addressA,
+      request,
+      jwtToken,
+    );
     assert(addressA == response.address);
     assert(2 == response.identities.length);
     assert(1 == response.signers.length);
@@ -126,7 +142,11 @@ void main() {
     });
 
     SEP30SignatureResponse response = await service.signTransaction(
-        addressA, signingAddress, transaction, jwtToken);
+      addressA,
+      signingAddress,
+      transaction,
+      jwtToken,
+    );
     assert(signature == response.signature);
     assert(networkPassphrase == response.networkPassphrase);
   });
@@ -146,8 +166,10 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
 
-    SEP30AccountResponse response =
-        await service.accountDetails(addressA, jwtToken);
+    SEP30AccountResponse response = await service.accountDetails(
+      addressA,
+      jwtToken,
+    );
     assert(addressA == response.address);
     assert(2 == response.identities.length);
     assert(1 == response.signers.length);
@@ -169,8 +191,10 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
 
-    SEP30AccountResponse response =
-        await service.deleteAccount(addressA, jwtToken);
+    SEP30AccountResponse response = await service.deleteAccount(
+      addressA,
+      jwtToken,
+    );
     assert(addressA == response.address);
     assert(2 == response.identities.length);
     assert(1 == response.signers.length);
@@ -192,8 +216,10 @@ void main() {
       return http.Response(json.encode(mapJson), 400);
     });
 
-    SEP30AccountsResponse response = await service.accounts(jwtToken,
-        after: "GA5TKKASNJZGZAP6FH65HO77CST7CJNYRTW4YPBNPXYMZAHHMTHDZKDQ");
+    SEP30AccountsResponse response = await service.accounts(
+      jwtToken,
+      after: "GA5TKKASNJZGZAP6FH65HO77CST7CJNYRTW4YPBNPXYMZAHHMTHDZKDQ",
+    );
     assert(3 == response.accounts.length);
   });
 
@@ -264,5 +290,4 @@ void main() {
     }
     assert(false);
   });
-
 }

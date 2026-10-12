@@ -57,23 +57,32 @@ void main() {
       expect(
         OZContractErrorCodes.decode(3221),
         const OZContractError(
-            3221, 'SpendingLimitError', 'SpendingLimitExceeded'),
+          3221,
+          'SpendingLimitError',
+          'SpendingLimitExceeded',
+        ),
       );
       expect(
         OZContractErrorCodes.decode(3227),
         const OZContractError(
-            3227, 'SpendingLimitError', 'OnlyCallContractAllowed'),
+          3227,
+          'SpendingLimitError',
+          'OnlyCallContractAllowed',
+        ),
       );
     });
 
     test('testDecode_repeatedNames_disambiguatedByContract', () {
       // "NotAllowed" appears in all three policy enums at distinct codes.
       expect(
-          OZContractErrorCodes.decode(3202)?.contract, 'SimpleThresholdError');
-      expect(OZContractErrorCodes.decode(3213)?.contract,
-          'WeightedThresholdError');
+        OZContractErrorCodes.decode(3202)?.contract,
+        'SimpleThresholdError',
+      );
       expect(
-          OZContractErrorCodes.decode(3223)?.contract, 'SpendingLimitError');
+        OZContractErrorCodes.decode(3213)?.contract,
+        'WeightedThresholdError',
+      );
+      expect(OZContractErrorCodes.decode(3223)?.contract, 'SpendingLimitError');
       expect(OZContractErrorCodes.decode(3202)?.name, 'NotAllowed');
       expect(OZContractErrorCodes.decode(3213)?.name, 'NotAllowed');
       expect(OZContractErrorCodes.decode(3223)?.name, 'NotAllowed');
@@ -200,8 +209,9 @@ void main() {
         3227,
       );
       expect(
-        OZContractErrorCodes.decodeFromMessage('Error( Contract , #3227 )')
-            ?.code,
+        OZContractErrorCodes.decodeFromMessage(
+          'Error( Contract , #3227 )',
+        )?.code,
         3227,
       );
     });

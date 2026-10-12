@@ -39,22 +39,20 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
   });
 
   Never _unsupported() => throw UnsupportedError(
-        'BrowserWebAuthnProvider is only available on Flutter web. '
-        'On non-web targets use PlatformWebAuthnProvider (iOS, macOS, and Android).',
-      );
+    'BrowserWebAuthnProvider is only available on Flutter web. '
+    'On non-web targets use PlatformWebAuthnProvider (iOS, macOS, and Android).',
+  );
 
   @override
   Future<WebAuthnRegistrationResult> register({
     required Uint8List challenge,
     required Uint8List userId,
     required String userName,
-  }) async =>
-      _unsupported();
+  }) async => _unsupported();
 
   @override
   Future<WebAuthnAuthenticationResult> authenticate({
     required Uint8List challenge,
     List<WebAuthnAllowCredential>? allowCredentials,
-  }) async =>
-      _unsupported();
+  }) async => _unsupported();
 }

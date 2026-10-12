@@ -57,9 +57,9 @@ import '../smartaccount/core/smart_account_utils.dart';
 /// - [WebAuthn Specification](https://w3c.github.io/webauthn/)
 /// - [Stellar Account Abstraction](https://developers.stellar.org/docs/smart-contracts/guides/account-abstraction)
 @Deprecated(
-    'Use the OpenZeppelin smart-account API (OZSmartAccountKit / SmartAccountUtils) instead.')
+  'Use the OpenZeppelin smart-account API (OZSmartAccountKit / SmartAccountUtils) instead.',
+)
 class PasskeyUtils {
-
   /// Extracts the secp256r1 public key from WebAuthn registration response.
   ///
   /// Parses the authenticator attestation response to extract the public key
@@ -154,23 +154,29 @@ class PasskeyUtils {
   /// // Contract will be deployed at this address
   /// print('Contract ID: $contractId');
   /// ```
-  static String deriveContractId(
-      {required Uint8List contractSalt,
-      required String factoryContractId,
-      required Network network}) {
-    final preimage =
-        XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID);
+  static String deriveContractId({
+    required Uint8List contractSalt,
+    required String factoryContractId,
+    required Network network,
+  }) {
+    final preimage = XdrHashIDPreimage(
+      XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID,
+    );
     final contractIdPreimage = XdrContractIDPreimage(
-        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+      XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+    );
     contractIdPreimage.address = XdrSCAddress.forContractId(factoryContractId);
     contractIdPreimage.salt = XdrUint256(contractSalt);
     final preimageCID = XdrHashIDPreimageContractID(
-        XdrHash(network.networkId), contractIdPreimage);
+      XdrHash(network.networkId),
+      contractIdPreimage,
+    );
     preimage.contractID = preimageCID;
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrHashIDPreimage.encode(xdrOutputStream, preimage);
     return StrKey.encodeContractId(
-        Util.hash(Uint8List.fromList(xdrOutputStream.bytes)));
+      Util.hash(Uint8List.fromList(xdrOutputStream.bytes)),
+    );
   }
 
   /// Converts WebAuthn ECDSA signature from ASN.1 DER to compact format.
@@ -207,7 +213,8 @@ class PasskeyUtils {
 
 /// https://w3c.github.io/webauthn/#dictdef-authenticatorattestationresponsejson
 @Deprecated(
-    'Use the OpenZeppelin smart-account API (OZSmartAccountKit / SmartAccountUtils) instead.')
+  'Use the OpenZeppelin smart-account API (OZSmartAccountKit / SmartAccountUtils) instead.',
+)
 class AuthenticatorAttestationResponse {
   String? clientDataJSON;
   String? authenticatorData;

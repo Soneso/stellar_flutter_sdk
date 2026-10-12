@@ -8,7 +8,8 @@ void main() {
         'destination_amount': '100.0000000',
         'destination_asset_type': 'credit_alphanum4',
         'destination_asset_code': 'USD',
-        'destination_asset_issuer': 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        'destination_asset_issuer':
+            'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         'source_amount': '250.0000000',
         'source_asset_type': 'native',
         'source_asset_code': null,
@@ -17,12 +18,13 @@ void main() {
           {
             'asset_type': 'credit_alphanum4',
             'asset_code': 'EUR',
-            'asset_issuer': 'GCKG5WGBIJP74UDNRIRDFGENNIH5Y3KZ4KITCTUM4CWMB7LWPGDHKCPM'
-          }
+            'asset_issuer':
+                'GCKG5WGBIJP74UDNRIRDFGENNIH5Y3KZ4KITCTUM4CWMB7LWPGDHKCPM',
+          },
         ],
         '_links': {
-          'self': {'href': 'https://horizon.stellar.org/paths/strict-send'}
-        }
+          'self': {'href': 'https://horizon.stellar.org/paths/strict-send'},
+        },
       };
 
       final response = PathResponse.fromJson(json);
@@ -30,7 +32,10 @@ void main() {
       expect(response.destinationAmount, equals('100.0000000'));
       expect(response.destinationAssetType, equals('credit_alphanum4'));
       expect(response.destinationAssetCode, equals('USD'));
-      expect(response.destinationAssetIssuer, equals('GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'));
+      expect(
+        response.destinationAssetIssuer,
+        equals('GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'),
+      );
       expect(response.sourceAmount, equals('250.0000000'));
       expect(response.sourceAssetType, equals('native'));
       expect(response.sourceAssetCode, isNull);
@@ -42,21 +47,28 @@ void main() {
         'destination_amount': '100.0',
         'destination_asset_type': 'credit_alphanum12',
         'destination_asset_code': 'LONGERCODE',
-        'destination_asset_issuer': 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        'destination_asset_issuer':
+            'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         'source_amount': '200.0',
         'source_asset_type': 'native',
         'source_asset_code': null,
         'source_asset_issuer': null,
         'path': [],
-        '_links': null
+        '_links': null,
       };
 
       final response = PathResponse.fromJson(json);
       final destAsset = response.destinationAsset;
 
       expect(destAsset, isA<AssetTypeCreditAlphaNum12>());
-      expect((destAsset as AssetTypeCreditAlphaNum12).code, equals('LONGERCODE'));
-      expect(destAsset.issuerId, equals('GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'));
+      expect(
+        (destAsset as AssetTypeCreditAlphaNum12).code,
+        equals('LONGERCODE'),
+      );
+      expect(
+        destAsset.issuerId,
+        equals('GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'),
+      );
     });
 
     test('parses native destination asset correctly', () {
@@ -68,9 +80,10 @@ void main() {
         'source_amount': '100.0',
         'source_asset_type': 'credit_alphanum4',
         'source_asset_code': 'USD',
-        'source_asset_issuer': 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        'source_asset_issuer':
+            'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         'path': [],
-        '_links': null
+        '_links': null,
       };
 
       final response = PathResponse.fromJson(json);
@@ -88,9 +101,10 @@ void main() {
         'source_amount': '200.0',
         'source_asset_type': 'credit_alphanum4',
         'source_asset_code': 'USDC',
-        'source_asset_issuer': 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        'source_asset_issuer':
+            'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         'path': [],
-        '_links': null
+        '_links': null,
       };
 
       final response = PathResponse.fromJson(json);
@@ -105,13 +119,14 @@ void main() {
         'destination_amount': '100.0',
         'destination_asset_type': 'credit_alphanum4',
         'destination_asset_code': 'USD',
-        'destination_asset_issuer': 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        'destination_asset_issuer':
+            'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         'source_amount': '250.0',
         'source_asset_type': 'native',
         'source_asset_code': null,
         'source_asset_issuer': null,
         'path': [],
-        '_links': null
+        '_links': null,
       };
 
       final response = PathResponse.fromJson(json);
@@ -125,7 +140,8 @@ void main() {
         'destination_amount': '100.0',
         'destination_asset_type': 'credit_alphanum4',
         'destination_asset_code': 'USD',
-        'destination_asset_issuer': 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        'destination_asset_issuer':
+            'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         'source_amount': '250.0',
         'source_asset_type': 'native',
         'source_asset_code': null,
@@ -134,22 +150,30 @@ void main() {
           {
             'asset_type': 'credit_alphanum4',
             'asset_code': 'EUR',
-            'asset_issuer': 'GCKG5WGBIJP74UDNRIRDFGENNIH5Y3KZ4KITCTUM4CWMB7LWPGDHKCPM'
+            'asset_issuer':
+                'GCKG5WGBIJP74UDNRIRDFGENNIH5Y3KZ4KITCTUM4CWMB7LWPGDHKCPM',
           },
           {
             'asset_type': 'credit_alphanum4',
             'asset_code': 'GBP',
-            'asset_issuer': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'
-          }
+            'asset_issuer':
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          },
         ],
-        '_links': null
+        '_links': null,
       };
 
       final response = PathResponse.fromJson(json);
 
       expect(response.path.length, equals(2));
-      expect((response.path[0] as AssetTypeCreditAlphaNum4).code, equals('EUR'));
-      expect((response.path[1] as AssetTypeCreditAlphaNum4).code, equals('GBP'));
+      expect(
+        (response.path[0] as AssetTypeCreditAlphaNum4).code,
+        equals('EUR'),
+      );
+      expect(
+        (response.path[1] as AssetTypeCreditAlphaNum4).code,
+        equals('GBP'),
+      );
     });
 
     test('handles empty path for direct conversion', () {
@@ -157,13 +181,15 @@ void main() {
         'destination_amount': '100.0',
         'destination_asset_type': 'credit_alphanum4',
         'destination_asset_code': 'USD',
-        'destination_asset_issuer': 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        'destination_asset_issuer':
+            'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         'source_amount': '100.0',
         'source_asset_type': 'credit_alphanum4',
         'source_asset_code': 'USDC',
-        'source_asset_issuer': 'GCKG5WGBIJP74UDNRIRDFGENNIH5Y3KZ4KITCTUM4CWMB7LWPGDHKCPM',
+        'source_asset_issuer':
+            'GCKG5WGBIJP74UDNRIRDFGENNIH5Y3KZ4KITCTUM4CWMB7LWPGDHKCPM',
         'path': [],
-        '_links': null
+        '_links': null,
       };
 
       final response = PathResponse.fromJson(json);
@@ -182,7 +208,7 @@ void main() {
         'source_asset_code': null,
         'source_asset_issuer': null,
         'path': null,
-        '_links': null
+        '_links': null,
       };
 
       final response = PathResponse.fromJson(json);
@@ -202,15 +228,18 @@ void main() {
         'source_asset_issuer': null,
         'path': [],
         '_links': {
-          'self': {'href': 'https://horizon.stellar.org/paths/strict-send'}
-        }
+          'self': {'href': 'https://horizon.stellar.org/paths/strict-send'},
+        },
       };
 
       final response = PathResponse.fromJson(json);
 
       expect(response.links, isNotNull);
       expect(response.links!.self, isNotNull);
-      expect(response.links!.self!.href, equals('https://horizon.stellar.org/paths/strict-send'));
+      expect(
+        response.links!.self!.href,
+        equals('https://horizon.stellar.org/paths/strict-send'),
+      );
     });
 
     test('handles null links field', () {
@@ -224,7 +253,7 @@ void main() {
         'source_asset_code': null,
         'source_asset_issuer': null,
         'path': [],
-        '_links': null
+        '_links': null,
       };
 
       final response = PathResponse.fromJson(json);
@@ -237,15 +266,17 @@ void main() {
         'destination_amount': '100.0',
         'destination_asset_type': 'credit_alphanum4',
         'destination_asset_code': 'USD',
-        'destination_asset_issuer': 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        'destination_asset_issuer':
+            'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         'source_amount': '250.0',
         'source_asset_type': 'credit_alphanum4',
         'source_asset_code': 'EUR',
-        'source_asset_issuer': 'GCKG5WGBIJP74UDNRIRDFGENNIH5Y3KZ4KITCTUM4CWMB7LWPGDHKCPM',
+        'source_asset_issuer':
+            'GCKG5WGBIJP74UDNRIRDFGENNIH5Y3KZ4KITCTUM4CWMB7LWPGDHKCPM',
         'path': [
-          {'asset_type': 'native'}
+          {'asset_type': 'native'},
         ],
-        '_links': null
+        '_links': null,
       };
 
       final response = PathResponse.fromJson(json);
@@ -258,13 +289,16 @@ void main() {
   group('PathResponseLinks', () {
     test('parses self link correctly', () {
       final json = {
-        'self': {'href': 'https://horizon.stellar.org/paths/strict-send'}
+        'self': {'href': 'https://horizon.stellar.org/paths/strict-send'},
       };
 
       final links = PathResponseLinks.fromJson(json);
 
       expect(links.self, isNotNull);
-      expect(links.self!.href, equals('https://horizon.stellar.org/paths/strict-send'));
+      expect(
+        links.self!.href,
+        equals('https://horizon.stellar.org/paths/strict-send'),
+      );
     });
 
     test('handles null self link', () {

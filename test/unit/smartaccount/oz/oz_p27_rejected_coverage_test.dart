@@ -51,7 +51,9 @@ Uint8List _bytes(int length, [int seed = 0]) {
 /// This type cannot be constructed via the public high-level API without
 /// pre-signing, so we build it directly from XDR primitives to exercise the
 /// throw-guard in the single-signer and multi-signer pipelines.
-XdrSorobanAuthorizationEntry _makeWithDelegatesXdrEntry(String contractAddress) {
+XdrSorobanAuthorizationEntry _makeWithDelegatesXdrEntry(
+  String contractAddress,
+) {
   final invokeArgs = XdrInvokeContractArgs(
     Address.forContractId(contractAddress).toXdr(),
     'noop',
@@ -159,9 +161,14 @@ Account _deployerAccount(KeyPair deployer, {int seq = 1}) {
 WebAuthnAuthenticationResult _fakeAuthResult() {
   final credIdBytes = base64Url.decode(base64Url.normalize(_credentialIdB64));
   final sig = Uint8List.fromList(<int>[
-    0x30, 0x44,
-    0x02, 0x20, ..._bytes(32, 1),
-    0x02, 0x20, ..._bytes(32, 2),
+    0x30,
+    0x44,
+    0x02,
+    0x20,
+    ..._bytes(32, 1),
+    0x02,
+    0x20,
+    ..._bytes(32, 2),
   ]);
   return WebAuthnAuthenticationResult(
     credentialId: credIdBytes,
@@ -178,13 +185,15 @@ WebAuthnAuthenticationResult _fakeAuthResult() {
 // ---------------------------------------------------------------------------
 
 Future<
-    ({
-      FakePipelineKit kit,
-      MockSorobanServer soroban,
-      RecordingWebAuthnProvider provider,
-      KeyPair deployer,
-      OZStoredCredential stored,
-    })> _harness() async {
+  ({
+    FakePipelineKit kit,
+    MockSorobanServer soroban,
+    RecordingWebAuthnProvider provider,
+    KeyPair deployer,
+    OZStoredCredential stored,
+  })
+>
+_harness() async {
   final soroban = MockSorobanServer();
   final provider = RecordingWebAuthnProvider();
   final deployer = KeyPair.random();
@@ -245,42 +254,48 @@ void main() {
   // discriminant, line 591 throws SmartAccountTransactionSigningFailed with
   // a message that mentions 'ADDRESS_WITH_DELEGATES'.
   // -------------------------------------------------------------------------
-  group('OZTransactionOperations submit — WITH_DELEGATES entry throws (line 591)', () {
-    test(
+  group(
+    'OZTransactionOperations submit — WITH_DELEGATES entry throws (line 591)',
+    () {
+      test(
         'submit_withDelegatesAuthEntry_throwsSigningFailed_mentionsAddressWithDelegates',
         () async {
-      final h = await _harness();
-      h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      // Simulate returns a WITH_DELEGATES entry.  The pipeline must throw
-      // before attempting to sign it.
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeWithDelegatesXdrEntry(_contractA),
-        minResourceFee: 100,
-      ));
-      h.soroban.latestLedgerResponses.add(_latestLedger(1000));
-
-      final ops = OZTransactionOperations(h.kit);
-      await expectLater(
-        () => ops.submit(
-          hostFunction: XdrHostFunction.forInvokingContractWithArgs(
-            XdrInvokeContractArgs(
-              Address.forContractId(_contractB).toXdr(),
-              'noop',
-              const <XdrSCVal>[],
+          final h = await _harness();
+          h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
+          // Simulate returns a WITH_DELEGATES entry.  The pipeline must throw
+          // before attempting to sign it.
+          h.soroban.simulateResponses.add(
+            _simResponseWithAuthEntry(
+              entry: _makeWithDelegatesXdrEntry(_contractA),
+              minResourceFee: 100,
             ),
-          ),
-          auth: const <XdrSorobanAuthorizationEntry>[],
-        ),
-        throwsA(
-          isA<SmartAccountTransactionSigningFailed>().having(
-            (e) => e.message,
-            'message',
-            contains('ADDRESS_WITH_DELEGATES'),
-          ),
-        ),
+          );
+          h.soroban.latestLedgerResponses.add(_latestLedger(1000));
+
+          final ops = OZTransactionOperations(h.kit);
+          await expectLater(
+            () => ops.submit(
+              hostFunction: XdrHostFunction.forInvokingContractWithArgs(
+                XdrInvokeContractArgs(
+                  Address.forContractId(_contractB).toXdr(),
+                  'noop',
+                  const <XdrSCVal>[],
+                ),
+              ),
+              auth: const <XdrSorobanAuthorizationEntry>[],
+            ),
+            throwsA(
+              isA<SmartAccountTransactionSigningFailed>().having(
+                (e) => e.message,
+                'message',
+                contains('ADDRESS_WITH_DELEGATES'),
+              ),
+            ),
+          );
+        },
       );
-    });
-  });
+    },
+  );
 
   // -------------------------------------------------------------------------
   // oz_multi_signer_manager.dart:421
@@ -290,43 +305,49 @@ void main() {
   // pipeline: when it encounters an ADDRESS_WITH_DELEGATES entry in the
   // auth-entry list returned by simulate, it throws at line 421.
   // -------------------------------------------------------------------------
-  group('OZMultiSignerManager submitWithMultipleSigners — WITH_DELEGATES throws (line 421)', () {
-    test(
+  group(
+    'OZMultiSignerManager submitWithMultipleSigners — WITH_DELEGATES throws (line 421)',
+    () {
+      test(
         'submitWithMultipleSigners_withDelegatesEntry_throwsSigningFailed',
         () async {
-      final h = await _harness();
-      h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeWithDelegatesXdrEntry(_contractA),
-        minResourceFee: 100,
-      ));
-      h.soroban.latestLedgerResponses.add(_latestLedger(1000));
-
-      final keyData = _passkeyKeyData();
-      final manager = OZMultiSignerManager(h.kit);
-      await expectLater(
-        () => manager.submitWithMultipleSigners(
-          hostFunction: XdrHostFunction.forInvokingContractWithArgs(
-            XdrInvokeContractArgs(
-              Address.forContractId(_contractB).toXdr(),
-              'noop',
-              const <XdrSCVal>[],
+          final h = await _harness();
+          h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
+          h.soroban.simulateResponses.add(
+            _simResponseWithAuthEntry(
+              entry: _makeWithDelegatesXdrEntry(_contractA),
+              minResourceFee: 100,
             ),
-          ),
-          selectedSigners: <OZSelectedSigner>[
-            OZSelectedSignerPasskey(keyData: keyData),
-          ],
-        ),
-        throwsA(
-          isA<SmartAccountTransactionSigningFailed>().having(
-            (e) => e.message,
-            'message',
-            contains('ADDRESS_WITH_DELEGATES'),
-          ),
-        ),
+          );
+          h.soroban.latestLedgerResponses.add(_latestLedger(1000));
+
+          final keyData = _passkeyKeyData();
+          final manager = OZMultiSignerManager(h.kit);
+          await expectLater(
+            () => manager.submitWithMultipleSigners(
+              hostFunction: XdrHostFunction.forInvokingContractWithArgs(
+                XdrInvokeContractArgs(
+                  Address.forContractId(_contractB).toXdr(),
+                  'noop',
+                  const <XdrSCVal>[],
+                ),
+              ),
+              selectedSigners: <OZSelectedSigner>[
+                OZSelectedSignerPasskey(keyData: keyData),
+              ],
+            ),
+            throwsA(
+              isA<SmartAccountTransactionSigningFailed>().having(
+                (e) => e.message,
+                'message',
+                contains('ADDRESS_WITH_DELEGATES'),
+              ),
+            ),
+          );
+        },
       );
-    });
-  });
+    },
+  );
 
   // -------------------------------------------------------------------------
   // oz_multi_signer_manager.dart:1034-1035  (_innerAddressCredentialsXdr ADDRESS_V2)
@@ -341,74 +362,89 @@ void main() {
   // The full pipeline succeeds: after signing the ADDRESS_V2 entry with the
   // passkey, the re-simulate + submit + poll are fed from the mock queue.
   // -------------------------------------------------------------------------
-  group('OZMultiSignerManager submitWithMultipleSigners — ADDRESS_V2 entry (lines 1034-1035 + 1053-1054)', () {
-    test(
+  group(
+    'OZMultiSignerManager submitWithMultipleSigners — ADDRESS_V2 entry (lines 1034-1035 + 1053-1054)',
+    () {
+      test(
         'submitWithMultipleSigners_addressV2Entry_matchingContract_executesV2Arms',
         () async {
-      final h = await _harness();
+          final h = await _harness();
 
-      h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      // Simulation returns an ADDRESS_V2 entry for _contractA (the connected contract).
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressV2XdrEntry(_contractA),
-        minResourceFee: 100,
-      ));
-      h.soroban.latestLedgerResponses.add(_latestLedger(1000));
-      // WebAuthn provider returns a valid signature for the passkey signer.
-      h.provider.authenticateResponses.add(_fakeAuthResult());
-      // Re-simulate after signing.
-      h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
-      h.soroban.simulateResponses.add(_simResponseEmpty(minResourceFee: 200));
-      // Submit + poll.
-      h.soroban.sendResponses.add(_sendPending(hash: 'v2-multi-hash'));
-      h.soroban.pollResponses.add(_txSuccess(ledger: 9999));
+          h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
+          // Simulation returns an ADDRESS_V2 entry for _contractA (the connected contract).
+          h.soroban.simulateResponses.add(
+            _simResponseWithAuthEntry(
+              entry: _makeAddressV2XdrEntry(_contractA),
+              minResourceFee: 100,
+            ),
+          );
+          h.soroban.latestLedgerResponses.add(_latestLedger(1000));
+          // WebAuthn provider returns a valid signature for the passkey signer.
+          h.provider.authenticateResponses.add(_fakeAuthResult());
+          // Re-simulate after signing.
+          h.soroban.getAccountResponses.add(
+            _deployerAccount(h.deployer, seq: 2),
+          );
+          h.soroban.simulateResponses.add(
+            _simResponseEmpty(minResourceFee: 200),
+          );
+          // Submit + poll.
+          h.soroban.sendResponses.add(_sendPending(hash: 'v2-multi-hash'));
+          h.soroban.pollResponses.add(_txSuccess(ledger: 9999));
 
-      final keyData = _passkeyKeyData();
-      final credentialIdBytes = base64Url.decode(
-        base64Url.normalize(_credentialIdB64),
+          final keyData = _passkeyKeyData();
+          final credentialIdBytes = base64Url.decode(
+            base64Url.normalize(_credentialIdB64),
+          );
+          final manager = OZMultiSignerManager(h.kit);
+          final result = await manager.submitWithMultipleSigners(
+            hostFunction: XdrHostFunction.forInvokingContractWithArgs(
+              XdrInvokeContractArgs(
+                Address.forContractId(_contractB).toXdr(),
+                'vote',
+                const <XdrSCVal>[],
+              ),
+            ),
+            selectedSigners: <OZSelectedSigner>[
+              OZSelectedSignerPasskey(
+                keyData: keyData,
+                credentialIdBytes: credentialIdBytes,
+                transports: const <String>['internal'],
+              ),
+            ],
+            // Custom resolver returns rule ID 0 to bypass on-chain context-rule
+            // lookup (which would require additional mock responses).
+            resolveContextRuleIds: (entry, idx) async => <int>[0],
+          );
+
+          // Pipeline completed successfully — both V2 arms were traversed.
+          expect(
+            result.success,
+            isTrue,
+            reason:
+                'ADDRESS_V2 entry must be signed and submitted successfully',
+          );
+          expect(result.hash, equals('v2-multi-hash'));
+          // WebAuthn was invoked exactly once (one auth entry).
+          expect(h.provider.authenticateCalls, hasLength(1));
+
+          // The sent transaction must carry an auth entry whose credentials arm
+          // is ADDRESS_V2 (the arm was preserved by _rebuildCredentialsXdr).
+          expect(h.soroban.sendCalls.length, equals(1));
+          final sentTx = h.soroban.sendCalls.single;
+          final envelope = sentTx.toEnvelopeXdr();
+          // ignore: invalid_use_of_internal_member
+          final opAuth =
+              envelope.v1!.tx.operations.first.body.invokeHostFunctionOp!.auth;
+          expect(opAuth, isNotEmpty);
+          expect(
+            opAuth.first.credentials.discriminant,
+            equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2),
+            reason:
+                '_rebuildCredentialsXdr must preserve the ADDRESS_V2 arm on write-back',
+          );
+        },
       );
-      final manager = OZMultiSignerManager(h.kit);
-      final result = await manager.submitWithMultipleSigners(
-        hostFunction: XdrHostFunction.forInvokingContractWithArgs(
-          XdrInvokeContractArgs(
-            Address.forContractId(_contractB).toXdr(),
-            'vote',
-            const <XdrSCVal>[],
-          ),
-        ),
-        selectedSigners: <OZSelectedSigner>[
-          OZSelectedSignerPasskey(
-            keyData: keyData,
-            credentialIdBytes: credentialIdBytes,
-            transports: const <String>['internal'],
-          ),
-        ],
-        // Custom resolver returns rule ID 0 to bypass on-chain context-rule
-        // lookup (which would require additional mock responses).
-        resolveContextRuleIds: (entry, idx) async => <int>[0],
-      );
-
-      // Pipeline completed successfully — both V2 arms were traversed.
-      expect(result.success, isTrue,
-          reason: 'ADDRESS_V2 entry must be signed and submitted successfully');
-      expect(result.hash, equals('v2-multi-hash'));
-      // WebAuthn was invoked exactly once (one auth entry).
-      expect(h.provider.authenticateCalls, hasLength(1));
-
-      // The sent transaction must carry an auth entry whose credentials arm
-      // is ADDRESS_V2 (the arm was preserved by _rebuildCredentialsXdr).
-      expect(h.soroban.sendCalls.length, equals(1));
-      final sentTx = h.soroban.sendCalls.single;
-      final envelope = sentTx.toEnvelopeXdr();
-      // ignore: invalid_use_of_internal_member
-      final opAuth =
-          envelope.v1!.tx.operations.first.body.invokeHostFunctionOp!.auth;
-      expect(opAuth, isNotEmpty);
-      expect(
-        opAuth.first.credentials.discriminant,
-        equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2),
-        reason: '_rebuildCredentialsXdr must preserve the ADDRESS_V2 arm on write-back',
-      );
-    });
-  });
+    },
+  );
 }

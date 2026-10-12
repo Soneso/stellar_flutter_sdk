@@ -121,10 +121,7 @@ void main() {
       test('creates deploy request with all optional fields', () {
         final wasmHash =
             '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
-        final constructorArgs = [
-          XdrSCVal.forU32(1),
-          XdrSCVal.forU32(2),
-        ];
+        final constructorArgs = [XdrSCVal.forU32(1), XdrSCVal.forU32(2)];
         final salt = XdrUint256(Uint8List.fromList(List.filled(32, 5)));
         final methodOptions = MethodOptions(
           fee: 500,
@@ -226,7 +223,9 @@ void main() {
 
         expect(options.fee, 1000);
         expect(
-            options.timeoutInSeconds, NetworkConstants.DEFAULT_TIMEOUT_SECONDS);
+          options.timeoutInSeconds,
+          NetworkConstants.DEFAULT_TIMEOUT_SECONDS,
+        );
         expect(options.simulate, true);
         expect(options.restore, false);
       });
@@ -241,10 +240,7 @@ void main() {
       });
 
       test('creates options with all flags toggled', () {
-        final options = MethodOptions(
-          simulate: false,
-          restore: true,
-        );
+        final options = MethodOptions(simulate: false, restore: true);
 
         expect(options.simulate, false);
         expect(options.restore, true);

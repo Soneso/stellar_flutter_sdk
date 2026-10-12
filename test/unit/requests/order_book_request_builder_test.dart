@@ -41,7 +41,8 @@ void main() {
     });
 
     group('sellingAsset', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds selling asset parameters for AlphaNum4', () {
         final builder = OrderBookRequestBuilder(mockClient, serverUri);
@@ -49,9 +50,15 @@ void main() {
         builder.sellingAsset(asset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['selling_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['selling_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['selling_asset_code'], equals('USD'));
-        expect(uri.queryParameters['selling_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['selling_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds selling asset parameters for AlphaNum12', () {
@@ -60,9 +67,15 @@ void main() {
         builder.sellingAsset(asset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['selling_asset_type'], equals('credit_alphanum12'));
+        expect(
+          uri.queryParameters['selling_asset_type'],
+          equals('credit_alphanum12'),
+        );
         expect(uri.queryParameters['selling_asset_code'], equals('LONGASSET'));
-        expect(uri.queryParameters['selling_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['selling_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds selling asset parameters for native asset', () {
@@ -72,7 +85,10 @@ void main() {
 
         expect(uri.queryParameters['selling_asset_type'], equals('native'));
         expect(uri.queryParameters.containsKey('selling_asset_code'), isFalse);
-        expect(uri.queryParameters.containsKey('selling_asset_issuer'), isFalse);
+        expect(
+          uri.queryParameters.containsKey('selling_asset_issuer'),
+          isFalse,
+        );
       });
 
       test('returns builder for method chaining', () {
@@ -85,7 +101,8 @@ void main() {
     });
 
     group('buyingAsset', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds buying asset parameters for AlphaNum4', () {
         final builder = OrderBookRequestBuilder(mockClient, serverUri);
@@ -93,9 +110,15 @@ void main() {
         builder.buyingAsset(asset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['buying_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['buying_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['buying_asset_code'], equals('EUR'));
-        expect(uri.queryParameters['buying_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['buying_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds buying asset parameters for native asset', () {
@@ -122,7 +145,10 @@ void main() {
         final uri = builder.buildUri();
 
         expect(uri.queryParameters['selling_asset_code'], equals('USD'));
-        expect(uri.queryParameters['selling_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['selling_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['buying_asset_type'], equals('native'));
       });
     });
@@ -162,7 +188,8 @@ void main() {
     });
 
     group('buildUri with combinations', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('builds URI with both assets', () {
         final builder = OrderBookRequestBuilder(mockClient, serverUri);
@@ -173,7 +200,10 @@ void main() {
           ..buyingAsset(buyingAsset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['selling_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['selling_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['selling_asset_code'], equals('USD'));
         expect(uri.queryParameters['buying_asset_type'], equals('native'));
       });
@@ -210,16 +240,28 @@ void main() {
 
       test('builds URI with AlphaNum12 assets', () {
         final builder = OrderBookRequestBuilder(mockClient, serverUri);
-        final sellingAsset = AssetTypeCreditAlphaNum12('LONGASSET1', issuerAccountId);
-        final buyingAsset = AssetTypeCreditAlphaNum12('LONGASSET2', issuerAccountId);
+        final sellingAsset = AssetTypeCreditAlphaNum12(
+          'LONGASSET1',
+          issuerAccountId,
+        );
+        final buyingAsset = AssetTypeCreditAlphaNum12(
+          'LONGASSET2',
+          issuerAccountId,
+        );
         builder
           ..sellingAsset(sellingAsset)
           ..buyingAsset(buyingAsset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['selling_asset_type'], equals('credit_alphanum12'));
+        expect(
+          uri.queryParameters['selling_asset_type'],
+          equals('credit_alphanum12'),
+        );
         expect(uri.queryParameters['selling_asset_code'], equals('LONGASSET1'));
-        expect(uri.queryParameters['buying_asset_type'], equals('credit_alphanum12'));
+        expect(
+          uri.queryParameters['buying_asset_type'],
+          equals('credit_alphanum12'),
+        );
         expect(uri.queryParameters['buying_asset_code'], equals('LONGASSET2'));
       });
     });
@@ -253,7 +295,8 @@ void main() {
       });
 
       test('builds URI with selling asset only', () {
-        final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+        final issuerAccountId =
+            'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
         final builder = OrderBookRequestBuilder(mockClient, serverUri);
         final asset = AssetTypeCreditAlphaNum4('USD', issuerAccountId);
         builder.sellingAsset(asset);
@@ -264,7 +307,8 @@ void main() {
       });
 
       test('builds URI with buying asset only', () {
-        final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+        final issuerAccountId =
+            'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
         final builder = OrderBookRequestBuilder(mockClient, serverUri);
         final asset = AssetTypeCreditAlphaNum4('EUR', issuerAccountId);
         builder.buyingAsset(asset);
@@ -327,7 +371,8 @@ void main() {
           return http.Response(mockResponse, 200);
         });
 
-        final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+        final issuerAccountId =
+            'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
         final builder = OrderBookRequestBuilder(client, serverUri);
         builder.sellingAsset(Asset.NATIVE);
         builder.buyingAsset(AssetTypeCreditAlphaNum4('USD', issuerAccountId));
@@ -344,7 +389,8 @@ void main() {
       });
 
       test('executes request with limit parameter', () async {
-        final mockResponse = '{"bids": [], "asks": [], "base": {"asset_type": "native"}, "counter": {"asset_type": "native"}}';
+        final mockResponse =
+            '{"bids": [], "asks": [], "base": {"asset_type": "native"}, "counter": {"asset_type": "native"}}';
         final client = MockClient((request) async {
           expect(request.url.queryParameters['limit'], equals('5'));
           return http.Response(mockResponse, 200);
@@ -362,7 +408,10 @@ void main() {
 
       test('handles HTTP errors gracefully', () async {
         final client = MockClient((request) async {
-          return http.Response('{"type": "not_found", "title": "Resource Missing"}', 404);
+          return http.Response(
+            '{"type": "not_found", "title": "Resource Missing"}',
+            404,
+          );
         });
 
         final builder = OrderBookRequestBuilder(client, serverUri);
@@ -373,14 +422,20 @@ void main() {
 
     group('requestExecute static method', () {
       test('executes request for custom URI', () async {
-        final mockResponse = '{"bids": [], "asks": [], "base": {"asset_type": "native"}, "counter": {"asset_type": "native"}}';
+        final mockResponse =
+            '{"bids": [], "asks": [], "base": {"asset_type": "native"}, "counter": {"asset_type": "native"}}';
         final client = MockClient((request) async {
           expect(request.url.toString(), contains('/order_book'));
           return http.Response(mockResponse, 200);
         });
 
-        final customUri = Uri.parse('https://horizon-testnet.stellar.org/order_book?selling_asset_type=native&buying_asset_type=native');
-        final orderBook = await OrderBookRequestBuilder.requestExecute(client, customUri);
+        final customUri = Uri.parse(
+          'https://horizon-testnet.stellar.org/order_book?selling_asset_type=native&buying_asset_type=native',
+        );
+        final orderBook = await OrderBookRequestBuilder.requestExecute(
+          client,
+          customUri,
+        );
 
         expect(orderBook, isNotNull);
         expect(orderBook.bids, isEmpty);
@@ -388,14 +443,17 @@ void main() {
       });
 
       test('includes proper headers in request', () async {
-        final mockResponse = '{"bids": [], "asks": [], "base": {"asset_type": "native"}, "counter": {"asset_type": "native"}}';
+        final mockResponse =
+            '{"bids": [], "asks": [], "base": {"asset_type": "native"}, "counter": {"asset_type": "native"}}';
         final client = MockClient((request) async {
           expect(request.headers['X-Client-Name'], isNotNull);
           expect(request.headers['X-Client-Version'], isNotNull);
           return http.Response(mockResponse, 200);
         });
 
-        final customUri = Uri.parse('https://horizon-testnet.stellar.org/order_book');
+        final customUri = Uri.parse(
+          'https://horizon-testnet.stellar.org/order_book',
+        );
         await OrderBookRequestBuilder.requestExecute(client, customUri);
       });
     });
@@ -438,26 +496,29 @@ void main() {
             {
               'price': '0.5000000',
               'amount': '100.0000000',
-              'price_r': {'n': 1, 'd': 2}
-            }
+              'price_r': {'n': 1, 'd': 2},
+            },
           ],
           'asks': [
             {
               'price': '2.0000000',
               'amount': '50.0000000',
-              'price_r': {'n': 2, 'd': 1}
-            }
+              'price_r': {'n': 2, 'd': 1},
+            },
           ],
           'base': {'asset_type': 'native'},
-          'counter': {'asset_type': 'native'}
+          'counter': {'asset_type': 'native'},
         };
 
         final client = MockClient.streaming((request, bodyStream) async {
           final controller = StreamController<List<int>>();
           controller.add(utf8.encode('event: open\ndata: "hello"\n\n'));
           controller.add(utf8.encode('data: ${json.encode(orderBook)}\n\n'));
-          return http.StreamedResponse(controller.stream, 200,
-              headers: {'content-type': 'text/event-stream'});
+          return http.StreamedResponse(
+            controller.stream,
+            200,
+            headers: {'content-type': 'text/event-stream'},
+          );
         });
 
         final builder = OrderBookRequestBuilder(client, serverUri);
@@ -468,8 +529,9 @@ void main() {
           }
         });
 
-        final event =
-            await completer.future.timeout(const Duration(seconds: 10));
+        final event = await completer.future.timeout(
+          const Duration(seconds: 10),
+        );
         await subscription.cancel();
 
         expect(event, isA<OrderBookResponse>());

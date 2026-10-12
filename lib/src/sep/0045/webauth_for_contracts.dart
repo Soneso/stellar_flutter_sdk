@@ -33,42 +33,42 @@ class ContractChallengeValidationException implements Exception {
 class ContractChallengeValidationErrorInvalidContractAddress
     extends ContractChallengeValidationException {
   ContractChallengeValidationErrorInvalidContractAddress(String message)
-      : super(message);
+    : super(message);
 }
 
 /// Thrown when the function name is not "web_auth_verify".
 class ContractChallengeValidationErrorInvalidFunctionName
     extends ContractChallengeValidationException {
   ContractChallengeValidationErrorInvalidFunctionName(String message)
-      : super(message);
+    : super(message);
 }
 
 /// Thrown when an authorization entry contains sub-invocations.
 class ContractChallengeValidationErrorSubInvocationsFound
     extends ContractChallengeValidationException {
   ContractChallengeValidationErrorSubInvocationsFound(String message)
-      : super(message);
+    : super(message);
 }
 
 /// Thrown when the home_domain argument does not match expected value.
 class ContractChallengeValidationErrorInvalidHomeDomain
     extends ContractChallengeValidationException {
   ContractChallengeValidationErrorInvalidHomeDomain(String message)
-      : super(message);
+    : super(message);
 }
 
 /// Thrown when the web_auth_domain argument does not match server domain.
 class ContractChallengeValidationErrorInvalidWebAuthDomain
     extends ContractChallengeValidationException {
   ContractChallengeValidationErrorInvalidWebAuthDomain(String message)
-      : super(message);
+    : super(message);
 }
 
 /// Thrown when the account argument does not match client account.
 class ContractChallengeValidationErrorInvalidAccount
     extends ContractChallengeValidationException {
   ContractChallengeValidationErrorInvalidAccount(String message)
-      : super(message);
+    : super(message);
 }
 
 /// Thrown when the nonce is inconsistent across authorization entries.
@@ -81,21 +81,21 @@ class ContractChallengeValidationErrorInvalidNonce
 class ContractChallengeValidationErrorInvalidServerSignature
     extends ContractChallengeValidationException {
   ContractChallengeValidationErrorInvalidServerSignature(String message)
-      : super(message);
+    : super(message);
 }
 
 /// Thrown when no authorization entry exists for the server account.
 class ContractChallengeValidationErrorMissingServerEntry
     extends ContractChallengeValidationException {
   ContractChallengeValidationErrorMissingServerEntry(String message)
-      : super(message);
+    : super(message);
 }
 
 /// Thrown when no authorization entry exists for the client account.
 class ContractChallengeValidationErrorMissingClientEntry
     extends ContractChallengeValidationException {
   ContractChallengeValidationErrorMissingClientEntry(String message)
-      : super(message);
+    : super(message);
 }
 
 /// Thrown when general arguments validation fails.
@@ -108,7 +108,7 @@ class ContractChallengeValidationErrorInvalidArgs
 class ContractChallengeValidationErrorInvalidNetworkPassphrase
     extends ContractChallengeValidationException {
   ContractChallengeValidationErrorInvalidNetworkPassphrase(String message)
-      : super(message);
+    : super(message);
 }
 
 /// Thrown when the challenge request fails.
@@ -192,18 +192,22 @@ class ContractChallengeResponse {
   /// Optional network passphrase for client verification
   final String? networkPassphrase;
 
-  ContractChallengeResponse(this.authorizationEntries,
-      {this.networkPassphrase});
+  ContractChallengeResponse(
+    this.authorizationEntries, {
+    this.networkPassphrase,
+  });
 
   factory ContractChallengeResponse.fromJson(Map<String, dynamic> json) {
     // Handle both snake_case and camelCase field names
-    final authEntries = json['authorization_entries'] ?? json['authorizationEntries'];
+    final authEntries =
+        json['authorization_entries'] ?? json['authorizationEntries'];
     if (authEntries == null) {
       throw ArgumentError('Missing required field: authorization_entries');
     }
     return ContractChallengeResponse(
       authEntries as String,
-      networkPassphrase: (json['network_passphrase'] ?? json['networkPassphrase']) as String?,
+      networkPassphrase:
+          (json['network_passphrase'] ?? json['networkPassphrase']) as String?,
     );
   }
 }
@@ -293,11 +297,13 @@ class WebAuthForContracts {
   }) {
     if (!_webAuthContractId.startsWith('C')) {
       throw ArgumentError(
-          "webAuthContractId must be a contract address starting with 'C'");
+        "webAuthContractId must be a contract address starting with 'C'",
+      );
     }
     if (!_serverSigningKey.startsWith('G')) {
       throw ArgumentError(
-          "serverSigningKey must be an account address starting with 'G'");
+        "serverSigningKey must be an account address starting with 'G'",
+      );
     }
     final uri = Uri.tryParse(_authEndpoint);
     if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
@@ -311,7 +317,8 @@ class WebAuthForContracts {
 
     // Set Soroban RPC URL based on network if not provided
     if (sorobanRpcUrl == null) {
-      this.sorobanRpcUrl = _network.networkPassphrase == Network.TESTNET.networkPassphrase
+      this.sorobanRpcUrl =
+          _network.networkPassphrase == Network.TESTNET.networkPassphrase
           ? 'https://soroban-testnet.stellar.org'
           : 'https://soroban.stellar.org';
     } else {
@@ -348,8 +355,7 @@ class WebAuthForContracts {
 
     final webAuthForContractsEndpoint =
         stellarToml.generalInformation.webAuthForContractsEndpoint;
-    final webAuthContractId =
-        stellarToml.generalInformation.webAuthContractId;
+    final webAuthContractId = stellarToml.generalInformation.webAuthContractId;
     final signingKey = stellarToml.generalInformation.signingKey;
 
     if (webAuthForContractsEndpoint == null) {
@@ -408,7 +414,7 @@ class WebAuthForContracts {
     String? clientDomain,
     KeyPair? clientDomainAccountKeyPair,
     Future<SorobanAuthorizationEntry> Function(SorobanAuthorizationEntry)?
-        clientDomainSigningCallback,
+    clientDomainSigningCallback,
     int? signatureExpirationLedger,
   }) async {
     // Validate client account ID is a contract address
@@ -437,8 +443,9 @@ class WebAuthForContracts {
       }
     }
 
-    final authEntries =
-        decodeAuthorizationEntries(challengeResponse.authorizationEntries);
+    final authEntries = decodeAuthorizationEntries(
+      challengeResponse.authorizationEntries,
+    );
 
     // Determine client domain account ID if needed
     String? clientDomainAccountId;
@@ -454,11 +461,13 @@ class WebAuthForContracts {
         clientDomainAccountId = toml.generalInformation.signingKey;
         if (clientDomainAccountId == null) {
           throw Exception(
-              'Could not find signing key in stellar.toml for client domain');
+            'Could not find signing key in stellar.toml for client domain',
+          );
         }
       } else {
         throw ArgumentError(
-            'Client domain key pair or client domain signing callback is missing');
+          'Client domain key pair or client domain signing callback is missing',
+        );
       }
     }
 
@@ -511,11 +520,13 @@ class WebAuthForContracts {
   }) async {
     final effectiveHomeDomain = homeDomain ?? _serverHomeDomain;
 
-    final uri = Uri.parse(_authEndpoint).replace(queryParameters: {
-      'account': clientAccountId,
-      'home_domain': effectiveHomeDomain,
-      if (clientDomain != null) 'client_domain': clientDomain,
-    });
+    final uri = Uri.parse(_authEndpoint).replace(
+      queryParameters: {
+        'account': clientAccountId,
+        'home_domain': effectiveHomeDomain,
+        if (clientDomain != null) 'client_domain': clientDomain,
+      },
+    );
 
     try {
       final response = await httpClient.get(
@@ -563,7 +574,8 @@ class WebAuthForContracts {
   }) {
     if (authEntries.isEmpty) {
       throw ContractChallengeValidationException(
-          'No authorization entries found');
+        'No authorization entries found',
+      );
     }
 
     // Use server home domain as default if not provided
@@ -600,14 +612,18 @@ class WebAuthForContracts {
       }
 
       // Check 3: Contract address matches WEB_AUTH_CONTRACT_ID
-      final contractAddress = Address.fromXdr(function.contractFn!.contractAddress);
+      final contractAddress = Address.fromXdr(
+        function.contractFn!.contractAddress,
+      );
       if (contractAddress.type != Address.TYPE_CONTRACT) {
         throw ContractChallengeValidationErrorInvalidContractAddress(
           'Contract address is not a contract type',
         );
       }
       final contractIdHex = contractAddress.contractId;
-      final expectedContractIdHex = StrKey.decodeContractIdHex(_webAuthContractId);
+      final expectedContractIdHex = StrKey.decodeContractIdHex(
+        _webAuthContractId,
+      );
       if (contractIdHex != expectedContractIdHex) {
         throw ContractChallengeValidationErrorInvalidContractAddress(
           'Contract address does not match WEB_AUTH_CONTRACT_ID',
@@ -656,7 +672,8 @@ class WebAuthForContracts {
       // Validate nonce consistency
       if (args['nonce'] == null) {
         throw ContractChallengeValidationErrorInvalidNonce(
-            'Nonce argument is missing');
+          'Nonce argument is missing',
+        );
       }
       if (nonce == null) {
         nonce = args['nonce'];
@@ -743,7 +760,7 @@ class WebAuthForContracts {
     KeyPair? clientDomainKeyPair,
     String? clientDomainAccountId,
     Future<SorobanAuthorizationEntry> Function(SorobanAuthorizationEntry)?
-        clientDomainSigningCallback,
+    clientDomainSigningCallback,
   ) async {
     final signedEntries = <SorobanAuthorizationEntry>[];
 
@@ -811,7 +828,8 @@ class WebAuthForContracts {
   ///
   /// Returns: JWT token
   Future<String> sendSignedChallenge(
-      List<SorobanAuthorizationEntry> signedEntries) async {
+    List<SorobanAuthorizationEntry> signedEntries,
+  ) async {
     final base64Xdr = _encodeAuthorizationEntries(signedEntries);
 
     Map<String, String> headers = {...(httpRequestHeaders ?? {})};
@@ -829,7 +847,12 @@ class WebAuthForContracts {
       Uri.parse(_authEndpoint),
       headers: headers,
       body: useFormUrlEncoded
-          ? body.entries.map((e) => '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value as String)}').join('&')
+          ? body.entries
+                .map(
+                  (e) =>
+                      '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value as String)}',
+                )
+                .join('&')
           : json.encode(body),
     );
 
@@ -843,7 +866,8 @@ class WebAuthForContracts {
         return result.jwtToken!;
       } else {
         throw SubmitContractChallengeErrorResponseException(
-            'An unknown error occurred');
+          'An unknown error occurred',
+        );
       }
     } else if (statusCode == 504) {
       throw SubmitContractChallengeTimeoutResponseException();
@@ -860,8 +884,7 @@ class WebAuthForContracts {
   // ============================================================================
 
   /// Decodes authorization entries from base64 XDR.
-  List<SorobanAuthorizationEntry> decodeAuthorizationEntries(
-      String base64Xdr) {
+  List<SorobanAuthorizationEntry> decodeAuthorizationEntries(String base64Xdr) {
     try {
       final xdr = base64Decode(base64Xdr);
       final xdrBuffer = XdrDataInputStream(xdr);
@@ -870,8 +893,11 @@ class WebAuthForContracts {
       final count = xdrBuffer.readArrayLength();
       final entries = <SorobanAuthorizationEntry>[];
       for (int i = 0; i < count; i++) {
-        entries.add(SorobanAuthorizationEntry.fromXdr(
-            XdrSorobanAuthorizationEntry.decode(xdrBuffer)));
+        entries.add(
+          SorobanAuthorizationEntry.fromXdr(
+            XdrSorobanAuthorizationEntry.decode(xdrBuffer),
+          ),
+        );
       }
 
       return entries;
@@ -883,8 +909,7 @@ class WebAuthForContracts {
   }
 
   /// Encodes authorization entries to base64 XDR.
-  String _encodeAuthorizationEntries(
-      List<SorobanAuthorizationEntry> entries) {
+  String _encodeAuthorizationEntries(List<SorobanAuthorizationEntry> entries) {
     final xdrOutputStream = XdrDataOutputStream();
 
     // Write array length
@@ -899,26 +924,26 @@ class WebAuthForContracts {
   }
 
   /// Extracts args map from authorization entry.
-  Map<String, String> _extractArgsFromEntry(
-      SorobanAuthorizationEntry entry) {
+  Map<String, String> _extractArgsFromEntry(SorobanAuthorizationEntry entry) {
     try {
       final function = entry.rootInvocation.function;
       if (function.contractFn == null) {
         throw ContractChallengeValidationErrorInvalidArgs(
-            'Not a contract function');
+          'Not a contract function',
+        );
       }
 
       final argsArray = function.contractFn!.args;
       if (argsArray.isEmpty) {
-        throw ContractChallengeValidationErrorInvalidArgs(
-            'No arguments found');
+        throw ContractChallengeValidationErrorInvalidArgs('No arguments found');
       }
 
       // First arg should be a map
       final argsVal = argsArray[0];
       if (argsVal.discriminant != XdrSCValType.SCV_MAP || argsVal.map == null) {
         throw ContractChallengeValidationErrorInvalidArgs(
-            'Arguments are not in map format');
+          'Arguments are not in map format',
+        );
       }
 
       final result = <String, String>{};
@@ -1014,8 +1039,9 @@ class WebAuthForContracts {
       }
 
       // Verify that the extracted public key matches the expected server key
-      final expectedPublicKey =
-          KeyPair.fromAccountId(_serverSigningKey).publicKey;
+      final expectedPublicKey = KeyPair.fromAccountId(
+        _serverSigningKey,
+      ).publicKey;
       if (!_bytesEqual(publicKey, expectedPublicKey)) {
         return false;
       }

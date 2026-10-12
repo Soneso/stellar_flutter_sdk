@@ -45,7 +45,8 @@ void main() {
   });
 
   group('AssetTypeCreditAlphanum4', () {
-    final validIssuerId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+    final validIssuerId =
+        'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
     test('create credit alphanum4 with valid code', () {
       final usd = AssetTypeCreditAlphaNum4('USD', validIssuerId);
@@ -61,10 +62,22 @@ void main() {
 
     test('code must be <= 4 characters', () {
       // Valid lengths: 1-4 characters
-      expect(() => AssetTypeCreditAlphaNum4('X', validIssuerId), returnsNormally);
-      expect(() => AssetTypeCreditAlphaNum4('AB', validIssuerId), returnsNormally);
-      expect(() => AssetTypeCreditAlphaNum4('USD', validIssuerId), returnsNormally);
-      expect(() => AssetTypeCreditAlphaNum4('ABCD', validIssuerId), returnsNormally);
+      expect(
+        () => AssetTypeCreditAlphaNum4('X', validIssuerId),
+        returnsNormally,
+      );
+      expect(
+        () => AssetTypeCreditAlphaNum4('AB', validIssuerId),
+        returnsNormally,
+      );
+      expect(
+        () => AssetTypeCreditAlphaNum4('USD', validIssuerId),
+        returnsNormally,
+      );
+      expect(
+        () => AssetTypeCreditAlphaNum4('ABCD', validIssuerId),
+        returnsNormally,
+      );
 
       // Invalid: too long (>4 characters)
       expect(
@@ -91,10 +104,7 @@ void main() {
 
       // Invalid issuer format - error only occurs when converting to XDR
       final invalidAsset = AssetTypeCreditAlphaNum4('USD', 'INVALID_ISSUER');
-      expect(
-        () => invalidAsset.toXdr(),
-        throwsA(isA<FormatException>()),
-      );
+      expect(() => invalidAsset.toXdr(), throwsA(isA<FormatException>()));
     });
 
     test('XDR round-trip', () {
@@ -113,7 +123,8 @@ void main() {
       final usd1 = AssetTypeCreditAlphaNum4('USD', validIssuerId);
       final usd2 = AssetTypeCreditAlphaNum4('USD', validIssuerId);
       final eur = AssetTypeCreditAlphaNum4('EUR', validIssuerId);
-      final otherIssuerId = 'GD5J6HLF5666X4AZLTFTXLY46J5SW7EXRKBLEYPJP33S33MXZGV6CWFN';
+      final otherIssuerId =
+          'GD5J6HLF5666X4AZLTFTXLY46J5SW7EXRKBLEYPJP33S33MXZGV6CWFN';
       final usd3 = AssetTypeCreditAlphaNum4('USD', otherIssuerId);
       final native = AssetTypeNative();
 
@@ -133,7 +144,8 @@ void main() {
   });
 
   group('AssetTypeCreditAlphanum12', () {
-    final validIssuerId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+    final validIssuerId =
+        'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
     test('create credit alphanum12 with valid code (5-12 chars)', () {
       final longAsset = AssetTypeCreditAlphaNum12('LONGASSET', validIssuerId);
@@ -149,11 +161,26 @@ void main() {
 
     test('code must be > 4 and <= 12 characters', () {
       // Valid lengths: 5-12 characters
-      expect(() => AssetTypeCreditAlphaNum12('ABCDE', validIssuerId), returnsNormally);
-      expect(() => AssetTypeCreditAlphaNum12('SIXCHA', validIssuerId), returnsNormally);
-      expect(() => AssetTypeCreditAlphaNum12('LONGASSET', validIssuerId), returnsNormally);
-      expect(() => AssetTypeCreditAlphaNum12('TWELVECHARS', validIssuerId), returnsNormally);
-      expect(() => AssetTypeCreditAlphaNum12('EXACTLYTWELV', validIssuerId), returnsNormally);
+      expect(
+        () => AssetTypeCreditAlphaNum12('ABCDE', validIssuerId),
+        returnsNormally,
+      );
+      expect(
+        () => AssetTypeCreditAlphaNum12('SIXCHA', validIssuerId),
+        returnsNormally,
+      );
+      expect(
+        () => AssetTypeCreditAlphaNum12('LONGASSET', validIssuerId),
+        returnsNormally,
+      );
+      expect(
+        () => AssetTypeCreditAlphaNum12('TWELVECHARS', validIssuerId),
+        returnsNormally,
+      );
+      expect(
+        () => AssetTypeCreditAlphaNum12('EXACTLYTWELV', validIssuerId),
+        returnsNormally,
+      );
 
       // Invalid: too short (<=4 characters)
       expect(
@@ -177,13 +204,19 @@ void main() {
     });
 
     test('XDR round-trip', () {
-      final originalAsset = AssetTypeCreditAlphaNum12('LONGASSET', validIssuerId);
+      final originalAsset = AssetTypeCreditAlphaNum12(
+        'LONGASSET',
+        validIssuerId,
+      );
 
       final xdrAsset = originalAsset.toXdr();
       final restoredAsset = Asset.fromXdr(xdrAsset);
 
       expect(restoredAsset, isA<AssetTypeCreditAlphaNum12>());
-      expect((restoredAsset as AssetTypeCreditAlphaNum12).code, equals('LONGASSET'));
+      expect(
+        (restoredAsset as AssetTypeCreditAlphaNum12).code,
+        equals('LONGASSET'),
+      );
       expect(restoredAsset.issuerId, equals(validIssuerId));
       expect(restoredAsset, equals(originalAsset));
     });
@@ -192,7 +225,8 @@ void main() {
       final long1 = AssetTypeCreditAlphaNum12('LONGASSET', validIssuerId);
       final long2 = AssetTypeCreditAlphaNum12('LONGASSET', validIssuerId);
       final other = AssetTypeCreditAlphaNum12('OTHERASSET', validIssuerId);
-      final otherIssuerId = 'GD5J6HLF5666X4AZLTFTXLY46J5SW7EXRKBLEYPJP33S33MXZGV6CWFN';
+      final otherIssuerId =
+          'GD5J6HLF5666X4AZLTFTXLY46J5SW7EXRKBLEYPJP33S33MXZGV6CWFN';
       final long3 = AssetTypeCreditAlphaNum12('LONGASSET', otherIssuerId);
       final native = AssetTypeNative();
 
@@ -212,7 +246,8 @@ void main() {
   });
 
   group('Asset factory methods', () {
-    final validIssuerId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+    final validIssuerId =
+        'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
     test('Asset.create() returns native for "native" or "XLM"', () {
       final nativeFromType = Asset.create(Asset.TYPE_NATIVE, null, null);
@@ -221,7 +256,11 @@ void main() {
     });
 
     test('Asset.create() returns alphanum4 for short codes', () {
-      final usd = Asset.create(Asset.TYPE_CREDIT_ALPHANUM4, 'USD', validIssuerId);
+      final usd = Asset.create(
+        Asset.TYPE_CREDIT_ALPHANUM4,
+        'USD',
+        validIssuerId,
+      );
 
       expect(usd, isA<AssetTypeCreditAlphaNum4>());
       expect((usd as AssetTypeCreditAlphaNum4).code, equals('USD'));
@@ -229,10 +268,17 @@ void main() {
     });
 
     test('Asset.create() returns alphanum12 for long codes', () {
-      final longAsset = Asset.create(Asset.TYPE_CREDIT_ALPHANUM12, 'LONGASSET', validIssuerId);
+      final longAsset = Asset.create(
+        Asset.TYPE_CREDIT_ALPHANUM12,
+        'LONGASSET',
+        validIssuerId,
+      );
 
       expect(longAsset, isA<AssetTypeCreditAlphaNum12>());
-      expect((longAsset as AssetTypeCreditAlphaNum12).code, equals('LONGASSET'));
+      expect(
+        (longAsset as AssetTypeCreditAlphaNum12).code,
+        equals('LONGASSET'),
+      );
       expect(longAsset.issuerId, equals(validIssuerId));
     });
 
@@ -251,7 +297,10 @@ void main() {
       // Long code (5-12 chars) -> AlphaNum12
       final longAsset = Asset.createNonNativeAsset('LONGASSET', validIssuerId);
       expect(longAsset, isA<AssetTypeCreditAlphaNum12>());
-      expect((longAsset as AssetTypeCreditAlphaNum12).code, equals('LONGASSET'));
+      expect(
+        (longAsset as AssetTypeCreditAlphaNum12).code,
+        equals('LONGASSET'),
+      );
 
       final abcde = Asset.createNonNativeAsset('ABCDE', validIssuerId);
       expect(abcde, isA<AssetTypeCreditAlphaNum12>());
@@ -262,7 +311,8 @@ void main() {
   });
 
   group('AssetTypePoolShare', () {
-    final validIssuerId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+    final validIssuerId =
+        'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
     test('create pool share asset', () {
       final xlm = AssetTypeNative();
@@ -296,7 +346,10 @@ void main() {
       final usd = AssetTypeCreditAlphaNum4('USD', validIssuerId);
 
       // Correct order: Native before AlphaNum4
-      expect(() => AssetTypePoolShare(assetA: xlm, assetB: usd), returnsNormally);
+      expect(
+        () => AssetTypePoolShare(assetA: xlm, assetB: usd),
+        returnsNormally,
+      );
 
       // Incorrect order: AlphaNum4 before Native
       expect(
@@ -339,9 +392,12 @@ void main() {
     group('same-code issuers ordered by raw public key bytes', () {
       // The strkey text sorts Y before X; the raw keys (0x68... and 0x74...)
       // sort X before Y, which is the order stellar-core validates.
-      const issuerX = 'GBUACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6CLH';
-      const issuerY = 'GB2ACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB7BZ4';
-      const paramsXdr = 'AAAAAAAAAAFVU0RDAAAAAGgBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZG'
+      const issuerX =
+          'GBUACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6CLH';
+      const issuerY =
+          'GB2ACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB7BZ4';
+      const paramsXdr =
+          'AAAAAAAAAAFVU0RDAAAAAGgBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZG'
           'hscHR4fAAAAAVVTREMAAAAAdAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8AAAAe';
       final usdcX = AssetTypeCreditAlphaNum4('USDC', issuerX);
       final usdcY = AssetTypeCreditAlphaNum4('USDC', issuerY);
@@ -357,51 +413,68 @@ void main() {
         expect(pool.assetA, equals(usdcX));
         expect(
           () => AssetTypePoolShare(assetA: usdcY, assetB: usdcX),
-          throwsA(isA<Exception>().having(
+          throwsA(
+            isA<Exception>().having(
               (e) => e.toString(),
               'message',
-              allOf(contains('USDC:$issuerY'), contains('USDC:$issuerX')))),
+              allOf(contains('USDC:$issuerY'), contains('USDC:$issuerX')),
+            ),
+          ),
         );
       });
 
       test('pool parameters and pool id match the stellar-core vector', () {
-        final params = AssetTypePoolShare(assetA: usdcX, assetB: usdcY)
-            .toXdrChangeTrustAsset()
-            .liquidityPool!;
+        final params = AssetTypePoolShare(
+          assetA: usdcX,
+          assetB: usdcY,
+        ).toXdrChangeTrustAsset().liquidityPool!;
         expect(params.toBase64EncodedXdrString(), equals(paramsXdr));
         final out = XdrDataOutputStream();
         XdrLiquidityPoolParameters.encode(out, params);
         final poolId = Util.hash(Uint8List.fromList(out.bytes));
         expect(
-            Util.bytesToHex(poolId),
-            equals('2c325546b1bf03f8d1b9c0b74974cdef'
-                '7609c60202d72a30e34f393ccf5eed1c'));
-        expect(StrKey.encodeLiquidityPoolId(poolId),
-            equals('LAWDEVKGWG7QH6GRXHALOSLUZXXXMCOGAIBNOKRQ4NHTSPGPL3WRYKDA'));
+          Util.bytesToHex(poolId),
+          equals(
+            '2c325546b1bf03f8d1b9c0b74974cdef'
+            '7609c60202d72a30e34f393ccf5eed1c',
+          ),
+        );
+        expect(
+          StrKey.encodeLiquidityPoolId(poolId),
+          equals('LAWDEVKGWG7QH6GRXHALOSLUZXXXMCOGAIBNOKRQ4NHTSPGPL3WRYKDA'),
+        );
       });
 
-      test('change trust operation with the pool round-trips byte-identically',
-          () {
-        final line = XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE)
-          ..liquidityPool =
-              XdrLiquidityPoolParameters.fromBase64EncodedXdrString(paramsXdr);
-        final body = XdrOperationBody(XdrOperationType.CHANGE_TRUST)
-          ..changeTrustOp =
-              XdrChangeTrustOp(line, XdrInt64(BigInt.from(1000000000)));
-        final bytes = encodeOperation(XdrOperation(null, body));
+      test(
+        'change trust operation with the pool round-trips byte-identically',
+        () {
+          final line = XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE)
+            ..liquidityPool =
+                XdrLiquidityPoolParameters.fromBase64EncodedXdrString(
+                  paramsXdr,
+                );
+          final body = XdrOperationBody(XdrOperationType.CHANGE_TRUST)
+            ..changeTrustOp = XdrChangeTrustOp(
+              line,
+              XdrInt64(BigInt.from(1000000000)),
+            );
+          final bytes = encodeOperation(XdrOperation(null, body));
 
-        final decoded = Operation.fromXdr(
-            XdrOperation.decode(XdrDataInputStream(bytes)));
-        final pool = (decoded as ChangeTrustOperation).asset;
-        expect((pool as AssetTypePoolShare).assetA, equals(usdcX));
-        expect(pool.assetB, equals(usdcY));
-        expect(encodeOperation(decoded.toXdr()), equals(bytes));
-      });
+          final decoded = Operation.fromXdr(
+            XdrOperation.decode(XdrDataInputStream(bytes)),
+          );
+          final pool = (decoded as ChangeTrustOperation).asset;
+          expect((pool as AssetTypePoolShare).assetA, equals(usdcX));
+          expect(pool.assetB, equals(usdcY));
+          expect(encodeOperation(decoded.toXdr()), equals(bytes));
+        },
+      );
     });
   });
 
   group('Edge cases', () {
-    final validIssuerId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+    final validIssuerId =
+        'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
     test('invalid asset code throws', () {
       // Empty code
@@ -425,24 +498,18 @@ void main() {
     test('invalid issuer throws', () {
       // Invalid format - error only occurs when converting to XDR
       final invalidAsset1 = AssetTypeCreditAlphaNum4('USD', 'INVALID');
-      expect(
-        () => invalidAsset1.toXdr(),
-        throwsA(isA<FormatException>()),
-      );
+      expect(() => invalidAsset1.toXdr(), throwsA(isA<FormatException>()));
 
       // Empty issuer is refused for its length
       final invalidAsset2 = AssetTypeCreditAlphaNum4('USD', '');
-      expect(
-        () => invalidAsset2.toXdr(),
-        throwsA(isA<FormatException>()),
-      );
+      expect(() => invalidAsset2.toXdr(), throwsA(isA<FormatException>()));
 
       // Wrong prefix (secret seed instead of account ID)
-      final invalidAsset3 = AssetTypeCreditAlphaNum4('USD', 'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
-      expect(
-        () => invalidAsset3.toXdr(),
-        throwsA(isA<FormatException>()),
+      final invalidAsset3 = AssetTypeCreditAlphaNum4(
+        'USD',
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
       );
+      expect(() => invalidAsset3.toXdr(), throwsA(isA<FormatException>()));
     });
 
     test('asset canonical string format', () {
@@ -456,7 +523,10 @@ void main() {
 
       // AlphaNum12 asset
       final longAsset = AssetTypeCreditAlphaNum12('LONGASSET', validIssuerId);
-      expect(Asset.canonicalForm(longAsset), equals('LONGASSET:$validIssuerId'));
+      expect(
+        Asset.canonicalForm(longAsset),
+        equals('LONGASSET:$validIssuerId'),
+      );
     });
 
     test('createFromCanonicalForm handles valid formats', () {
@@ -474,9 +544,14 @@ void main() {
       expect(usd.issuerId, equals(validIssuerId));
 
       // AlphaNum12 asset
-      final longAsset = Asset.createFromCanonicalForm('LONGASSET:$validIssuerId');
+      final longAsset = Asset.createFromCanonicalForm(
+        'LONGASSET:$validIssuerId',
+      );
       expect(longAsset, isA<AssetTypeCreditAlphaNum12>());
-      expect((longAsset as AssetTypeCreditAlphaNum12).code, equals('LONGASSET'));
+      expect(
+        (longAsset as AssetTypeCreditAlphaNum12).code,
+        equals('LONGASSET'),
+      );
       expect(longAsset.issuerId, equals(validIssuerId));
     });
 
@@ -491,7 +566,10 @@ void main() {
       expect(Asset.createFromCanonicalForm('USD:ISSUER:EXTRA'), isNull);
 
       // Code too long (>12 chars)
-      expect(Asset.createFromCanonicalForm('CODEWAYTOOOLONG:$validIssuerId'), isNull);
+      expect(
+        Asset.createFromCanonicalForm('CODEWAYTOOOLONG:$validIssuerId'),
+        isNull,
+      );
     });
 
     test('case sensitive asset codes', () {
@@ -535,7 +613,10 @@ void main() {
       };
       final longAsset = Asset.fromJson(longJson);
       expect(longAsset, isA<AssetTypeCreditAlphaNum12>());
-      expect((longAsset as AssetTypeCreditAlphaNum12).code, equals('LONGASSET'));
+      expect(
+        (longAsset as AssetTypeCreditAlphaNum12).code,
+        equals('LONGASSET'),
+      );
       expect(longAsset.issuerId, equals(validIssuerId));
     });
 
@@ -564,10 +645,7 @@ void main() {
       final usd = AssetTypeCreditAlphaNum4('USD', validIssuerId);
       final poolShare = AssetTypePoolShare(assetA: xlm, assetB: usd);
 
-      expect(
-        () => poolShare.toXdrTrustLineAsset(),
-        throwsA(isA<Exception>()),
-      );
+      expect(() => poolShare.toXdrTrustLineAsset(), throwsA(isA<Exception>()));
     });
 
     test('pool share asset ordering by type', () {
@@ -576,19 +654,29 @@ void main() {
       final long12 = AssetTypeCreditAlphaNum12('LONGASSET', validIssuerId);
 
       // Native < AlphaNum4
-      expect(() => AssetTypePoolShare(assetA: xlm, assetB: usd4), returnsNormally);
+      expect(
+        () => AssetTypePoolShare(assetA: xlm, assetB: usd4),
+        returnsNormally,
+      );
 
       // AlphaNum4 < AlphaNum12
-      expect(() => AssetTypePoolShare(assetA: usd4, assetB: long12), returnsNormally);
+      expect(
+        () => AssetTypePoolShare(assetA: usd4, assetB: long12),
+        returnsNormally,
+      );
     });
 
     test('pool share asset ordering by code', () {
-      final otherIssuerId = 'GD5J6HLF5666X4AZLTFTXLY46J5SW7EXRKBLEYPJP33S33MXZGV6CWFN';
+      final otherIssuerId =
+          'GD5J6HLF5666X4AZLTFTXLY46J5SW7EXRKBLEYPJP33S33MXZGV6CWFN';
       final abc = AssetTypeCreditAlphaNum4('ABC', validIssuerId);
       final xyz = AssetTypeCreditAlphaNum4('XYZ', otherIssuerId);
 
       // Correct order: ABC < XYZ
-      expect(() => AssetTypePoolShare(assetA: abc, assetB: xyz), returnsNormally);
+      expect(
+        () => AssetTypePoolShare(assetA: abc, assetB: xyz),
+        returnsNormally,
+      );
 
       // Incorrect order: XYZ > ABC
       expect(
@@ -598,15 +686,22 @@ void main() {
     });
 
     test('pool share asset ordering by issuer', () {
-      final issuer1 = 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN';
-      final issuer2 = 'GD5J6HLF5666X4AZLTFTXLY46J5SW7EXRKBLEYPJP33S33MXZGV6CWFN';
+      final issuer1 =
+          'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN';
+      final issuer2 =
+          'GD5J6HLF5666X4AZLTFTXLY46J5SW7EXRKBLEYPJP33S33MXZGV6CWFN';
       final usd1 = AssetTypeCreditAlphaNum4('USD', issuer1);
       final usd2 = AssetTypeCreditAlphaNum4('USD', issuer2);
 
       // issuer1's raw public key (0x3b...) sorts before issuer2's (0xfa...).
-      expect(() => AssetTypePoolShare(assetA: usd1, assetB: usd2), returnsNormally);
-      expect(() => AssetTypePoolShare(assetA: usd2, assetB: usd1),
-          throwsA(isA<Exception>()));
+      expect(
+        () => AssetTypePoolShare(assetA: usd1, assetB: usd2),
+        returnsNormally,
+      );
+      expect(
+        () => AssetTypePoolShare(assetA: usd2, assetB: usd1),
+        throwsA(isA<Exception>()),
+      );
     });
   });
 }

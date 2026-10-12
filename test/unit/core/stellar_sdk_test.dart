@@ -133,7 +133,7 @@ void main() {
             'core_supported_protocol_version': 19,
             '_links': {
               'self': {'href': 'https://horizon-testnet.stellar.org/'},
-            }
+            },
           };
 
           return http.Response(json.encode(rootJson), 200);
@@ -149,7 +149,10 @@ void main() {
         expect(rootResponse.stellarCoreVersion, equals('stellar-core 19.0.0'));
         expect(rootResponse.currentProtocolVersion, equals(19));
         expect(rootResponse.supportedProtocolVersion, equals(20));
-        expect(rootResponse.networkPassphrase, equals('Test SDF Network ; September 2015'));
+        expect(
+          rootResponse.networkPassphrase,
+          equals('Test SDF Network ; September 2015'),
+        );
         expect(rootResponse.historyLatestLedger, equals(12345));
         expect(rootResponse.coreLatestLedger, equals(12345));
       });
@@ -232,12 +235,15 @@ void main() {
         expect(builder.httpClient, same(sdk.httpClient));
       });
 
-      test('claimableBalances getter returns ClaimableBalancesRequestBuilder', () {
-        final builder = sdk.claimableBalances;
+      test(
+        'claimableBalances getter returns ClaimableBalancesRequestBuilder',
+        () {
+          final builder = sdk.claimableBalances;
 
-        expect(builder, isA<ClaimableBalancesRequestBuilder>());
-        expect(builder.httpClient, same(sdk.httpClient));
-      });
+          expect(builder, isA<ClaimableBalancesRequestBuilder>());
+          expect(builder.httpClient, same(sdk.httpClient));
+        },
+      );
 
       test('strictSendPaths getter returns StrictSendPathsRequestBuilder', () {
         final builder = sdk.strictSendPaths;
@@ -246,12 +252,15 @@ void main() {
         expect(builder.httpClient, same(sdk.httpClient));
       });
 
-      test('strictReceivePaths getter returns StrictReceivePathsRequestBuilder', () {
-        final builder = sdk.strictReceivePaths;
+      test(
+        'strictReceivePaths getter returns StrictReceivePathsRequestBuilder',
+        () {
+          final builder = sdk.strictReceivePaths;
 
-        expect(builder, isA<StrictReceivePathsRequestBuilder>());
-        expect(builder.httpClient, same(sdk.httpClient));
-      });
+          expect(builder, isA<StrictReceivePathsRequestBuilder>());
+          expect(builder.httpClient, same(sdk.httpClient));
+        },
+      );
 
       test('payments getter returns PaymentsRequestBuilder', () {
         final builder = sdk.payments;
@@ -274,12 +283,15 @@ void main() {
         expect(builder.httpClient, same(sdk.httpClient));
       });
 
-      test('liquidityPoolTrades getter returns LiquidityPoolTradesRequestBuilder', () {
-        final builder = sdk.liquidityPoolTrades;
+      test(
+        'liquidityPoolTrades getter returns LiquidityPoolTradesRequestBuilder',
+        () {
+          final builder = sdk.liquidityPoolTrades;
 
-        expect(builder, isA<LiquidityPoolTradesRequestBuilder>());
-        expect(builder.httpClient, same(sdk.httpClient));
-      });
+          expect(builder, isA<LiquidityPoolTradesRequestBuilder>());
+          expect(builder.httpClient, same(sdk.httpClient));
+        },
+      );
 
       test('request builders use same HTTP client instance', () {
         final accountsBuilder = sdk.accounts;
@@ -351,7 +363,10 @@ void main() {
         final mockClient = MockClient((request) async {
           expect(request.method, equals('POST'));
           expect(request.url.pathSegments, contains('transactions'));
-          expect(request.headers['Content-Type'], equals('application/x-www-form-urlencoded'));
+          expect(
+            request.headers['Content-Type'],
+            equals('application/x-www-form-urlencoded'),
+          );
 
           final successJson = {
             'hash': 'abc123def456',
@@ -362,8 +377,10 @@ void main() {
             'successful': true,
             'id': 'abc123def456',
             'paging_token': '12345-1',
-            'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-            'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+            'source_account':
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+            'fee_account':
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
             'source_account_sequence': 100,
             'max_fee': 1000,
             'fee_charged': 100,
@@ -395,17 +412,21 @@ void main() {
         );
 
         final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(PaymentOperationBuilder(
-              destinationKeyPair.accountId,
-              Asset.NATIVE,
-              '100.0',
-            ).build())
+            .addOperation(
+              PaymentOperationBuilder(
+                destinationKeyPair.accountId,
+                Asset.NATIVE,
+                '100.0',
+              ).build(),
+            )
             .build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
-        final response = await sdk.submitTransaction(transaction,
-            skipMemoRequiredCheck: true);
+        final response = await sdk.submitTransaction(
+          transaction,
+          skipMemoRequiredCheck: true,
+        );
 
         expect(response, isA<SubmitTransactionResponse>());
         expect(response.success, isTrue);
@@ -444,63 +465,72 @@ void main() {
         );
 
         final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(PaymentOperationBuilder(
-              destinationKeyPair.accountId,
-              Asset.NATIVE,
-              '100.0',
-            ).build())
+            .addOperation(
+              PaymentOperationBuilder(
+                destinationKeyPair.accountId,
+                Asset.NATIVE,
+                '100.0',
+              ).build(),
+            )
             .build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
-        final response = await sdk.submitTransaction(transaction,
-            skipMemoRequiredCheck: true);
+        final response = await sdk.submitTransaction(
+          transaction,
+          skipMemoRequiredCheck: true,
+        );
 
         expect(response, isA<SubmitTransactionResponse>());
         expect(response.success, isFalse);
         expect(response.extras, isNotNull);
       });
 
-      test('throws SubmitTransactionTimeoutResponseException on timeout', () async {
-        final mockClient = MockClient((request) async {
-          final timeoutJson = {
-            'type': 'https://stellar.org/horizon-errors/timeout',
-            'title': 'Timeout',
-            'status': 504,
-            'detail': 'Request timed out',
-            'hash': 'timeout123',
-          };
+      test(
+        'throws SubmitTransactionTimeoutResponseException on timeout',
+        () async {
+          final mockClient = MockClient((request) async {
+            final timeoutJson = {
+              'type': 'https://stellar.org/horizon-errors/timeout',
+              'title': 'Timeout',
+              'status': 504,
+              'detail': 'Request timed out',
+              'hash': 'timeout123',
+            };
 
-          return http.Response(json.encode(timeoutJson), 504);
-        });
+            return http.Response(json.encode(timeoutJson), 504);
+          });
 
-        final sdk = StellarSDK('https://horizon-testnet.stellar.org');
-        sdk.httpClient = mockClient;
+          final sdk = StellarSDK('https://horizon-testnet.stellar.org');
+          sdk.httpClient = mockClient;
 
-        final sourceKeyPair = KeyPair.fromSecretSeed(
-          'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
-        );
-        final sourceAccount = Account(
-          sourceKeyPair.accountId,
-          BigInt.from(2908908335136768),
-        );
+          final sourceKeyPair = KeyPair.fromSecretSeed(
+            'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+          );
+          final sourceAccount = Account(
+            sourceKeyPair.accountId,
+            BigInt.from(2908908335136768),
+          );
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(PaymentOperationBuilder(
-              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-              Asset.NATIVE,
-              '100.0',
-            ).build())
-            .build();
+          final transaction = TransactionBuilder(sourceAccount)
+              .addOperation(
+                PaymentOperationBuilder(
+                  'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+                  Asset.NATIVE,
+                  '100.0',
+                ).build(),
+              )
+              .build();
 
-        transaction.sign(sourceKeyPair, Network.TESTNET);
+          transaction.sign(sourceKeyPair, Network.TESTNET);
 
-        expect(
-          () => sdk.submitTransaction(transaction,
-              skipMemoRequiredCheck: true),
-          throwsA(isA<SubmitTransactionTimeoutResponseException>()),
-        );
-      });
+          expect(
+            () =>
+                sdk.submitTransaction(transaction, skipMemoRequiredCheck: true),
+            throwsA(isA<SubmitTransactionTimeoutResponseException>()),
+          );
+        },
+      );
 
       test('throws UnknownResponse on unexpected status code', () async {
         final mockClient = MockClient((request) async {
@@ -519,18 +549,19 @@ void main() {
         );
 
         final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(PaymentOperationBuilder(
-              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-              Asset.NATIVE,
-              '100.0',
-            ).build())
+            .addOperation(
+              PaymentOperationBuilder(
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+                Asset.NATIVE,
+                '100.0',
+              ).build(),
+            )
             .build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
         expect(
-          () => sdk.submitTransaction(transaction,
-              skipMemoRequiredCheck: true),
+          () => sdk.submitTransaction(transaction, skipMemoRequiredCheck: true),
           throwsA(isA<UnknownResponse>()),
         );
       });
@@ -551,8 +582,10 @@ void main() {
             'successful': true,
             'id': 'feebump123',
             'paging_token': '12346-1',
-            'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-            'fee_account': 'GBVFTZL5HIPT4PFQVTZVIWR77V7LWYCXU4CLYWWHHOEXB64XPG5LDMTU',
+            'source_account':
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+            'fee_account':
+                'GBVFTZL5HIPT4PFQVTZVIWR77V7LWYCXU4CLYWWHHOEXB64XPG5LDMTU',
             'source_account_sequence': 100,
             'max_fee': 2000,
             'fee_charged': 200,
@@ -581,11 +614,13 @@ void main() {
         );
 
         final innerTx = TransactionBuilder(sourceAccount)
-            .addOperation(PaymentOperationBuilder(
-              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-              Asset.NATIVE,
-              '100.0',
-            ).build())
+            .addOperation(
+              PaymentOperationBuilder(
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+                Asset.NATIVE,
+                '100.0',
+              ).build(),
+            )
             .build();
 
         innerTx.sign(sourceKeyPair, Network.TESTNET);
@@ -594,15 +629,16 @@ void main() {
           'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
         );
 
-        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-            .setBaseFee(200)
-            .setFeeAccount(feeSourceKeyPair.accountId)
-            .build();
+        final feeBumpTx = FeeBumpTransactionBuilder(
+          innerTx,
+        ).setBaseFee(200).setFeeAccount(feeSourceKeyPair.accountId).build();
 
         feeBumpTx.sign(feeSourceKeyPair, Network.TESTNET);
 
-        final response = await sdk.submitFeeBumpTransaction(feeBumpTx,
-            skipMemoRequiredCheck: true);
+        final response = await sdk.submitFeeBumpTransaction(
+          feeBumpTx,
+          skipMemoRequiredCheck: true,
+        );
 
         expect(response, isA<SubmitTransactionResponse>());
         expect(response.success, isTrue);
@@ -637,17 +673,21 @@ void main() {
         );
 
         final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(PaymentOperationBuilder(
-              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-              Asset.NATIVE,
-              '100.0',
-            ).build())
+            .addOperation(
+              PaymentOperationBuilder(
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+                Asset.NATIVE,
+                '100.0',
+              ).build(),
+            )
             .build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
-        final response = await sdk.submitAsyncTransaction(transaction,
-            skipMemoRequiredCheck: true);
+        final response = await sdk.submitAsyncTransaction(
+          transaction,
+          skipMemoRequiredCheck: true,
+        );
 
         expect(response, isA<SubmitAsyncTransactionResponse>());
         expect(response.txStatus, equals('PENDING'));
@@ -677,61 +717,73 @@ void main() {
         );
 
         final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(PaymentOperationBuilder(
-              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-              Asset.NATIVE,
-              '100.0',
-            ).build())
+            .addOperation(
+              PaymentOperationBuilder(
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+                Asset.NATIVE,
+                '100.0',
+              ).build(),
+            )
             .build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
-        final response = await sdk.submitAsyncTransaction(transaction,
-            skipMemoRequiredCheck: true);
+        final response = await sdk.submitAsyncTransaction(
+          transaction,
+          skipMemoRequiredCheck: true,
+        );
 
         expect(response, isA<SubmitAsyncTransactionResponse>());
         expect(response.txStatus, equals('ERROR'));
       });
 
-      test('throws SubmitAsyncTransactionProblem on problem response', () async {
-        final mockClient = MockClient((request) async {
-          final problemJson = {
-            'type': 'https://stellar.org/horizon-errors/transaction_malformed',
-            'title': 'Transaction Malformed',
-            'status': 400,
-            'detail': 'Transaction is malformed',
-          };
+      test(
+        'throws SubmitAsyncTransactionProblem on problem response',
+        () async {
+          final mockClient = MockClient((request) async {
+            final problemJson = {
+              'type':
+                  'https://stellar.org/horizon-errors/transaction_malformed',
+              'title': 'Transaction Malformed',
+              'status': 400,
+              'detail': 'Transaction is malformed',
+            };
 
-          return http.Response(json.encode(problemJson), 400);
-        });
+            return http.Response(json.encode(problemJson), 400);
+          });
 
-        final sdk = StellarSDK('https://horizon-testnet.stellar.org');
-        sdk.httpClient = mockClient;
+          final sdk = StellarSDK('https://horizon-testnet.stellar.org');
+          sdk.httpClient = mockClient;
 
-        final sourceKeyPair = KeyPair.fromSecretSeed(
-          'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
-        );
-        final sourceAccount = Account(
-          sourceKeyPair.accountId,
-          BigInt.from(2908908335136768),
-        );
+          final sourceKeyPair = KeyPair.fromSecretSeed(
+            'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+          );
+          final sourceAccount = Account(
+            sourceKeyPair.accountId,
+            BigInt.from(2908908335136768),
+          );
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(PaymentOperationBuilder(
-              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-              Asset.NATIVE,
-              '100.0',
-            ).build())
-            .build();
+          final transaction = TransactionBuilder(sourceAccount)
+              .addOperation(
+                PaymentOperationBuilder(
+                  'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+                  Asset.NATIVE,
+                  '100.0',
+                ).build(),
+              )
+              .build();
 
-        transaction.sign(sourceKeyPair, Network.TESTNET);
+          transaction.sign(sourceKeyPair, Network.TESTNET);
 
-        expect(
-          () => sdk.submitAsyncTransaction(transaction,
-              skipMemoRequiredCheck: true),
-          throwsA(isA<SubmitAsyncTransactionProblem>()),
-        );
-      });
+          expect(
+            () => sdk.submitAsyncTransaction(
+              transaction,
+              skipMemoRequiredCheck: true,
+            ),
+            throwsA(isA<SubmitAsyncTransactionProblem>()),
+          );
+        },
+      );
     });
 
     group('submitAsyncFeeBumpTransaction', () {
@@ -761,11 +813,13 @@ void main() {
         );
 
         final innerTx = TransactionBuilder(sourceAccount)
-            .addOperation(PaymentOperationBuilder(
-              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-              Asset.NATIVE,
-              '100.0',
-            ).build())
+            .addOperation(
+              PaymentOperationBuilder(
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+                Asset.NATIVE,
+                '100.0',
+              ).build(),
+            )
             .build();
 
         innerTx.sign(sourceKeyPair, Network.TESTNET);
@@ -774,15 +828,16 @@ void main() {
           'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
         );
 
-        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-            .setBaseFee(200)
-            .setFeeAccount(feeSourceKeyPair.accountId)
-            .build();
+        final feeBumpTx = FeeBumpTransactionBuilder(
+          innerTx,
+        ).setBaseFee(200).setFeeAccount(feeSourceKeyPair.accountId).build();
 
         feeBumpTx.sign(feeSourceKeyPair, Network.TESTNET);
 
-        final response = await sdk.submitAsyncFeeBumpTransaction(feeBumpTx,
-            skipMemoRequiredCheck: true);
+        final response = await sdk.submitAsyncFeeBumpTransaction(
+          feeBumpTx,
+          skipMemoRequiredCheck: true,
+        );
 
         expect(response, isA<SubmitAsyncTransactionResponse>());
         expect(response.txStatus, equals('PENDING'));
@@ -804,8 +859,10 @@ void main() {
             'successful': true,
             'id': 'xdr123',
             'paging_token': '12347-1',
-            'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-            'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+            'source_account':
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+            'fee_account':
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
             'source_account_sequence': 100,
             'max_fee': 1000,
             'fee_charged': 100,
@@ -834,18 +891,22 @@ void main() {
         );
 
         final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(PaymentOperationBuilder(
-              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-              Asset.NATIVE,
-              '100.0',
-            ).build())
+            .addOperation(
+              PaymentOperationBuilder(
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+                Asset.NATIVE,
+                '100.0',
+              ).build(),
+            )
             .build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
         final xdrBase64 = transaction.toEnvelopeXdrBase64();
-        final response = await sdk.submitTransactionEnvelopeXdrBase64(xdrBase64,
-            skipMemoRequiredCheck: true);
+        final response = await sdk.submitTransactionEnvelopeXdrBase64(
+          xdrBase64,
+          skipMemoRequiredCheck: true,
+        );
 
         expect(response, isA<SubmitTransactionResponse>());
         expect(response.success, isTrue);
@@ -880,19 +941,22 @@ void main() {
         );
 
         final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(PaymentOperationBuilder(
-              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-              Asset.NATIVE,
-              '100.0',
-            ).build())
+            .addOperation(
+              PaymentOperationBuilder(
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+                Asset.NATIVE,
+                '100.0',
+              ).build(),
+            )
             .build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
         final xdrBase64 = transaction.toEnvelopeXdrBase64();
         final response = await sdk.submitAsyncTransactionEnvelopeXdrBase64(
-            xdrBase64,
-            skipMemoRequiredCheck: true);
+          xdrBase64,
+          skipMemoRequiredCheck: true,
+        );
 
         expect(response, isA<SubmitAsyncTransactionResponse>());
         expect(response.txStatus, equals('PENDING'));
@@ -906,7 +970,8 @@ void main() {
             final asyncJson = {
               'tx_status': 'ERROR',
               'hash': 'status$statusCode',
-              'error_result_xdr': 'AAAAAAAAAGT/////AAAAAQAAAAAAAAAB////+wAAAAA=',
+              'error_result_xdr':
+                  'AAAAAAAAAGT/////AAAAAQAAAAAAAAAB////+wAAAAA=',
             };
 
             return http.Response(json.encode(asyncJson), statusCode);
@@ -924,19 +989,22 @@ void main() {
           );
 
           final transaction = TransactionBuilder(sourceAccount)
-              .addOperation(PaymentOperationBuilder(
-                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-                Asset.NATIVE,
-                '100.0',
-              ).build())
+              .addOperation(
+                PaymentOperationBuilder(
+                  'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+                  Asset.NATIVE,
+                  '100.0',
+                ).build(),
+              )
               .build();
 
           transaction.sign(sourceKeyPair, Network.TESTNET);
 
           final xdrBase64 = transaction.toEnvelopeXdrBase64();
           final response = await sdk.submitAsyncTransactionEnvelopeXdrBase64(
-              xdrBase64,
-              skipMemoRequiredCheck: true);
+            xdrBase64,
+            skipMemoRequiredCheck: true,
+          );
 
           expect(response, isA<SubmitAsyncTransactionResponse>());
           expect(response.txStatus, equals('ERROR'));

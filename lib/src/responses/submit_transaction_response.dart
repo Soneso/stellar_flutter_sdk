@@ -69,14 +69,15 @@ class SubmitTransactionResponse extends Response {
   /// - [_strFeeMetaXdr] Base64-encoded fee metadata XDR
   /// - [successfulTransaction] Full transaction details if successful
   SubmitTransactionResponse(
-      this.extras,
-      this.ledger,
-      this.hash,
-      this._strEnvelopeXdr,
-      this._strResultXdr,
-      this._strMetaXdr,
-      this._strFeeMetaXdr,
-      this.successfulTransaction);
+    this.extras,
+    this.ledger,
+    this.hash,
+    this._strEnvelopeXdr,
+    this._strResultXdr,
+    this._strMetaXdr,
+    this._strFeeMetaXdr,
+    this.successfulTransaction,
+  );
 
   /// Returns true if the transaction was successfully included in a ledger.
   ///
@@ -97,8 +98,7 @@ class SubmitTransactionResponse extends Response {
     if (_strResultXdr != null) {
       final XdrTransactionResult result;
       try {
-        result =
-            XdrTransactionResult.fromBase64EncodedXdrString(_strResultXdr);
+        result = XdrTransactionResult.fromBase64EncodedXdrString(_strResultXdr);
       } catch (e) {
         // A result that cannot be read cannot confirm success. Reading it
         // raises both Exception shapes (malformed base64) and Error shapes
@@ -239,11 +239,13 @@ class SubmitTransactionResponse extends Response {
 
     // [resultXdr] returns the string [success] already decoded, so the decode
     // cannot fail here.
-    final result =
-        XdrTransactionResult.fromBase64EncodedXdrString(this.resultXdr!);
+    final result = XdrTransactionResult.fromBase64EncodedXdrString(
+      this.resultXdr!,
+    );
 
     // A fee bump carries its operation results on the inner transaction.
-    final results = result.result.results ??
+    final results =
+        result.result.results ??
         result.result.innerResultPair?.result.result.results;
     if (results == null || position < 0 || position >= results.length) {
       return null;
@@ -258,20 +260,14 @@ class SubmitTransactionResponse extends Response {
 
     XdrManageOfferResult? manageResult =
         disc == XdrOperationType.MANAGE_SELL_OFFER
-            ? tr!.manageSellOfferResult
-            : tr!.manageBuyOfferResult;
+        ? tr!.manageSellOfferResult
+        : tr!.manageBuyOfferResult;
 
     if (manageResult?.success?.offer.offer == null) {
       return null;
     }
 
-    return manageResult!
-        .success!
-        .offer
-        .offer!
-        .offerID
-        .uint64
-        .toInt();
+    return manageResult!.success!.offer.offer!.offerID.uint64.toInt();
   }
 
   /// Helper method that returns Claimable Balance ID for CreateClaimableBalance from TransactionResult XDR.
@@ -292,11 +288,13 @@ class SubmitTransactionResponse extends Response {
 
     // [resultXdr] returns the string [success] already decoded, so the decode
     // cannot fail here.
-    final result =
-        XdrTransactionResult.fromBase64EncodedXdrString(this.resultXdr!);
+    final result = XdrTransactionResult.fromBase64EncodedXdrString(
+      this.resultXdr!,
+    );
 
     // A fee bump carries its operation results on the inner transaction.
-    final results = result.result.results ??
+    final results =
+        result.result.results ??
         result.result.innerResultPair?.result.result.results;
     if (results == null || position < 0 || position >= results.length) {
       return null;
@@ -329,7 +327,8 @@ class SubmitTransactionResponse extends Response {
           json['fee_meta_xdr'],
           json['successful'] == true
               ? TransactionResponse.fromJson(json)
-              : null)
+              : null,
+        )
         ..rateLimitLimit = convertInt(json['rateLimitLimit'])
         ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
         ..rateLimitReset = convertInt(json['rateLimitReset']);
@@ -415,19 +414,25 @@ class SubmitTransactionResponseExtras {
   /// - [strMetaXdr] Base64-encoded transaction metadata XDR
   /// - [strFeeMetaXdr] Base64-encoded fee metadata XDR
   /// - [resultCodes] Human-readable result codes for failures
-  SubmitTransactionResponseExtras(this.envelopeXdr, this.resultXdr,
-      this.strMetaXdr, this.strFeeMetaXdr, this.resultCodes);
+  SubmitTransactionResponseExtras(
+    this.envelopeXdr,
+    this.resultXdr,
+    this.strMetaXdr,
+    this.strFeeMetaXdr,
+    this.resultCodes,
+  );
 
   /// Constructs SubmitTransactionResponseExtras from JSON error response.
   factory SubmitTransactionResponseExtras.fromJson(Map<String, dynamic> json) =>
       SubmitTransactionResponseExtras(
-          json['envelope_xdr'],
-          json['result_xdr'],
-          json['result_meta_xdr'],
-          json['fee_meta_xdr'],
-          json['result_codes'] == null
-              ? null
-              : ExtrasResultCodes.fromJson(json['result_codes']));
+        json['envelope_xdr'],
+        json['result_xdr'],
+        json['result_meta_xdr'],
+        json['fee_meta_xdr'],
+        json['result_codes'] == null
+            ? null
+            : ExtrasResultCodes.fromJson(json['result_codes']),
+      );
 }
 
 /// Exception thrown when transaction submission times out.
@@ -518,14 +523,14 @@ class SubmitTransactionTimeoutResponseException implements Exception {
 
   /// Constructs a SubmitTransactionTimeoutResponseException from JSON error response.
   factory SubmitTransactionTimeoutResponseException.fromJson(
-          Map<String, dynamic> json) =>
-      SubmitTransactionTimeoutResponseException(
-        type: json['type'],
-        title: json['title'],
-        status: json['status'],
-        detail: json['detail'],
-        extras: json['extras'],
-      );
+    Map<String, dynamic> json,
+  ) => SubmitTransactionTimeoutResponseException(
+    type: json['type'],
+    title: json['title'],
+    status: json['status'],
+    detail: json['detail'],
+    extras: json['extras'],
+  );
 }
 
 /// Exception thrown when Horizon returns an unexpected response status.
@@ -583,19 +588,21 @@ class SubmitAsyncTransactionResponse {
   /// - [txStatus] Status of the transaction submission (ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER)
   /// - [hash] Hash of the transaction
   /// - [httpStatusCode] HTTP status code of the response from Horizon
-  SubmitAsyncTransactionResponse(
-      {required this.txStatus,
-      required this.hash,
-      required this.httpStatusCode});
+  SubmitAsyncTransactionResponse({
+    required this.txStatus,
+    required this.hash,
+    required this.httpStatusCode,
+  });
 
   /// Constructs a SubmitAsyncTransactionResponse from JSON returned by Horizon API.
   factory SubmitAsyncTransactionResponse.fromJson(
-          Map<String, dynamic> json, int httpResponseStatusCode) =>
-      SubmitAsyncTransactionResponse(
-        txStatus: json['tx_status'],
-        hash: json['hash'],
-        httpStatusCode: httpResponseStatusCode,
-      );
+    Map<String, dynamic> json,
+    int httpResponseStatusCode,
+  ) => SubmitAsyncTransactionResponse(
+    txStatus: json['tx_status'],
+    hash: json['hash'],
+    httpStatusCode: httpResponseStatusCode,
+  );
 }
 
 /// Thrown if the response of async transaction submission to Horizon represents a known problem.

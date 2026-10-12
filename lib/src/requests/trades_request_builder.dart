@@ -63,7 +63,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   TradesRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["trades"]);
+    : super(httpClient, serverURI, ["trades"]);
 
   /// Filters trades by base asset.
   ///
@@ -88,8 +88,9 @@ class TradesRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({
+        "base_asset_issuer": creditAlphaNumAsset.issuerId,
+      });
     }
     return this;
   }
@@ -117,8 +118,9 @@ class TradesRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"counter_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({
+        "counter_asset_issuer": creditAlphaNumAsset.issuerId,
+      });
     }
     return this;
   }
@@ -180,7 +182,9 @@ class TradesRequestBuilder extends RequestBuilder {
   ///
   /// Returns: Page of TradeResponse objects
   static Future<Page<TradeResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<TradeResponse>>(httpClient, uri);
   }
 
@@ -203,7 +207,9 @@ class TradesRequestBuilder extends RequestBuilder {
   /// ```
   Future<Page<TradeResponse>> execute() {
     return TradesRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Filters trades by offer ID.

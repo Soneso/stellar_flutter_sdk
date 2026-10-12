@@ -132,8 +132,10 @@ void main() {
       expect(first.map!.length, second.map!.length);
       for (var i = 0; i < first.map!.length; i++) {
         expect(first.map![i].key.sym, second.map![i].key.sym);
-        expect(first.map![i].val.bytes!.sCBytes,
-            second.map![i].val.bytes!.sCBytes);
+        expect(
+          first.map![i].val.bytes!.sCBytes,
+          second.map![i].val.bytes!.sCBytes,
+        );
       }
     });
 
@@ -162,21 +164,17 @@ void main() {
           XdrSCVal.forSymbol('authenticator_data'),
           XdrSCVal.forBytes(ad),
         ),
-        XdrSCMapEntry(
-          XdrSCVal.forSymbol('client_data'),
-          XdrSCVal.forBytes(cd),
-        ),
-        XdrSCMapEntry(
-          XdrSCVal.forSymbol('signature'),
-          XdrSCVal.forBytes(s),
-        ),
+        XdrSCMapEntry(XdrSCVal.forSymbol('client_data'), XdrSCVal.forBytes(cd)),
+        XdrSCMapEntry(XdrSCVal.forSymbol('signature'), XdrSCVal.forBytes(s)),
       ]);
       final actual = sig.toScVal();
       expect(actual.map!.length, expected.map!.length);
       for (var i = 0; i < actual.map!.length; i++) {
         expect(actual.map![i].key.sym, expected.map![i].key.sym);
-        expect(actual.map![i].val.bytes!.sCBytes,
-            expected.map![i].val.bytes!.sCBytes);
+        expect(
+          actual.map![i].val.bytes!.sCBytes,
+          expected.map![i].val.bytes!.sCBytes,
+        );
       }
     });
 
@@ -375,23 +373,24 @@ void main() {
       expect(a.hashCode, b.hashCode);
     });
 
-    test('testWebAuthnSignature_differentAuthenticatorData_differentHashCode',
-        () {
-      final a = OZWebAuthnSignature(
-        authenticatorData: _bytes(16, 1),
-        clientData: _bytes(20),
-        signature: _signature64(),
-      );
-      final b = OZWebAuthnSignature(
-        authenticatorData: _bytes(16, 2),
-        clientData: _bytes(20),
-        signature: _signature64(),
-      );
-      expect(a.hashCode != b.hashCode, isTrue);
-    });
+    test(
+      'testWebAuthnSignature_differentAuthenticatorData_differentHashCode',
+      () {
+        final a = OZWebAuthnSignature(
+          authenticatorData: _bytes(16, 1),
+          clientData: _bytes(20),
+          signature: _signature64(),
+        );
+        final b = OZWebAuthnSignature(
+          authenticatorData: _bytes(16, 2),
+          clientData: _bytes(20),
+          signature: _signature64(),
+        );
+        expect(a.hashCode != b.hashCode, isTrue);
+      },
+    );
 
-    test('testWebAuthnSignature_differentSignatureBytes_differentHashCode',
-        () {
+    test('testWebAuthnSignature_differentSignatureBytes_differentHashCode', () {
       final a = OZWebAuthnSignature(
         authenticatorData: _bytes(16),
         clientData: _bytes(20),
@@ -458,10 +457,7 @@ void main() {
         publicKey: _ed25519Pub(),
         signature: rawSig,
       );
-      expect(
-        sig.toScVal().bytes!.sCBytes,
-        orderedEquals(rawSig),
-      );
+      expect(sig.toScVal().bytes!.sCBytes, orderedEquals(rawSig));
     });
 
     test('testEd25519ToScVal_publicKeyNotInOutput', () {
@@ -525,7 +521,9 @@ void main() {
   group('OZPolicySignature', () {
     test('testPolicySignatureToScVal_returnsMapType', () {
       expect(
-          OZPolicySignature.instance.toScVal().discriminant, XdrSCValType.SCV_MAP);
+        OZPolicySignature.instance.toScVal().discriminant,
+        XdrSCValType.SCV_MAP,
+      );
     });
 
     test('testPolicySignatureToScVal_mapIsEmpty', () {
@@ -539,8 +537,10 @@ void main() {
     });
 
     test('testPolicySignature_isSingleton', () {
-      expect(identical(OZPolicySignature.instance, OZPolicySignature.instance),
-          isTrue);
+      expect(
+        identical(OZPolicySignature.instance, OZPolicySignature.instance),
+        isTrue,
+      );
     });
 
     test('testPolicySignature_isOZSmartAccountSignature', () {
@@ -621,8 +621,11 @@ void main() {
       final actualHex = Util.bytesToHex(encoded).toLowerCase();
       const expectedHex =
           '0000001100000001000000030000000f0000001261757468656e74696361746f725f6461746100000000000d00000025aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa0000000000000f0000000b636c69656e745f64617461000000000d00000010bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb0000000f000000097369676e61747572650000000000000d00000040cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
-      expect(actualHex, expectedHex,
-          reason: 'Golden vector 6 mismatch — actual: $actualHex');
+      expect(
+        actualHex,
+        expectedHex,
+        reason: 'Golden vector 6 mismatch — actual: $actualHex',
+      );
     });
   });
 
@@ -700,7 +703,10 @@ void main() {
         publicKey: _ed25519Pub(),
         signature: rawSig,
       );
-      expect(sig.toAuthPayloadBytes(), orderedEquals(sig.toScVal().bytes!.sCBytes));
+      expect(
+        sig.toAuthPayloadBytes(),
+        orderedEquals(sig.toScVal().bytes!.sCBytes),
+      );
     });
   });
 }

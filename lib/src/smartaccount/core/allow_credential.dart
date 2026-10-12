@@ -27,7 +27,8 @@ class WebAuthnAllowCredential {
 
   /// Creates a [WebAuthnAllowCredential] from a raw credential [id] with no
   /// transport hints.
-  static WebAuthnAllowCredential fromId(Uint8List id) => WebAuthnAllowCredential(id: id);
+  static WebAuthnAllowCredential fromId(Uint8List id) =>
+      WebAuthnAllowCredential(id: id);
 
   /// Creates a list of [WebAuthnAllowCredential] from raw credential [ids] with no
   /// transport hints.

@@ -24,17 +24,25 @@ import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 class MockOZTransactionOperations extends OZTransactionOperations {
   MockOZTransactionOperations(OZSmartAccountKitInterface kit) : super(kit);
 
-  OZTransactionResult submitDefault =
-      const OZTransactionResult(success: true, hash: 'mock-submit-hash');
+  OZTransactionResult submitDefault = const OZTransactionResult(
+    success: true,
+    hash: 'mock-submit-hash',
+  );
 
-  OZTransactionResult transferDefault =
-      const OZTransactionResult(success: true, hash: 'mock-transfer-hash');
+  OZTransactionResult transferDefault = const OZTransactionResult(
+    success: true,
+    hash: 'mock-transfer-hash',
+  );
 
-  OZTransactionResult contractCallDefault =
-      const OZTransactionResult(success: true, hash: 'mock-contract-call-hash');
+  OZTransactionResult contractCallDefault = const OZTransactionResult(
+    success: true,
+    hash: 'mock-contract-call-hash',
+  );
 
-  OZTransactionResult executeAndSubmitDefault =
-      const OZTransactionResult(success: true, hash: 'mock-execute-hash');
+  OZTransactionResult executeAndSubmitDefault = const OZTransactionResult(
+    success: true,
+    hash: 'mock-execute-hash',
+  );
 
   String fundWalletDefault = '100.0000000';
 
@@ -45,7 +53,7 @@ class MockOZTransactionOperations extends OZTransactionOperations {
   OZTransactionResult? Function(SubmitInvocation invocation)? submitOverride;
 
   XdrSCVal? Function(XdrHostFunction hostFunction)?
-      simulateAndExtractResultOverride;
+  simulateAndExtractResultOverride;
 
   final List<SubmitInvocation> submitCalls = <SubmitInvocation>[];
   final List<TransferInvocation> transferCalls = <TransferInvocation>[];
@@ -86,14 +94,16 @@ class MockOZTransactionOperations extends OZTransactionOperations {
     OZSubmissionMethod? forceMethod,
     dio.CancelToken? cancelToken,
   }) async {
-    transferCalls.add(TransferInvocation(
-      tokenContract: tokenContract,
-      recipient: recipient,
-      amount: amount,
-      decimals: decimals,
-      forceMethod: forceMethod,
-      cancelToken: cancelToken,
-    ));
+    transferCalls.add(
+      TransferInvocation(
+        tokenContract: tokenContract,
+        recipient: recipient,
+        amount: amount,
+        decimals: decimals,
+        forceMethod: forceMethod,
+        cancelToken: cancelToken,
+      ),
+    );
     return transferDefault;
   }
 
@@ -106,14 +116,16 @@ class MockOZTransactionOperations extends OZTransactionOperations {
     OZResolveContextRuleIds? resolveContextRuleIds,
     dio.CancelToken? cancelToken,
   }) async {
-    contractCallCalls.add(ContractCallInvocation(
-      target: target,
-      targetFn: targetFn,
-      targetArgs: List<XdrSCVal>.unmodifiable(targetArgs),
-      forceMethod: forceMethod,
-      resolveContextRuleIds: resolveContextRuleIds,
-      cancelToken: cancelToken,
-    ));
+    contractCallCalls.add(
+      ContractCallInvocation(
+        target: target,
+        targetFn: targetFn,
+        targetArgs: List<XdrSCVal>.unmodifiable(targetArgs),
+        forceMethod: forceMethod,
+        resolveContextRuleIds: resolveContextRuleIds,
+        cancelToken: cancelToken,
+      ),
+    );
     return contractCallDefault;
   }
 
@@ -126,14 +138,16 @@ class MockOZTransactionOperations extends OZTransactionOperations {
     OZResolveContextRuleIds? resolveContextRuleIds,
     dio.CancelToken? cancelToken,
   }) async {
-    executeAndSubmitCalls.add(ExecuteAndSubmitInvocation(
-      target: target,
-      targetFn: targetFn,
-      targetArgs: List<XdrSCVal>.unmodifiable(targetArgs),
-      forceMethod: forceMethod,
-      resolveContextRuleIds: resolveContextRuleIds,
-      cancelToken: cancelToken,
-    ));
+    executeAndSubmitCalls.add(
+      ExecuteAndSubmitInvocation(
+        target: target,
+        targetFn: targetFn,
+        targetArgs: List<XdrSCVal>.unmodifiable(targetArgs),
+        forceMethod: forceMethod,
+        resolveContextRuleIds: resolveContextRuleIds,
+        cancelToken: cancelToken,
+      ),
+    );
     return executeAndSubmitDefault;
   }
 
@@ -143,16 +157,20 @@ class MockOZTransactionOperations extends OZTransactionOperations {
     OZSubmissionMethod? forceMethod,
     dio.CancelToken? cancelToken,
   }) async {
-    fundWalletCalls.add(FundWalletInvocation(
-      nativeTokenContract: nativeTokenContract,
-      forceMethod: forceMethod,
-      cancelToken: cancelToken,
-    ));
+    fundWalletCalls.add(
+      FundWalletInvocation(
+        nativeTokenContract: nativeTokenContract,
+        forceMethod: forceMethod,
+        cancelToken: cancelToken,
+      ),
+    );
     return fundWalletDefault;
   }
 
   @override
-  Future<XdrSCVal> simulateAndExtractResult(XdrHostFunction hostFunction) async {
+  Future<XdrSCVal> simulateAndExtractResult(
+    XdrHostFunction hostFunction,
+  ) async {
     simulateAndExtractResultCalls.add(hostFunction);
     final override = simulateAndExtractResultOverride?.call(hostFunction);
     return override ?? simulateAndExtractResultDefault;

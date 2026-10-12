@@ -20,19 +20,39 @@ void main() {
     test('execute returns Page<LedgerResponse>', () async {
       final mockResponse = {
         '_links': {
-          'self': {'href': 'https://horizon-testnet.stellar.org/ledgers?limit=10'},
-          'next': {'href': 'https://horizon-testnet.stellar.org/ledgers?cursor=next'},
-          'prev': {'href': 'https://horizon-testnet.stellar.org/ledgers?cursor=prev'}
+          'self': {
+            'href': 'https://horizon-testnet.stellar.org/ledgers?limit=10',
+          },
+          'next': {
+            'href': 'https://horizon-testnet.stellar.org/ledgers?cursor=next',
+          },
+          'prev': {
+            'href': 'https://horizon-testnet.stellar.org/ledgers?cursor=prev',
+          },
         },
         '_embedded': {
           'records': [
             {
               '_links': {
-                'self': {'href': 'https://horizon-testnet.stellar.org/ledgers/12345'},
-                'transactions': {'href': 'https://horizon-testnet.stellar.org/ledgers/12345/transactions'},
-                'operations': {'href': 'https://horizon-testnet.stellar.org/ledgers/12345/operations'},
-                'payments': {'href': 'https://horizon-testnet.stellar.org/ledgers/12345/payments'},
-                'effects': {'href': 'https://horizon-testnet.stellar.org/ledgers/12345/effects'}
+                'self': {
+                  'href': 'https://horizon-testnet.stellar.org/ledgers/12345',
+                },
+                'transactions': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/ledgers/12345/transactions',
+                },
+                'operations': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/ledgers/12345/operations',
+                },
+                'payments': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/ledgers/12345/payments',
+                },
+                'effects': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/ledgers/12345/effects',
+                },
               },
               'id': 'ledger-hash-12345',
               'paging_token': '12345',
@@ -50,15 +70,29 @@ void main() {
               'base_reserve_in_stroops': 5000000,
               'max_tx_set_size': 1000,
               'protocol_version': 20,
-              'header_xdr': 'AAAAAAAA...'
+              'header_xdr': 'AAAAAAAA...',
             },
             {
               '_links': {
-                'self': {'href': 'https://horizon-testnet.stellar.org/ledgers/12346'},
-                'transactions': {'href': 'https://horizon-testnet.stellar.org/ledgers/12346/transactions'},
-                'operations': {'href': 'https://horizon-testnet.stellar.org/ledgers/12346/operations'},
-                'payments': {'href': 'https://horizon-testnet.stellar.org/ledgers/12346/payments'},
-                'effects': {'href': 'https://horizon-testnet.stellar.org/ledgers/12346/effects'}
+                'self': {
+                  'href': 'https://horizon-testnet.stellar.org/ledgers/12346',
+                },
+                'transactions': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/ledgers/12346/transactions',
+                },
+                'operations': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/ledgers/12346/operations',
+                },
+                'payments': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/ledgers/12346/payments',
+                },
+                'effects': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/ledgers/12346/effects',
+                },
               },
               'id': 'ledger-hash-12346',
               'paging_token': '12346',
@@ -76,10 +110,10 @@ void main() {
               'base_reserve_in_stroops': 5000000,
               'max_tx_set_size': 1000,
               'protocol_version': 20,
-              'header_xdr': 'BBBBBBBB...'
-            }
-          ]
-        }
+              'header_xdr': 'BBBBBBBB...',
+            },
+          ],
+        },
       };
 
       final mockClient = MockClient((request) async {
@@ -124,9 +158,12 @@ void main() {
 
     test('stream returns Stream<LedgerResponse>', () {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          '_embedded': {'records': []}
-        }), 200);
+        return http.Response(
+          json.encode({
+            '_embedded': {'records': []},
+          }),
+          200,
+        );
       });
 
       final builder = LedgersRequestBuilder(mockClient, serverUri);
@@ -159,7 +196,7 @@ void main() {
         'transactions': {'href': 'x'},
         'operations': {'href': 'x'},
         'payments': {'href': 'x'},
-        'effects': {'href': 'x'}
+        'effects': {'href': 'x'},
       },
       'id': 'ledger-hash-12345',
       'paging_token': '12345',
@@ -177,7 +214,7 @@ void main() {
       'base_reserve_in_stroops': 5000000,
       'max_tx_set_size': 1000,
       'protocol_version': 20,
-      'header_xdr': 'AAAAAAAA...'
+      'header_xdr': 'AAAAAAAA...',
     };
 
     test('stream parses an SSE data frame into a typed ledger', () async {
@@ -185,8 +222,11 @@ void main() {
         final controller = StreamController<List<int>>();
         controller.add(utf8.encode('event: open\ndata: "hello"\n\n'));
         controller.add(utf8.encode('data: ${json.encode(ledgerRecord)}\n\n'));
-        return http.StreamedResponse(controller.stream, 200,
-            headers: {'content-type': 'text/event-stream'});
+        return http.StreamedResponse(
+          controller.stream,
+          200,
+          headers: {'content-type': 'text/event-stream'},
+        );
       });
 
       final builder = LedgersRequestBuilder(mockClient, serverUri);

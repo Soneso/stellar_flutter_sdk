@@ -85,16 +85,23 @@ class FeeStatsResponse extends Response {
   /// - [lastLedgerCapacityUsage] Capacity usage ratio for the last ledger
   /// - [feeCharged] Statistics about fees actually charged
   /// - [maxFee] Statistics about maximum fees users were willing to pay
-  FeeStatsResponse(this.lastLedger, this.lastLedgerBaseFee, this.lastLedgerCapacityUsage,
-      this.feeCharged, this.maxFee);
+  FeeStatsResponse(
+    this.lastLedger,
+    this.lastLedgerBaseFee,
+    this.lastLedgerCapacityUsage,
+    this.feeCharged,
+    this.maxFee,
+  );
 
   /// Creates fee statistics from Horizon API JSON response.
-  factory FeeStatsResponse.fromJson(Map<String, dynamic> json) => FeeStatsResponse(
-      json['last_ledger'],
-      json['last_ledger_base_fee'],
-      json['ledger_capacity_usage'],
-      FeeChargedResponse.fromJson(json['fee_charged']),
-      MaxFeeResponse.fromJson(json['max_fee']));
+  factory FeeStatsResponse.fromJson(Map<String, dynamic> json) =>
+      FeeStatsResponse(
+        json['last_ledger'],
+        json['last_ledger_base_fee'],
+        json['ledger_capacity_usage'],
+        FeeChargedResponse.fromJson(json['fee_charged']),
+        MaxFeeResponse.fromJson(json['max_fee']),
+      );
 }
 
 /// Statistics about fees actually charged in recent transactions.
@@ -170,25 +177,41 @@ class FeeChargedResponse extends Response {
   /// - [p90] 90th percentile fee
   /// - [p95] 95th percentile fee
   /// - [p99] 99th percentile fee
-  FeeChargedResponse(this.max, this.min, this.mode, this.p10, this.p20, this.p30, this.p40,
-      this.p50, this.p60, this.p70, this.p80, this.p90, this.p95, this.p99);
+  FeeChargedResponse(
+    this.max,
+    this.min,
+    this.mode,
+    this.p10,
+    this.p20,
+    this.p30,
+    this.p40,
+    this.p50,
+    this.p60,
+    this.p70,
+    this.p80,
+    this.p90,
+    this.p95,
+    this.p99,
+  );
 
   /// Creates fee charged statistics from Horizon API JSON response.
-  factory FeeChargedResponse.fromJson(Map<String, dynamic> json) => FeeChargedResponse(
-      json['max'],
-      json['min'],
-      json['mode'],
-      json['p10'],
-      json['p20'],
-      json['p30'],
-      json['p40'],
-      json['p50'],
-      json['p60'],
-      json['p70'],
-      json['p80'],
-      json['p90'],
-      json['p95'],
-      json['p99']);
+  factory FeeChargedResponse.fromJson(Map<String, dynamic> json) =>
+      FeeChargedResponse(
+        json['max'],
+        json['min'],
+        json['mode'],
+        json['p10'],
+        json['p20'],
+        json['p30'],
+        json['p40'],
+        json['p50'],
+        json['p60'],
+        json['p70'],
+        json['p80'],
+        json['p90'],
+        json['p95'],
+        json['p99'],
+      );
 }
 
 /// Statistics about maximum fees users set when submitting transactions.
@@ -261,23 +284,38 @@ class MaxFeeResponse extends Response {
   /// - [p90] 90th percentile of max_fee values
   /// - [p95] 95th percentile of max_fee values
   /// - [p99] 99th percentile of max_fee values
-  MaxFeeResponse(this.max, this.min, this.mode, this.p10, this.p20, this.p30, this.p40, this.p50,
-      this.p60, this.p70, this.p80, this.p90, this.p95, this.p99);
+  MaxFeeResponse(
+    this.max,
+    this.min,
+    this.mode,
+    this.p10,
+    this.p20,
+    this.p30,
+    this.p40,
+    this.p50,
+    this.p60,
+    this.p70,
+    this.p80,
+    this.p90,
+    this.p95,
+    this.p99,
+  );
 
   /// Creates max fee statistics from Horizon API JSON response.
   factory MaxFeeResponse.fromJson(Map<String, dynamic> json) => MaxFeeResponse(
-      json['max'],
-      json['min'],
-      json['mode'],
-      json['p10'],
-      json['p20'],
-      json['p30'],
-      json['p40'],
-      json['p50'],
-      json['p60'],
-      json['p70'],
-      json['p80'],
-      json['p90'],
-      json['p95'],
-      json['p99']);
+    json['max'],
+    json['min'],
+    json['mode'],
+    json['p10'],
+    json['p20'],
+    json['p30'],
+    json['p40'],
+    json['p50'],
+    json['p60'],
+    json['p70'],
+    json['p80'],
+    json['p90'],
+    json['p95'],
+    json['p99'],
+  );
 }
