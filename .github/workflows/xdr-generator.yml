@@ -80,8 +80,7 @@ jobs:
         run: |
           # Only paths a generator writes. Both emission targets format what they emit, so
           # the committed tree is the formatted emission and the verdict below turns on the
-          # emission alone. The repository is not `dart format` clean outside these paths,
-          # so widening the check would report pre-existing formatting as generator drift.
+          # emission alone.
           GENERATED_PATHS=(
             lib/src/xdr/
             test/unit/xdr/generated/

@@ -38,6 +38,15 @@ jobs:
       - name: Analyze code
         run: dart analyze lib/ --fatal-warnings
 
+      - name: Check formatting
+        # example/lib is formatted in the style of the example package's SDK floor, which
+        # the preceding pub get resolves; without that resolution the check flags its files.
+        if: matrix.flutter-version == '3.47.x'
+        env:
+          FLUTTER_SUPPRESS_ANALYTICS: 'true'
+          DASH__SUPPRESS_ANALYTICS: 'true'
+        run: dart format --output=none --set-exit-if-changed lib test example/lib tool
+
       - name: Run unit tests (without coverage)
         if: matrix.flutter-version != '3.47.x'
         run: flutter test test/unit/
