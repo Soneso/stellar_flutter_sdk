@@ -5,21 +5,12 @@
 // features of the Flutter SDK. Pure-Kotlin implementation with no third-party
 // dependencies beyond AndroidX.
 //
-// Dependency pins (versions verified against `dl.google.com/dl/android/maven2`
-// and Maven Central on 2026-05-15):
-//   androidx.credentials:credentials                   = 1.6.0   (latest stable)
-//   androidx.credentials:credentials-play-services-auth = 1.6.0   (matches train)
-//   androidx.security:security-crypto                  = 1.1.0   (latest stable)
-//   org.jetbrains.kotlinx:kotlinx-coroutines-android   = 1.11.0  (latest stable)
-//   org.jetbrains.kotlinx:kotlinx-serialization-json   = 1.9.0   (latest stable)
-//   io.mockk:mockk                                     = 1.14.3  (test only,
-//                                                                  latest stable)
+// Dependency versions are pinned in the dependencies block below.
 //
 // Android Gradle Plugin and Kotlin Gradle Plugin are intentionally not
 // pinned here; they are inherited from the consumer app's project-level
 // build configuration so the plugin builds with whatever toolchain the
-// consumer already uses. The serialization plugin tracks the same Kotlin
-// version as `org.jetbrains.kotlin.android` (no explicit version needed).
+// consumer already uses. The serialization plugin is pinned below.
 
 plugins {
     id("com.android.library")
