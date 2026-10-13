@@ -2,7 +2,7 @@ name: Check for upstream XDR updates
 
 on:
   schedule:
-    # Runs daily at 08:00 UTC — adjust after initial testing
+    # Runs daily at 13:30 UTC
     - cron: '30 13 * * *'
   workflow_dispatch: # Allow manual trigger
 
