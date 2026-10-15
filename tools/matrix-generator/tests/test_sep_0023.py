@@ -41,6 +41,7 @@ KEY_TYPES = [
     ('STRKEY_PRE_AUTH_TX', 152, 'T'), ('STRKEY_HASH_X', 184, 'X'),
     ('STRKEY_SIGNED_PAYLOAD', 120, 'P'), ('STRKEY_CONTRACT', 16, 'C'),
     ('STRKEY_LIQUIDITY_POOL', 88, 'L'), ('STRKEY_CLAIMABLE_BALANCE', 8, 'B'),
+    ('STRKEY_MUXED_CONTRACT', 176, 'W'),
 ]
 
 G = 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJ'
@@ -59,6 +60,10 @@ VALID_CASES = [
     ('Valid contract', 'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA'),
     ('Valid liquidity pool address', 'LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN'),
     ('Valid claimable balance address', 'BAAD6' + B + 'R4TU'),
+    ('Valid muxed contract address',
+     'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC'),
+    ('Valid muxed contract address in which unsigned id exceeds maximum signed 64-bit integer',
+     'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY'),
 ]
 INVALID_CASES = [
     ('Invalid length (Ed25519 should be 32 bytes, not 5)', 'GAAAAAAAACGC6'),
@@ -82,6 +87,17 @@ INVALID_CASES = [
     ('The unused trailing 2-bits must be zero in the encoding of the last symbol.',
      'BAAD6' + B + 'R4TV'),
     ('Invalid claimable balance type (first byte of binary key is not 0)', 'BAAT6' + B + 'XACA'),
+    ('The unused trailing bit must be zero in the encoding of the last three bytes (24 bits) '
+     'as five base-32 symbols (25 bits) of a muxed contract',
+     'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWD'),
+    ('Invalid length (congruent to 6 mod 8) of a muxed contract',
+     'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWCA'),
+    ('Invalid length (base-32 decoding should yield 43 bytes, not 44) of a muxed contract',
+     'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAAIOUI'),
+    ('Invalid algorithm (low 3 bits of version byte are 7) of a muxed contract',
+     'W47QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAADXHW'),
+    ('Invalid checksum of a muxed contract',
+     'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWA'),
 ]
 VECTORS = (
     [(f'valid_{i:02d}', title, vector) for i, (title, vector) in enumerate(VALID_CASES, 1)]
@@ -99,6 +115,7 @@ SDK_METHODS = {
     'STRKEY_CONTRACT': 'StrKey.encodeContractId / decodeContractId',
     'STRKEY_LIQUIDITY_POOL': 'StrKey.encodeLiquidityPoolId / decodeLiquidityPoolId',
     'STRKEY_CLAIMABLE_BALANCE': 'StrKey.encodeClaimableBalanceId / decodeClaimableBalanceId',
+    'STRKEY_MUXED_CONTRACT': 'StrKey.encodeMuxedContractId / decodeMuxedContractId',
 }
 
 VERSION_BYTES = [
@@ -107,6 +124,7 @@ VERSION_BYTES = [
     ('SHA256_HASH', 'SHA256_HASH', '23 << 3'), ('SIGNED_PAYLOAD', 'SIGNED_PAYLOAD', '15 << 3'),
     ('CONTRACT_ID', 'CONTRACT_ID', '2 << 3'), ('LIQUIDITY_POOL', 'LIQUIDITY_POOL', '11 << 3'),
     ('CLAIMABLE_BALANCE', 'CLAIMABLE_BALANCE', '1 << 3'),
+    ('MUXED_CONTRACT', 'MUXED_CONTRACT', '22 << 3'),
 ]
 CONSTANTS_DART = 'class StellarProtocolConstants {\n' + ''.join(
     f'  static const int VERSION_BYTE_{constant} = {value};\n'
@@ -202,7 +220,7 @@ class Sep0023DefinitionTest(unittest.TestCase):
 
         self.assertEqual(
             [definition['preamble'][key] for key in ('title', 'version', 'status')],
-            ['Strkeys', '1.3.0', 'Active'])
+            ['Strkeys', '1.4.0', 'Active'])
         self.assertEqual(
             [(s['title'], s['key']) for s in definition['sections']],
             [(KEY_TYPES_TITLE, 'key_types'),
@@ -220,7 +238,8 @@ class Sep0023DefinitionTest(unittest.TestCase):
         row = '| STRKEY_CLAIMABLE_BALANCE | 1 << 3     | B          | no    | Hash |\n'
         markdown = replace_once(load_fixture('0023'), '| 6 << 3     |', '| 7 << 3     |')
         markdown = replace_once(markdown, row, row + '| STRKEY_EXTRA | 31 << 3 | 7 | no | PK |\n')
-        markdown = replace_once(markdown, 'UWDA`', 'UWDB`')
+        markdown = replace_once(markdown, f'   - Strkey `{VALID_CASES[5][1]}`\n',
+                                f'   - Strkey `{VALID_CASES[5][1][:-1]}B`\n')
         markdown = replace_once(markdown, '\n\nYou can paste',
                                 '\n\n1. Extra case\n\n   - Strkey: `EXTRA`\n\nYou can paste')
         definition = parse_fixture(markdown)
@@ -231,7 +250,7 @@ class Sep0023DefinitionTest(unittest.TestCase):
         self.assertEqual((types[9]['name'], types[9]['base_value']), ('STRKEY_EXTRA', 248))
         self.assertEqual(vectors[5]['vector'], VALID_CASES[5][1][:-1] + 'B')
         self.assertEqual((len(vectors), vectors[-1]['name'], vectors[-1]['vector']),
-                         (24, 'invalid_16', 'EXTRA'))
+                         (31, 'invalid_21', 'EXTRA'))
 
     def test_text_after_the_invalid_cases_is_not_read(self):
         markdown = replace_once(load_fixture('0023'), 'the following array:\n',
@@ -476,7 +495,7 @@ class Sep0023MatrixTest(unittest.TestCase):
                     for line in matrix]
 
         self.assertEqual(normalized(lines), normalized(tracked))
-        self.assertIn('**Total Coverage:** 100.0% (32/32 fields)', lines)
+        self.assertIn('**Total Coverage:** 100.0% (40/40 fields)', lines)
 
     def test_run_analysis_runs_sep_0023_after_sep_0012(self):
         steps = [script for script, _ in run_analysis.AnalysisOrchestrator().scripts]

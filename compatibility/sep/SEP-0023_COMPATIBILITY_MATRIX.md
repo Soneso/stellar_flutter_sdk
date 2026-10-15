@@ -1,8 +1,8 @@
 # SEP-0023 (Strkeys) Compatibility Matrix
 
-**Generated:** 2026-09-30 14:11:22  
+**Generated:** 2026-10-15 13:35:43  
 **SDK Version:** 3.8.0  
-**SEP Version:** 1.3.0  
+**SEP Version:** 1.4.0  
 **SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md
 
@@ -12,12 +12,12 @@ Strkey is an ASCII format for representing Stellar account IDs and addresses.
 
 ## Overall Coverage
 
-**Total Coverage:** 100.0% (32/32 fields)
+**Total Coverage:** 100.0% (40/40 fields)
 
-- ✅ **Implemented:** 32/32
-- ❌ **Not Implemented:** 0/32
+- ✅ **Implemented:** 40/40
+- ❌ **Not Implemented:** 0/40
 
-**Required Fields:** 100.0% (32/32)
+**Required Fields:** 100.0% (40/40)
 
 **Optional Fields:** 0% (0/0)
 
@@ -40,8 +40,8 @@ Strkey is an ASCII format for representing Stellar account IDs and addresses.
 
 | Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
 |---------|----------|-------------------|-------------|-----------------|-------|
-| Key types | 100.0% | 100.0% | 9 | 0 | 9 |
-| Test vectors quoted in the StrKey unit test files | 100.0% | 100.0% | 23 | 0 | 23 |
+| Key types | 100.0% | 100.0% | 10 | 0 | 10 |
+| Test vectors quoted in the StrKey unit test files | 100.0% | 100.0% | 30 | 0 | 30 |
 
 ## Detailed Field Comparison
 
@@ -54,6 +54,7 @@ Strkey is an ASCII format for representing Stellar account IDs and addresses.
 | `STRKEY_HASH_X` | ✓ | ✅ | `StrKey.encodeSha256Hash / decodeSha256Hash` | Base value 23 << 3 (184), first character X |
 | `STRKEY_LIQUIDITY_POOL` | ✓ | ✅ | `StrKey.encodeLiquidityPoolId / decodeLiquidityPoolId` | Base value 11 << 3 (88), first character L |
 | `STRKEY_MUXED` | ✓ | ✅ | `StrKey.encodeStellarMuxedAccountId / decodeStellarMuxedAccountId` | Base value 12 << 3 (96), first character M |
+| `STRKEY_MUXED_CONTRACT` | ✓ | ✅ | `StrKey.encodeMuxedContractId / decodeMuxedContractId` | Base value 22 << 3 (176), first character W |
 | `STRKEY_PRE_AUTH_TX` | ✓ | ✅ | `StrKey.encodePreAuthTx / decodePreAuthTx` | Base value 19 << 3 (152), first character T |
 | `STRKEY_PRIVKEY` | ✓ | ✅ | `StrKey.encodeStellarSecretSeed / decodeStellarSecretSeed` | Base value 18 << 3 (144), first character S |
 | `STRKEY_PUBKEY` | ✓ | ✅ | `StrKey.encodeStellarAccountId / decodeStellarAccountId` | Base value 6 << 3 (48), first character G |
@@ -78,6 +79,11 @@ Strkey is an ASCII format for representing Stellar account IDs and addresses.
 | `invalid_13` | ✓ | ✅ | `test/unit/strkey_test.dart` | No zero padding in signed payload, quoted in `test/unit/strkey_test.dart` |
 | `invalid_14` | ✓ | ✅ | `test/unit/strkey_test.dart` | The unused trailing 2-bits must be zero in the encoding of the last symbol, quoted in `test/unit/strkey_test.dart` |
 | `invalid_15` | ✓ | ✅ | `test/unit/strkey_test.dart` | Invalid claimable balance type (first byte of binary key is not 0), quoted in `test/unit/strkey_test.dart` |
+| `invalid_16` | ✓ | ✅ | `test/unit/strkey_test.dart` | The unused trailing bit must be zero in the encoding of the last three bytes (24 bits) as five base-32 symbols (25 bits) of a muxed contract, quoted in `test/unit/strkey_test.dart` |
+| `invalid_17` | ✓ | ✅ | `test/unit/strkey_test.dart` | Invalid length (congruent to 6 mod 8) of a muxed contract, quoted in `test/unit/strkey_test.dart` |
+| `invalid_18` | ✓ | ✅ | `test/unit/strkey_test.dart` | Invalid length (base-32 decoding should yield 43 bytes, not 44) of a muxed contract, quoted in `test/unit/strkey_test.dart` |
+| `invalid_19` | ✓ | ✅ | `test/unit/strkey_test.dart` | Invalid algorithm (low 3 bits of version byte are 7) of a muxed contract, quoted in `test/unit/strkey_test.dart` |
+| `invalid_20` | ✓ | ✅ | `test/unit/strkey_test.dart` | Invalid checksum of a muxed contract, quoted in `test/unit/strkey_test.dart` |
 | `valid_01` | ✓ | ✅ | `test/unit/strkey_test.dart` | Valid non-multiplexed account, quoted in `test/unit/strkey_test.dart` |
 | `valid_02` | ✓ | ✅ | `test/unit/strkey_test.dart` | Valid multiplexed account, quoted in `test/unit/strkey_test.dart` |
 | `valid_03` | ✓ | ✅ | `test/unit/strkey_test.dart` | Valid multiplexed account in which unsigned id exceeds maximum signed 64-bit integer, quoted in `test/unit/strkey_test.dart` |
@@ -86,6 +92,8 @@ Strkey is an ASCII format for representing Stellar account IDs and addresses.
 | `valid_06` | ✓ | ✅ | `test/unit/strkey_test.dart` | Valid contract, quoted in `test/unit/strkey_test.dart` |
 | `valid_07` | ✓ | ✅ | `test/unit/strkey_test.dart` | Valid liquidity pool address, quoted in `test/unit/strkey_test.dart` |
 | `valid_08` | ✓ | ✅ | `test/unit/strkey_test.dart` | Valid claimable balance address, quoted in `test/unit/strkey_test.dart` |
+| `valid_09` | ✓ | ✅ | `test/unit/strkey_test.dart` | Valid muxed contract address, quoted in `test/unit/strkey_test.dart` |
+| `valid_10` | ✓ | ✅ | `test/unit/strkey_test.dart` | Valid muxed contract address in which unsigned id exceeds maximum signed 64-bit integer, quoted in `test/unit/strkey_test.dart` |
 
 ## Implementation Gaps
 

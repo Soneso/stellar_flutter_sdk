@@ -48,6 +48,7 @@ SEP_23_KEY_TYPE_NAMES: Dict[str, Optional[StrKeyTypeNames]] = {
         'LIQUIDITY_POOL', 'encodeLiquidityPoolId', 'decodeLiquidityPoolId'),
     'STRKEY_CLAIMABLE_BALANCE': StrKeyTypeNames(
         'CLAIMABLE_BALANCE', 'encodeClaimableBalanceId', 'decodeClaimableBalanceId'),
+    'STRKEY_MUXED_CONTRACT': StrKeyTypeNames('MUXED_CONTRACT', 'encodeMuxedContractId', 'decodeMuxedContractId'),
 }
 
 # Files the SEP-23 analysis reads, relative to the SDK root.

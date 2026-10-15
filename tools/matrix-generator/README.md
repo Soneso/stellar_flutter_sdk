@@ -12,7 +12,7 @@ It analyzes three areas:
 
 - Python 3.8+
 - No external dependencies (stdlib only)
-- Internet access (fetches specs from GitHub and stellar.org)
+- Internet access (fetches specs from GitHub, including stellar-protocol via raw.githubusercontent.com)
 - Local clones of `stellar-horizon` and `stellar-rpc` as siblings of the SDK root
 
 Horizon sources are fetched from GitHub at the tag of the latest release. RPC sources are fetched at the tag of the newest stable release: the highest `vX.Y.Z` tag with `draft` and `prerelease` false, across every page of the release list. `--rpc-version` must name a non-draft `v*` server release. The local clones back the `--local` modes below, and `run_analysis.py` checks for them up front: `stellar-horizon` must carry `internal/httpx/router.go`.
@@ -76,7 +76,7 @@ python3 tools/matrix-generator/rpc/run_rpc_analysis.py --local /path/to/jsonrpc.
 SEP analysis runs as three stages per SEP: parse, analyze, compare.
 
 ```bash
-# Parse a single SEP specification from stellar.org
+# Parse a single SEP specification from stellar-protocol on GitHub
 python3 tools/matrix-generator/sep/sep_parser.py 0010
 
 # Analyze SDK implementation for that SEP
@@ -103,7 +103,7 @@ tools/matrix-generator/
 │   ├── rpc_parser.py            # Pipeline module: parses jsonrpc.go for RPC method definitions
 │   └── generate_rpc_comparison.py  # Pipeline module: compares and writes the matrix
 ├── sep/
-│   ├── sep_parser.py            # Fetches and parses SEP specs from stellar.org
+│   ├── sep_parser.py            # Fetches and parses SEP specs from stellar-protocol on GitHub
 │   ├── sep_analyzer.py          # Analyzes SDK source for SEP implementation
 │   └── generate_sep_comparison.py
 ├── tests/                       # unittest suite (offline, network calls patched)
