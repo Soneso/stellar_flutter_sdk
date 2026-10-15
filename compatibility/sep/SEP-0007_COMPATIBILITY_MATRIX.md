@@ -1,7 +1,7 @@
 # SEP-0007 (URI Scheme to facilitate delegated signing) Compatibility Matrix
 
-**Generated:** 2026-09-28 01:09:35  
-**SDK Version:** 3.8.0  
+**Generated:** 2026-10-15 20:29:19  
+**SDK Version:** 3.9.0  
 **SEP Version:** 2.1.0  
 **SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md

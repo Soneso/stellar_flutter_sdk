@@ -1,7 +1,7 @@
 # SEP-0051 (XDR-JSON) Compatibility Matrix
 
-**Generated:** 2026-09-28 01:09:56  
-**SDK Version:** 3.8.0  
+**Generated:** 2026-10-15 20:29:27  
+**SDK Version:** 3.9.0  
 **SEP Version:** 2.0.1  
 **SEP Status:** Draft  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md

@@ -429,7 +429,8 @@ documentation/
 │   └── sep-53.md              # Message signing and verification
 ├── migration/                 # Migration guides, one per release
 │   ├── 3.6.0.md               # Migrating to 3.6.0
-│   └── 3.8.0.md               # Migrating to 3.8.0
+│   ├── 3.8.0.md               # Migrating to 3.8.0
+│   └── 3.9.0.md               # Migrating to 3.9.0
 └── documentation-strategy.md   # This file
 ```
 

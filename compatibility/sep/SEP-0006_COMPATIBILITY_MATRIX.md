@@ -1,7 +1,7 @@
 # SEP-0006 (Deposit and Withdrawal API) Compatibility Matrix
 
-**Generated:** 2026-09-28 01:09:34  
-**SDK Version:** 3.8.0  
+**Generated:** 2026-10-15 20:29:18  
+**SDK Version:** 3.9.0  
 **SEP Version:** 4.3.0  
 **SEP Status:** Active (Interactive components are deprecated in favor of SEP-24)  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md
@@ -194,18 +194,18 @@ wallet application.
 
 | Field | Required | Status | SDK Property | Description |
 |-------|----------|--------|--------------|-------------|
-| `completed` | ✓ | ✅ | - | Transaction completed successfully |
-| `error` |  | ✅ | - | Transaction failed with error |
-| `expired` |  | ✅ | - | Transaction expired without completion |
-| `incomplete` | ✓ | ✅ | - | Deposit/withdrawal has not yet been submitted |
-| `pending_anchor` | ✓ | ✅ | - | Anchor is processing the transaction |
-| `pending_external` |  | ✅ | - | Waiting for external action (banking system, etc.) |
-| `pending_stellar` |  | ✅ | - | Stellar transaction has been submitted |
-| `pending_trust` |  | ✅ | - | User needs to add trustline for asset |
-| `pending_user` |  | ✅ | - | Waiting for user action (accepting claimable balance) |
-| `pending_user_transfer_complete` |  | ✅ | - | Off-chain transfer has been initiated |
-| `pending_user_transfer_start` | ✓ | ✅ | - | Waiting for user to initiate off-chain transfer |
-| `refunded` |  | ✅ | - | Transaction refunded |
+| `completed` | ✓ | ✅ | `status` | Transaction completed successfully |
+| `error` |  | ✅ | `status` | Transaction failed with error |
+| `expired` |  | ✅ | `status` | Transaction expired without completion |
+| `incomplete` | ✓ | ✅ | `status` | Deposit/withdrawal has not yet been submitted |
+| `pending_anchor` | ✓ | ✅ | `status` | Anchor is processing the transaction |
+| `pending_external` |  | ✅ | `status` | Waiting for external action (banking system, etc.) |
+| `pending_stellar` |  | ✅ | `status` | Stellar transaction has been submitted |
+| `pending_trust` |  | ✅ | `status` | User needs to add trustline for asset |
+| `pending_user` |  | ✅ | `status` | Waiting for user action (accepting claimable balance) |
+| `pending_user_transfer_complete` |  | ✅ | `status` | Off-chain transfer has been initiated |
+| `pending_user_transfer_start` | ✓ | ✅ | `status` | Waiting for user to initiate off-chain transfer |
+| `refunded` |  | ✅ | `status` | Transaction refunded |
 
 ### Withdraw Endpoints
 

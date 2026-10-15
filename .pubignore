@@ -10,3 +10,6 @@ example/build/
 example/ios/
 example/android/
 example/.dart_tool/
+AGENTS.md
+CLAUDE.md
+*.log
