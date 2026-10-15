@@ -593,9 +593,7 @@ try {
 
 ## Testing with MockClient
 
-Use `MockClient` from the `http/testing.dart` package. Construct `WebAuthForContracts` manually and
-pass the mock via the `httpClient` named parameter, then set `sorobanRpcUrl` to prevent real network
-calls when auto-expiration is needed.
+Use `MockClient` from the `http/testing.dart` package. Construct `WebAuthForContracts` manually, pass the mock through the `httpClient` named parameter, and pass `signatureExpirationLedger` to `jwtToken`. Without it, `jwtToken` fetches the latest ledger from Soroban RPC.
 
 ```dart
 import 'dart:convert';
@@ -606,7 +604,7 @@ import 'package:http/testing.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
-  // Server configuration — must match WebAuthForContracts initialization
+  // Server configuration must match WebAuthForContracts initialization
   const serverAccountId = 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP';
   const serverSecretSeed = 'SAWDHXQG6ROJSU4QGCW7NSTYFHPTPIVC2NC7QKVTO7PZCSO2WEBGM54W';
   final serverKeyPair = KeyPair.fromSecretSeed(serverSecretSeed);
@@ -622,9 +620,9 @@ void main() {
     return XdrSCVal.forMap([
       XdrSCMapEntry(XdrSCVal.forSymbol('account'), XdrSCVal.forString(clientContractId)),
       XdrSCMapEntry(XdrSCVal.forSymbol('home_domain'), XdrSCVal.forString(domain)),
+      XdrSCMapEntry(XdrSCVal.forSymbol('nonce'), XdrSCVal.forString(nonce)),
       XdrSCMapEntry(XdrSCVal.forSymbol('web_auth_domain'), XdrSCVal.forString('auth.example.stellar.org')),
       XdrSCMapEntry(XdrSCVal.forSymbol('web_auth_domain_account'), XdrSCVal.forString(serverAccountId)),
-      XdrSCMapEntry(XdrSCVal.forSymbol('nonce'), XdrSCVal.forString(nonce)),
     ]);
   }
 
@@ -642,7 +640,7 @@ void main() {
       address,
       nonce,
       1000000, // expirationLedger
-      XdrSCVal.forVec([]),
+      XdrSCVal.forVec([]), // Every entry starts unsigned with an empty signature vector.
     );
 
     final contractAddress = Address.forContractId(webAuthContractId);
@@ -714,12 +712,15 @@ void main() {
       clientContractId,
       [clientSigner],
       homeDomain: domain,
+      signatureExpirationLedger: 1000000,
     );
 
     expect(token, equals(successJwt));
   });
 }
 ```
+
+The mock server signs its own entry before sending the challenge, and each client signer appends one signature. A server signature that remains void or empty fails client validation with `ContractChallengeValidationErrorInvalidServerSignature`: `Server authorization entry has invalid signature`.
 
 **Key details for building a valid mock challenge:**
 - The server entry credentials address must match `serverSigningKey` (G... address)

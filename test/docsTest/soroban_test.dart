@@ -360,6 +360,88 @@ void main() {
       expect(result, isNotNull);
       expect(result!.discriminant, XdrSCValType.SCV_VOID);
     });
+
+    test('soroban: Delegated Authorization', () async {
+      // Snippet from soroban.md "Delegated Authorization"
+      final SorobanServer server = SorobanServer(
+        'https://soroban-testnet.stellar.org:443',
+      );
+
+      // Top-level credential account and a delegate signer's account
+      final KeyPair topLevelKeyPair = KeyPair.fromSecretSeed(
+        'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI',
+      );
+      final KeyPair delegateKeyPair = KeyPair.fromSecretSeed(
+        'SDJRWLCGLROL365KUWQG7OAAYHBNCNV7TJ7LG2GW5663XVZED6YU7HXB',
+      );
+
+      // An ADDRESS or ADDRESS_V2 entry bound to the top-level account. In practice
+      // this comes from simulation (tx.simulationResponse!.sorobanAuth!.first);
+      // it is built explicitly here so the snippet is self-contained.
+      final SorobanAuthorizationEntry sourceEntry = SorobanAuthorizationEntry(
+        SorobanCredentials.forAddressV2(
+          SorobanAddressCredentials(
+            Address.forAccountId(topLevelKeyPair.accountId),
+            BigInt.from(1234), // nonce
+            0, // signatureExpirationLedger (set by withDelegates below)
+            XdrSCVal.forVoid(),
+          ),
+        ),
+        SorobanAuthorizedInvocation(
+          SorobanAuthorizedFunction.forContractFunction(
+            Address.forContractId(
+              'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
+            ),
+            'swap',
+            [],
+          ),
+        ),
+      );
+
+      // Set the expiration relative to the latest ledger.
+      final GetLatestLedgerResponse latestLedger = await server
+          .getLatestLedger();
+      final int expirationLedger = latestLedger.sequence! + 100;
+
+      // Build the WITH_DELEGATES entry. The builder sorts the delegate array,
+      // rejects duplicates, and resets the top-level signature to void.
+      SorobanAuthorizationEntry delegated =
+          SorobanAuthorizationEntry.withDelegates(sourceEntry, [
+            SorobanDelegateDescriptor(delegateKeyPair.accountId),
+          ], expirationLedger);
+
+      // The top-level account needs its own signature before submission.
+      // When one node needs multiple classical (G-address) signatures, add them in
+      // ascending public-key order. The host requires that order and the SDK
+      // appends signatures in the order you call sign.
+      delegated.sign(topLevelKeyPair, Network.TESTNET);
+
+      // Delegate signer: forAddress routes the signature into the matching node
+      // (top-level or any delegate, depth-first) and throws when no node matches.
+      delegated.sign(
+        delegateKeyPair,
+        Network.TESTNET,
+        forAddress: delegateKeyPair.accountId,
+      );
+      expect(
+        SorobanAuthorizationEntry.carriesSignature(
+          delegated.credentials.innerAddressCredentials!.signature,
+        ),
+        true,
+      );
+      expect(
+        SorobanAuthorizationEntry.carriesSignature(
+          delegated
+              .credentials
+              .addressWithDelegatesCredentials!
+              .delegates
+              .single
+              .signature,
+        ),
+        true,
+      );
+      print('Both account nodes carry signatures');
+    });
   });
 
   group('Type Conversions', () {
@@ -401,13 +483,45 @@ void main() {
 
     test('soroban: Addresses', () {
       // Snippet from soroban.md "Addresses"
-      KeyPair kp = KeyPair.random();
+      // Account address (G...) - convenience method
+      XdrSCVal account = XdrSCVal.forAccountAddress(
+        'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q',
+      );
 
-      XdrSCVal account = XdrSCVal.forAccountAddress(kp.accountId);
-      expect(account.address, isNotNull);
+      // Contract address (C...) - convenience method
+      XdrSCVal contract = XdrSCVal.forContractAddress(
+        'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP',
+      );
 
-      XdrSCVal addr = Address.forAccountId(kp.accountId).toXdrSCVal();
-      expect(addr.address, isNotNull);
+      // Muxed contract address (W...) - convenience method
+      XdrSCVal muxedContract = XdrSCVal.forMuxedContractAddress(
+        'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC',
+      );
+
+      Address muxed = Address.forMuxedContract(
+        contractId: 'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA',
+        id: BigInt.zero,
+      );
+      Address parsedMuxed = Address.forMuxedContractId(muxed.muxedContractId!);
+
+      // Via Address helper
+      XdrSCVal addr = Address.forAccountId(
+        'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q',
+      ).toXdrSCVal();
+      expect(
+        account.address!.toStrKey(),
+        'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q',
+      );
+      expect(
+        contract.address!.toStrKey(),
+        'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP',
+      );
+      expect(muxedContract.address!.toStrKey(), muxed.muxedContractId);
+      expect(
+        parsedMuxed.toXdrSCVal().toBase64EncodedXdrString(),
+        muxedContract.toBase64EncodedXdrString(),
+      );
+      expect(addr.address!.toStrKey(), account.address!.toStrKey());
     });
 
     test('soroban: Collections', () {
@@ -420,11 +534,15 @@ void main() {
       expect(vec.vec!.length, 2);
 
       XdrSCVal map = XdrSCVal.forMap([
-        XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
         XdrSCMapEntry(XdrSCVal.forSymbol('age'), XdrSCVal.forU32(30)),
+        XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
       ]);
       expect(map.map, isNotNull);
       expect(map.map!.length, 2);
+      expect(
+        compareScValHostOrder(map.map![0].key, map.map![1].key),
+        lessThan(0),
+      );
     });
   });
 
@@ -658,6 +776,75 @@ void main() {
       String? wasmHash = txResponse.getWasmId();
       expect(wasmHash, isNotNull);
     });
+
+    test(
+      'soroban: Direct authorization signing stamps unsigned simulation entries',
+      () async {
+        // Snippet from soroban.md "Direct Authorization Signing"
+        final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+        final signer = KeyPair.fromSecretSeed(
+          'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI',
+        );
+        final entry = SorobanAuthorizationEntry(
+          SorobanCredentials.forAddressV2(
+            SorobanAddressCredentials(
+              Address.forAccountId(signer.accountId),
+              BigInt.one,
+              0,
+              XdrSCVal.forVoid(),
+            ),
+          ),
+          SorobanAuthorizedInvocation(
+            SorobanAuthorizedFunction.forContractFunction(
+              Address.forContractId(
+                'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA',
+              ),
+              'swap',
+              [],
+            ),
+          ),
+        );
+        final simResponse = SimulateTransactionResponse.fromJson({
+          'result': {
+            'latestLedger': 1,
+            'minResourceFee': '0',
+            'results': [
+              {
+                'auth': [entry.toBase64EncodedXdrString()],
+                'xdr': XdrSCVal.forVoid().toBase64EncodedXdrString(),
+              },
+            ],
+          },
+        });
+        final tx = TransactionBuilder(Account(signer.accountId, BigInt.one))
+            .addOperation(
+              InvokeHostFuncOpBuilder(
+                InvokeContractHostFunction(
+                  'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA',
+                  'swap',
+                  arguments: [],
+                ),
+              ).build(),
+            )
+            .build();
+        final latest = await server.getLatestLedger();
+        await signSimulatedAuth(server, simResponse, tx, signer);
+        final signed = (tx.operations.single as InvokeHostFunctionOperation)
+            .auth
+            .single
+            .credentials
+            .innerAddressCredentials!;
+        expect(
+          signed.signatureExpirationLedger,
+          greaterThanOrEqualTo(latest.sequence! + 10),
+        );
+        expect(
+          SorobanAuthorizationEntry.carriesSignature(signed.signature),
+          true,
+        );
+        print('Simulation entry stamped and signed');
+      },
+    );
   });
 
   group('toNative conversion (offline)', () {
@@ -677,16 +864,22 @@ void main() {
       expect(nativeU64, BigInt.parse('18446744073709551615'));
     });
 
-    test('soroban: toNative - Maps preserve key order', () {
+    test('soroban: toNative - Map keys in host order', () {
       // Snippet from soroban.md "Converting to Native Dart Values"
       XdrSCVal mapVal = XdrSCVal.forMap([
-        XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
         XdrSCMapEntry(XdrSCVal.forSymbol('age'), XdrSCVal.forU32(30)),
+        XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
       ]);
 
+      expect(
+        compareScValHostOrder(mapVal.map![0].key, mapVal.map![1].key),
+        lessThan(0),
+      );
       Map<dynamic, dynamic> native = mapVal.toNative() as Map<dynamic, dynamic>;
-      expect(native, equals({'name': 'Alice', 'age': 30}));
-      expect(native.keys.toList(), equals(['name', 'age']));
+      print(native);
+      print(native.keys.toList());
+      expect(native, equals({'age': 30, 'name': 'Alice'}));
+      expect(native.keys.toList(), equals(['age', 'name']));
     });
 
     test('soroban: toNative - Detecting a fallback', () {
@@ -705,4 +898,31 @@ void main() {
       expect(native, same(mapWithVecKey));
     });
   });
+}
+
+// The simulation response, the transaction it simulated, and the authorizing
+// keypair come from the surrounding flow and enter as parameters.
+Future<void> signSimulatedAuth(
+  SorobanServer server,
+  SimulateTransactionResponse simResponse,
+  Transaction tx,
+  KeyPair signerKeyPair,
+) async {
+  // Get auth entries from simulation
+  List<SorobanAuthorizationEntry>? auth = simResponse.sorobanAuth;
+  GetLatestLedgerResponse latestLedger = await server.getLatestLedger();
+
+  if (auth != null) {
+    for (SorobanAuthorizationEntry entry in auth) {
+      // These entries come from simulation and carry no signature.
+      entry.credentials.innerAddressCredentials?.signatureExpirationLedger =
+          latestLedger.sequence! + 10;
+
+      // Sign the entry
+      entry.sign(signerKeyPair, Network.TESTNET);
+    }
+  }
+
+  // Set signed auth on transaction
+  tx.setSorobanAuth(auth);
 }

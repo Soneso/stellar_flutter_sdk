@@ -231,6 +231,50 @@ void main() {
     }
   });
 
+  test('sep-23: Creating muxed contracts', () {
+    // Snippet from sep-23.md "Creating muxed contracts"
+    Address address = Address.forMuxedContract(
+      contractId: 'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA',
+      id: BigInt.zero,
+    );
+    String muxedContractId = address.muxedContractId!;
+    print(muxedContractId);
+    // WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC
+    expect(
+      muxedContractId,
+      'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC',
+    );
+  });
+
+  test('sep-23: Extracting muxed contract components', () {
+    // Snippet from sep-23.md "Extracting muxed contract components"
+    String muxedContractId =
+        'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC';
+    MuxedContract muxed = MuxedContract.fromMuxedContractId(muxedContractId);
+    String contractId = muxed.contractId;
+    BigInt id = muxed.id;
+    print(
+      contractId,
+    ); // CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA
+    print(id); // 0
+    expect(
+      contractId,
+      'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA',
+    );
+    expect(id, BigInt.zero);
+  });
+
+  test('sep-23: Low-level muxed contract decoding', () {
+    // Snippet from sep-23.md "Low-level muxed contract decoding"
+    String muxedContractId =
+        'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC';
+    expect(StrKey.isValidMuxedContractId(muxedContractId), isTrue);
+    Uint8List raw = StrKey.decodeMuxedContractId(muxedContractId);
+    expect(raw.length, 40);
+    expect(raw.sublist(32), List<int>.filled(8, 0));
+    expect(StrKey.encodeMuxedContractId(raw), muxedContractId);
+  });
+
   test('sep-23: Error handling', () {
     // Snippet from sep-23.md "Error handling"
     try {
@@ -244,18 +288,23 @@ void main() {
   test('sep-23: Error handling - classifying with the isValid methods', () {
     // Snippet from sep-23.md "Error handling"
     String input =
-        'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
+        'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC';
 
+    if (StrKey.isValidStellarAccountId(input)) {
+      Uint8List raw = StrKey.decodeStellarAccountId(input);
+      print('Account ID carrying ${raw.length} bytes');
+    } else if (StrKey.isValidStellarMuxedAccountId(input)) {
+      MuxedAccount muxed = MuxedAccount.fromAccountId(input)!;
+      print('Muxed account over ${muxed.ed25519AccountId}');
+    } else if (StrKey.isValidMuxedContractId(input)) {
+      MuxedContract muxed = MuxedContract.fromMuxedContractId(input);
+      print('Muxed contract over ${muxed.contractId} with ID ${muxed.id}');
+    } else {
+      print('Not an address this SDK reads');
+    }
+    expect(StrKey.isValidMuxedContractId(input), true);
     expect(StrKey.isValidStellarAccountId(input), false);
-    expect(StrKey.isValidStellarMuxedAccountId(input), true);
-
-    MuxedAccount muxed = MuxedAccount.fromAccountId(input)!;
-    expect(
-      muxed.ed25519AccountId,
-      'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ',
-    );
-
-    // fromAccountId returns null for a string starting with neither G nor M.
+    expect(StrKey.isValidStellarMuxedAccountId(input), false);
     expect(MuxedAccount.fromAccountId('user-provided-address'), isNull);
   });
 

@@ -12,6 +12,8 @@ final server = SorobanServer('https://soroban-testnet.stellar.org:443');
 // Enable logging: server.enableLogging = true;
 ```
 
+Assign `server.logger` to route log lines to your sink; without a logger they go to the `dart:developer` log.
+
 The `SorobanServer` class communicates via JSON-RPC over HTTP using the `dio` package. It is separate from `StellarSDK` (which uses `package:http` for Horizon).
 
 - [Network and Health Methods](#network-and-health-methods)
@@ -245,7 +247,9 @@ do {
 } while (result.status == GetTransactionResponse.STATUS_NOT_FOUND);
 ```
 
-**Response fields:** `status`, `latestLedger`, `ledger`, `createdAt`, `envelopeXdr`, `resultXdr`, `resultMetaXdr`.
+**Response fields:** `status`, `latestLedger`, `latestLedgerCloseTime`, `oldestLedger`, `oldestLedgerCloseTime`, `ledger`, `createdAt`, `applicationOrder`, `feeBump`, `envelopeXdr`, `resultXdr`, `resultMetaXdr`, `txHash`, `diagnosticEventsXdr`, `events`.
+
+`TransactionEvents.diagnosticEventsXdr` is deprecated in favor of the top-level field on `GetTransactionResponse` or `TransactionInfo`. Both classes also carry `events`. Decode each string with `XdrDiagnosticEvent.fromBase64EncodedXdrString`.
 
 **Status values:** `STATUS_SUCCESS`, `STATUS_NOT_FOUND`, `STATUS_FAILED`.
 

@@ -1,9 +1,9 @@
 # Soroban RPC vs Flutter SDK Compatibility Matrix
 
-**RPC Version:** v29.0.0 (released 2026-10-01)  
-**RPC Source:** [https://github.com/stellar/stellar-rpc/releases/tag/v29.0.0](https://github.com/stellar/stellar-rpc/releases/tag/v29.0.0)  
-**SDK Version:** 3.8.0  
-**Generated:** 2026-10-02 01:26:58
+**RPC Version:** v29.0.1 (released 2026-10-12)  
+**RPC Source:** [https://github.com/stellar/stellar-rpc/releases/tag/v29.0.1](https://github.com/stellar/stellar-rpc/releases/tag/v29.0.1)  
+**SDK Version:** 3.9.0  
+**Generated:** 2026-10-15 20:29:16
 
 ## Overall Coverage
 
@@ -24,7 +24,7 @@
 | `getLedgerEntries` | ✅ Fully Supported | `getLedgerEntries` | 1/1 | 2/2 | All parameters and response fields implemented |
 | `getLedgers` | ✅ Fully Supported | `getLedgers` | 1/1 | 6/6 | All parameters and response fields implemented |
 | `getNetwork` | ✅ Fully Supported | `getNetwork` | N/A | 3/3 | All parameters and response fields implemented |
-| `getTransaction` | ✅ Fully Supported | `getTransaction` | 1/1 | 5/5 | All parameters and response fields implemented |
+| `getTransaction` | ✅ Fully Supported | `getTransaction` | 1/1 | 15/15 | All parameters and response fields implemented |
 | `getTransactions` | ✅ Fully Supported | `getTransactions` | 1/1 | 6/6 | All parameters and response fields implemented |
 | `getVersionInfo` | ✅ Fully Supported | `getVersionInfo` | N/A | 5/5 | All parameters and response fields implemented |
 | `sendTransaction` | ✅ Fully Supported | `sendTransaction` | 1/1 | 6/6 | All parameters and response fields implemented |
@@ -43,7 +43,7 @@ Detailed breakdown of response field support per method.
 | `getLedgerEntries` | 2 | 2 | - |
 | `getLedgers` | 6 | 6 | - |
 | `getNetwork` | 3 | 3 | - |
-| `getTransaction` | 5 | 5 | - |
+| `getTransaction` | 15 | 15 | - |
 | `getTransactions` | 6 | 6 | - |
 | `getVersionInfo` | 5 | 5 | - |
 | `sendTransaction` | 6 | 6 | - |

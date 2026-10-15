@@ -23,6 +23,11 @@ Welcome to the documentation for the Stellar SDK for Flutter. Whether you're bui
 ### Standards
 - **[SEP Implementations](sep/README.md)** - Stellar Ecosystem Proposal support
 
+### Migration Guides
+- **[Migrating to 3.9.0](migration/3.9.0.md)** - Observable changes from 3.8.0
+- **[Migrating to 3.8.0](migration/3.8.0.md)** - Observable changes from 3.7.0
+- **[Migrating to 3.6.0](migration/3.6.0.md)** - Observable changes from 3.5.0
+
 ## Tested Examples
 
 All code examples in this documentation are tested. Runnable test files can be found in [`test/docsTest/`](../test/docsTest/).

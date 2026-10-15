@@ -15,7 +15,7 @@ Add the SDK to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  stellar_flutter_sdk: ^3.8.0
+  stellar_flutter_sdk: ^3.9.0
 ```
 
 Then run:
@@ -24,7 +24,7 @@ Then run:
 flutter pub get
 ```
 
-**Requirements:** Dart SDK >=3.8.0 <4.0.0. See [Getting Started](getting-started.md) for full requirements.
+**Requirements:** Dart SDK >=3.8.0 <4.0.0 and Flutter >=3.32.0. See [Getting Started](getting-started.md) for full requirements.
 
 ## Your First KeyPair
 

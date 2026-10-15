@@ -62,6 +62,8 @@ SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 server.enableLogging = true;
 ```
 
+Assign `server.logger` to route log lines to your sink; without a logger they go to the `dart:developer` log.
+
 ### Health Check
 
 Verify the RPC node is operational before making requests.
@@ -593,7 +595,7 @@ AssembledTransaction tx = await client.buildInvokeMethodTx(
   ],
 );
 
-// Check who needs to sign (returns list of account IDs)
+// Check who needs to sign (unsigned account and contract addresses)
 List<String> neededSigners = tx.needsNonInvokerSigningBy();
 // e.g., ['GBMYYYOUQTENJ7DBSKCVRIOHINC2JJZVQX7B4WOQL4KNLRZEVK6TRNG7']
 // - Bob needs to authorize
@@ -611,6 +613,12 @@ await tx.signAuthEntries(signerKeyPair: bob);
 
 // Submit (Alice signs the transaction envelope)
 GetTransactionResponse response = await tx.signAndSend();
+```
+
+The first signer of an entry chooses its expiration through `validUntilLedgerSeq`. The default is the latest ledger plus 100, fetched at most once per call and only for entries needing it. Once any node carries a signature, the entry keeps its stored `signatureExpirationLedger`. An explicit value that differs throws `ArgumentError`; passing the stored value again leaves it unchanged. For a signed entry 0 with stored expiration 4242, passing 5000 throws:
+
+```text
+Invalid argument (validUntilLedgerSeq): Auth entry 0 already carries a signature committed to signatureExpirationLedger 4242: 5000
 ```
 
 ### Remote Signing
@@ -638,6 +646,8 @@ await tx.signAuthEntries(
 GetTransactionResponse response = await tx.signAndSend();
 ```
 
+`signAuthEntries` stamps the expiration before calling the delegate, so the remote signer signs with the value the entry carries.
+
 ### Protocol 27 Credentials (CAP-71)
 
 Protocol 27 adds two address-credential arms to `SorobanCredentials`:
@@ -647,7 +657,19 @@ Protocol 27 adds two address-credential arms to `SorobanCredentials`:
 
 `ADDRESS_V2` is the default arm: simulation requests it, and `SorobanCredentials.forAddress` / `forAddressCredentials` build it. The legacy `ADDRESS` arm stays fully valid; use it on a network below protocol 27, where the newer arms invalidate the transaction — request it from simulation with `useUpgradedAuth: false` and build it with `forAddressLegacy` / `forAddressCredentialsLegacy`.
 
-All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry.sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `credentials.innerAddressCredentials` to read the inner credentials of any address arm (it returns `null` only for source-account credentials). Factories: `SorobanCredentials.forAddress` / `forAddressCredentials` build `ADDRESS_V2` (as does the explicit `forAddressV2`), `forAddressLegacy` / `forAddressCredentialsLegacy` build legacy `ADDRESS`, and `forAddressWithDelegates` builds the delegated arm.
+All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry.sign`, SEP-45) support all three arms and preserve the arm on write-back. A void value or empty vector is an unsigned placeholder, as checked by `SorobanAuthorizationEntry.carriesSignature`. `needsNonInvokerSigningBy` lists every unsigned node, including the top level. `AssembledTransaction.sign` blocks on an unsigned account (`G...`) at either level, regardless of other signatures. Contract addresses (`C...`) never block because their `__check_auth` decides authorization. Use `credentials.innerAddressCredentials` to read the inner credentials of any address arm (it returns `null` only for source-account credentials). Factories: `SorobanCredentials.forAddress` / `forAddressCredentials` build `ADDRESS_V2` (as does the explicit `forAddressV2`), `forAddressLegacy` / `forAddressCredentialsLegacy` build legacy `ADDRESS`, and `forAddressWithDelegates` builds the delegated arm.
+
+Credential addresses, `forAddress` targets, and delegate addresses must be accounts (`G...`) or contracts (`C...`); muxed addresses (`M...`, `W...`) throw. The [authorization errors](#authorization-errors) identify the rejected role.
+
+#### Authorization errors
+
+A muxed credential address or `forAddress` target throws `Exception`. A muxed delegate address throws `ArgumentError`. For the W-address in [Addresses](#addresses), the messages are:
+
+```text
+Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban auth credential addresses: WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC; use the underlying G... or C... address instead
+Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban auth targets; use the underlying G... or C... address instead
+Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban delegate addresses: WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC
+```
 
 #### V2 Entries from Simulation
 
@@ -680,9 +702,10 @@ A `WITH_DELEGATES` entry lets delegate addresses co-sign a single authorization 
 
 Rules enforced by the host and handled by the SDK builder:
 
-- Every delegate array must be sorted ascending by the XDR-encoded bytes of the delegate address, with no duplicates within one array. The builder sorts automatically and throws on duplicates — always construct trees through `withDelegates` rather than assembling the XDR by hand.
-- Every signer in the tree — top-level and delegates at any depth — signs the same payload, which is bound to the top-level credential address. Delegates carry no nonce and no expiration; only the top-level credentials do.
-- A void top-level signature is legitimate when the delegates sign (the delegates-only pattern); such an entry passes the send precheck once every delegate is signed.
+- Every delegate array must be sorted ascending by the XDR-encoded bytes of the delegate address, with no duplicates within one array. The builder sorts automatically and throws on duplicates. Construct trees through `withDelegates`.
+- Every signer in the tree signs the same payload, bound to the top-level credential address. Delegates carry no nonce or expiration; only the top-level credentials do.
+- Void and empty vectors are unsigned placeholders. The top-level signature starts as void; an account credential needs its own signature before submission. `needsNonInvokerSigningBy` lists every unsigned node. `AssembledTransaction.sign` blocks on unsigned accounts at the top level or in delegates. A contract address never blocks because its `__check_auth` decides authorization.
+- Credential addresses, `forAddress` targets, and delegate addresses must be `G...` or `C...`; `M...` and `W...` throw the [authorization errors](#authorization-errors).
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -714,7 +737,7 @@ final SorobanAuthorizationEntry sourceEntry = SorobanAuthorizationEntry(
   )),
 );
 
-// Latest ledger sequence, used to set the signature expiration
+// Set the expiration relative to the latest ledger.
 final GetLatestLedgerResponse latestLedger = await server.getLatestLedger();
 final int expirationLedger = latestLedger.sequence! + 100;
 
@@ -726,9 +749,9 @@ SorobanAuthorizationEntry delegated = SorobanAuthorizationEntry.withDelegates(
   expirationLedger,
 );
 
-// Optional top-level signature (skip this for the delegates-only pattern).
+// The top-level account needs its own signature before submission.
 // When one node needs multiple classical (G-address) signatures, add them in
-// ascending public-key order — the host requires that order and the SDK
+// ascending public-key order. The host requires that order and the SDK
 // appends signatures in the order you call sign.
 delegated.sign(topLevelKeyPair, Network.TESTNET);
 
@@ -738,7 +761,7 @@ delegated.sign(delegateKeyPair, Network.TESTNET,
     forAddress: delegateKeyPair.accountId);
 ```
 
-`SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a pre-built `signature` (default void) for nodes signed externally, such as contract addresses.
+`SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a prebuilt `signature` for nodes signed externally. Its default void value and an empty vector both count as unsigned placeholders.
 
 `WITH_DELEGATES` entries are never returned by simulation, so the delegated arm is always assembled client-side and submitted at the `SorobanServer` level. `ADDRESS_V2` entries come from a supporting RPC by default (`useUpgradedAuth`), or client-side from `SorobanCredentials.forAddressV2` when converting an entry in place.
 
@@ -748,7 +771,7 @@ When converting a simulated `ADDRESS` entry to `ADDRESS_V2` in place, reuse its 
 
 #### Source Compatibility
 
-`SorobanCredentials`, `XdrSorobanCredentialsType`, `XdrEnvelopeType`, and `XdrHashIDPreimage` gain new union cases for the V2 and delegated arms. Code that switches exhaustively over these without a `default` arm will no longer compile after upgrading. Add a `default` case to such switches.
+`XdrSorobanCredentialsType` and `XdrEnvelopeType` are the discriminants of `SorobanCredentials` and `XdrHashIDPreimage`. They are classes of constants, so a `switch` over them gets no exhaustiveness diagnostic; give every switch on them a `default` arm.
 
 ## Type Conversions
 
@@ -813,6 +836,15 @@ XdrSCVal account = XdrSCVal.forAccountAddress(
 XdrSCVal contract = XdrSCVal.forContractAddress(
     'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP');
 
+// Muxed contract address (W...) - convenience method
+XdrSCVal muxedContract = XdrSCVal.forMuxedContractAddress(
+    'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC');
+
+Address muxed = Address.forMuxedContract(
+    contractId: 'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA',
+    id: BigInt.zero);
+Address parsedMuxed = Address.forMuxedContractId(muxed.muxedContractId!);
+
 // Via Address helper
 XdrSCVal addr = Address.forAccountId(
         'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q')
@@ -832,10 +864,10 @@ XdrSCVal vec = XdrSCVal.forVec([
   XdrSCVal.forSymbol('b'),
 ]);
 
-// Map (key-value pairs)
+// The host requires key order; sortedScMap sorts entries into that order.
 XdrSCVal map = XdrSCVal.forMap([
-  XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
   XdrSCMapEntry(XdrSCVal.forSymbol('age'), XdrSCVal.forU32(30)),
+  XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
 ]);
 ```
 
@@ -868,6 +900,27 @@ XdrSCSpecFunctionV0? swapFunc = spec.getFunc('swap');
 
 // Find custom types
 XdrSCSpecEntry? myUnion = spec.findEntry('myUnion');
+```
+
+An `Address` parameter accepts a `G...` or `C...` strkey, a 64-character hex contract ID, or an `Address` of those types. A `MuxedAddress` parameter also accepts `M...` and `W...` strkeys or an `Address` of either type. A claimable balance or liquidity pool address is a host-produced value and cannot be a contract input.
+
+A muxed address for an `Address` parameter, a malformed string, or another value type throws `ContractSpecException`. An `Address` that cannot encode also throws that exception. The message identifies the accepted kinds and the rejected value. `null` converts to void, and a prebuilt `XdrSCVal` passes through unchecked.
+
+For `Address` parameters, these rejected inputs produce the following messages: a W-address, a claimable balance, a liquidity pool, `bad`, `42`, and an unencodable `Address` (`Address.forMuxedContractId('bad')`).
+
+```text
+Invalid type: Address takes an account (G...) or contract (C...) address, got the muxed address WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC, which needs a MuxedAddress parameter
+Invalid type: Address takes an account (G...) or contract (C...) address, got the claimable balance address BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFMUE, which is produced by the host and is not a contract input
+Invalid type: Address takes an account (G...) or contract (C...) address, got the liquidity pool address LAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABLIR, which is produced by the host and is not a contract input
+Invalid type: Invalid address format: bad; Address takes an account (G...) or contract (C...) address
+Invalid type: Address takes an account (G...) or contract (C...) address, got int
+Invalid type: Address takes an account (G...) or contract (C...) address, got an Address that does not encode: FormatException: Encoded string must be 69 characters, got 3
+```
+
+A claimable balance also fails for a `MuxedAddress` parameter:
+
+```text
+Invalid type: MuxedAddress takes an account (G...), muxed account (M...), contract (C...) or muxed contract (W...) address, got the claimable balance address BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFMUE, which is produced by the host and is not a contract input
 ```
 
 ### Advanced Type Conversions
@@ -909,6 +962,8 @@ XdrSCVal val = spec.nativeToXdrSCVal(['a', 'b', 'c'], def);
 #### Maps with Key/Value Types
 
 Strongly-typed key-value mappings with specific types for keys and values.
+
+`ContractSpec` emits map and struct entries in the Soroban host's key order and throws `ArgumentError` for two keys equal in that order.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -969,6 +1024,8 @@ XdrSCVal val = spec.nativeToXdrSCVal(2, def); // Enum case with value 2
 ```
 
 **Struct** -- pass a map:
+
+`ContractSpec` emits map and struct entries in the Soroban host's key order and throws `ArgumentError` for two keys equal in that order.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -1075,7 +1132,7 @@ Map keys use a narrower conversion than values, because `Address`, `Uint8List`, 
 | Bool | `bool` |
 | Void | `null` |
 | Bytes | lowercase hex `String` |
-| Address | StrKey `String` (`G...`/`C...`/`M...`/`B...`/`L...`) |
+| Address | StrKey `String` (`G...`/`C...`/`M...`/`B...`/`L...`/`W...`) |
 | anything else | none — the whole map falls back to the `XdrSCVal` itself |
 
 Two asymmetries follow from that narrowing: an address *value* converts to an
@@ -1110,16 +1167,17 @@ print(nativeU64); // 18446744073709551615
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// The host requires key order; sortedScMap sorts entries into that order.
 XdrSCVal mapVal = XdrSCVal.forMap([
+  XdrSCMapEntry(XdrSCVal.forSymbol('age'), XdrSCVal.forU32(30)),
   XdrSCMapEntry(
       XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
-  XdrSCMapEntry(XdrSCVal.forSymbol('age'), XdrSCVal.forU32(30)),
 ]);
 
 Map<dynamic, dynamic> native =
     mapVal.toNative() as Map<dynamic, dynamic>;
-print(native); // {name: Alice, age: 30}
-print(native.keys.toList()); // [name, age]
+print(native); // {age: 30, name: Alice}
+print(native.keys.toList()); // [age, name]
 ```
 
 ```dart
@@ -1137,9 +1195,7 @@ print(native is XdrSCVal); // true
 print(identical(native, mapWithVecKey)); // true
 ```
 
-`ContractSpec.nativeToXdrSCVal` does not accept every shape `toNative()` can produce
-— for example, it rejects `Address` objects for several argument types. The two
-directions are separate conversions, not a round trip.
+`ContractSpec.nativeToXdrSCVal` accepts `Address` objects for `Address` and `MuxedAddress` parameters; claimable balance and liquidity pool addresses are invalid inputs, and muxed addresses require `MuxedAddress`.
 
 ## Events
 
@@ -1212,7 +1268,7 @@ Handle errors at different stages: client creation, simulation, and transaction 
 
 ### Debug Logging
 
-Enable logging to diagnose issues.
+Enable logging to diagnose issues. With `enableServerLogging`, each response goes to the `dart:developer` log. To route the lines to your own sink, pass a `server` whose `logger` is set; a provided server keeps its own logging setting.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -1550,7 +1606,7 @@ Future<void> signSimulatedAuth(
 
   if (auth != null) {
     for (SorobanAuthorizationEntry entry in auth) {
-      // Set signature expiration (~50 seconds at 5s/ledger)
+      // These entries come from simulation and carry no signature.
       entry.credentials.innerAddressCredentials?.signatureExpirationLedger =
           latestLedger.sequence! + 10;
 
@@ -1563,6 +1619,8 @@ Future<void> signSimulatedAuth(
   tx.setSorobanAuth(auth);
 }
 ```
+
+A signed entry keeps its stored `signatureExpirationLedger`, because changing that part of the signed preimage invalidates existing signatures. `signAuthEntries` enforces this rule; `SorobanAuthorizationEntry.sign` performs no expiration check.
 
 > **Tip**: Contract IDs must be C-prefixed strkey format.
 

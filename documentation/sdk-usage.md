@@ -929,10 +929,11 @@ Before depositing to a liquidity pool, you need a trustline for the pool shares.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-Asset usdAsset = AssetTypeCreditAlphaNum4("USD", "GISSUER...");
+Asset usdAsset = AssetTypeCreditAlphaNum4("USD", "GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q");
 
-// Create pool share asset (assets must be in lexicographic order)
-AssetTypePoolShare poolShareAsset = AssetTypePoolShare(Asset.NATIVE, usdAsset);
+// Order: native, AlphaNum4, AlphaNum12, then code bytes and raw issuer key bytes.
+// A reversed pair throws Exception.
+AssetTypePoolShare poolShareAsset = AssetTypePoolShare(assetA: Asset.NATIVE, assetB: usdAsset);
 
 // Establish trustline for pool shares
 ChangeTrustOperation trustPoolOp = ChangeTrustOperationBuilder(
@@ -2392,10 +2393,11 @@ Liquidity pool share assets represent ownership in an AMM pool. Created from the
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-Asset usdAsset = AssetTypeCreditAlphaNum4("USD", "GISSUER...");
+Asset usdAsset = AssetTypeCreditAlphaNum4("USD", "GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q");
 
-// Create pool share asset (assets must be in lexicographic order)
-AssetTypePoolShare poolShareAsset = AssetTypePoolShare(Asset.NATIVE, usdAsset);
+// Order: native, AlphaNum4, AlphaNum12, then code bytes and raw issuer key bytes.
+// A reversed pair throws Exception.
+AssetTypePoolShare poolShareAsset = AssetTypePoolShare(assetA: Asset.NATIVE, assetB: usdAsset);
 ```
 
 ### Trustlines

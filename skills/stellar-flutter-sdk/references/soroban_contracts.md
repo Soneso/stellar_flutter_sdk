@@ -70,6 +70,8 @@ SorobanClient client = await SorobanClient.deploy(
 );
 ```
 
+`Address` parameters accept G/C strkeys, 64-character hex contract IDs, and corresponding `Address` objects; `MuxedAddress` also accepts M/W strkeys and objects.
+
 **Preferred: use `funcArgsToXdrSCValues` when you have the contract spec.** It auto-converts native Dart values to the correct `XdrSCVal` types -- no manual type mapping needed:
 
 ```dart
@@ -203,11 +205,14 @@ XdrSCVal balance = await client.invokeMethod(name: 'balance', args: args);
 // Write call with auto-converted args
 List<XdrSCVal> transferArgs = spec.funcArgsToXdrSCValues('transfer', {
   'from': keyPair.accountId,   // String -> Address
-  'to': 'GDEST...',            // String -> Address
+  // String -> MuxedAddress (G, M, C or W)
+  'to': 'GBMYYYOUQTENJ7DBSKCVRIOHINC2JJZVQX7B4WOQL4KNLRZEVK6TRNG7',
   'amount': 1000,              // int -> I128
 });
 XdrSCVal result = await client.invokeMethod(name: 'transfer', args: transferArgs);
 ```
+
+The SAC `transfer` destination accepts `M...` and `W...` addresses through its `MuxedAddress` parameter.
 
 ### Multi-Auth Contract Invocation
 
@@ -237,13 +242,23 @@ GetTransactionResponse response =
     await swapTx.signAndSend(sourceAccountKeyPair: aliceKeyPair);
 ```
 
+The first signer chooses the expiration, defaulting to the latest ledger plus 100; subsequent signers preserve it, and conflicting explicit values throw.
+
 ### Protocol 27 Credentials (CAP-71)
 
 `SorobanCredentials` arms: source-account, legacy `ADDRESS` (valid all protocols), `ADDRESS_V2` (the default arm), `ADDRESS_WITH_DELEGATES` (V2 and delegates are protocol 27+; emitting below p27 invalidates the tx). `forAddress`/`forAddressCredentials` build `ADDRESS_V2`; `forAddressLegacy`/`forAddressCredentialsLegacy` build legacy `ADDRESS`. `credentials.innerAddressCredentials` returns the inner creds for any address arm (null for source-account); `credentials.arm` is the discriminant.
 
 Simulation requests V2 entries by default (`useUpgradedAuth` is `true` on `MethodOptions` and `SimulateTransactionRequest`, always sent on the wire); pass `false` for legacy `ADDRESS` entries. RPCs without support silently return legacy `ADDRESS` either way. Detect by inspecting `arm`, never by error code.
 
-`signAuthEntries` / `needsNonInvokerSigningBy` handle all arms; `needsNonInvokerSigningBy` lists every void node including delegates.
+`signAuthEntries` handles all arms and preserves the stored expiration once any node carries a signature. A conflicting explicit `validUntilLedgerSeq` throws `ArgumentError`. Void and empty vectors are unsigned placeholders; `SorobanAuthorizationEntry.carriesSignature` exposes that check. `needsNonInvokerSigningBy` lists every unsigned node, including the top level. `AssembledTransaction.sign` blocks on unsigned accounts (`G...`) at either level, regardless of delegate signatures. Contract addresses (`C...`) never block because their `__check_auth` decides authorization.
+
+Credential addresses, `forAddress` targets, and delegate addresses must be `G...` or `C...`; muxed addresses (`M...`, `W...`) throw. Credential and target guards throw `Exception`; the delegate guard throws `ArgumentError`. Their messages are:
+
+```text
+Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban auth credential addresses: WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC; use the underlying G... or C... address instead
+Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban auth targets; use the underlying G... or C... address instead
+Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban delegate addresses: WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC
+```
 
 ```dart
 // Build a WITH_DELEGATES entry from an ADDRESS/ADDRESS_V2 entry; the builder
@@ -254,12 +269,12 @@ SorobanAuthorizationEntry delegated = SorobanAuthorizationEntry.withDelegates(
   [SorobanDelegateDescriptor(delegateKeyPair.accountId)], // nestedDelegates / signature optional
   exp,
 );
-delegated.sign(topLevelKeyPair, Network.TESTNET); // optional; skip for delegates-only
+delegated.sign(topLevelKeyPair, Network.TESTNET); // required for the top-level account
 delegated.sign(delegateKeyPair, Network.TESTNET,
     forAddress: delegateKeyPair.accountId); // routes into matching node depth-first
 ```
 
-Delegates share one payload bound to the top-level address; they carry no nonce/expiration. Multiple G-address signatures on one node must be added in ascending public-key order (the SDK appends in call order, no sorting). After `tx.setSorobanAuth([delegated])`, re-simulate in enforcing mode (`SimulateTransactionRequest(tx, authMode: 'enforce')`) and apply the returned resources (`sorobanTransactionData`, `addResourceFee`) before submitting: the recording simulation does not run `__check_auth`, so for a custom (contract) account it omits the footprint its authorization reads (and understates the delegate fee). New union cases on `SorobanCredentials`/`XdrSorobanCredentialsType`/`XdrEnvelopeType`/`XdrHashIDPreimage` need a `default` arm in exhaustive switches.
+Delegates share one payload bound to the top-level address; they carry no nonce/expiration. Multiple G-address signatures on one node must be added in ascending public-key order (the SDK appends in call order, no sorting). After `tx.setSorobanAuth([delegated])`, re-simulate in enforcing mode (`SimulateTransactionRequest(tx, authMode: 'enforce')`) and apply the returned resources (`sorobanTransactionData`, `addResourceFee`) before submitting: the recording simulation does not run `__check_auth`, so for a custom (contract) account it omits the footprint its authorization reads (and understates the delegate fee). `XdrSorobanCredentialsType` and `XdrEnvelopeType` are classes of constants; give every switch on them a `default` arm.
 
 ---
 
@@ -365,12 +380,15 @@ All contract arguments use `XdrSCVal` factory methods:
 **Address convenience methods** (skip manual XdrSCAddress construction):
 
 ```dart
-XdrSCVal accountAddr = XdrSCVal.forAccountAddress('GABC...');
-XdrSCVal contractAddr = XdrSCVal.forContractAddress('CABC...');
+XdrSCVal accountAddr = XdrSCVal.forAccountAddress('GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q');
+XdrSCVal contractAddr = XdrSCVal.forContractAddress('CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA');
+
+XdrSCVal muxedContractAddr = XdrSCVal.forMuxedContractAddress(
+    'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC');
 
 // Or via XdrSCAddress
-XdrSCAddress forAccount = XdrSCAddress.forAccountId('GABC...');
-XdrSCAddress forContract = XdrSCAddress.forContractId('CABC...');
+XdrSCAddress forAccount = XdrSCAddress.forAccountId('GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q');
+XdrSCAddress forContract = XdrSCAddress.forContractId('CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA');
 XdrSCVal addressVal = XdrSCVal.forAddress(forAccount);
 ```
 
@@ -460,7 +478,7 @@ map keys use a narrower conversion than values:
 | Bool | `bool` |
 | Void | `null` |
 | Bytes | lowercase hex `String` |
-| Address | StrKey `String` (`G...`/`C...`/`M...`/`B...`/`L...`) |
+| Address | StrKey `String` (`G...`/`C...`/`M...`/`B...`/`L...`/`W...`) |
 | anything else | none -- the whole map falls back to the `XdrSCVal` itself |
 
 An address *value* converts to an `Address` object, but an address *key* becomes
@@ -840,6 +858,7 @@ Use this mapping to convert discovered parameter types to the **exact** `XdrSCVa
 | `SC_SPEC_TYPE_STRING` | 16 | String | `XdrSCVal.forString(val)` |
 | `SC_SPEC_TYPE_SYMBOL` | 17 | Symbol | `XdrSCVal.forSymbol(val)` |
 | `SC_SPEC_TYPE_ADDRESS` | 19 | Address | `XdrSCVal.forAddress(addr)` |
+| `SC_SPEC_TYPE_MUXED_ADDRESS` | 20 | MuxedAddress | `XdrSCVal.forAddress(addr)` |
 | `SC_SPEC_TYPE_VEC` | 1002 | Vec | `XdrSCVal.forVec(list)` -- check `.vec` for element type |
 | `SC_SPEC_TYPE_MAP` | 1004 | Map | `XdrSCVal.forMap(entries)` -- check `.map` for key/value types |
 | `SC_SPEC_TYPE_UDT` | 2000 | User-defined | check `.udt?.name` for the type name |
