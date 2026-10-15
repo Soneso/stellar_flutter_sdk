@@ -1044,11 +1044,10 @@ class AssembledTransaction {
       );
     }
 
-    // Use the send precheck: a WITH_DELEGATES entry whose top-level is void but
-    // every delegate is signed does not block submission (delegates-only
-    // pattern). needsNonInvokerSigningBy() reports the void top-level for
-    // informational purposes, but _neededSignersForSend() omits it when all
-    // delegates are present and signed.
+    // Every unsigned account that needsNonInvokerSigningBy() reports blocks,
+    // at the top level of an entry and in its delegate nodes. The contracts
+    // it reports do not block, because a contract address authenticates
+    // through its own __check_auth.
     final neededAccountSigners = _neededSignersForSend();
     if (neededAccountSigners.isNotEmpty) {
       throw new Exception(
@@ -1078,19 +1077,25 @@ class AssembledTransaction {
   /// person/account is called the _invoker_, or _source_. Other accounts or
   /// delegates might need to sign individual auth entries.
   ///
-  /// This function returns strkeys for every node whose signature is currently
-  /// void, assuming that the same invoker/source account will sign the final
-  /// transaction envelope. For ADDRESS and ADDRESS_V2 entries the top-level
-  /// credential address is reported when its signature is void. For
-  /// ADDRESS_WITH_DELEGATES entries BOTH the top-level address (when its
-  /// signature is void) AND every unsigned delegate node at any depth are
-  /// reported — a top-level signature alongside delegates is a legal pattern.
+  /// This function returns the address of every node that carries no
+  /// signature, assuming that the same invoker/source account signs the final
+  /// transaction envelope. A node carries no signature when its value is void
+  /// or an empty vector (see [SorobanAuthorizationEntry.carriesSignature]).
+  /// For ADDRESS and ADDRESS_V2 entries the top-level credential address is
+  /// reported when it carries no signature. For ADDRESS_WITH_DELEGATES
+  /// entries the top-level address is reported when it carries no signature,
+  /// and so is every unsigned delegate node at any depth.
   ///
-  /// Note: a WITH_DELEGATES entry where the top-level signature is void but
-  /// every delegate node is signed is the legitimate delegates-only pattern;
-  /// this function still lists the void top-level, but the send precheck
-  /// treats such an entry as fully satisfied. Use [sign] (not this function)
-  /// to determine whether the transaction is ready to submit.
+  /// The list names an account by its `G...` strkey at both levels and a
+  /// contract in a delegate node by its `C...` strkey. It names a contract at
+  /// the top level in the form its [Address.contractId] carries, which is 64
+  /// hex characters for an entry decoded from XDR.
+  ///
+  /// The list holds accounts and contracts. [sign] stops on every account in
+  /// it and on none of the contracts: an account authenticates with its own
+  /// signatures, while a contract address authenticates through its
+  /// `__check_auth`, which may accept a void or empty signature when only its
+  /// delegated signers sign (CAP-71).
   ///
   /// With [includeAlreadySigned] set to true, addresses that already have
   /// signatures are included in the returned list.
@@ -1129,11 +1134,12 @@ class AssembledTransaction {
           throw Exception('Address credentials missing for arm $arm');
         }
 
-        // Report the top-level address when its signature is void (or when
+        // Report the top-level address when it carries no signature (or when
         // includeAlreadySigned is true).
-        final topSigIsVoid =
-            inner.signature.discriminant == XdrSCValType.SCV_VOID;
-        if (includeAlreadySigned || topSigIsVoid) {
+        final topUnsigned = !SorobanAuthorizationEntry.carriesSignature(
+          inner.signature,
+        );
+        if (includeAlreadySigned || topUnsigned) {
           final signer = inner.address.accountId ?? inner.address.contractId;
           if (signer != null) {
             needed.add(signer);
@@ -1160,20 +1166,29 @@ class AssembledTransaction {
 
   /// Depth-first walk of a delegate list, appending unsigned addresses to [out].
   ///
+  /// With [accountsOnly] the walk appends account nodes only; it still
+  /// descends into the nested delegates of every node.
+  ///
   /// [depth] guards against pathological nesting; uses the same limit as
   /// [SorobanAuthorizationEntry._maxDelegateTraversalDepth].
   static void _collectUnsignedDelegates(
     List<SorobanDelegateSignature> delegates,
     List<String> out,
     bool includeAlreadySigned,
-    int depth,
-  ) {
+    int depth, {
+    bool accountsOnly = false,
+  }) {
     if (depth > 128) {
       throw Exception('Delegate tree traversal depth limit (128) exceeded');
     }
     for (final node in delegates) {
-      final isSigned = node.signature.discriminant != XdrSCValType.SCV_VOID;
-      if (includeAlreadySigned || !isSigned) {
+      final isSigned = SorobanAuthorizationEntry.carriesSignature(
+        node.signature,
+      );
+      final isListed =
+          !accountsOnly ||
+          node.address.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT;
+      if ((includeAlreadySigned || !isSigned) && isListed) {
         final nodeAddr = _xdrAddressToStrKey(node.address);
         if (nodeAddr.isNotEmpty) {
           out.add(nodeAddr);
@@ -1184,6 +1199,7 @@ class AssembledTransaction {
         out,
         includeAlreadySigned,
         depth + 1,
+        accountsOnly: accountsOnly,
       );
     }
   }
@@ -1203,18 +1219,17 @@ class AssembledTransaction {
     return '';
   }
 
-  /// Returns true when the auth entries in [tx] require no additional signing
-  /// before the transaction can be submitted.
+  /// Returns the accounts whose signatures the auth entries in [tx] still
+  /// lack. An empty list means the transaction is ready to submit.
   ///
-  /// The logic differs from [needsNonInvokerSigningBy]:
-  /// - A WITH_DELEGATES entry whose top-level signature is void but whose
-  ///   every delegate node (at any depth) carries a signature is treated as
-  ///   satisfied — that is the legitimate delegates-only pattern.
-  /// - Any other entry with a void signature on its top-level address (ADDRESS
-  ///   or ADDRESS_V2) is unsatisfied.
-  ///
-  /// Returns a list of unsatisfied non-invoker G-address signers. An empty
-  /// list means the transaction is ready to submit.
+  /// The list holds every account (`G...`) that [needsNonInvokerSigningBy]
+  /// reports: the top-level address of an ADDRESS, ADDRESS_V2 or
+  /// ADDRESS_WITH_DELEGATES entry when it carries no signature, whatever the
+  /// delegate nodes of the entry carry, and every unsigned account delegate
+  /// node at any depth. The host authenticates an account with its own
+  /// signatures. Contract addresses are never listed, at either level: a
+  /// contract authenticates through its `__check_auth`, which may accept a
+  /// void or empty signature when only its delegated signers sign (CAP-71).
   List<String> _neededSignersForSend() {
     if (tx == null) {
       return [];
@@ -1236,61 +1251,23 @@ class AssembledTransaction {
 
       final inner = entry.credentials.innerAddressCredentials;
       if (inner == null) continue;
+      if (inner.address.type == Address.TYPE_ACCOUNT &&
+          !SorobanAuthorizationEntry.carriesSignature(inner.signature)) {
+        needed.add(inner.address.accountId!);
+      }
       if (arm ==
           XdrSorobanCredentialsType
               .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
-        // Delegates-only pattern: top-level may be void; entry is satisfied
-        // when every delegate node at any depth carries a non-void signature.
-        final withDelegates =
-            entry.credentials.addressWithDelegatesCredentials!;
-        if (_allDelegatesSigned(withDelegates.delegates, 0)) {
-          // Fully satisfied; skip.
-          continue;
-        }
-        // Some delegate nodes are unsigned — collect them (and top-level if
-        // also void) for reporting.
-        final topSigIsVoid =
-            inner.signature.discriminant == XdrSCValType.SCV_VOID;
-        if (topSigIsVoid) {
-          final signer = inner.address.accountId ?? inner.address.contractId;
-          if (signer != null && !signer.startsWith('C')) {
-            needed.add(signer);
-          }
-        }
-        _collectUnsignedDelegates(withDelegates.delegates, needed, false, 0);
-      } else {
-        // ADDRESS or ADDRESS_V2: top-level must be signed.
-        final topSigIsVoid =
-            inner.signature.discriminant == XdrSCValType.SCV_VOID;
-        if (topSigIsVoid) {
-          final signer = inner.address.accountId ?? inner.address.contractId;
-          if (signer != null && !signer.startsWith('C')) {
-            needed.add(signer);
-          }
-        }
+        _collectUnsignedDelegates(
+          entry.credentials.addressWithDelegatesCredentials!.delegates,
+          needed,
+          false,
+          0,
+          accountsOnly: true,
+        );
       }
     }
     return needed;
-  }
-
-  /// Returns true when every delegate node in [delegates] (depth-first) has a
-  /// non-void signature.
-  static bool _allDelegatesSigned(
-    List<SorobanDelegateSignature> delegates,
-    int depth,
-  ) {
-    if (depth > 128) {
-      throw Exception('Delegate tree traversal depth limit (128) exceeded');
-    }
-    for (final node in delegates) {
-      if (node.signature.discriminant == XdrSCValType.SCV_VOID) {
-        return false;
-      }
-      if (!_allDelegatesSigned(node.nestedDelegates, depth + 1)) {
-        return false;
-      }
-    }
-    return true;
   }
 
   /// Whether this transaction is a read call. This is determined by the
@@ -1335,8 +1312,9 @@ class AssembledTransaction {
   ///
   /// Every signature on an entry commits to the entry's single
   /// `signatureExpirationLedger`. When any node of a matching entry already
-  /// carries a signature (any value other than `SCV_VOID`), the stored
-  /// expiration is kept; this includes the signer's own nodes, because new
+  /// carries a signature (a value other than void or an empty vector, see
+  /// [SorobanAuthorizationEntry.carriesSignature]), the stored expiration is
+  /// kept; this includes the signer's own nodes, because new
   /// signatures are appended to the ones a node holds. Otherwise the
   /// expiration is set to [validUntilLedgerSeq] or its default before
   /// signing. Matching entries are signed on copies; the transaction's auth
@@ -1499,7 +1477,7 @@ class AssembledTransaction {
       // changes only while no node carries a signature.
       final storedExpiration = inner.signatureExpirationLedger;
       if (delegateSigned ||
-          inner.signature.discriminant != XdrSCValType.SCV_VOID) {
+          SorobanAuthorizationEntry.carriesSignature(inner.signature)) {
         if (validUntilLedgerSeq != null &&
             validUntilLedgerSeq != storedExpiration) {
           throw ArgumentError.value(
@@ -1557,15 +1535,15 @@ class AssembledTransaction {
   }
 
   /// Returns true when a node in [delegates] or their nested delegates
-  /// (depth-first) carries a signature other than `SCV_VOID`. The recursion
-  /// is bounded: [signAuthEntries] walks XDR-decoded copies, and
-  /// [XdrDataInputStream] caps delegate nesting at
+  /// (depth-first) carries a signature, a value other than void or an empty
+  /// vector. The recursion is bounded: [signAuthEntries] walks XDR-decoded
+  /// copies, and [XdrDataInputStream] caps delegate nesting at
   /// [XdrDataInputStream.maxRecursiveDecodeDepth] levels.
   static bool _delegateListHasSignature(
     List<SorobanDelegateSignature> delegates,
   ) {
     for (final node in delegates) {
-      if (node.signature.discriminant != XdrSCValType.SCV_VOID ||
+      if (SorobanAuthorizationEntry.carriesSignature(node.signature) ||
           _delegateListHasSignature(node.nestedDelegates)) {
         return true;
       }

@@ -17,7 +17,7 @@
 // - Uncovered branches in SorobanCredentials.toXdr, buildPreimage, and
 //   _buildAndSortDelegates.
 // - includeAlreadySigned=true path for ADDRESS_V2 in needsNonInvokerSigningBy.
-// - _neededSignersForSend branches (ADDRESS_V2 unsigned top-level).
+// - sign() blocks on an unsigned ADDRESS_V2 account.
 // - WebAuthForContracts signatureExpirationLedger stamping with
 //   clientDomainKeyPair.
 
@@ -1685,50 +1685,45 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // GROUP: sign() with unsigned V2 entry — _neededSignersForSend ADDRESS/V2 path
-  // Covers soroban_client.dart lines 1013-1019 (the else branch in
-  // _neededSignersForSend for ADDRESS/ADDRESS_V2 entries that have a void
-  // top-level signature). sign(force:true) skips isReadCall() so we reach
-  // _neededSignersForSend with a tx that has an unsigned V2 entry.
+  // GROUP: sign() blocks on an unsigned ADDRESS_V2 account and passes once
+  // the account has signed. sign(force:true) skips isReadCall(), so the send
+  // precheck runs on a tx that holds the V2 entry.
   // -------------------------------------------------------------------------
-  group('sign() — _neededSignersForSend ADDRESS_V2 path', () {
-    test(
-      'sign() throws due to unsigned V2 auth entry (_neededSignersForSend ADDRESS_V2 branch)',
-      () async {
-        final kp = KeyPair.fromSecretSeed(_kSeed);
-        final accountId = kp.accountId;
-        final (server, _) = await _startMockRpcServer(
-          accountId: accountId,
-          seqNum: BigInt.from(100),
+  group('sign() precheck on an ADDRESS_V2 entry', () {
+    test('sign() blocks on an unsigned ADDRESS_V2 account', () async {
+      final kp = KeyPair.fromSecretSeed(_kSeed);
+      final accountId = kp.accountId;
+      final (server, _) = await _startMockRpcServer(
+        accountId: accountId,
+        seqNum: BigInt.from(100),
+      );
+
+      try {
+        final rpcUrl = 'http://127.0.0.1:${server.port}';
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          accountId,
+          kp,
+          simulate: false,
         );
 
-        try {
-          final rpcUrl = 'http://127.0.0.1:${server.port}';
-          final assembled = await _buildAssembledTx(
-            rpcUrl,
-            accountId,
-            kp,
-            simulate: false,
-          );
+        // Inject an unsigned V2 entry
+        final v2Entry = _makeV2Entry(accountId);
+        _injectAuthEntry(assembled, accountId, v2Entry);
 
-          // Inject an unsigned V2 entry
-          final v2Entry = _makeV2Entry(accountId);
-          _injectAuthEntry(assembled, accountId, v2Entry);
-
-          // sign(force: true) skips isReadCall(); _neededSignersForSend sees the
-          // unsigned V2 entry (void top-level signature), adds accountId to needed,
-          // and sign() throws "requires signatures from multiple signers".
-          expect(
-            () => assembled.sign(force: true),
-            throwsA(isA<Exception>()),
-            reason:
-                '_neededSignersForSend must report unsigned V2 entry and cause sign() to throw',
-          );
-        } finally {
-          await server.close();
-        }
-      },
-    );
+        // sign(force: true) skips isReadCall(); _neededSignersForSend sees the
+        // unsigned V2 entry (void top-level signature), adds accountId to needed,
+        // and sign() throws "requires signatures from multiple signers".
+        expect(
+          () => assembled.sign(force: true),
+          throwsA(isA<Exception>()),
+          reason:
+              '_neededSignersForSend must report unsigned V2 entry and cause sign() to throw',
+        );
+      } finally {
+        await server.close();
+      }
+    });
 
     test(
       'sign() succeeds when V2 entry is signed (all signers satisfied)',
@@ -2083,7 +2078,7 @@ void main() {
     );
 
     test(
-      'sign(force:true) on 130-deep fully-signed tree throws depth limit (_allDelegatesSigned line 1032)',
+      'sign(force:true) rejects a fully-signed delegate tree deeper than 128',
       () async {
         final kp = KeyPair.fromSecretSeed(_kSeed);
         final accountId = kp.accountId;
@@ -2101,10 +2096,9 @@ void main() {
             simulate: false,
           );
 
-          // Build a 130-deep tree where all nodes have a non-void signature so
-          // that _allDelegatesSigned recurses all the way to depth 130 before
-          // encountering an unsigned node. The depth check at line 1032 fires
-          // when depth > 128.
+          // Build a 130-deep tree where all nodes carry a signature so that
+          // the send precheck walks it all the way down without finding an
+          // unsigned node. Its depth check fires when depth > 128.
           //
           // We set a dummy non-void signature directly on the XDR node to avoid
           // calling sign() on the tree (which would throw in _walkDelegate first).
@@ -2152,13 +2146,19 @@ void main() {
 
           _injectAuthEntry(assembled, accountId, deepSignedEntry);
 
-          // sign(force:true) calls _neededSignersForSend() → _allDelegatesSigned()
-          // which recurses 130 levels deep and throws at depth > 128 (line 1032).
+          // sign(force:true) walks the delegate tree in its send precheck and
+          // throws once the walk goes deeper than 128 levels.
           expect(
             () => assembled.sign(force: true),
-            throwsA(isA<Exception>()),
+            throwsA(
+              isA<Exception>().having(
+                (e) => e.toString(),
+                'message',
+                contains('Delegate tree traversal depth limit (128) exceeded'),
+              ),
+            ),
             reason:
-                '_allDelegatesSigned must throw when fully-signed delegate tree depth exceeds 128',
+                'the send precheck must throw when the delegate tree depth exceeds 128',
           );
         } finally {
           await server.close();

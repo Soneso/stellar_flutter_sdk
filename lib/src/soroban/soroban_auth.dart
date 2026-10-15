@@ -83,7 +83,7 @@ class Address {
   /// Liquidity pool address type. Requires protocol version 23 or higher.
   static const int TYPE_LIQUIDITY_POOL = 4;
 
-  /// Muxed contract address type (W... addresses). Requires protocol version 30 or higher.
+  /// Muxed contract address type (`W...` strkeys, CAP-0084).
   static const int TYPE_MUXED_CONTRACT = 5;
 
   int _type;
@@ -1156,6 +1156,28 @@ class SorobanAuthorizationEntry {
     return base64Encode(xdrOutputStream.bytes);
   }
 
+  /// Whether [signature], the signature value of a credential or of a
+  /// delegate node, carries a signature.
+  ///
+  /// A void value and a vector without elements are unsigned placeholders;
+  /// every other value carries a signature. Entries prepared elsewhere for
+  /// signing commonly carry an empty vector with a
+  /// `signatureExpirationLedger` of 0, so such an entry counts as unsigned
+  /// here as well.
+  ///
+  /// The check classifies placeholders only. It does not judge whether an
+  /// empty vector authorizes a custom account contract; the contract's
+  /// `__check_auth` decides that.
+  static bool carriesSignature(XdrSCVal signature) {
+    if (signature.discriminant == XdrSCValType.SCV_VOID) {
+      return false;
+    }
+    if (signature.discriminant == XdrSCValType.SCV_VEC) {
+      return signature.vec?.isNotEmpty ?? false;
+    }
+    return true;
+  }
+
   /// The message refusing a muxed account or muxed contract address in the
   /// [role] where Soroban auth takes an account or contract address, naming
   /// the address given as [strKey] when there is one.
@@ -1459,7 +1481,8 @@ class SorobanAuthorizationEntry {
   /// Rules enforced:
   /// - [source] must be ADDRESS or ADDRESS_V2; throws if it is already WITH_DELEGATES
   ///   or SOURCE_ACCOUNT.
-  /// - The top-level signature is defaulted to void (delegates-only pattern).
+  /// - The top-level signature starts as a void placeholder (unsigned); an
+  ///   account credential needs its own signature before submission.
   /// - Each delegate's [address] must be a G... or C... strkey; M... and W...
   ///   are rejected.
   /// - Within each delegate array (top-level and each nestedDelegates), entries are
@@ -1496,7 +1519,7 @@ class SorobanAuthorizationEntry {
       sourceInner.address,
       sourceInner.nonce,
       signatureExpirationLedger,
-      XdrSCVal.forVoid(), // top-level signature is void (delegates-only)
+      XdrSCVal.forVoid(), // top-level signature starts unsigned
     );
 
     final sortedDelegates = _buildAndSortDelegates(delegates, depth: 0);

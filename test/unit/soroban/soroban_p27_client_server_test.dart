@@ -689,11 +689,11 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // GROUP 5: Send precheck — WITH_DELEGATES delegates-only pattern
+  // GROUP 5: Send precheck: unsigned accounts of a WITH_DELEGATES entry block
   // -------------------------------------------------------------------------
-  group('sign() precheck — delegates-only pattern does not block', () {
-    test('WITH_DELEGATES entry with all delegates signed passes sign() despite '
-        'void top-level', () async {
+  group('sign() precheck: unsigned accounts block', () {
+    test('WITH_DELEGATES entry with a void top-level account blocks sign() '
+        'although every delegate is signed', () async {
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final delegateKp = KeyPair.random();
       final topId = topKp.accountId;
@@ -728,19 +728,28 @@ void main() {
         ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
         assembled.tx!.setSorobanAuth([wdEntry]);
 
+        expect(assembled.needsNonInvokerSigningBy(), equals([topId]));
+
         // sign() with force:true bypasses the read-call check so we can
-        // exercise the precheck specifically. sign() must NOT throw even though
-        // needsNonInvokerSigningBy() reports topId (void top-level), because
-        // every delegate is signed (delegates-only pattern), and it must
-        // actually produce a signed transaction.
-        assembled.sign(sourceAccountKeyPair: topKp, force: true);
+        // exercise the precheck specifically. The host authenticates the
+        // top-level account with its own signatures, so the signed delegate
+        // node does not satisfy the entry and sign() must throw.
         expect(
-          assembled.signed,
-          isNotNull,
+          () => assembled.sign(sourceAccountKeyPair: topKp, force: true),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains(
+                'Transaction requires signatures from multiple signers.',
+              ),
+            ),
+          ),
           reason:
-              'delegates-only pattern must not block sign() and must produce '
-              'a signed transaction',
+              'an unsigned top-level account must block sign() whatever its '
+              'delegate nodes carry',
         );
+        expect(assembled.signed, isNull);
       } finally {
         await server.close();
       }
