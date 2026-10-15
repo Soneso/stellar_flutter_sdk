@@ -1,6 +1,6 @@
 # SEP-23: Strkey Encoding
 
-SEP-23 defines how Stellar encodes addresses between raw binary data and human-readable strings. Each address type starts with a specific letter — account IDs start with "G", secret seeds with "S", muxed accounts with "M", contracts with "C", and so on.
+SEP-23 defines how Stellar encodes addresses between raw binary data and human-readable strings. Each address type starts with a specific letter: account IDs with "G", secret seeds with "S", muxed accounts with "M", contracts with "C", and muxed contracts with "W".
 
 **When to use:** Validating user-entered addresses, converting between raw bytes and string representations, working with different key types, and creating muxed accounts for sub-account tracking.
 
@@ -319,6 +319,60 @@ try {
 
 `XdrClaimableBalanceID.forId` reads the same rule. It takes a B-address or the hex rendering of the ID, and rejects a non-zero discriminant in either.
 
+## Muxed contracts (W...)
+
+Muxed contract addresses (defined in [CAP-84](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md)) pair a contract ID with an unsigned 64-bit ID. A W-address has 69 characters. Its 40-byte payload contains the 32-byte contract hash followed by the 8-byte big-endian ID.
+
+W addresses are valid for `MuxedAddress` contract parameters and never as Soroban authorization addresses.
+
+### Creating muxed contracts
+
+Pair a contract ID, given as a C-address or 64-character hex string, with an ID:
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+Address address = Address.forMuxedContract(
+    contractId: 'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA',
+    id: BigInt.zero);
+String muxedContractId = address.muxedContractId!;
+print(muxedContractId);
+// WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC
+```
+
+`MuxedContract` and `Address.forMuxedContract` throw `ArgumentError` for an invalid contract ID or an ID outside the unsigned 64-bit range.
+
+### Extracting muxed contract components
+
+Decode the W-address to read the underlying contract and ID:
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+String muxedContractId =
+    'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC';
+MuxedContract muxed = MuxedContract.fromMuxedContractId(muxedContractId);
+String contractId = muxed.contractId;
+BigInt id = muxed.id;
+print(contractId); // CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA
+print(id); // 0
+```
+
+### Low-level muxed contract decoding
+
+Validate a W-address or decode its payload:
+
+```dart
+import 'dart:typed_data';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+String muxedContractId =
+    'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC';
+print(StrKey.isValidMuxedContractId(muxedContractId)); // true
+Uint8List raw = StrKey.decodeMuxedContractId(muxedContractId);
+print(raw.length); // 40
+```
+
 ## Version bytes reference
 
 Each strkey type has a unique version byte that determines its prefix character. Every type admits a fixed encoded length and payload width except `P`, which admits a range, and the decoder holds an address to both: it measures the string before decoding it, and the payload again after the checksum.
@@ -334,6 +388,7 @@ Each strkey type has a unique version byte that determines its prefix character.
 | C | Contract ID | Soroban smart contract | 56 | 32 bytes |
 | L | Liquidity Pool ID | AMM liquidity pool | 56 | 32 bytes |
 | B | Claimable Balance | Claimable balance entry | 58 | 33 bytes |
+| W | Muxed Contract | Contract ID + 64-bit ID | 69 | 40 bytes |
 
 P is the only type with a range. Its payload is the 32-byte signer key, the 4-byte length prefix, and 1 to 64 payload bytes padded to a multiple of four.
 
@@ -362,7 +417,7 @@ import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 String input =
-    'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
+    'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC';
 
 if (StrKey.isValidStellarAccountId(input)) {
   Uint8List raw = StrKey.decodeStellarAccountId(input);
@@ -370,6 +425,9 @@ if (StrKey.isValidStellarAccountId(input)) {
 } else if (StrKey.isValidStellarMuxedAccountId(input)) {
   MuxedAccount muxed = MuxedAccount.fromAccountId(input)!;
   print('Muxed account over ${muxed.ed25519AccountId}');
+} else if (StrKey.isValidMuxedContractId(input)) {
+  MuxedContract muxed = MuxedContract.fromMuxedContractId(input);
+  print('Muxed contract over ${muxed.contractId} with ID ${muxed.id}');
 } else {
   print('Not an address this SDK reads');
 }

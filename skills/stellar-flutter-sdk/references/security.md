@@ -60,11 +60,14 @@ Validate all user-provided data before constructing Stellar transactions.
 
 ### Address Validation
 
+This helper validates account, muxed account, contract, and muxed contract strkeys.
+
 ```dart
 bool isValidStellarAddress(String address) {
   if (StrKey.isValidStellarAccountId(address)) return true;   // G...
   if (StrKey.isValidStellarMuxedAccountId(address)) return true; // M...
   if (StrKey.isValidContractId(address)) return true;          // C...
+  if (StrKey.isValidMuxedContractId(address)) return true;    // W...
   return false;
 }
 

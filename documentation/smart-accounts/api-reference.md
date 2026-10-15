@@ -12,7 +12,7 @@ All public symbols listed here are re-exported from the top-level package barrel
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 ```
 
-The kit requires Dart `>= 3.x` for `dart:js_interop` conditional imports used by the web facades, and `package:dio` for the optional `dio.CancelToken` parameter present on every cancellable async method.
+The kit requires Dart SDK >=3.8.0 <4.0.0 and Flutter >=3.32.0. Its web facades use `dart:js_interop` conditional imports, and `package:dio` supplies the optional `dio.CancelToken` parameter on every cancellable async method.
 
 ```dart
 import 'package:dio/dio.dart' as dio;

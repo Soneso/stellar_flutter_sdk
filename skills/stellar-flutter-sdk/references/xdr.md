@@ -62,7 +62,7 @@ Rules worth knowing before you hand-write a document:
 
 - 32-bit integers are JSON numbers; 64-bit integers are base-10 strings (`"29059748724737"`).
 - Opaque fields are lowercase hexadecimal; an empty one is `""`.
-- Addresses are strkeys: `G...`, `C...`, `M...`, `B...`, `L...`, `T...`, `X...`, `P...` by type and arm.
+- Addresses are strkeys: `G...`, `C...`, `M...`, `B...`, `L...`, `W...`, `T...`, `X...`, `P...` by type and arm.
 - A union's void arm is a bare string (`"native"`); a valued arm is a single-key object (`{"credit_alphanum4":{...}}`).
 - Every declared struct key must be present, including an optional field whose value is `null`. An undeclared key is refused.
 - Output is compact, single-line, and ordered as the XDR definition declares the fields.
@@ -107,6 +107,7 @@ Complete reference for Soroban smart contract value types:
 | Account | `XdrSCVal.forAccountAddress(accountId)` | `String` (G...) |
 | Contract | `XdrSCVal.forContractAddress(contractId)` | `String` (C...) |
 | Muxed | `XdrSCVal.forMuxedAccountAddress(muxedId)` | `String` (M...) |
+| Muxed contract | `XdrSCVal.forMuxedContractAddress(muxedContractId)` | `String` (W...) |
 | Claimable | `XdrSCVal.forClaimableBalanceAddress(id)` | `String` |
 | Pool | `XdrSCVal.forLiquidityPoolAddress(id)` | `String` |
 | **Collections** | | |
@@ -126,10 +127,10 @@ XdrSCVal vec = XdrSCVal.forVec([
   XdrSCVal.forBool(true),
 ]);
 
-// Map: key-value pairs using XdrSCMapEntry(key, val)
+// The host requires key order; sortedScMap sorts entries into that order.
 XdrSCVal map = XdrSCVal.forMap([
-  XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
   XdrSCMapEntry(XdrSCVal.forSymbol('balance'), XdrSCVal.forI128BigInt(BigInt.from(1000000))),
+  XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
 ]);
 ```
 
@@ -228,13 +229,15 @@ Durability options for contract data:
 
 ```dart
 // Build addresses
-XdrSCAddress accountAddr = XdrSCAddress.forAccountId('GABC...');
-XdrSCAddress contractAddr = XdrSCAddress.forContractId('CABC...');
-XdrSCAddress claimableAddr = XdrSCAddress.forClaimableBalanceId('00000...');
-XdrSCAddress poolAddr = XdrSCAddress.forLiquidityPoolId('abcdef...');
+XdrSCAddress accountAddr = XdrSCAddress.forAccountId('GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q');
+XdrSCAddress contractAddr = XdrSCAddress.forContractId('CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA');
+XdrSCAddress muxedContractAddr = XdrSCAddress.forMuxedContractId(
+    'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC');
+XdrSCAddress claimableAddr = XdrSCAddress.forClaimableBalanceId('0' * 64);
+XdrSCAddress poolAddr = XdrSCAddress.forLiquidityPoolId('0' * 64);
 
 // Convert back to string key
-String strKey = accountAddr.toStrKey();  // Returns G... or C... format
+String strKey = accountAddr.toStrKey();  // Returns the strkey of the address kind
 
 // Wrap in XdrSCVal for contract arguments
 XdrSCVal addressArg = XdrSCVal.forAddress(accountAddr);

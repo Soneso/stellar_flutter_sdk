@@ -24,7 +24,7 @@ Then run:
 flutter pub get
 ```
 
-**Requirements:** Dart SDK >=3.8.0 <4.0.0. See [Getting Started](getting-started.md) for full requirements.
+**Requirements:** Dart SDK >=3.8.0 <4.0.0 and Flutter >=3.32.0. See [Getting Started](getting-started.md) for full requirements.
 
 ## Your First KeyPair
 

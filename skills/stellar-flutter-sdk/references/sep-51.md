@@ -155,10 +155,12 @@ Address-shaped types render as strkeys, by arm:
 | `XdrAccountID`, `XdrNodeID`, `XdrPublicKey` | `G...` |
 | `XdrMuxedAccount` | `G...` or `M...` |
 | `XdrMuxedAccountMed25519` | `M...` |
-| `XdrSCAddress` | `G...`, `C...`, `M...`, `B...` or `L...` |
+| `XdrSCAddress` | `G...`, `C...`, `M...`, `B...`, `L...` or `W...` |
+| `XdrMuxedContract` | `W...` |
 | `XdrSignerKey` | `G...`, `T...`, `X...` or `P...` |
 | `XdrSignedPayload` | `P...` |
 | contract identifiers | `C...` |
+| muxed contract identifiers | `W...` |
 | liquidity pool identifiers | `L...` |
 | claimable balance identifiers | `B...` |
 
@@ -189,6 +191,20 @@ print(XdrAllowTrustOpAsset.fromBase64EncodedXdrString('AAAAAUFCQwA=').toXdrJson(
 print(XdrAllowTrustOpAsset.fromBase64EncodedXdrString('AAAAAkFCQwAAAAAAAAAAAA==')
     .toXdrJson());
 // "ABC\\0\\0"
+```
+
+The `asset_code` string of a twelve-byte asset object must unescape to five to twelve bytes. Shorter input throws `FormatException`. A three-character code is written in the JSON document as `"ABC\\0\\0"`; its decoded string is `ABC\0\0`.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+try {
+  XdrAssetAlphaNum12.fromXdrJson(
+      '{"asset_code":"ABC","issuer":"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV"}');
+} on FormatException catch (e) {
+  print(e.message);
+  // XDR-JSON XdrAssetAlphaNum12 key "asset_code" holds 3 bytes, fewer than the minimum of 5; a shorter code is written with escaped NUL padding
+}
 ```
 
 ## Unions: a void arm is not an absent value
@@ -437,7 +453,14 @@ This SDK's behaviour differs from the reference implementation in four places, a
 - **A standalone 64-bit value renders as a string.** Addressed on its own, `XdrInt64` and `XdrUint64` emit a base-10 string, the same rendering they take as a struct field. The reference emits a bare number for the standalone case.
 - **Inline fixed-length opaque renders as hexadecimal.** Where the XDR definition declares an opaque field inline rather than through a named typedef, the reference emits an array of byte numbers. Seven types are affected: `XdrCurve25519Secret`, `XdrCurve25519Public`, `XdrHmacSha256Key`, `XdrHmacSha256Mac`, `XdrShortHashSeed`, `XdrSerializedBinaryFuseFilter`, and `XdrPeerAddress` through its `ip` arm.
 - **`$schema` is accepted.** The reference rejects it as an unknown field. It is the only key this decoder accepts that the reference refuses.
-- **A zero-length signed payload is refused.** `SignerKeyEd25519SignedPayload` with an empty `payload<64>` is valid XDR, but no strkey form of it exists that the ecosystem reads back. The reference renders it as a P-strkey and then refuses to read that same strkey back; the specification does not settle the case, so this SDK refuses it in both directions. Payloads of 1 to 64 bytes render and read back normally.
+- **A zero-length signed payload is refused.** The reference renders an empty `XdrSignedPayload` as `<INVALID:GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF:EMPTY_PAYLOAD>` and refuses to encode that string back. The SDK throws `FormatException` in both directions. Payloads of 1 to 64 bytes render and read back normally.
+
+The encoding and decoding messages are:
+
+```text
+XDR-JSON XdrSignedPayload carries an empty payload, which has no strkey rendering
+XDR-JSON XdrSignedPayload holds a malformed strkey: "PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..." (Encoded string must be 69 to 165 characters, got 63)
+```
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';

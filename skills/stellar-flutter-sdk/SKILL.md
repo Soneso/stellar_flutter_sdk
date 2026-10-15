@@ -1,7 +1,7 @@
 ---
 name: stellar-flutter-sdk
 description: Builds Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, XDR-JSON, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 21 SEP implementations with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
-license: Apache 2.0
+license: MIT
 compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.8.0
 metadata:
   version: "1.7.0"
@@ -262,6 +262,8 @@ SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 server.enableLogging = true; // optional: debug JSON-RPC requests/responses
 GetHealthResponse health = await server.getHealth(); // .status, .latestLedger
 ```
+
+Assign `server.logger` to route log lines to your sink; without a logger they go to the `dart:developer` log.
 
 For all 12 RPC methods including event queries and transaction simulation:
 [RPC Reference](./references/rpc.md)

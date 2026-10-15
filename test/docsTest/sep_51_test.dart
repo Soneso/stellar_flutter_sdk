@@ -1,4 +1,5 @@
 @Timeout(const Duration(seconds: 300))
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -173,6 +174,37 @@ void main() {
     expect(
       op.toXdrJson(),
       equals(r'{"data_name":"caf\\xc3\\xa9","data_value":null}'),
+    );
+  });
+
+  test('sep-51: Twelve-byte asset codes require five decoded bytes', () async {
+    // Snippet from sep-51.md "Opaque data and text"
+    try {
+      XdrAssetAlphaNum12.fromXdrJson(
+        '{"asset_code":"ABC","issuer":"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV"}',
+      );
+    } on FormatException catch (e) {
+      print(e.message);
+      // XDR-JSON XdrAssetAlphaNum12 key "asset_code" holds 3 bytes, fewer than the minimum of 5; a shorter code is written with escaped NUL padding
+    }
+    expect(
+      () => XdrAssetAlphaNum12.fromXdrJson(
+        '{"asset_code":"ABC","issuer":"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV"}',
+      ),
+      throwsA(
+        isA<FormatException>().having(
+          (e) => e.message,
+          'message',
+          'XDR-JSON XdrAssetAlphaNum12 key "asset_code" holds 3 bytes, fewer than the minimum of 5; a shorter code is written with escaped NUL padding',
+        ),
+      ),
+    );
+    final padded = XdrAssetAlphaNum12.fromXdrJson(
+      r'{"asset_code":"ABC\\0\\0","issuer":"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV"}',
+    );
+    expect(
+      (padded.toXdrJsonValue() as Map<String, dynamic>)['asset_code'],
+      r'ABC\0\0',
     );
   });
 
@@ -533,6 +565,37 @@ void main() {
 
   test('sep-51: An empty signed payload has no strkey rendering', () {
     // Snippet from sep-51.md "Divergences from the reference implementation"
+    try {
+      XdrSignerKey.fromXdrJson(
+        '"PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAED2A"',
+      );
+    } on FormatException catch (e) {
+      print(e.message);
+      // XDR-JSON XdrSignedPayload holds a malformed strkey: "PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..." (Encoded string must be 69 to 165 characters, got 63)
+    }
+    try {
+      XdrSignedPayload empty = XdrSignedPayload(
+        XdrUint256(Uint8List(32)),
+        XdrDataValue(Uint8List(0)),
+      );
+      print(empty.toXdrJson());
+    } on FormatException catch (e) {
+      print(e.message);
+      // XDR-JSON XdrSignedPayload carries an empty payload, which has no strkey rendering
+    }
+    expect(
+      () => XdrSignedPayload(
+        XdrUint256(Uint8List(32)),
+        XdrDataValue(Uint8List(0)),
+      ).toXdrJson(),
+      throwsA(
+        isA<FormatException>().having(
+          (e) => e.message,
+          'message',
+          'XDR-JSON XdrSignedPayload carries an empty payload, which has no strkey rendering',
+        ),
+      ),
+    );
     expect(
       () => XdrSignerKey.fromXdrJson(
         '"PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAED2A"',
@@ -541,7 +604,9 @@ void main() {
         isA<FormatException>().having(
           (FormatException e) => e.message,
           'message',
-          contains('Encoded string must be 69 to 165 characters, got 63'),
+          equals(
+            'XDR-JSON XdrSignedPayload holds a malformed strkey: "PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..." (Encoded string must be 69 to 165 characters, got 63)',
+          ),
         ),
       ),
     );

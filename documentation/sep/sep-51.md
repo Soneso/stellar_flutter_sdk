@@ -230,7 +230,21 @@ print(op.toXdrJson());        // {"data_name":"caf\\xc3\\xa9","data_value":null}
 
 Asset codes are opaque, so they take the ladder too. A four-byte code drops its trailing NUL padding. A twelve-byte code drops trailing NULs down to five bytes and no further, which is what keeps the two widths distinguishable.
 
-Address-shaped types render as strkeys: `AccountID`, `NodeID` and `PublicKey` as `G...`, `MuxedAccount` as `G...` or `M...`, contract identifiers as `C...`, liquidity pool identifiers as `L...`, claimable balance identifiers as `B...`, and signer keys as `G...`, `T...`, `X...` or `P...` by arm.
+The `asset_code` string of a twelve-byte asset object must unescape to five to twelve bytes. Shorter input throws `FormatException`. A three-character code is written in the JSON document as `"ABC\\0\\0"`; its decoded string is `ABC\0\0`.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+try {
+  XdrAssetAlphaNum12.fromXdrJson(
+      '{"asset_code":"ABC","issuer":"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV"}');
+} on FormatException catch (e) {
+  print(e.message);
+  // XDR-JSON XdrAssetAlphaNum12 key "asset_code" holds 3 bytes, fewer than the minimum of 5; a shorter code is written with escaped NUL padding
+}
+```
+
+Address-shaped types render as strkeys: `AccountID`, `NodeID`, and `PublicKey` as `G...`, and `MuxedAccount` as `G...` or `M...`. Contract identifiers render as `C...`, liquidity pool identifiers as `L...`, and claimable balance identifiers as `B...`. The muxed contract arm of `SCAddress` and `MuxedContract` render as `W...`. Signer keys render as `G...`, `T...`, `X...`, or `P...` by arm.
 
 ### Unions: a void arm is not an absent value
 
@@ -537,7 +551,7 @@ The reference rejects the property as an unknown field. The specification requir
 
 #### A zero-length signed payload is refused
 
-`SignerKeyEd25519SignedPayload` with an empty `payload<64>` is valid XDR, but no strkey form of it exists that the ecosystem reads back. The reference is asymmetric here: it renders such a value as a P-strkey and then refuses to read that same strkey back. The specification does not settle the case, so this SDK chooses to refuse it in both directions rather than emit a document nothing can decode:
+An empty payload in `XdrSignedPayload` is valid XDR, but has no strkey rendering that can be read back. The reference renders it as `<INVALID:GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF:EMPTY_PAYLOAD>` and refuses to encode that string back. The SDK refuses the value in both directions:
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -547,13 +561,25 @@ try {
       '"PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAED2A"');
 } on FormatException catch (e) {
   print(e.message);
-  // XDR-JSON XdrSignedPayload holds a malformed strkey:
-  // "PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..." (Encoded string must be
-  // 69 to 165 characters, got 63)
+  // XDR-JSON XdrSignedPayload holds a malformed strkey: "PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..." (Encoded string must be 69 to 165 characters, got 63)
 }
 ```
 
-An empty payload leaves the P-address 63 characters wide, short of the 69 the shortest signed payload occupies, so the strkey codec turns it away on length and the reader restates that. The encoding direction reports the bound directly, as `carries an empty payload, which has no strkey rendering`.
+An empty payload leaves the attempted P-address 63 characters wide, below the minimum of 69. Encoding also throws `FormatException`:
+
+```dart
+import 'dart:typed_data';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+try {
+  XdrSignedPayload empty = XdrSignedPayload(
+      XdrUint256(Uint8List(32)), XdrDataValue(Uint8List(0)));
+  print(empty.toXdrJson());
+} on FormatException catch (e) {
+  print(e.message);
+  // XDR-JSON XdrSignedPayload carries an empty payload, which has no strkey rendering
+}
+```
 
 Payloads of 1 to 64 bytes render and read back normally. Only the empty one has no rendering.
 
