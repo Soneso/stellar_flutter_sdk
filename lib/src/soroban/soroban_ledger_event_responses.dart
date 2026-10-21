@@ -343,7 +343,7 @@ class GetEventsResponse extends SorobanRpcResponse {
 /// // Stream events and update local state
 /// await for (var batch in getEventStream(contractId)) {
 ///   for (var event in batch) {
-///     if (event.inSuccessfulContractCall ?? false) {
+///     if (event.type == 'contract') {
 ///       // Decode and process event
 ///       final eventData = event.valueXdr;
 ///
@@ -383,6 +383,9 @@ class EventInfo {
   /// Base64-encoded event value (XdrSCVal format).
   String value;
 
+  /// Whether the event was emitted in a successful contract call. Stellar RPC 30
+  /// and later omit this field; the SDK still reads it from older servers.
+  @Deprecated('Stellar RPC 30 and later omit this field')
   bool? inSuccessfulContractCall;
 
   /// Transaction hash that triggered this event.

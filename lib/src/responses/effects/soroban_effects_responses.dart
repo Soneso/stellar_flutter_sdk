@@ -31,6 +31,14 @@ class ContractCreditedEffectResponse extends EffectResponse {
   /// The contract ID that received the assets
   String contract;
 
+  /// The muxed contract address as a W... strkey, set by Horizon for a
+  /// transfer or mint to a muxed contract address.
+  String? contractMuxed;
+
+  /// The muxed id as the decimal string Horizon sends for a transfer or mint
+  /// to a muxed contract address.
+  String? contractMuxedId;
+
   /// The amount credited to the contract
   String amount;
 
@@ -75,6 +83,8 @@ class ContractCreditedEffectResponse extends EffectResponse {
           assetCode: json['asset_code'],
           assetIssuer: json['asset_issuer'],
         )
+        ..contractMuxed = json['contract_muxed']
+        ..contractMuxedId = json['contract_muxed_id']
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
