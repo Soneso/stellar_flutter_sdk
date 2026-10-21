@@ -1599,6 +1599,46 @@ void main() {
         );
         expect(effect.amount, equals('100.0000000'));
         expect(effect.assetType, equals('native'));
+        expect(effect.contractMuxed, isNull);
+        expect(effect.contractMuxedId, isNull);
+      });
+
+      test('parses muxed contract destination through effect factory', () {
+        const contract =
+            'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+        const contractMuxed =
+            'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+        final json = {
+          'id': '123',
+          'type_i': 96,
+          'type': 'contract_credited',
+          'created_at': '2024-01-15T10:00:00Z',
+          'paging_token': '123',
+          'account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'contract': contract,
+          'contract_muxed': contractMuxed,
+          'contract_muxed_id': '123456',
+          'amount': '100.0000000',
+          'asset_type': 'native',
+          '_links': {
+            'operation': {'href': '/operations/123'},
+            'precedes': {'href': '/effects?order=asc&cursor=123'},
+            'succeeds': {'href': '/effects?order=desc&cursor=123'},
+          },
+        };
+
+        final parsed = EffectResponse.fromJson(json);
+        expect(parsed, isA<ContractCreditedEffectResponse>());
+        final effect = parsed as ContractCreditedEffectResponse;
+        expect(effect.contract, equals(contract));
+        expect(effect.contractMuxed, equals(contractMuxed));
+        expect(effect.contractMuxedId, equals('123456'));
+        final raw = StrKey.decodeMuxedContractId(effect.contractMuxed!);
+        expect(raw.sublist(0, 32), StrKey.decodeContractId(effect.contract));
+        expect(
+          BigInt.parse(Util.bytesToHex(raw.sublist(32)), radix: 16),
+          BigInt.from(123456),
+        );
       });
     });
 

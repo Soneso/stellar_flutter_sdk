@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `ContractCreditedEffectResponse` carries `contractMuxed` and `contractMuxedId` when Horizon reports a transfer or mint to a muxed contract address.
+
+### Deprecated
+- `EventInfo.inSuccessfulContractCall`: Stellar RPC 30 and later omit the field; the SDK still reads it from older servers.
+
 ## [3.9.0] - 2026-10-15
 
 Migration guide: [documentation/migration/3.9.0.md](documentation/migration/3.9.0.md)
