@@ -1292,18 +1292,18 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 StellarSDK sdk = StellarSDK.TESTNET;
 
 // Transactions in a specific ledger
-Page<TransactionResponse> txPage = await sdk.transactions
+Page<TransactionResponse> ledgerTxPage = await sdk.transactions
     .forLedger(12345678)
     .execute();
 
 // Transactions affecting a claimable balance
-Page<TransactionResponse> txPage = await sdk.transactions
+Page<TransactionResponse> claimableBalanceTxPage = await sdk.transactions
     .forClaimableBalance(
         "00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be")
     .execute();
 
 // Transactions affecting a liquidity pool
-Page<TransactionResponse> txPage = await sdk.transactions
+Page<TransactionResponse> liquidityPoolTxPage = await sdk.transactions
     .forLiquidityPool("poolid...")
     .execute();
 ```
@@ -1400,17 +1400,17 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 StellarSDK sdk = StellarSDK.TESTNET;
 
 // Effects for an account
-Page<EffectResponse> effectsPage = await sdk.effects
+Page<EffectResponse> accountEffectsPage = await sdk.effects
     .forAccount("GABC...")
     .limit(50)
     .execute();
 
 // Effects for a specific operation
-Page<EffectResponse> effectsPage = await sdk.effects
+Page<EffectResponse> operationEffectsPage = await sdk.effects
     .forOperation("123456789")
     .execute();
 
-for (EffectResponse effect in effectsPage.records) {
+for (EffectResponse effect in operationEffectsPage.records) {
   print(effect.type);
 }
 ```
