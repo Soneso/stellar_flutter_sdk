@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `EventInfo.inSuccessfulContractCall`: Stellar RPC 30 and later omit the field; the SDK still reads it from older servers.
 
 ### Fixed
+- `EventInfo` reads `operationIndex` and `transactionIndex` from `getEvents` responses, so `opIndex` and `txIndex` carry the indexes the server sends.
 - Horizon list queries parse in minified web release builds.
 - `MemoId` accepts the id 0, so envelopes and Horizon transaction records with that memo decode and SEP-7 links with `memo=0` pass validation.
 - `URIScheme.isValidSep7Url` returns an invalid result for a `tx` link whose `xdr` fails to decode with a `RangeError`, such as a truncated envelope or a negative array count.

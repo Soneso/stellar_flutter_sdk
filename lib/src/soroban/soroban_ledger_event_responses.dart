@@ -286,8 +286,8 @@ class GetEventsResponse extends SorobanRpcResponse {
 /// - [value]: Base64-encoded XDR event data payload
 /// - [inSuccessfulContractCall]: Whether event was in successful call
 /// - [txHash]: Transaction hash that generated the event
-/// - [opIndex]: Operation index in transaction (protocol 23+)
-/// - [txIndex]: Transaction index in ledger (protocol 23+)
+/// - [opIndex]: Operation index in transaction
+/// - [txIndex]: Transaction index in ledger
 ///
 /// Example - Processing events:
 /// ```dart
@@ -390,8 +390,13 @@ class EventInfo {
 
   /// Transaction hash that triggered this event.
   String txHash;
-  // starting from protocol 23 opIndex, txIndex will be filled.
+
+  /// Index of the operation that emitted the event within its transaction, from
+  /// the `operationIndex` field of the response.
   int? opIndex;
+
+  /// Index of the transaction within its ledger, from the `transactionIndex`
+  /// field of the response.
   int? txIndex;
 
   /// Creates an EventInfo with event details.
@@ -431,8 +436,8 @@ class EventInfo {
       value,
       json['inSuccessfulContractCall'],
       json['txHash'],
-      json['opIndex'],
-      json['txIndex'],
+      json['operationIndex'],
+      json['transactionIndex'],
     );
   }
 
