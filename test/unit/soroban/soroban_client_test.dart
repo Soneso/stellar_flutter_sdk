@@ -9,6 +9,8 @@ import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'contract_address_guard_fixtures.dart';
+
 /// Mock tests for SorobanClient and related configuration classes.
 ///
 /// These tests focus on:
@@ -50,6 +52,28 @@ class MockDioAdapter implements dio.HttpClientAdapter {
 
   @override
   void close({bool force = false}) {}
+}
+
+/// A server that records each contract load and account lookup and answers
+/// none, so a test can tell that a call never reached the server.
+class _RecordingServer extends SorobanServer {
+  final List<String> calls = [];
+
+  _RecordingServer() : super('https://rpc.test');
+
+  @override
+  Future<SorobanContractInfo?> loadContractInfoForContractId(
+    String contractId,
+  ) async {
+    calls.add(contractId);
+    return null;
+  }
+
+  @override
+  Future<Account?> getAccount(String accountId) async {
+    calls.add(accountId);
+    return null;
+  }
 }
 
 /// Helper function to create mock SorobanServer with custom Dio
@@ -593,6 +617,25 @@ void main() {
           throwsA(isA<Exception>()),
         );
       });
+
+      test('rejects a non-contract address before asking the server', () async {
+        final server = _RecordingServer();
+        final messages = nonContractMessages('The contract to load');
+        for (final MapEntry(key: id, value: message) in messages.entries) {
+          final options = ClientOptions(
+            sourceAccountKeyPair: sourceKeyPair,
+            contractId: id,
+            network: Network.TESTNET,
+            rpcUrl: rpcUrl,
+            server: server,
+          );
+          await expectLater(
+            SorobanClient.forClientOptions(options: options),
+            throwsRejection(message),
+          );
+        }
+        expect(server.calls, isEmpty);
+      });
     });
 
     group('install', () {
@@ -1008,6 +1051,52 @@ void main() {
           throwsA(isA<Exception>()),
         );
       });
+
+      test(
+        'build and buildWithOp reject a non-contract before any request',
+        () async {
+          final server = _RecordingServer();
+          AssembledTransactionOptions optionsFor(String id) =>
+              AssembledTransactionOptions(
+                clientOptions: ClientOptions(
+                  sourceAccountKeyPair: sourceKeyPair,
+                  contractId: id,
+                  network: Network.TESTNET,
+                  rpcUrl: rpcUrl,
+                  server: server,
+                ),
+                methodOptions: MethodOptions(),
+                method: 'balance',
+              );
+          final messages = nonContractMessages('The contract to invoke');
+          for (final MapEntry(key: id, value: message) in messages.entries) {
+            await expectLater(
+              AssembledTransaction.build(options: optionsFor(id)),
+              throwsRejection(message),
+            );
+            final decoded = InvokeHostFunctionOperation.builder(
+              XdrInvokeHostFunctionOp(
+                XdrHostFunction.forInvokingContractWithArgs(
+                  XdrInvokeContractArgs(
+                    addressFromId(id)!.toXdr(),
+                    'balance',
+                    [],
+                  ),
+                ),
+                [],
+              ),
+            ).build();
+            await expectLater(
+              AssembledTransaction.buildWithOp(
+                operation: decoded,
+                options: optionsFor(sep23Contract),
+              ),
+              throwsRejection(message),
+            );
+          }
+          expect(server.calls, isEmpty);
+        },
+      );
     });
   });
 }

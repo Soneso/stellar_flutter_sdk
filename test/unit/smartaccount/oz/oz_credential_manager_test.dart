@@ -4,9 +4,12 @@
 
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import '../../soroban/contract_address_guard_fixtures.dart';
+import 'mock_dio_adapter.dart';
 import 'oz_pipeline_fixtures.dart';
 
 Uint8List _testPublicKey() {
@@ -449,6 +452,32 @@ void main() {
   });
 
   group('OZCredentialManager.sync swallowed-exception event emission', () {
+    test(
+      'sync reports a stored muxed contract id as a FormatException',
+      () async {
+        final adapter = MockDioAdapter.json('{}');
+        final ctx = _newKitWithManager(
+          sorobanServer: SorobanServer(
+            'https://rpc.test',
+            httpClient: dio.Dio()..httpClientAdapter = adapter,
+          ),
+        );
+        await ctx.manager.createPendingCredential(
+          credentialId: 'sync-cred-muxed',
+          publicKey: _testPublicKey(),
+          contractId: sep23MuxedContract,
+        );
+        final received = <OZSmartAccountEventCredentialSyncFailed>[];
+        ctx.kit.events.on<OZSmartAccountEventCredentialSyncFailed>(
+          received.add,
+        );
+
+        expect(await ctx.manager.sync('sync-cred-muxed'), isFalse);
+        expect(received.single.error, isA<FormatException>());
+        expect(adapter.capturedUrl, isNull);
+      },
+    );
+
     test(
       'sync emits OZSmartAccountEventCredentialSyncFailed when getContractData throws Exception',
       () async {

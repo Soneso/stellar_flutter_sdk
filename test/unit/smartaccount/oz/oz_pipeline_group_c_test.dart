@@ -12,6 +12,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart' as http_testing;
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import '../../soroban/contract_address_guard_fixtures.dart';
+import 'mock_dio_adapter.dart';
 import 'oz_pipeline_fixtures.dart';
 
 // ---------------------------------------------------------------------------
@@ -828,6 +830,58 @@ void main() {
       );
       expect(result, isA<OZConnectWalletConnected>());
     });
+
+    test(
+      'connectWallet_indexerMuxedCandidate_propagatesFormatException',
+      () async {
+        // The derivation lookup finds no entry; the candidate is rejected
+        // before its lookup with the FormatException of a malformed id.
+        final soroban = SorobanServer(
+          'https://rpc.test',
+          httpClient: dio.Dio()
+            ..httpClientAdapter = MockDioAdapter.json(
+              '{"jsonrpc":"2.0","id":1,"result":{"entries":[],"latestLedger":1}}',
+            ),
+        );
+        final indexer = buildIndexerHarness(
+          responseBody: jsonEncode(<String, dynamic>{
+            'credentialId': _credentialIdB64,
+            'contracts': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'contract_id': sep23MuxedContract,
+                'context_rule_count': 1,
+                'external_signer_count': 1,
+                'delegated_signer_count': 0,
+                'native_signer_count': 0,
+                'first_seen_ledger': 1,
+                'last_seen_ledger': 100,
+                'context_rule_ids': <int>[1],
+              },
+            ],
+            'count': 1,
+          }),
+        );
+        final kit = FakePipelineKit(
+          config: OZSmartAccountConfig(
+            rpcUrl: 'https://soroban-testnet.stellar.org',
+            networkPassphrase: Network.TESTNET.networkPassphrase,
+            accountWasmHash: '0' * 64,
+            webauthnVerifierAddress: _contractA,
+          ),
+          sorobanServer: soroban,
+          indexerClient: indexer.client,
+        );
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          ops.connectWallet(
+            options: const OZConnectWalletOptions(
+              credentialId: _credentialIdB64,
+            ),
+          ),
+          throwsA(isA<FormatException>()),
+        );
+      },
+    );
 
     test('connectWallet_indexerMultipleCandidates_returnsAmbiguous', () async {
       final soroban = MockSorobanServer();

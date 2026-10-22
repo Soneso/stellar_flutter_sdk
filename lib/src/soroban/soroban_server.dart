@@ -12,6 +12,7 @@ import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_contract_parser.dart';
 import '../xdr/xdr.dart';
 import 'soroban_auth.dart';
+import 'contract_address_guard.dart';
 import '../transaction.dart';
 import '../requests/request_builder.dart';
 import '../util.dart';
@@ -511,7 +512,8 @@ class SorobanServer {
   /// Use this to query contract state directly without invoking contract functions.
   ///
   /// Parameters:
-  /// - [contractId] Contract ID (hex-encoded hash) of the contract containing the data
+  /// - [contractId] The contract (C...) address, or the 64-character hex of the
+  ///   contract id, of the contract containing the data
   /// - [key] Storage key as XdrSCVal identifying which data to retrieve
   /// - [durability] Storage tier where the data is stored:
   ///   - XdrContractDataDurability.PERSISTENT for long-term storage
@@ -529,6 +531,9 @@ class SorobanServer {
   /// - The entry was archived and needs restoration
   ///
   /// Throws:
+  /// - [ArgumentError]: before any request, if [contractId] is not a contract
+  ///   address, or if [key] holds a muxed account (M...) or muxed contract
+  ///   (W...) address
   /// - Exception: If the RPC request fails or data cannot be decoded
   ///
   /// Example:
@@ -563,6 +568,8 @@ class SorobanServer {
     XdrSCVal key,
     XdrContractDataDurability durability,
   ) async {
+    checkContractAddress(contractId, 'The contract data owner');
+    checkContractDataKey(key);
     return _getContractDataForAddress(
       Address.forContractId(contractId).toXdr(),
       key,
@@ -728,7 +735,8 @@ class SorobanServer {
   /// created from the same uploaded code.
   ///
   /// Parameters:
-  /// - [contractId] Hex-encoded contract ID (hash derived from contract address)
+  /// - [contractId] The contract (C...) address or the 64-character hex of the
+  ///   contract id
   ///
   /// Returns: XdrContractCodeEntry containing:
   /// - code: DataValue with the raw WebAssembly bytecode
@@ -742,6 +750,8 @@ class SorobanServer {
   /// - The contract code entry is missing (should not happen for valid contracts)
   ///
   /// Throws:
+  /// - [ArgumentError]: before any request, if [contractId] is not a contract
+  ///   address
   /// - Exception: If the RPC request fails or XDR decoding fails
   ///
   /// Example:
@@ -767,6 +777,7 @@ class SorobanServer {
   Future<XdrContractCodeEntry?> loadContractCodeForContractId(
     String contractId,
   ) async {
+    checkContractAddress(contractId, 'The contract to load');
     XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
     ledgerKey.contractData = XdrLedgerKeyContractData(
       Address.forContractId(contractId).toXdr(),
@@ -821,7 +832,8 @@ class SorobanServer {
   /// contract metadata.
   ///
   /// Parameters:
-  /// - [contractId] Hex-encoded contract ID to load and parse
+  /// - [contractId] The contract (C...) address or the 64-character hex of the
+  ///   contract id to load and parse
   ///
   /// Returns: [SorobanContractInfo] containing environment version, spec entries,
   /// and contract metadata. Returns null if the contract does not exist, if the
@@ -829,6 +841,8 @@ class SorobanServer {
   /// that does not resolve.
   ///
   /// Throws:
+  /// - [ArgumentError] Before any request, if [contractId] is not a contract
+  ///   address
   /// - [SorobanContractParserFailed] If bytecode parsing fails due to invalid format
   /// - [Exception] If the RPC request fails
   ///

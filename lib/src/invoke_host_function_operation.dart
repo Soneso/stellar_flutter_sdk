@@ -10,6 +10,7 @@ import 'operation.dart';
 import 'util.dart';
 import 'assets.dart';
 import 'soroban/soroban_auth.dart';
+import 'soroban/contract_address_guard.dart';
 
 /// Base class for Soroban smart contract host functions.
 ///
@@ -55,7 +56,7 @@ abstract class HostFunction {
           String contractID = invokeArgs.contractAddress.toStrKey();
           String functionName = invokeArgs.functionName;
           List<XdrSCVal> funcArgs = invokeArgs.args;
-          return InvokeContractHostFunction(
+          return InvokeContractHostFunction._decoded(
             contractID,
             functionName,
             arguments: funcArgs,
@@ -881,8 +882,13 @@ class InvokeContractHostFunction extends HostFunction {
   String _contractID;
 
   /// The contract ID (C-prefixed address or hex format).
+  ///
+  /// Assigning any other value throws an [ArgumentError].
   String get contractID => this._contractID;
-  set contractID(String value) => this._contractID = value;
+  set contractID(String value) {
+    checkContractAddress(value, 'The contract to invoke');
+    this._contractID = value;
+  }
 
   String _functionName;
 
@@ -895,11 +901,24 @@ class InvokeContractHostFunction extends HostFunction {
 
   /// Creates an InvokeContractHostFunction.
   ///
+  /// Throws an [ArgumentError] unless [_contractID] is a contract (C...)
+  /// address or the 64-character hex of a contract id.
+  ///
   /// Parameters:
   /// - [_contractID]: Contract address (C-format or hex).
   /// - [_functionName]: Name of the function to invoke.
   /// - [arguments]: Optional list of arguments for the function.
   InvokeContractHostFunction(
+    this._contractID,
+    this._functionName, {
+    this.arguments,
+  }) {
+    checkContractAddress(_contractID, 'The contract to invoke');
+  }
+
+  /// The host function [HostFunction.fromXdr] decodes, whose target may be
+  /// an address of any kind; [toXdr] re-encodes it unchanged.
+  InvokeContractHostFunction._decoded(
     this._contractID,
     this._functionName, {
     this.arguments,
@@ -917,7 +936,7 @@ class InvokeContractHostFunction extends HostFunction {
     if (this.arguments != null) {
       fcArgs.addAll(this.arguments!);
     }
-    // can be any type of address.
+    // Resolves every address kind, so a decoded target re-encodes unchanged.
     final address = addressFromId(contractID);
     if (address == null) {
       throw new Exception(

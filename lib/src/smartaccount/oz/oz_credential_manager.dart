@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 
+import '../../soroban/contract_address_guard.dart';
 import '../../xdr/xdr.dart';
 import '../core/smart_account_constants.dart';
 import '../core/smart_account_errors.dart';
@@ -250,6 +251,7 @@ class OZCredentialManager implements OZWalletCredentialManagerInterface {
     }
 
     try {
+      checkContractDataOwnerAsFormat(contractAddress);
       final result = await _kit.sorobanServer.getContractData(
         contractAddress,
         XdrSCVal.forLedgerKeyContractInstance(),

@@ -12,6 +12,7 @@ import '../../invoke_host_function_operation.dart';
 import '../../memo.dart';
 import '../../muxed_account.dart';
 import '../../network.dart';
+import '../../soroban/contract_address_guard.dart';
 import '../../soroban/soroban_auth.dart';
 import '../../soroban/soroban_server.dart';
 import '../../transaction.dart';
@@ -1421,6 +1422,7 @@ class OZWalletOperations {
   Future<void> _verifyContractExists(String contractId) async {
     final LedgerEntry? instanceEntry;
     try {
+      checkContractDataOwnerAsFormat(contractId);
       instanceEntry = await _kit.sorobanServer.getContractData(
         contractId,
         XdrSCVal.forLedgerKeyContractInstance(),
@@ -1879,6 +1881,7 @@ class OZWalletOperations {
     while (true) {
       _checkCancellation(cancelToken);
       try {
+        checkContractDataOwnerAsFormat(contractId);
         final entry = await _kit.sorobanServer.getContractData(
           contractId,
           XdrSCVal.forLedgerKeyContractInstance(),
