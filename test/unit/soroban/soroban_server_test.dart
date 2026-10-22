@@ -2006,6 +2006,8 @@ void main() {
                       topic1.toBase64EncodedXdrString(),
                       topic2.toBase64EncodedXdrString(),
                     ],
+                    'operationIndex': 0,
+                    'transactionIndex': 2,
                     'value': value.toBase64EncodedXdrString(),
                     'inSuccessfulContractCall': true,
                     'txHash':
@@ -2045,6 +2047,8 @@ void main() {
         expect(response.events!.length, 1);
         expect(response.events![0].type, 'contract');
         expect(response.events![0].ledger, 90001);
+        expect(response.events![0].opIndex, 0);
+        expect(response.events![0].txIndex, 2);
         expect(
           response.events![0].contractId,
           'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
