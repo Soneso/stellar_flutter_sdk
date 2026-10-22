@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 - `EventInfo.inSuccessfulContractCall`: Stellar RPC 30 and later omit the field; the SDK still reads it from older servers.
 
+### Fixed
+- Horizon list queries parse in minified web release builds.
+
 ## [3.9.0] - 2026-10-15
 
 Migration guide: [documentation/migration/3.9.0.md](documentation/migration/3.9.0.md)

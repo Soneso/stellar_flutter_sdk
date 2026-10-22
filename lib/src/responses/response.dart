@@ -468,40 +468,37 @@ class ResponseConverter {
         return SEP24TransactionsResponse.fromJson(json);
       case SEP24TransactionResponse:
         return SEP24TransactionResponse.fromJson(json);
-    }
-
-    switch (T.toString()) {
-      case "Page<AccountResponse>":
+      case const (Page<AccountResponse>):
         return Page<AccountResponse>.fromJson(json);
-      case "Page<AssetResponse>":
+      case const (Page<AssetResponse>):
         return Page<AssetResponse>.fromJson(json);
-      case "Page<EffectResponse>":
+      case const (Page<EffectResponse>):
         return Page<EffectResponse>.fromJson(json);
-      case "Page<LedgerResponse>":
+      case const (Page<LedgerResponse>):
         return Page<LedgerResponse>.fromJson(json);
-      case "Page<OfferResponse>":
+      case const (Page<OfferResponse>):
         return Page<OfferResponse>.fromJson(json);
-      case "Page<OrderBookResponse>":
+      case const (Page<OrderBookResponse>):
         return Page<OrderBookResponse>.fromJson(json);
-      case "Page<OperationResponse>":
+      case const (Page<OperationResponse>):
         return Page<OperationResponse>.fromJson(json);
-      case "Page<FeeStatsResponse>":
+      case const (Page<FeeStatsResponse>):
         return Page<FeeStatsResponse>.fromJson(json);
-      case "Page<PathResponse>":
+      case const (Page<PathResponse>):
         return Page<PathResponse>.fromJson(json);
-      case "Page<RootResponse>":
+      case const (Page<RootResponse>):
         return Page<RootResponse>.fromJson(json);
-      case "Page<SubmitTransactionResponse>":
+      case const (Page<SubmitTransactionResponse>):
         return Page<SubmitTransactionResponse>.fromJson(json);
-      case "Page<TradeAggregationResponse>":
+      case const (Page<TradeAggregationResponse>):
         return Page<TradeAggregationResponse>.fromJson(json);
-      case "Page<TradeResponse>":
+      case const (Page<TradeResponse>):
         return Page<TradeResponse>.fromJson(json);
-      case "Page<TransactionResponse>":
+      case const (Page<TransactionResponse>):
         return Page<TransactionResponse>.fromJson(json);
-      case "Page<ClaimableBalanceResponse>":
+      case const (Page<ClaimableBalanceResponse>):
         return Page<ClaimableBalanceResponse>.fromJson(json);
-      case "Page<LiquidityPoolResponse>":
+      case const (Page<LiquidityPoolResponse>):
         return Page<LiquidityPoolResponse>.fromJson(json);
     }
   }
