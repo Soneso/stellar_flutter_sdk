@@ -777,7 +777,8 @@ class URIScheme {
     if (!validationResult.result) {
       throw ArgumentError.value(sep7Url, 'sep7Url', 'invalid sep7 url');
     }
-    if (sep7Url.contains("&$signatureParameterName=")) {
+    final queryParameters = Uri.parse(sep7Url).queryParameters;
+    if (queryParameters.containsKey(signatureParameterName)) {
       throw ArgumentError.value(
         sep7Url,
         'sep7Url',
@@ -958,7 +959,7 @@ class URIScheme {
       final xdr = queryParameters[xdrParameterName]!;
       try {
         AbstractTransaction.fromEnvelopeXdrString(xdr);
-      } on Exception catch (_) {
+      } catch (_) {
         return IsValidSep7UrlResult(
           result: false,
           reason:

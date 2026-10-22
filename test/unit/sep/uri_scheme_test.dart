@@ -559,6 +559,18 @@ void main() {
         () => uriScheme.addSignature(signedUri, signerKeyPair),
         throwsArgumentError,
       );
+
+      final parsed = Uri.parse(signedUri);
+      final parameters = Map<String, String>.from(parsed.queryParameters);
+      final signature = parameters.remove('signature')!;
+      final signatureFirst = parsed
+          .replace(queryParameters: {'signature': signature, ...parameters})
+          .toString();
+      expect(signatureFirst, startsWith('web+stellar:tx?signature='));
+      expect(
+        () => uriScheme.addSignature(signatureFirst, signerKeyPair),
+        throwsArgumentError,
+      );
     });
 
     test('signature remains valid after adding to pay URI', () {
@@ -806,6 +818,55 @@ void main() {
       );
       expect(result.result, isFalse);
       expect(result.reason, contains('transaction envelope'));
+    });
+
+    test('rejects tx URI with truncated xdr', () {
+      final xdr = base64Encode([0, 0, 0, 2]);
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}',
+      );
+      expect(result.result, isFalse);
+      expect(
+        result.reason,
+        "The provided 'xdr' parameter is not a valid transaction envelope",
+      );
+    });
+
+    test('rejects tx URI with negative signature array count', () {
+      final transaction = TransactionBuilder(sourceAccount)
+          .addOperation(
+            PaymentOperationBuilder(
+              destinationKeyPair.accountId,
+              Asset.NATIVE,
+              '1',
+            ).build(),
+          )
+          .build();
+      final bytes = base64Decode(transaction.toEnvelopeXdrBase64());
+      final data = ByteData.sublistView(bytes);
+      final countOffset = bytes.length - 4;
+      expect(data.getInt32(countOffset), equals(0));
+      data.setInt32(countOffset, -1);
+      final xdr = base64Encode(bytes);
+      expect(
+        () => AbstractTransaction.fromEnvelopeXdrString(xdr),
+        throwsA(
+          isA<RangeError>().having(
+            (error) => error.message,
+            'message',
+            'XDR array count cannot be negative, got -1',
+          ),
+        ),
+      );
+
+      final result = uriScheme.isValidSep7Url(
+        'web+stellar:tx?xdr=${Uri.encodeComponent(xdr)}',
+      );
+      expect(result.result, isFalse);
+      expect(
+        result.reason,
+        "The provided 'xdr' parameter is not a valid transaction envelope",
+      );
     });
 
     test('rejects pay URI missing destination parameter', () {
