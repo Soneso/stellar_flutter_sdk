@@ -120,8 +120,16 @@ void main() {
         expect(memo.getId(), equals(id));
       });
 
-      test('MemoId throws if id is zero', () {
-        expect(() => Memo.id(BigInt.zero), throwsA(isA<Exception>()));
+      test('creates MemoId with value zero', () {
+        expect(Memo.id(BigInt.zero).getId(), equals(BigInt.zero));
+      });
+
+      test('decodes MemoId zero from XDR', () {
+        final xdr = XdrMemo.fromBase64EncodedXdrString('AAAAAgAAAAAAAAAA');
+        final memo = Memo.fromXdr(xdr) as MemoId;
+
+        expect(memo.getId(), equals(BigInt.zero));
+        expect(memo.toXdr().toBase64EncodedXdrString(), 'AAAAAgAAAAAAAAAA');
       });
 
       test('creates MemoId with max uint64 value', () {
@@ -390,11 +398,13 @@ void main() {
       });
 
       test('fromJson creates MemoId', () {
-        final json = {'memo_type': 'id', 'memo': '987654321'};
-        final memo = Memo.fromJson(json);
+        for (final id in ['0', '987654321']) {
+          final json = {'memo_type': 'id', 'memo': id};
+          final memo = Memo.fromJson(json);
 
-        expect(memo, isA<MemoId>());
-        expect((memo as MemoId).getId(), equals(BigInt.from(987654321)));
+          expect(memo, isA<MemoId>());
+          expect((memo as MemoId).getId(), equals(BigInt.parse(id)));
+        }
       });
 
       test('fromJson creates MemoHash', () {

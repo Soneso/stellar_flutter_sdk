@@ -77,7 +77,6 @@ import 'constants/stellar_protocol_constants.dart';
 /// - Text memos are limited by BYTES not characters (UTF-8 encoding)
 /// - Multi-byte characters count as multiple bytes
 /// - Hash memos are automatically padded to 32 bytes if shorter
-/// - MEMO_ID must be positive (non-zero)
 /// - Memos increase transaction size and fees slightly
 /// - Some services require specific memo types (check their documentation)
 ///
@@ -157,12 +156,9 @@ abstract class Memo {
   /// and anchors for customer or transaction identification.
   ///
   /// Parameters:
-  /// - [id] Positive 64-bit unsigned integer as BigInt (must be non-zero)
+  /// - [id] Unsigned 64-bit integer as BigInt (0 to 2^64-1)
   ///
   /// Returns: [MemoId] instance
-  ///
-  /// Throws:
-  /// - [Exception] If id is zero
   ///
   /// Example:
   /// ```dart
@@ -665,10 +661,9 @@ class MemoNone extends Memo {
 /// Represents a MEMO_ID type memo containing a 64-bit unsigned integer.
 ///
 /// ID memos are commonly used by exchanges and anchors to identify customers
-/// or associate transactions with accounts. The ID must be a positive number
-/// (non-zero).
+/// or associate transactions with accounts.
 ///
-/// ID range: 1 to 18,446,744,073,709,551,615 (2^64 - 1)
+/// ID range: 0 to 18,446,744,073,709,551,615 (2^64 - 1)
 ///
 /// Example:
 /// ```dart
@@ -676,7 +671,7 @@ class MemoNone extends Memo {
 /// MemoId memo = MemoId(BigInt.from(987654321));
 ///
 /// // Access the ID
-/// int customerId = memo.getId();
+/// BigInt customerId = memo.getId();
 /// print("Customer: $customerId");
 /// ```
 ///
@@ -697,14 +692,8 @@ class MemoId extends Memo {
   /// Creates a MEMO_ID with the given BigInt identifier.
   ///
   /// Parameters:
-  /// - [id] Positive 64-bit unsigned integer as BigInt
-  ///
-  /// Throws:
-  /// - [Exception] If id is zero
+  /// - [id] Unsigned 64-bit integer as BigInt (0 to 2^64-1)
   MemoId(BigInt id) {
-    if (id == BigInt.zero) {
-      throw Exception("id must be a positive number");
-    }
     this._id = id;
   }
 
