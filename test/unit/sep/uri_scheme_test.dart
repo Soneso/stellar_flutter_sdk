@@ -1096,10 +1096,13 @@ void main() {
     });
 
     test('accepts URI with valid MEMO_ID', () {
-      final result = uriScheme.isValidSep7Url(
-        'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=12345&memo_type=MEMO_ID',
-      );
-      expect(result.result, isTrue);
+      for (final id in ['0', '12345']) {
+        final result = uriScheme.isValidSep7Url(
+          'web+stellar:pay?destination=${destinationKeyPair.accountId}&memo=$id&memo_type=MEMO_ID',
+        );
+        expect(result.result, isTrue);
+        expect(result.reason, isNull);
+      }
     });
 
     test('rejects URI with invalid origin domain format', () {

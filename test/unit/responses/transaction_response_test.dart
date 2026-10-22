@@ -186,6 +186,18 @@ void main() {
 
         expect(tx.memo, isA<MemoId>());
         expect((tx.memo as MemoId).getId(), equals(BigInt.from(12345)));
+
+        json['memo'] = '0';
+        final page = Page<TransactionResponse>.fromJson({
+          '_embedded': {
+            'records': [json],
+          },
+        });
+        expect(page.records, hasLength(1));
+        expect(
+          (page.records.single.memo as MemoId).getId(),
+          equals(BigInt.zero),
+        );
       });
 
       test('parses transaction with hash memo', () {
