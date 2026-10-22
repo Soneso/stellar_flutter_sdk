@@ -799,12 +799,31 @@ void main() {
       expect(ResponseConverter.fromJson, isA<Function>());
     });
 
-    test('ResponseConverter handles Page types via toString', () {
-      // The converter uses toString() to match Page types
-      // Testing that the pattern matching works conceptually
-      final pageType = 'Page<AccountResponse>';
-      expect(pageType, contains('Page'));
-      expect(pageType, contains('AccountResponse'));
+    test('ResponseConverter parses every supported page type', () {
+      void expectPage<R>() {
+        final page = ResponseConverter.fromJson<Page<R>>({
+          '_embedded': {'records': <dynamic>[]},
+        });
+        expect(page, isA<Page<R>>());
+        expect((page as Page<R>).records, isEmpty);
+      }
+
+      expectPage<AccountResponse>();
+      expectPage<AssetResponse>();
+      expectPage<EffectResponse>();
+      expectPage<LedgerResponse>();
+      expectPage<OfferResponse>();
+      expectPage<OrderBookResponse>();
+      expectPage<OperationResponse>();
+      expectPage<FeeStatsResponse>();
+      expectPage<PathResponse>();
+      expectPage<RootResponse>();
+      expectPage<SubmitTransactionResponse>();
+      expectPage<TradeAggregationResponse>();
+      expectPage<TradeResponse>();
+      expectPage<TransactionResponse>();
+      expectPage<ClaimableBalanceResponse>();
+      expectPage<LiquidityPoolResponse>();
     });
 
     test('TypeToken toString includes type information', () {
