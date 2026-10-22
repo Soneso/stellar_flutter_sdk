@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'contract_address_guard_fixtures.dart';
+
 /// MockDioAdapter for mocking HTTP responses
 class MockDioAdapter implements dio.HttpClientAdapter {
   final Function(dio.RequestOptions) onRequest;
@@ -23,6 +25,26 @@ class MockDioAdapter implements dio.HttpClientAdapter {
 
   @override
   void close({bool force = false}) {}
+}
+
+/// Expects [load] to reject the muxed SEP-23 vectors as the contract to
+/// load with the exact messages, before any request.
+Future<void> _expectNonContractRejected(
+  Future<Object?> Function(SorobanServer server, String id) load,
+) async {
+  var requests = 0;
+  final server = SorobanServer(
+    'https://rpc.test',
+    httpClient: dio.Dio()
+      ..httpClientAdapter = MockDioAdapter(
+        (_) => throw StateError('request ${++requests}'),
+      ),
+  );
+  final messages = nonContractMessages('The contract to load');
+  for (final MapEntry(key: id, value: message) in messages.entries) {
+    await expectLater(load(server, id), throwsRejection(message));
+  }
+  expect(requests, 0);
 }
 
 void main() {
@@ -275,6 +297,12 @@ void main() {
 
         expect(codeEntry, isNull);
       });
+
+      test('rejects a non-contract address before any request', () async {
+        await _expectNonContractRejected(
+          (server, id) => server.loadContractCodeForContractId(id),
+        );
+      });
     });
 
     group('loadContractInfoForContractId', () {
@@ -308,6 +336,12 @@ void main() {
         final info = await server.loadContractInfoForContractId(contractIdHash);
 
         expect(info, isNull);
+      });
+
+      test('rejects a non-contract address before any request', () async {
+        await _expectNonContractRejected(
+          (server, id) => server.loadContractInfoForContractId(id),
+        );
       });
     });
 

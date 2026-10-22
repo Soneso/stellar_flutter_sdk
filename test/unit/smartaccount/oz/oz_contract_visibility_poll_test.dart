@@ -6,6 +6,8 @@ import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import '../../soroban/contract_address_guard_fixtures.dart';
+import 'mock_dio_adapter.dart';
 import 'oz_pipeline_fixtures.dart';
 
 const String _contractA =
@@ -213,6 +215,32 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('muxedContractId_retriesUntilTimeout_withoutRequest', () async {
+      final adapter = MockDioAdapter.json('{}');
+      final server = SorobanServer(
+        'https://rpc.test',
+        httpClient: dio.Dio()..httpClientAdapter = adapter,
+      );
+      final ops = OZWalletOperations(FakePipelineKit(sorobanServer: server));
+
+      await expectLater(
+        () => ops.waitForContractVisibleToRpc(
+          sep23MuxedContract,
+          null,
+          pollInterval: fastInterval,
+          timeout: const Duration(milliseconds: 40),
+        ),
+        throwsA(
+          isA<SmartAccountTransactionTimeout>().having(
+            (e) => e.cause,
+            'cause',
+            isA<FormatException>(),
+          ),
+        ),
+      );
+      expect(adapter.capturedUrl, isNull);
     });
 
     test('alreadyCancelledToken_throwsBeforeAnyPoll', () async {

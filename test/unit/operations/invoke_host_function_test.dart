@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:typed_data';
 
+import '../soroban/contract_address_guard_fixtures.dart';
+
 void main() {
   group('UploadContractWasmHostFunction', () {
     test('create upload contract wasm host function', () {
@@ -536,6 +538,12 @@ void main() {
 
       expect(invokeFunction.contractID, equals(contractId2));
       expect(invokeFunction.functionName, equals(functionName2));
+
+      final messages = nonContractMessages('The contract to invoke');
+      for (final MapEntry(key: id, value: message) in messages.entries) {
+        expect(() => invokeFunction.contractID = id, throwsRejection(message));
+        expect(invokeFunction.contractID, equals(contractId2));
+      }
     });
 
     test('with complex arguments', () {
@@ -591,6 +599,36 @@ void main() {
 
       invokeFunction.arguments = args2;
       expect(invokeFunction.arguments!.length, equals(2));
+    });
+
+    test('accepts only a contract as the contract to invoke', () {
+      const subject = 'The contract to invoke';
+      final hex = StrKey.decodeContractIdHex(sep23Contract);
+      final balance = StrKey.encodeClaimableBalanceIdHex('00$hex');
+      final pool = StrKey.encodeLiquidityPoolIdHex(hex);
+      final messages = {
+        ...nonContractMessages(subject),
+        sep23Account:
+            '$subject must be a contract (C...) address, got an account '
+            '(G...) address: $sep23Account',
+        balance:
+            '$subject must be a contract (C...) address, got a claimable '
+            'balance (B...) address: $balance',
+        pool:
+            '$subject must be a contract (C...) address, got a liquidity pool '
+            '(L...) address: $pool',
+        'xyz': '$subject must be a contract (C...) address: xyz',
+      };
+      messages.forEach((id, message) {
+        expect(
+          () => InvokeContractHostFunction(id, 'balance'),
+          throwsRejection(message),
+        );
+      });
+      for (final id in [sep23Contract, hex]) {
+        final xdr = InvokeContractHostFunction(id, 'balance').toXdr();
+        expect(xdr.invokeContract!.contractAddress.toStrKey(), sep23Contract);
+      }
     });
   });
 
@@ -1040,6 +1078,50 @@ void main() {
   });
 
   group('XDR Round-trip Tests', () {
+    test('invoke contract re-encodes a decoded target of every kind', () {
+      final hex = StrKey.decodeContractIdHex(sep23Contract);
+      final targets = [
+        Address.forContractId(sep23Contract),
+        Address.forMuxedContractId(sep23MuxedContract),
+        Address.forMuxedAccountId(sep23MuxedAccount),
+        Address.forAccountId(sep23Account),
+        Address.forClaimableBalanceId(
+          StrKey.encodeClaimableBalanceIdHex('00$hex'),
+        ),
+        Address.forLiquidityPoolId(StrKey.encodeLiquidityPoolIdHex(hex)),
+      ];
+      for (final target in targets) {
+        final xdr = XdrHostFunction.forInvokingContractWithArgs(
+          XdrInvokeContractArgs(target.toXdr(), 'balance', []),
+        );
+        expect(
+          HostFunction.fromXdr(xdr).toXdr().toBase64EncodedXdrString(),
+          xdr.toBase64EncodedXdrString(),
+        );
+      }
+      final envelope = TransactionBuilder(Account(sep23Account, BigInt.one))
+          .addOperation(
+            InvokeHostFunctionOperation.builder(
+              XdrInvokeHostFunctionOp(
+                XdrHostFunction.forInvokingContractWithArgs(
+                  XdrInvokeContractArgs(targets[1].toXdr(), 'balance', []),
+                ),
+                [],
+              ),
+            ).build(),
+          )
+          .build()
+          .toEnvelopeXdrBase64();
+      final decoded = AbstractTransaction.fromEnvelopeXdrString(envelope);
+      expect(decoded.toEnvelopeXdrBase64(), envelope);
+      expect(
+        () => InvokeContractHostFunction(sep23MuxedContract, 'balance'),
+        throwsRejection(
+          nonContractMessages('The contract to invoke')[sep23MuxedContract]!,
+        ),
+      );
+    });
+
     test('upload wasm complete round-trip', () {
       final sourceKeyPair = KeyPair.random();
       final wasmBytes = Uint8List.fromList(List.generate(100, (i) => i % 256));

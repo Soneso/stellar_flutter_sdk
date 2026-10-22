@@ -10,6 +10,7 @@ import 'package:stellar_flutter_sdk/src/constants/network_constants.dart';
 import 'package:stellar_flutter_sdk/src/invoke_host_function_operation.dart';
 import 'package:stellar_flutter_sdk/src/restore_footprint_operation.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_auth.dart';
+import 'package:stellar_flutter_sdk/src/soroban/contract_address_guard.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_contract_parser.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_server.dart';
 import 'package:stellar_flutter_sdk/src/soroban/contract_spec.dart';
@@ -152,9 +153,14 @@ class SorobanClient {
 
   /// Loads the contract info for the contractId provided by the [options],
   /// and then constructs a SorobanClient by using the loaded contract info.
+  ///
+  /// Throws an [ArgumentError] before any request when the contractId is
+  /// neither a contract (C...) address nor the 64-character hex of a contract
+  /// id.
   static Future<SorobanClient> forClientOptions({
     required ClientOptions options,
   }) async {
+    checkContractAddress(options.contractId, 'The contract to load');
     SorobanServer server;
     if (options.server != null) {
       server = options.server!;
@@ -838,6 +844,10 @@ class AssembledTransaction {
   ///
   /// If you need to create a soroban operation with a host function other than `InvokeContractHostFunction`, you
   /// can use `AssembledTransaction.buildWithOp` instead.
+  ///
+  /// Throws an [ArgumentError] before any request when the contractId of the
+  /// client options is neither a contract (C...) address nor the 64-character
+  /// hex of a contract id.
   static Future<AssembledTransaction> build({
     required AssembledTransactionOptions options,
   }) async {
@@ -853,10 +863,19 @@ class AssembledTransaction {
   /// Construct a new AssembledTransaction, specifying a soroban operation with a host function other
   /// than `InvokeContractHostFunction` (the default used by `AssembledTransaction.build`).
   /// E.g. `CreateContractWithConstructorHostFunction`
+  ///
+  /// Throws an [ArgumentError] before any request when [operation] invokes a
+  /// contract whose id is neither a contract (C...) address nor the
+  /// 64-character hex of a contract id, as a host function decoded from XDR
+  /// may carry.
   static Future<AssembledTransaction> buildWithOp({
     required InvokeHostFunctionOperation operation,
     required AssembledTransactionOptions options,
   }) async {
+    final HostFunction function = operation.function;
+    if (function is InvokeContractHostFunction) {
+      checkContractAddress(function.contractID, 'The contract to invoke');
+    }
     final tx = AssembledTransaction._(options);
     tx._originalOp = operation;
     final account = await tx._getSourceAccount();

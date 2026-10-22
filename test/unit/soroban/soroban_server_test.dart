@@ -8,6 +8,8 @@ import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'contract_address_guard_fixtures.dart';
+
 /// MockDioAdapter for mocking HTTP responses
 class MockDioAdapter implements dio.HttpClientAdapter {
   final Function(dio.RequestOptions) onRequest;
@@ -2145,13 +2147,24 @@ void main() {
       test('returns contract data entry for persistent storage', () async {
         final contractId =
             'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
-        final key = XdrSCVal.forSymbol('counter');
+        final key = XdrSCVal.forVec([
+          XdrSCVal.forSymbol('counter'),
+          Address.forAccountId(sep23Account).toXdrSCVal(),
+        ]);
+        final ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA)
+          ..contractData = XdrLedgerKeyContractData(
+            Address.forContractId(contractId).toXdr(),
+            key,
+            XdrContractDataDurability.PERSISTENT,
+          );
 
         var mockDio = dio.Dio();
         mockDio.httpClientAdapter = MockDioAdapter((options) {
           var requestBody = jsonDecode(options.data);
           expect(requestBody['method'], 'getLedgerEntries');
-          expect(requestBody['params']['keys'], isList);
+          expect(requestBody['params']['keys'], [
+            ledgerKey.toBase64EncodedXdrString(),
+          ]);
 
           final value = XdrSCVal.forU64(BigInt.from(42));
           final contractAddress = XdrSCAddress(
@@ -2251,6 +2264,89 @@ void main() {
 
         expect(entry, isNull);
       });
+
+      test(
+        'rejects a non-contract owner and a muxed key before any request',
+        () async {
+          var requests = 0;
+          final server = SorobanServer(
+            'https://rpc.test',
+            httpClient: dio.Dio()
+              ..httpClientAdapter = MockDioAdapter(
+                (_) => throw StateError('request ${++requests}'),
+              ),
+          );
+          final symbol = XdrSCVal.forSymbol('Balance');
+          const keyMessage =
+              'Contract data keys cannot contain muxed account '
+              '(M...) or muxed contract (W...) addresses';
+          final cases = <(String, XdrSCVal, String)>[
+            for (final MapEntry(key: id, value: message) in nonContractMessages(
+              'The contract data owner',
+            ).entries)
+              (id, symbol, message),
+            (
+              sep23Contract,
+              XdrSCVal.forVec([
+                symbol,
+                Address.forMuxedContractId(sep23MuxedContract).toXdrSCVal(),
+              ]),
+              keyMessage,
+            ),
+            (
+              sep23Contract,
+              XdrSCVal.forMap([
+                XdrSCMapEntry(
+                  symbol,
+                  Address.forMuxedAccountId(sep23MuxedAccount).toXdrSCVal(),
+                ),
+              ]),
+              keyMessage,
+            ),
+            (
+              sep23Contract,
+              XdrSCVal.forMap([
+                XdrSCMapEntry(
+                  XdrSCVal.forVec([
+                    Address.forMuxedContractId(sep23MuxedContract).toXdrSCVal(),
+                  ]),
+                  symbol,
+                ),
+              ]),
+              keyMessage,
+            ),
+          ];
+          for (final (owner, key, message) in cases) {
+            await expectLater(
+              server.getContractData(
+                owner,
+                key,
+                XdrContractDataDurability.PERSISTENT,
+              ),
+              throwsRejection(message),
+            );
+          }
+          await expectLater(
+            server.getContractData(
+              secretSeed,
+              symbol,
+              XdrContractDataDurability.PERSISTENT,
+            ),
+            throwsA(
+              isA<ArgumentError>().having(
+                (e) => e.message,
+                'message',
+                allOf(
+                  'The contract data owner must be a contract (C...) address, '
+                  'got a secret seed (S...) instead of an address',
+                  isNot(contains(secretSeed)),
+                ),
+              ),
+            ),
+          );
+          expect(requests, 0);
+        },
+      );
     });
 
     group('Error Handling', () {
