@@ -272,91 +272,96 @@ class XdrSCValBase {
     XdrDataInputStream stream,
     T Function(XdrSCValType) constructor,
   ) {
-    T decoded = constructor(XdrSCValType.decode(stream));
-    switch (decoded.discriminant) {
-      case XdrSCValType.SCV_BOOL:
-        decoded._b = stream.readBoolean();
-        break;
-      case XdrSCValType.SCV_VOID:
-        break;
-      case XdrSCValType.SCV_ERROR:
-        decoded._error = XdrSCError.decode(stream);
-        break;
-      case XdrSCValType.SCV_U32:
-        decoded._u32 = XdrUint32.decode(stream);
-        break;
-      case XdrSCValType.SCV_I32:
-        decoded._i32 = XdrInt32.decode(stream);
-        break;
-      case XdrSCValType.SCV_U64:
-        decoded._u64 = XdrUint64.decode(stream);
-        break;
-      case XdrSCValType.SCV_I64:
-        decoded._i64 = XdrInt64.decode(stream);
-        break;
-      case XdrSCValType.SCV_TIMEPOINT:
-        decoded._timepoint = XdrUint64.decode(stream);
-        break;
-      case XdrSCValType.SCV_DURATION:
-        decoded._duration = XdrUint64.decode(stream);
-        break;
-      case XdrSCValType.SCV_U128:
-        decoded._u128 = XdrUInt128Parts.decode(stream);
-        break;
-      case XdrSCValType.SCV_I128:
-        decoded._i128 = XdrInt128Parts.decode(stream);
-        break;
-      case XdrSCValType.SCV_U256:
-        decoded._u256 = XdrUInt256Parts.decode(stream);
-        break;
-      case XdrSCValType.SCV_I256:
-        decoded._i256 = XdrInt256Parts.decode(stream);
-        break;
-      case XdrSCValType.SCV_BYTES:
-        decoded._bytes = XdrSCBytes.decode(stream);
-        break;
-      case XdrSCValType.SCV_STRING:
-        decoded._str = stream.readString();
-        break;
-      case XdrSCValType.SCV_SYMBOL:
-        decoded._sym = stream.readString();
-        break;
-      case XdrSCValType.SCV_VEC:
-        int vecPresent = stream.readInt();
-        if (vecPresent != 0) {
-          int vecLen = stream.readArrayLength();
-          decoded._vec = List<XdrSCVal>.empty(growable: true);
-          for (int veci = 0; veci < vecLen; veci++) {
-            decoded._vec!.add(XdrSCVal.decode(stream));
+    stream.enterRecursiveDecode();
+    try {
+      T decoded = constructor(XdrSCValType.decode(stream));
+      switch (decoded.discriminant) {
+        case XdrSCValType.SCV_BOOL:
+          decoded._b = stream.readBoolean();
+          break;
+        case XdrSCValType.SCV_VOID:
+          break;
+        case XdrSCValType.SCV_ERROR:
+          decoded._error = XdrSCError.decode(stream);
+          break;
+        case XdrSCValType.SCV_U32:
+          decoded._u32 = XdrUint32.decode(stream);
+          break;
+        case XdrSCValType.SCV_I32:
+          decoded._i32 = XdrInt32.decode(stream);
+          break;
+        case XdrSCValType.SCV_U64:
+          decoded._u64 = XdrUint64.decode(stream);
+          break;
+        case XdrSCValType.SCV_I64:
+          decoded._i64 = XdrInt64.decode(stream);
+          break;
+        case XdrSCValType.SCV_TIMEPOINT:
+          decoded._timepoint = XdrUint64.decode(stream);
+          break;
+        case XdrSCValType.SCV_DURATION:
+          decoded._duration = XdrUint64.decode(stream);
+          break;
+        case XdrSCValType.SCV_U128:
+          decoded._u128 = XdrUInt128Parts.decode(stream);
+          break;
+        case XdrSCValType.SCV_I128:
+          decoded._i128 = XdrInt128Parts.decode(stream);
+          break;
+        case XdrSCValType.SCV_U256:
+          decoded._u256 = XdrUInt256Parts.decode(stream);
+          break;
+        case XdrSCValType.SCV_I256:
+          decoded._i256 = XdrInt256Parts.decode(stream);
+          break;
+        case XdrSCValType.SCV_BYTES:
+          decoded._bytes = XdrSCBytes.decode(stream);
+          break;
+        case XdrSCValType.SCV_STRING:
+          decoded._str = stream.readString();
+          break;
+        case XdrSCValType.SCV_SYMBOL:
+          decoded._sym = stream.readString();
+          break;
+        case XdrSCValType.SCV_VEC:
+          int vecPresent = stream.readInt();
+          if (vecPresent != 0) {
+            int vecLen = stream.readArrayLength();
+            decoded._vec = List<XdrSCVal>.empty(growable: true);
+            for (int veci = 0; veci < vecLen; veci++) {
+              decoded._vec!.add(XdrSCVal.decode(stream));
+            }
           }
-        }
-        break;
-      case XdrSCValType.SCV_MAP:
-        int mapPresent = stream.readInt();
-        if (mapPresent != 0) {
-          int mapLen = stream.readArrayLength();
-          decoded._map = List<XdrSCMapEntry>.empty(growable: true);
-          for (int mapi = 0; mapi < mapLen; mapi++) {
-            decoded._map!.add(XdrSCMapEntry.decode(stream));
+          break;
+        case XdrSCValType.SCV_MAP:
+          int mapPresent = stream.readInt();
+          if (mapPresent != 0) {
+            int mapLen = stream.readArrayLength();
+            decoded._map = List<XdrSCMapEntry>.empty(growable: true);
+            for (int mapi = 0; mapi < mapLen; mapi++) {
+              decoded._map!.add(XdrSCMapEntry.decode(stream));
+            }
           }
-        }
-        break;
-      case XdrSCValType.SCV_ADDRESS:
-        decoded._address = XdrSCAddress.decode(stream);
-        break;
-      case XdrSCValType.SCV_CONTRACT_INSTANCE:
-        decoded._instance = XdrSCContractInstance.decode(stream);
-        break;
-      case XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE:
-        break;
-      case XdrSCValType.SCV_LEDGER_KEY_NONCE:
-        decoded._nonce_key = XdrSCNonceKey.decode(stream);
-        break;
-      case XdrSCValType.SCV_EXECUTABLE_TAG:
-        decoded._executableTag = stream.readStringBytes();
-        break;
+          break;
+        case XdrSCValType.SCV_ADDRESS:
+          decoded._address = XdrSCAddress.decode(stream);
+          break;
+        case XdrSCValType.SCV_CONTRACT_INSTANCE:
+          decoded._instance = XdrSCContractInstance.decode(stream);
+          break;
+        case XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE:
+          break;
+        case XdrSCValType.SCV_LEDGER_KEY_NONCE:
+          decoded._nonce_key = XdrSCNonceKey.decode(stream);
+          break;
+        case XdrSCValType.SCV_EXECUTABLE_TAG:
+          decoded._executableTag = stream.readStringBytes();
+          break;
+      }
+      return decoded;
+    } finally {
+      stream.exitRecursiveDecode();
     }
-    return decoded;
   }
 
   String toBase64EncodedXdrString() {

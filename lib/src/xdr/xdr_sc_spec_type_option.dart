@@ -25,8 +25,13 @@ class XdrSCSpecTypeOption {
   }
 
   static XdrSCSpecTypeOption decode(XdrDataInputStream stream) {
-    XdrSCSpecTypeDef valueType = XdrSCSpecTypeDef.decode(stream);
-    return XdrSCSpecTypeOption(valueType);
+    stream.enterRecursiveDecode();
+    try {
+      XdrSCSpecTypeDef valueType = XdrSCSpecTypeDef.decode(stream);
+      return XdrSCSpecTypeOption(valueType);
+    } finally {
+      stream.exitRecursiveDecode();
+    }
   }
 
   String toBase64EncodedXdrString() {

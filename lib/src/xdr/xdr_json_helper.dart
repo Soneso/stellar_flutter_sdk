@@ -56,8 +56,8 @@ import '../util.dart' show Util;
 class XdrJsonHelper {
   /// Maximum number of nested JSON containers accepted in either direction.
   ///
-  /// Matches `XdrDataInputStream.maxRecursiveDecodeDepth`, so the JSON and
-  /// binary decoders bound recursion at the same number.
+  /// Equal to [XdrDataInputStream.maxRecursiveDecodeDepth], the binary cap on
+  /// nested delegate signatures.
   static const int maxDepth = 128;
 
   /// The optional schema property. It is accepted on input, stripped, and

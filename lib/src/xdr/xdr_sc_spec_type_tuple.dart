@@ -29,14 +29,19 @@ class XdrSCSpecTypeTuple {
   }
 
   static XdrSCSpecTypeTuple decode(XdrDataInputStream stream) {
-    int valueTypessize = stream.readArrayLength();
-    List<XdrSCSpecTypeDef> valueTypes = List<XdrSCSpecTypeDef>.empty(
-      growable: true,
-    );
-    for (int i = 0; i < valueTypessize; i++) {
-      valueTypes.add(XdrSCSpecTypeDef.decode(stream));
+    stream.enterRecursiveDecode();
+    try {
+      int valueTypessize = stream.readArrayLength();
+      List<XdrSCSpecTypeDef> valueTypes = List<XdrSCSpecTypeDef>.empty(
+        growable: true,
+      );
+      for (int i = 0; i < valueTypessize; i++) {
+        valueTypes.add(XdrSCSpecTypeDef.decode(stream));
+      }
+      return XdrSCSpecTypeTuple(valueTypes);
+    } finally {
+      stream.exitRecursiveDecode();
     }
-    return XdrSCSpecTypeTuple(valueTypes);
   }
 
   String toBase64EncodedXdrString() {

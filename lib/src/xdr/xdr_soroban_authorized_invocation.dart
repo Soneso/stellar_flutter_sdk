@@ -44,16 +44,20 @@ class XdrSorobanAuthorizedInvocation {
   }
 
   static XdrSorobanAuthorizedInvocation decode(XdrDataInputStream stream) {
-    XdrSorobanAuthorizedFunction function = XdrSorobanAuthorizedFunction.decode(
-      stream,
-    );
-    int subInvocationssize = stream.readArrayLength();
-    List<XdrSorobanAuthorizedInvocation> subInvocations =
-        List<XdrSorobanAuthorizedInvocation>.empty(growable: true);
-    for (int i = 0; i < subInvocationssize; i++) {
-      subInvocations.add(XdrSorobanAuthorizedInvocation.decode(stream));
+    stream.enterRecursiveDecode();
+    try {
+      XdrSorobanAuthorizedFunction function =
+          XdrSorobanAuthorizedFunction.decode(stream);
+      int subInvocationssize = stream.readArrayLength();
+      List<XdrSorobanAuthorizedInvocation> subInvocations =
+          List<XdrSorobanAuthorizedInvocation>.empty(growable: true);
+      for (int i = 0; i < subInvocationssize; i++) {
+        subInvocations.add(XdrSorobanAuthorizedInvocation.decode(stream));
+      }
+      return XdrSorobanAuthorizedInvocation(function, subInvocations);
+    } finally {
+      stream.exitRecursiveDecode();
     }
-    return XdrSorobanAuthorizedInvocation(function, subInvocations);
   }
 
   String toBase64EncodedXdrString() {

@@ -1,12 +1,18 @@
 require 'set'
 
-# Struct types whose XDR decode is recursive (the struct contains a
-# variable-length array of itself). The generated decode method wraps its body
-# in XdrDataInputStream.enterRecursiveDecode / exitRecursiveDecode calls so
-# that an unbounded nesting depth is rejected before stack exhaustion occurs.
+# Emitted types on a cycle in the XDR type graph; their generated decoders count
+# against XdrDataInputStream.maxXdrDecodeDepth. SCVec and SCMap typedefs are inlined
+# as lists, so their elements carry the guard.
 RECURSIVE_DECODE_TYPES = Set[
-  'XdrSorobanDelegateSignature',
+  'XdrSorobanDelegateSignature', 'XdrSorobanAuthorizedInvocation',
+  'XdrSCPQuorumSet', 'XdrClaimPredicate',
+  'XdrSCVal', 'XdrSCMapEntry', 'XdrSCContractInstance',
+  'XdrSCSpecTypeDef', 'XdrSCSpecTypeOption', 'XdrSCSpecTypeResult',
+  'XdrSCSpecTypeVec', 'XdrSCSpecTypeMap', 'XdrSCSpecTypeTuple',
 ].freeze
+
+# The recursive type with an additional delegate-chain depth cap.
+DELEGATE_DEPTH_TYPE = 'XdrSorobanDelegateSignature'
 
 # Maps xdrgen canonical type names to existing Dart class names.
 # Only includes types where the default "Xdr#{canonical_name}" convention

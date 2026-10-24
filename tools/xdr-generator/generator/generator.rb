@@ -292,28 +292,41 @@ class Generator < Xdrgen::Generators::Base
   end
 
   def render_struct_decode(out, struct_name, fields)
+    if struct_name == DELEGATE_DEPTH_TYPE
+      out.puts "  // Nested delegate levels per stream, capped at maxRecursiveDecodeDepth."
+      out.puts "  static final _delegateDecodeDepth = Expando<int>();"
+    end
     out.puts "  static #{struct_name} decode(XdrDataInputStream stream) {"
-    if RECURSIVE_DECODE_TYPES.include?(struct_name)
-      out.puts "    stream.enterRecursiveDecode();"
-      out.puts "    try {"
-      # Fields are emitted at 4-space indent by render_decode_field.
-      # Capture them and re-emit with 2 extra spaces for the try block.
-      buffer = StringIO.new
-      fields.each { |f| render_decode_field(buffer, f[:name], f) }
-      buffer.string.each_line { |line| out.puts "  #{line.chomp}" }
+    render_decode_guard(out, struct_name) do |body|
+      fields.each { |f| render_decode_field(body, f[:name], f) }
       args = fields.map { |f| f[:name] }.join(", ")
-      out.puts "      return #{struct_name}(#{args});"
-      out.puts "    } finally {"
-      out.puts "      stream.exitRecursiveDecode();"
-      out.puts "    }"
-    else
-      fields.each do |f|
-        render_decode_field(out, f[:name], f)
-      end
-      args = fields.map { |f| f[:name] }.join(", ")
-      out.puts "    return #{struct_name}(#{args});"
+      body.puts "    return #{struct_name}(#{args});"
     end
     out.puts "  }"
+  end
+
+  def render_decode_guard(out, type)
+    return yield(out) unless RECURSIVE_DECODE_TYPES.include?(type.delete_suffix('Base'))
+
+    delegate = type == DELEGATE_DEPTH_TYPE
+    out.puts "    stream.enterRecursiveDecode();"
+    out.puts "    final depth = _delegateDecodeDepth[stream] ?? 0;" if delegate
+    out.puts "    try {"
+    if delegate
+      out.puts "      if (depth >= XdrDataInputStream.maxRecursiveDecodeDepth) {"
+      out.puts "        throw Exception('XDR decode depth limit exceeded (${XdrDataInputStream.maxRecursiveDecodeDepth}). '"
+      out.puts "          'The encoded data contains a recursion depth that exceeds the '"
+      out.puts "          'safety cap; decoding is aborted to prevent stack exhaustion.');"
+      out.puts "      }"
+      out.puts "      _delegateDecodeDepth[stream] = depth + 1;"
+    end
+    buffer = StringIO.new
+    yield buffer
+    buffer.string.each_line { |line| out.puts "  #{line.chomp}" }
+    out.puts "    } finally {"
+    out.puts "      _delegateDecodeDepth[stream] = depth;" if delegate
+    out.puts "      stream.exitRecursiveDecode();"
+    out.puts "    }"
   end
 
   # ---------------------------------------------------------------------------
@@ -484,15 +497,17 @@ class Generator < Xdrgen::Generators::Base
   def render_union_decode(out, union_name, disc_info, arms)
     var = decode_var_name(union_name)
     out.puts "  static #{union_name} decode(XdrDataInputStream stream) {"
-    if disc_info[:kind] == :int
-      out.puts "    int discriminant = stream.readInt();"
-      out.puts "    #{union_name} #{var} = #{union_name}(discriminant);"
-    else
-      disc_type = disc_info[:dart_name]
-      out.puts "    #{union_name} #{var} = #{union_name}(#{disc_type}.decode(stream));"
+    render_decode_guard(out, union_name) do |body|
+      if disc_info[:kind] == :int
+        body.puts "    int discriminant = stream.readInt();"
+        body.puts "    #{union_name} #{var} = #{union_name}(discriminant);"
+      else
+        disc_type = disc_info[:dart_name]
+        body.puts "    #{union_name} #{var} = #{union_name}(#{disc_type}.decode(stream));"
+      end
+      render_union_decode_switch(body, union_name, var, disc_info, arms)
+      body.puts "    return #{var};"
     end
-    render_union_decode_switch(out, union_name, var, disc_info, arms)
-    out.puts "    return #{var};"
     out.puts "  }"
   end
 
@@ -509,17 +524,19 @@ class Generator < Xdrgen::Generators::Base
       out.puts "    XdrDataInputStream stream,"
       out.puts "    T Function(int) constructor,"
       out.puts "  ) {"
-      out.puts "    T decoded = constructor(stream.readInt());"
     else
       disc_type = disc_info[:dart_name]
       out.puts "  static T decodeAs<T extends #{base_class_name}>("
       out.puts "    XdrDataInputStream stream,"
       out.puts "    T Function(#{disc_type}) constructor,"
       out.puts "  ) {"
-      out.puts "    T decoded = constructor(#{disc_type}.decode(stream));"
     end
-    render_union_decode_switch(out, union_name, "decoded", disc_info, arms)
-    out.puts "    return decoded;"
+    render_decode_guard(out, union_name) do |body|
+      disc = disc_info[:kind] == :int ? 'stream.readInt()' : "#{disc_info[:dart_name]}.decode(stream)"
+      body.puts "    T decoded = constructor(#{disc});"
+      render_union_decode_switch(body, union_name, "decoded", disc_info, arms)
+      body.puts "    return decoded;"
+    end
     out.puts "  }"
   end
 

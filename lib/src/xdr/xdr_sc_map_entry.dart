@@ -30,9 +30,14 @@ class XdrSCMapEntry {
   }
 
   static XdrSCMapEntry decode(XdrDataInputStream stream) {
-    XdrSCVal key = XdrSCVal.decode(stream);
-    XdrSCVal val = XdrSCVal.decode(stream);
-    return XdrSCMapEntry(key, val);
+    stream.enterRecursiveDecode();
+    try {
+      XdrSCVal key = XdrSCVal.decode(stream);
+      XdrSCVal val = XdrSCVal.decode(stream);
+      return XdrSCMapEntry(key, val);
+    } finally {
+      stream.exitRecursiveDecode();
+    }
   }
 
   String toBase64EncodedXdrString() {
