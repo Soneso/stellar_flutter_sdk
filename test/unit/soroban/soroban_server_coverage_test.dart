@@ -1207,13 +1207,14 @@ void main() {
     });
 
     group('LedgerEntry getters', () {
-      test('decodes ledgerEntryData and keyValue', () {
-        final keySc = XdrSCVal.forSymbol('counter');
+      test('decodes ledgerEntryData and ledgerKeyXdr', () {
         final entryData = XdrLedgerEntryData(XdrLedgerEntryType.ACCOUNT);
         entryData.account = buildAccountEntry();
+        final key = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT)
+          ..account = XdrLedgerKeyAccount(entryData.account!.accountID);
 
         final entry = LedgerEntry(
-          keySc.toBase64EncodedXdrString(),
+          key.toBase64EncodedXdrString(),
           entryData.toBase64EncodedXdrString(),
           99999,
           null,
@@ -1221,7 +1222,10 @@ void main() {
         );
 
         expect(entry.ledgerEntryData.discriminant, XdrLedgerEntryType.ACCOUNT);
-        expect(entry.keyValue.sym, 'counter');
+        expect(
+          entry.ledgerKeyXdr.toBase64EncodedXdrString(),
+          key.toBase64EncodedXdrString(),
+        );
       });
     });
 

@@ -501,7 +501,7 @@ class GetLedgerEntriesResponse extends SorobanRpcResponse {
 ///
 /// for (var entry in response.entries!) {
 ///   // Access the entry key
-///   final keyValue = entry.keyValue;
+///   final ledgerKey = entry.ledgerKeyXdr;
 ///
 ///   // Decode entry data
 ///   final entryData = entry.ledgerEntryDataXdr;
@@ -542,7 +542,7 @@ class LedgerEntry {
   /// The ledger sequence number after which the ledger entry would expire. This field exists only for ContractCodeEntry and ContractDataEntry ledger entries (optional).
   int? liveUntilLedgerSeq;
 
-  /// The entry's "Ext" field. Only available for protocol version >= 23
+  /// The base64-encoded extension from the RPC `extXdr` response key (protocol 23+).
   String? ext;
 
   XdrLedgerEntryData get ledgerEntryDataXdr =>
@@ -569,13 +569,19 @@ class LedgerEntry {
       xdr,
       lastModifiedLedgerSeq,
       liveUntilLedgerSeq,
-      json['ext'],
+      json['extXdr'],
     );
   }
 
   XdrLedgerEntryData get ledgerEntryData =>
       XdrLedgerEntryData.fromBase64EncodedXdrString(xdr);
 
+  /// The entry key decoded as a [XdrLedgerKey].
+  XdrLedgerKey get ledgerKeyXdr => XdrLedgerKey.fromBase64EncodedXdrString(key);
+
+  @Deprecated(
+    'keyValue decodes the LedgerKey as an XdrSCVal; use ledgerKeyXdr.',
+  )
   XdrSCVal get keyValue => XdrSCVal.fromBase64EncodedXdrString(key);
 }
 
