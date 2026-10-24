@@ -1202,6 +1202,7 @@ void main() {
                 'entries': [
                   {
                     'key': base64Key,
+                    'extXdr': 'AAAAAA==',
                     'xdr': ledgerEntryData.toBase64EncodedXdrString(),
                     'lastModifiedLedgerSeq': 99999,
                   },
@@ -1226,6 +1227,14 @@ void main() {
         expect(response.entries, isNotNull);
         expect(response.entries!.length, 1);
         expect(response.entries![0].key, base64Key);
+        expect(response.entries![0].ext, 'AAAAAA==');
+        final decodedKey = response.entries![0].ledgerKeyXdr;
+        expect(decodedKey.discriminant, XdrLedgerEntryType.ACCOUNT);
+        expect(
+          decodedKey.account!.accountID.accountID.ed25519!.uint256,
+          keyPair.publicKey,
+        );
+        expect(decodedKey.toBase64EncodedXdrString(), base64Key);
         expect(response.latestLedger, 100000);
       });
 
@@ -2229,6 +2238,21 @@ void main() {
         expect(entry!.lastModifiedLedgerSeq, 99999);
         expect(entry.liveUntilLedgerSeq, 150000);
         expect(entry.ledgerEntryDataXdr.contractData, isNotNull);
+        final decodedKey = entry.ledgerKeyXdr;
+        expect(decodedKey.discriminant, XdrLedgerEntryType.CONTRACT_DATA);
+        expect(decodedKey.contractData!.contract.toStrKey(), contractId);
+        expect(
+          decodedKey.contractData!.key.toBase64EncodedXdrString(),
+          key.toBase64EncodedXdrString(),
+        );
+        expect(
+          decodedKey.contractData!.durability,
+          XdrContractDataDurability.PERSISTENT,
+        );
+        expect(
+          decodedKey.toBase64EncodedXdrString(),
+          ledgerKey.toBase64EncodedXdrString(),
+        );
       });
 
       test('returns null for non-existent contract data', () async {
