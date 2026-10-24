@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `MemoId` accepts the id 0, so envelopes and Horizon transaction records with that memo decode and SEP-7 links with `memo=0` pass validation.
 - `URIScheme.isValidSep7Url` returns an invalid result for a `tx` link whose `xdr` fails to decode with a `RangeError`, such as a truncated envelope or a negative array count.
 - `URIScheme.addSignature` refuses a link whose first query parameter is `signature`.
+- `AssembledTransaction.send` and `signAndSend` end status polling when `timeoutInSeconds` has elapsed, including the time of each status request, and make a last status request at the deadline. They retry failed status requests and name the last request error in the timeout exception.
 
 ## [3.9.0] - 2026-10-15
 
