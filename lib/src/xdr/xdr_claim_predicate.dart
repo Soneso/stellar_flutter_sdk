@@ -108,50 +108,55 @@ class XdrClaimPredicate {
   }
 
   static XdrClaimPredicate decode(XdrDataInputStream stream) {
-    XdrClaimPredicate decodedClaimPredicate = XdrClaimPredicate(
-      XdrClaimPredicateType.decode(stream),
-    );
-    switch (decodedClaimPredicate.discriminant) {
-      case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
-        break;
-      case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
-        int andPredicatessize = stream.readArrayLength();
-        decodedClaimPredicate._andPredicates = List<XdrClaimPredicate>.empty(
-          growable: true,
-        );
-        for (int i = 0; i < andPredicatessize; i++) {
-          decodedClaimPredicate._andPredicates!.add(
-            XdrClaimPredicate.decode(stream),
+    stream.enterRecursiveDecode();
+    try {
+      XdrClaimPredicate decodedClaimPredicate = XdrClaimPredicate(
+        XdrClaimPredicateType.decode(stream),
+      );
+      switch (decodedClaimPredicate.discriminant) {
+        case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
+          break;
+        case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
+          int andPredicatessize = stream.readArrayLength();
+          decodedClaimPredicate._andPredicates = List<XdrClaimPredicate>.empty(
+            growable: true,
           );
-        }
-        break;
-      case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
-        int orPredicatessize = stream.readArrayLength();
-        decodedClaimPredicate._orPredicates = List<XdrClaimPredicate>.empty(
-          growable: true,
-        );
-        for (int i = 0; i < orPredicatessize; i++) {
-          decodedClaimPredicate._orPredicates!.add(
-            XdrClaimPredicate.decode(stream),
+          for (int i = 0; i < andPredicatessize; i++) {
+            decodedClaimPredicate._andPredicates!.add(
+              XdrClaimPredicate.decode(stream),
+            );
+          }
+          break;
+        case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
+          int orPredicatessize = stream.readArrayLength();
+          decodedClaimPredicate._orPredicates = List<XdrClaimPredicate>.empty(
+            growable: true,
           );
-        }
-        break;
-      case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
-        int notPredicatePresent = stream.readInt();
-        if (notPredicatePresent != 0) {
-          decodedClaimPredicate._notPredicate = XdrClaimPredicate.decode(
-            stream,
-          );
-        }
-        break;
-      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
-        decodedClaimPredicate._absBefore = XdrInt64.decode(stream);
-        break;
-      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
-        decodedClaimPredicate._relBefore = XdrInt64.decode(stream);
-        break;
+          for (int i = 0; i < orPredicatessize; i++) {
+            decodedClaimPredicate._orPredicates!.add(
+              XdrClaimPredicate.decode(stream),
+            );
+          }
+          break;
+        case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
+          int notPredicatePresent = stream.readInt();
+          if (notPredicatePresent != 0) {
+            decodedClaimPredicate._notPredicate = XdrClaimPredicate.decode(
+              stream,
+            );
+          }
+          break;
+        case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
+          decodedClaimPredicate._absBefore = XdrInt64.decode(stream);
+          break;
+        case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
+          decodedClaimPredicate._relBefore = XdrInt64.decode(stream);
+          break;
+      }
+      return decodedClaimPredicate;
+    } finally {
+      stream.exitRecursiveDecode();
     }
-    return decodedClaimPredicate;
   }
 
   String toBase64EncodedXdrString() {

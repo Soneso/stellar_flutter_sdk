@@ -30,9 +30,14 @@ class XdrSCSpecTypeMap {
   }
 
   static XdrSCSpecTypeMap decode(XdrDataInputStream stream) {
-    XdrSCSpecTypeDef keyType = XdrSCSpecTypeDef.decode(stream);
-    XdrSCSpecTypeDef valueType = XdrSCSpecTypeDef.decode(stream);
-    return XdrSCSpecTypeMap(keyType, valueType);
+    stream.enterRecursiveDecode();
+    try {
+      XdrSCSpecTypeDef keyType = XdrSCSpecTypeDef.decode(stream);
+      XdrSCSpecTypeDef valueType = XdrSCSpecTypeDef.decode(stream);
+      return XdrSCSpecTypeMap(keyType, valueType);
+    } finally {
+      stream.exitRecursiveDecode();
+    }
   }
 
   String toBase64EncodedXdrString() {

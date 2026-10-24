@@ -25,8 +25,13 @@ class XdrSCSpecTypeVec {
   }
 
   static XdrSCSpecTypeVec decode(XdrDataInputStream stream) {
-    XdrSCSpecTypeDef elementType = XdrSCSpecTypeDef.decode(stream);
-    return XdrSCSpecTypeVec(elementType);
+    stream.enterRecursiveDecode();
+    try {
+      XdrSCSpecTypeDef elementType = XdrSCSpecTypeDef.decode(stream);
+      return XdrSCSpecTypeVec(elementType);
+    } finally {
+      stream.exitRecursiveDecode();
+    }
   }
 
   String toBase64EncodedXdrString() {

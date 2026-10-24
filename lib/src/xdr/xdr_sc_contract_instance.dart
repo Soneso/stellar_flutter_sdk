@@ -40,17 +40,22 @@ class XdrSCContractInstance {
   }
 
   static XdrSCContractInstance decode(XdrDataInputStream stream) {
-    XdrContractExecutable executable = XdrContractExecutable.decode(stream);
-    List<XdrSCMapEntry>? storage;
-    int storagePresent = stream.readInt();
-    if (storagePresent != 0) {
-      int storageLen = stream.readArrayLength();
-      storage = List<XdrSCMapEntry>.empty(growable: true);
-      for (int storagei = 0; storagei < storageLen; storagei++) {
-        storage.add(XdrSCMapEntry.decode(stream));
+    stream.enterRecursiveDecode();
+    try {
+      XdrContractExecutable executable = XdrContractExecutable.decode(stream);
+      List<XdrSCMapEntry>? storage;
+      int storagePresent = stream.readInt();
+      if (storagePresent != 0) {
+        int storageLen = stream.readArrayLength();
+        storage = List<XdrSCMapEntry>.empty(growable: true);
+        for (int storagei = 0; storagei < storageLen; storagei++) {
+          storage.add(XdrSCMapEntry.decode(stream));
+        }
       }
+      return XdrSCContractInstance(executable, storage);
+    } finally {
+      stream.exitRecursiveDecode();
     }
-    return XdrSCContractInstance(executable, storage);
   }
 
   String toBase64EncodedXdrString() {

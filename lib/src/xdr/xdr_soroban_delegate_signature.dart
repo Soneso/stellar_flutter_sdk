@@ -50,9 +50,20 @@ class XdrSorobanDelegateSignature {
     }
   }
 
+  // Nested delegate levels per stream, capped at maxRecursiveDecodeDepth.
+  static final _delegateDecodeDepth = Expando<int>();
   static XdrSorobanDelegateSignature decode(XdrDataInputStream stream) {
     stream.enterRecursiveDecode();
+    final depth = _delegateDecodeDepth[stream] ?? 0;
     try {
+      if (depth >= XdrDataInputStream.maxRecursiveDecodeDepth) {
+        throw Exception(
+          'XDR decode depth limit exceeded (${XdrDataInputStream.maxRecursiveDecodeDepth}). '
+          'The encoded data contains a recursion depth that exceeds the '
+          'safety cap; decoding is aborted to prevent stack exhaustion.',
+        );
+      }
+      _delegateDecodeDepth[stream] = depth + 1;
       XdrSCAddress address = XdrSCAddress.decode(stream);
       XdrSCVal signature = XdrSCVal.decode(stream);
       int nestedDelegatessize = stream.readArrayLength();
@@ -63,6 +74,7 @@ class XdrSorobanDelegateSignature {
       }
       return XdrSorobanDelegateSignature(address, signature, nestedDelegates);
     } finally {
+      _delegateDecodeDepth[stream] = depth;
       stream.exitRecursiveDecode();
     }
   }

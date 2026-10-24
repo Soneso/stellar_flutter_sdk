@@ -66,16 +66,18 @@ String nestedVecText(int levels, {bool innermostHoldsSymbol = false}) =>
     '${']}' * levels}';
 
 void main() {
-  // The cap is a single number shared by both forms and by the binary decoder,
-  // so the boundary below is one boundary rather than three that happen to
-  // coincide.
+  // The cap is one number shared by the text and the value form, so the boundary
+  // below is one boundary rather than two that happen to coincide.
   const int cap = XdrJsonHelper.maxDepth;
 
   group('SEP-0051 nesting limit', () {
-    test('bounds JSON nesting at the number the binary decoder bounds', () {
-      expect(cap, 128);
-      expect(cap, XdrDataInputStream.maxRecursiveDecodeDepth);
-    });
+    test(
+      'bounds JSON nesting at 128 containers, the binary delegate-chain cap',
+      () {
+        expect(cap, 128);
+        expect(cap, XdrDataInputStream.maxRecursiveDecodeDepth);
+      },
+    );
 
     test('accepts a document nested to exactly the limit', () {
       // Text scan: the document arrives as text and is scanned before it is

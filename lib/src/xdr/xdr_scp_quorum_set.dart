@@ -44,20 +44,25 @@ class XdrSCPQuorumSet {
   }
 
   static XdrSCPQuorumSet decode(XdrDataInputStream stream) {
-    XdrUint32 threshold = XdrUint32.decode(stream);
-    int validatorssize = stream.readArrayLength();
-    List<XdrNodeID> validators = List<XdrNodeID>.empty(growable: true);
-    for (int i = 0; i < validatorssize; i++) {
-      validators.add(XdrNodeID.decode(stream));
+    stream.enterRecursiveDecode();
+    try {
+      XdrUint32 threshold = XdrUint32.decode(stream);
+      int validatorssize = stream.readArrayLength();
+      List<XdrNodeID> validators = List<XdrNodeID>.empty(growable: true);
+      for (int i = 0; i < validatorssize; i++) {
+        validators.add(XdrNodeID.decode(stream));
+      }
+      int innerSetssize = stream.readArrayLength();
+      List<XdrSCPQuorumSet> innerSets = List<XdrSCPQuorumSet>.empty(
+        growable: true,
+      );
+      for (int i = 0; i < innerSetssize; i++) {
+        innerSets.add(XdrSCPQuorumSet.decode(stream));
+      }
+      return XdrSCPQuorumSet(threshold, validators, innerSets);
+    } finally {
+      stream.exitRecursiveDecode();
     }
-    int innerSetssize = stream.readArrayLength();
-    List<XdrSCPQuorumSet> innerSets = List<XdrSCPQuorumSet>.empty(
-      growable: true,
-    );
-    for (int i = 0; i < innerSetssize; i++) {
-      innerSets.add(XdrSCPQuorumSet.decode(stream));
-    }
-    return XdrSCPQuorumSet(threshold, validators, innerSets);
   }
 
   String toBase64EncodedXdrString() {

@@ -112,51 +112,56 @@ class XdrSCSpecTypeDefBase {
     XdrDataInputStream stream,
     T Function(XdrSCSpecType) constructor,
   ) {
-    T decoded = constructor(XdrSCSpecType.decode(stream));
-    switch (decoded.discriminant) {
-      case XdrSCSpecType.SC_SPEC_TYPE_VAL:
-      case XdrSCSpecType.SC_SPEC_TYPE_BOOL:
-      case XdrSCSpecType.SC_SPEC_TYPE_VOID:
-      case XdrSCSpecType.SC_SPEC_TYPE_ERROR:
-      case XdrSCSpecType.SC_SPEC_TYPE_U32:
-      case XdrSCSpecType.SC_SPEC_TYPE_I32:
-      case XdrSCSpecType.SC_SPEC_TYPE_U64:
-      case XdrSCSpecType.SC_SPEC_TYPE_I64:
-      case XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT:
-      case XdrSCSpecType.SC_SPEC_TYPE_DURATION:
-      case XdrSCSpecType.SC_SPEC_TYPE_U128:
-      case XdrSCSpecType.SC_SPEC_TYPE_I128:
-      case XdrSCSpecType.SC_SPEC_TYPE_U256:
-      case XdrSCSpecType.SC_SPEC_TYPE_I256:
-      case XdrSCSpecType.SC_SPEC_TYPE_BYTES:
-      case XdrSCSpecType.SC_SPEC_TYPE_STRING:
-      case XdrSCSpecType.SC_SPEC_TYPE_SYMBOL:
-      case XdrSCSpecType.SC_SPEC_TYPE_ADDRESS:
-      case XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS:
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_OPTION:
-        decoded._option = XdrSCSpecTypeOption.decode(stream);
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_RESULT:
-        decoded._result = XdrSCSpecTypeResult.decode(stream);
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_VEC:
-        decoded._vec = XdrSCSpecTypeVec.decode(stream);
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_MAP:
-        decoded._map = XdrSCSpecTypeMap.decode(stream);
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_TUPLE:
-        decoded._tuple = XdrSCSpecTypeTuple.decode(stream);
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_BYTES_N:
-        decoded._bytesN = XdrSCSpecTypeBytesN.decode(stream);
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_UDT:
-        decoded._udt = XdrSCSpecTypeUDT.decode(stream);
-        break;
+    stream.enterRecursiveDecode();
+    try {
+      T decoded = constructor(XdrSCSpecType.decode(stream));
+      switch (decoded.discriminant) {
+        case XdrSCSpecType.SC_SPEC_TYPE_VAL:
+        case XdrSCSpecType.SC_SPEC_TYPE_BOOL:
+        case XdrSCSpecType.SC_SPEC_TYPE_VOID:
+        case XdrSCSpecType.SC_SPEC_TYPE_ERROR:
+        case XdrSCSpecType.SC_SPEC_TYPE_U32:
+        case XdrSCSpecType.SC_SPEC_TYPE_I32:
+        case XdrSCSpecType.SC_SPEC_TYPE_U64:
+        case XdrSCSpecType.SC_SPEC_TYPE_I64:
+        case XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT:
+        case XdrSCSpecType.SC_SPEC_TYPE_DURATION:
+        case XdrSCSpecType.SC_SPEC_TYPE_U128:
+        case XdrSCSpecType.SC_SPEC_TYPE_I128:
+        case XdrSCSpecType.SC_SPEC_TYPE_U256:
+        case XdrSCSpecType.SC_SPEC_TYPE_I256:
+        case XdrSCSpecType.SC_SPEC_TYPE_BYTES:
+        case XdrSCSpecType.SC_SPEC_TYPE_STRING:
+        case XdrSCSpecType.SC_SPEC_TYPE_SYMBOL:
+        case XdrSCSpecType.SC_SPEC_TYPE_ADDRESS:
+        case XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS:
+          break;
+        case XdrSCSpecType.SC_SPEC_TYPE_OPTION:
+          decoded._option = XdrSCSpecTypeOption.decode(stream);
+          break;
+        case XdrSCSpecType.SC_SPEC_TYPE_RESULT:
+          decoded._result = XdrSCSpecTypeResult.decode(stream);
+          break;
+        case XdrSCSpecType.SC_SPEC_TYPE_VEC:
+          decoded._vec = XdrSCSpecTypeVec.decode(stream);
+          break;
+        case XdrSCSpecType.SC_SPEC_TYPE_MAP:
+          decoded._map = XdrSCSpecTypeMap.decode(stream);
+          break;
+        case XdrSCSpecType.SC_SPEC_TYPE_TUPLE:
+          decoded._tuple = XdrSCSpecTypeTuple.decode(stream);
+          break;
+        case XdrSCSpecType.SC_SPEC_TYPE_BYTES_N:
+          decoded._bytesN = XdrSCSpecTypeBytesN.decode(stream);
+          break;
+        case XdrSCSpecType.SC_SPEC_TYPE_UDT:
+          decoded._udt = XdrSCSpecTypeUDT.decode(stream);
+          break;
+      }
+      return decoded;
+    } finally {
+      stream.exitRecursiveDecode();
     }
-    return decoded;
   }
 
   String toBase64EncodedXdrString() {

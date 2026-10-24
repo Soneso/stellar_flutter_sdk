@@ -30,9 +30,14 @@ class XdrSCSpecTypeResult {
   }
 
   static XdrSCSpecTypeResult decode(XdrDataInputStream stream) {
-    XdrSCSpecTypeDef okType = XdrSCSpecTypeDef.decode(stream);
-    XdrSCSpecTypeDef errorType = XdrSCSpecTypeDef.decode(stream);
-    return XdrSCSpecTypeResult(okType, errorType);
+    stream.enterRecursiveDecode();
+    try {
+      XdrSCSpecTypeDef okType = XdrSCSpecTypeDef.decode(stream);
+      XdrSCSpecTypeDef errorType = XdrSCSpecTypeDef.decode(stream);
+      return XdrSCSpecTypeResult(okType, errorType);
+    } finally {
+      stream.exitRecursiveDecode();
+    }
   }
 
   String toBase64EncodedXdrString() {
