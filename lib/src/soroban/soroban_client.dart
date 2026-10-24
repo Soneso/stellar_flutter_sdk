@@ -472,7 +472,7 @@ class SorobanClient {
   /// ```dart
   /// final options = MethodOptions(
   ///   fee: 200,  // Higher fee for faster inclusion
-  ///   timeoutInSeconds: 60,  // Wait up to 60 seconds
+  ///   timeoutInSeconds: 60,  // Stop polling after 60 seconds
   ///   restore: true,  // Auto-restore expired entries
   /// );
   ///
@@ -959,8 +959,8 @@ class AssembledTransaction {
 
   /// Sign the transaction with the private key of the `sourceAccountKeyPair` provided with the options previously.
   /// If you did not previously provide one that has a private key, you need to include one now.
-  /// After signing, this method will send the transaction to the network and wait max. options.timeoutInSeconds to complete.
-  /// If not completed after options->timeoutInSeconds it will throw an exception. Otherwise, returns the `GetTransactionResponse`.
+  /// After signing, this method sends the transaction to the network and polls its status until `options.methodOptions.timeoutInSeconds` has elapsed. One last status request at the deadline can take up to three seconds.
+  /// If the transaction has not completed by then, it throws an exception. Otherwise, it returns the `GetTransactionResponse`.
   /// With [force] you can force signing and sending even if it is a read call. Default false.
   /// Returns the get transaction response received after sending and waiting for the transaction to complete.
   Future<GetTransactionResponse> signAndSend({
@@ -1019,26 +1019,45 @@ class AssembledTransaction {
   }
 
   Future<GetTransactionResponse> _pollStatus(String transactionId) async {
-    GetTransactionResponse? statusResponse;
-    var status = GetTransactionResponse.STATUS_NOT_FOUND;
-    const waitTime = NetworkConstants.TRANSACTION_POLL_WAIT_SECONDS;
-    var waited = 0;
+    final timeout = Duration(seconds: options.methodOptions.timeoutInSeconds);
+    const waitTime = Duration(
+      seconds: NetworkConstants.TRANSACTION_POLL_WAIT_SECONDS,
+    );
+    final clock = Stopwatch()..start();
+    Object? lastError;
 
-    while (status == GetTransactionResponse.STATUS_NOT_FOUND) {
-      if (waited > options.methodOptions.timeoutInSeconds) {
-        throw new Exception(
-          "Interrupted after waiting ${options.methodOptions.timeoutInSeconds} seconds (options.methodOptions.timeoutInSeconds) for the transaction $transactionId to complete.",
-        );
+    while (true) {
+      var remaining = timeout - clock.elapsed;
+      // Timers have millisecond resolution and can fire up to a millisecond
+      // before the stopwatch deadline, so the sleep clamped to the deadline
+      // is the last.
+      var lastRequest = remaining <= waitTime;
+      if (remaining > Duration.zero) {
+        await Future<void>.delayed(lastRequest ? remaining : waitTime);
       }
-      await Future.delayed(const Duration(seconds: waitTime), () {});
-      waited += waitTime;
-      statusResponse = await server.getTransaction(transactionId);
-      if (statusResponse.isErrorResponse) {
-        continue;
+      remaining = timeout - clock.elapsed;
+      lastRequest = lastRequest || remaining <= Duration.zero;
+      try {
+        final statusResponse = await server
+            .getTransaction(transactionId)
+            .timeout(lastRequest ? waitTime : remaining);
+        if (statusResponse.isErrorResponse) {
+          lastError =
+              'RPC error code: ${statusResponse.error!.code}, '
+              'message: ${statusResponse.error!.message}';
+        } else if (statusResponse.status! !=
+            GetTransactionResponse.STATUS_NOT_FOUND) {
+          return statusResponse;
+        }
+      } catch (error) {
+        lastError = error;
       }
-      status = statusResponse.status!;
+      if (lastRequest) break;
     }
-    return statusResponse!;
+    throw Exception(
+      "Interrupted after waiting ${options.methodOptions.timeoutInSeconds} seconds (options.methodOptions.timeoutInSeconds) for the transaction $transactionId to complete."
+      "${lastError == null ? '' : ' Last status request error: $lastError'}",
+    );
   }
 
   /// Sign the transaction with the private key of the `sourceAccountKeyPair` provided with the options previously.

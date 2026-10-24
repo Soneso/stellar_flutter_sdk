@@ -3,7 +3,9 @@
 //
 // All RPC calls are served by a mocked Dio adapter; no network access.
 
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show sleep;
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
@@ -25,6 +27,25 @@ class MockDioAdapter implements dio.HttpClientAdapter {
 
   @override
   void close({bool force = false}) {}
+}
+
+class PauseOnCancelTimer implements Timer {
+  final Timer timer;
+  final void Function() onCancel;
+
+  PauseOnCancelTimer(this.timer, this.onCancel);
+
+  @override
+  bool get isActive => timer.isActive;
+
+  @override
+  int get tick => timer.tick;
+
+  @override
+  void cancel() {
+    timer.cancel();
+    onCancel();
+  }
 }
 
 dio.ResponseBody jsonRpcResponse(dynamic id, Map<String, dynamic> result) {
@@ -129,6 +150,7 @@ void main() {
     Map<String, dynamic> sendResult, {
     List<int>? getTransactionCalls,
     List<String>? simulateEnvelopes,
+    Future<dio.ResponseBody> Function(dynamic)? pollResponse,
   }) {
     final txData = transactionDataWithWrites(keyPair);
     final mockDio = dio.Dio();
@@ -147,6 +169,7 @@ void main() {
           return jsonRpcResponse(requestBody['id'], sendResult);
         case 'getTransaction':
           getTransactionCalls?.add(1);
+          if (pollResponse != null) return pollResponse(requestBody['id']);
           return jsonRpcResponse(requestBody['id'], {
             'status': 'SUCCESS',
             'ledger': 99999,
@@ -172,6 +195,259 @@ void main() {
     return tx;
   }
 
+  Future<AssembledTransaction> pollingTx(
+    int seconds,
+    Future<dio.ResponseBody> Function(dynamic) poll,
+  ) async {
+    final keyPair = KeyPair.random();
+    final server = sendFlowMockServer(keyPair, {
+      'status': 'PENDING',
+      'hash': txHash,
+    }, pollResponse: poll);
+    final tx = await buildSignedTx(keyPair, server);
+    tx.options.methodOptions.timeoutInSeconds = seconds;
+    return tx;
+  }
+
+  Matcher interrupted(int seconds, {String? reason}) => isA<Exception>()
+      .having((e) => e.runtimeType, 'plain exception', Exception().runtimeType)
+      .having(
+        (e) => e.toString(),
+        'message',
+        allOf([
+          contains(
+            'Interrupted after waiting $seconds seconds '
+            '(options.methodOptions.timeoutInSeconds) for the transaction '
+            '$txHash to complete.',
+          ),
+          if (reason != null) contains(reason),
+        ]),
+      );
+
+  group('signAndSend poll deadline', () {
+    test('bounds stalled round and last status requests', () async {
+      var calls = 0;
+      final tx = await pollingTx(4, (_) {
+        calls++;
+        return Completer<dio.ResponseBody>().future;
+      });
+      final clock = Stopwatch()..start();
+      await expectLater(
+        tx.signAndSend(),
+        throwsA(interrupted(4, reason: 'TimeoutException')),
+      );
+      expect(calls, 2);
+      expect(clock.elapsed, greaterThanOrEqualTo(const Duration(seconds: 7)));
+      expect(clock.elapsed, lessThan(const Duration(seconds: 8)));
+    }, timeout: const Timeout(Duration(seconds: 9)));
+
+    test('retries a thrown status request and returns SUCCESS', () async {
+      var calls = 0;
+      final tx = await pollingTx(7, (id) async {
+        if (++calls == 1) throw Exception('temporary status failure');
+        return jsonRpcResponse(id, {'status': 'SUCCESS', 'ledger': 123});
+      });
+      final response = await tx.signAndSend();
+      expect(calls, 2);
+      expect(response.status, GetTransactionResponse.STATUS_SUCCESS);
+      expect(response.ledger, 123);
+    }, timeout: const Timeout(Duration(seconds: 9)));
+
+    test(
+      'returns SUCCESS received within the bound and handled past the deadline',
+      () async {
+        var calls = 0;
+        final tx = await pollingTx(4, (id) async {
+          calls++;
+          await Future<void>.delayed(const Duration(milliseconds: 700));
+          return jsonRpcResponse(id, {'status': 'SUCCESS', 'ledger': 789});
+        });
+        final clock = Stopwatch()..start();
+        var wrapped = false;
+        Duration? receivedAt;
+        final response = await runZoned(
+          tx.signAndSend,
+          zoneSpecification: ZoneSpecification(
+            createTimer: (self, parent, zone, duration, callback) {
+              final timer = parent.createTimer(zone, duration, callback);
+              if (wrapped ||
+                  duration <= Duration.zero ||
+                  duration >= const Duration(seconds: 1))
+                return timer;
+              wrapped = true;
+              // Pause after the status response wins its per-call timeout,
+              // before the polling loop resumes to inspect the response.
+              return PauseOnCancelTimer(timer, () {
+                receivedAt = clock.elapsed;
+                sleep(const Duration(milliseconds: 400));
+              });
+            },
+          ),
+        );
+        expect(calls, 1);
+        expect(receivedAt, lessThan(const Duration(seconds: 4)));
+        expect(clock.elapsed, greaterThanOrEqualTo(const Duration(seconds: 4)));
+        expect(response.status, GetTransactionResponse.STATUS_SUCCESS);
+        expect(response.ledger, 789);
+      },
+      timeout: const Timeout(Duration(seconds: 6)),
+    );
+
+    test('includes the last RPC error at the deadline', () async {
+      var calls = 0;
+      final tx = await pollingTx(7, (id) async {
+        calls++;
+        return dio.ResponseBody.fromString(
+          jsonEncode({
+            'jsonrpc': '2.0',
+            'id': id,
+            'error': {'code': -32000 - calls, 'message': 'status error $calls'},
+          }),
+          200,
+          headers: {
+            'content-type': [dio.Headers.jsonContentType],
+          },
+        );
+      });
+      final clock = Stopwatch()..start();
+      await expectLater(
+        tx.signAndSend(),
+        throwsA(
+          allOf(
+            interrupted(7, reason: '-32003'),
+            predicate((e) => e.toString().contains('status error 3')),
+          ),
+        ),
+      );
+      expect(calls, 3);
+      expect(clock.elapsed, lessThan(const Duration(seconds: 8)));
+    }, timeout: const Timeout(Duration(seconds: 9)));
+
+    test('counts slow NOT_FOUND requests in the elapsed budget', () async {
+      var calls = 0;
+      final tx = await pollingTx(7, (id) async {
+        calls++;
+        await Future<void>.delayed(const Duration(seconds: 2));
+        return jsonRpcResponse(id, {'status': 'NOT_FOUND'});
+      });
+      final clock = Stopwatch()..start();
+      await expectLater(tx.signAndSend(), throwsA(interrupted(7)));
+      expect(calls, 2);
+      expect(clock.elapsed, greaterThanOrEqualTo(const Duration(seconds: 9)));
+      expect(clock.elapsed, lessThan(const Duration(seconds: 10)));
+    }, timeout: const Timeout(Duration(seconds: 11)));
+
+    test('makes one request when the clamped last timer fires early', () async {
+      var calls = 0;
+      final tx = await pollingTx(1, (id) async {
+        calls++;
+        return jsonRpcResponse(id, {'status': 'NOT_FOUND'});
+      });
+      await runZoned(
+        () => expectLater(tx.signAndSend(), throwsA(interrupted(1))),
+        zoneSpecification: ZoneSpecification(
+          createTimer: (self, parent, zone, duration, callback) {
+            if (calls == 0 &&
+                duration > const Duration(milliseconds: 50) &&
+                duration <= const Duration(seconds: 1)) {
+              duration -= const Duration(milliseconds: 50);
+            }
+            return parent.createTimer(zone, duration, callback);
+          },
+        ),
+      );
+      expect(calls, 1);
+    }, timeout: const Timeout(Duration(seconds: 3)));
+
+    for (final status in ['NOT_FOUND', 'SUCCESS']) {
+      test(
+        'clamps the last sleep and requests $status at the deadline',
+        () async {
+          var calls = 0;
+          final tx = await pollingTx(1, (id) async {
+            calls++;
+            return jsonRpcResponse(id, {'status': status, 'ledger': 234});
+          });
+          final clock = Stopwatch()..start();
+          if (status == 'SUCCESS') {
+            final response = await tx.signAndSend();
+            expect(response.status, GetTransactionResponse.STATUS_SUCCESS);
+            expect(response.ledger, 234);
+          } else {
+            await expectLater(tx.signAndSend(), throwsA(interrupted(1)));
+          }
+          expect(calls, 1);
+          expect(
+            clock.elapsed,
+            greaterThanOrEqualTo(const Duration(seconds: 1)),
+          );
+          expect(clock.elapsed, lessThan(const Duration(seconds: 2)));
+        },
+        timeout: const Timeout(Duration(seconds: 3)),
+      );
+    }
+
+    test(
+      'returns SUCCESS at the deadline after the last round is NOT_FOUND',
+      () async {
+        var calls = 0;
+        final tx = await pollingTx(5, (id) async {
+          return jsonRpcResponse(id, {
+            'status': ++calls == 1 ? 'NOT_FOUND' : 'SUCCESS',
+            'ledger': 345,
+          });
+        });
+        final clock = Stopwatch()..start();
+        final response = await tx.signAndSend();
+        expect(calls, 2);
+        expect(response.status, GetTransactionResponse.STATUS_SUCCESS);
+        expect(response.ledger, 345);
+        expect(clock.elapsed, greaterThanOrEqualTo(const Duration(seconds: 5)));
+        expect(clock.elapsed, lessThan(const Duration(seconds: 6)));
+      },
+      timeout: const Timeout(Duration(seconds: 7)),
+    );
+
+    for (final seconds in [0, -1]) {
+      for (final status in ['NOT_FOUND', 'SUCCESS']) {
+        test(
+          'timeout $seconds makes one immediate request for $status',
+          () async {
+            var calls = 0;
+            final tx = await pollingTx(seconds, (id) async {
+              calls++;
+              return jsonRpcResponse(id, {'status': status, 'ledger': 567});
+            });
+            final clock = Stopwatch()..start();
+            if (status == 'SUCCESS') {
+              final response = await tx.signAndSend();
+              expect(response.status, GetTransactionResponse.STATUS_SUCCESS);
+              expect(response.ledger, 567);
+            } else {
+              await expectLater(
+                tx.signAndSend(),
+                throwsA(interrupted(seconds)),
+              );
+            }
+            expect(calls, 1);
+            expect(clock.elapsed, lessThan(const Duration(seconds: 1)));
+          },
+          timeout: const Timeout(Duration(seconds: 2)),
+        );
+      }
+    }
+
+    test('returns FAILED as the final response', () async {
+      final tx = await pollingTx(
+        4,
+        (id) async => jsonRpcResponse(id, {'status': 'FAILED', 'ledger': 456}),
+      );
+      final response = await tx.signAndSend();
+      expect(response.status, GetTransactionResponse.STATUS_FAILED);
+      expect(response.ledger, 456);
+    }, timeout: const Timeout(Duration(seconds: 5)));
+  });
+
   group('send() submission-status handling', () {
     test('PENDING is polled to the final transaction response', () async {
       final keyPair = KeyPair.random();
@@ -188,7 +464,7 @@ void main() {
 
       expect(response.status, GetTransactionResponse.STATUS_SUCCESS);
       expect(getTransactionCalls, isNotEmpty);
-    });
+    }, timeout: const Timeout(Duration(seconds: 5)));
 
     test('DUPLICATE is polled to the final transaction response', () async {
       final keyPair = KeyPair.random();
@@ -205,7 +481,7 @@ void main() {
 
       expect(response.status, GetTransactionResponse.STATUS_SUCCESS);
       expect(getTransactionCalls, isNotEmpty);
-    });
+    }, timeout: const Timeout(Duration(seconds: 5)));
 
     test('TRY_AGAIN_LATER throws without polling', () async {
       final keyPair = KeyPair.random();
