@@ -904,6 +904,176 @@ void main() {
     });
   });
 
+  group('Address equality', () {
+    // SEP-0023 vectors that all carry the same 32-byte payload, so the
+    // addresses below differ only in their type and multiplexing id.
+    const payloadHex =
+        '3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a';
+    const accountId =
+        'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ';
+    const contractId =
+        'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA';
+    const muxedIdZero =
+        'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
+    const muxedIdHigh =
+        'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK';
+    const balanceId =
+        'BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU';
+    const poolId = 'LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN';
+    const muxedContractIdZero =
+        'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC';
+    const muxedContractIdHigh =
+        'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY';
+
+    // One list per address: the address built from each accepted spelling,
+    // followed by the address fromXdr reads back from the first one.
+    List<List<Address>> sameAddressGroups() {
+      List<Address> withXdrTwin(List<Address> built) => [
+        ...built,
+        Address.fromXdr(built.first.toXdr()),
+      ];
+      return [
+        withXdrTwin([Address.forAccountId(accountId)]),
+        withXdrTwin([
+          Address.forContractId(contractId),
+          Address.forContractId(payloadHex),
+          Address.forContractId(payloadHex.toUpperCase()),
+        ]),
+        withXdrTwin([
+          Address.forMuxedAccountId(muxedIdZero),
+          Address(Address.TYPE_ACCOUNT, accountId: muxedIdZero),
+        ]),
+        withXdrTwin([Address.forMuxedAccountId(muxedIdHigh)]),
+        withXdrTwin([
+          Address.forClaimableBalanceId(balanceId),
+          Address.forClaimableBalanceId(payloadHex),
+          Address.forClaimableBalanceId('00$payloadHex'),
+          Address.forClaimableBalanceId('00000000$payloadHex'),
+        ]),
+        withXdrTwin([
+          Address.forLiquidityPoolId(poolId),
+          Address.forLiquidityPoolId(payloadHex),
+        ]),
+        withXdrTwin([
+          Address.forMuxedContractId(muxedContractIdZero),
+          Address.forMuxedContract(contractId: payloadHex, id: BigInt.zero),
+        ]),
+        withXdrTwin([
+          Address.forMuxedContractId(muxedContractIdHigh),
+          Address.forMuxedContract(
+            contractId: contractId,
+            id: BigInt.one << 63,
+          ),
+        ]),
+      ];
+    }
+
+    test('addresses that encode to the same XdrSCAddress are equal', () {
+      for (final group in sameAddressGroups()) {
+        final first = group.first;
+        for (var i = 0; i < group.length; i++) {
+          final reason = 'type ${first.type}, variant $i';
+          expect(group[i], equals(first), reason: reason);
+          expect(group[i].hashCode, first.hashCode, reason: reason);
+        }
+        expect(group.toSet(), hasLength(1), reason: 'type ${first.type}');
+        expect({first: true}[group.last], isTrue, reason: 'type ${first.type}');
+      }
+    });
+
+    test('addresses of another type or id are unequal', () {
+      final groups = sameAddressGroups();
+      for (var i = 0; i < groups.length; i++) {
+        for (var j = 0; j < groups.length; j++) {
+          if (i == j) continue;
+          for (final a in groups[i]) {
+            for (final b in groups[j]) {
+              expect(a == b, isFalse, reason: 'group $i against group $j');
+            }
+          }
+        }
+      }
+      expect(groups.expand((group) => group).toSet(), hasLength(groups.length));
+    });
+
+    test('addresses that differ only in the payload are unequal', () {
+      // The payload of the SEP-0023 contract vector CA3D5KRY..., encoded for
+      // every type; the muxed forms keep the id 0 of their first payload.
+      const otherHex =
+          '363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103';
+      final otherBytes = Util.hexToBytes(otherHex);
+      final otherAccountId = StrKey.encodeStellarAccountId(otherBytes);
+      final pairs = <(Address, Address)>[
+        (Address.forAccountId(accountId), Address.forAccountId(otherAccountId)),
+        (
+          Address.forContractId(contractId),
+          Address.forContractId(StrKey.encodeContractId(otherBytes)),
+        ),
+        (
+          Address.forMuxedAccountId(muxedIdZero),
+          Address.forMuxedAccountId(
+            MuxedAccount(otherAccountId, BigInt.zero).accountId,
+          ),
+        ),
+        (
+          Address.forClaimableBalanceId(balanceId),
+          Address.forClaimableBalanceId(
+            StrKey.encodeClaimableBalanceIdHex('00$otherHex'),
+          ),
+        ),
+        (
+          Address.forLiquidityPoolId(poolId),
+          Address.forLiquidityPoolId(StrKey.encodeLiquidityPoolId(otherBytes)),
+        ),
+        (
+          Address.forMuxedContractId(muxedContractIdZero),
+          MuxedContract(otherHex, BigInt.zero).toAddress(),
+        ),
+      ];
+      for (final (first, other) in pairs) {
+        final reason = 'type ${first.type}';
+        final otherXdr = other.toXdr();
+        expect(
+          otherXdr.discriminant,
+          first.toXdr().discriminant,
+          reason: reason,
+        );
+        expect(first == other, isFalse, reason: reason);
+        expect(other == first, isFalse, reason: reason);
+        // Unequal addresses may share a hash code; these do not, and the
+        // inequality above is what pins the payload.
+        expect(other.hashCode, isNot(first.hashCode), reason: reason);
+        expect({first, other}, hasLength(2), reason: reason);
+        final byAddress = {first: 'first', other: 'other'};
+        expect(byAddress, hasLength(2), reason: reason);
+        final roundTrip = Address.fromXdr(otherXdr);
+        expect(roundTrip == other, isTrue, reason: reason);
+        expect(roundTrip == first, isFalse, reason: reason);
+        expect(byAddress[roundTrip], 'other', reason: reason);
+      }
+    });
+
+    test('an id that does not encode compares by type and id', () {
+      final malformed = Address.forContractId('not a contract id');
+      expect(malformed.toXdr, throwsFormatException);
+      final twin = Address.forContractId('not a contract id');
+      expect(malformed == twin, isTrue);
+      expect(malformed.hashCode, twin.hashCode);
+      expect(malformed == Address.forContractId('not a contract ID'), isFalse);
+      expect(
+        malformed == Address.forLiquidityPoolId('not a contract id'),
+        isFalse,
+      );
+      expect(malformed == Address.forContractId(contractId), isFalse);
+
+      final cleared = Address.forContractId(contractId)..contractId = null;
+      final clearedTwin = Address.forContractId(payloadHex)..contractId = null;
+      expect(cleared == clearedTwin, isTrue);
+      expect(cleared.hashCode, clearedTwin.hashCode);
+      expect(cleared == Address.forContractId(contractId), isFalse);
+    });
+  });
+
   group('SorobanAddressCredentials - deep', () {
     test('creates credentials with all fields', () {
       final address = Address.forAccountId(
