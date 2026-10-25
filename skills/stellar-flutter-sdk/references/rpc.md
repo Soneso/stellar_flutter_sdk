@@ -34,6 +34,7 @@ The `SorobanServer` class communicates via JSON-RPC over HTTP using the `dio` pa
 Check if the RPC server is operational.
 
 ```dart
+// From the setup above: server (SorobanServer)
 final health = await server.getHealth();
 
 if (health.status == GetHealthResponse.HEALTHY) {
@@ -52,6 +53,7 @@ if (health.status == GetHealthResponse.HEALTHY) {
 Retrieve network passphrase, protocol version, and friendbot URL.
 
 ```dart
+// From the setup above: server (SorobanServer)
 final network = await server.getNetwork();
 
 print('Passphrase: ${network.passphrase}');
@@ -70,6 +72,7 @@ if (network.friendbotUrl != null) {
 Get the most recent ledger known to the server.
 
 ```dart
+// From the setup above: server (SorobanServer)
 final latest = await server.getLatestLedger();
 
 print('Sequence: ${latest.sequence}');
@@ -86,6 +89,7 @@ print('Protocol version: ${latest.protocolVersion}');
 Get RPC server and Captive Core version details.
 
 ```dart
+// From the setup above: server (SorobanServer)
 final info = await server.getVersionInfo();
 
 print('RPC version: ${info.version}');
@@ -102,6 +106,7 @@ print('Protocol: ${info.protocolVersion}');
 Get fee statistics for recent transactions.
 
 ```dart
+// From the setup above: server (SorobanServer)
 final stats = await server.getFeeStats();
 
 if (stats.sorobanInclusionFee != null) {
@@ -124,6 +129,8 @@ if (stats.inclusionFee != null) {
 SorobanServer provides a convenience method to fetch accounts, but it returns a **different type** than Horizon's account endpoint:
 
 ```dart
+// From your app: accountId (String), op (Operation)
+// From the setup above: server (SorobanServer)
 // CORRECT: server.getAccount() returns Account? (nullable), NOT AccountResponse
 Account? account = await server.getAccount(accountId);
 if (account != null) {
@@ -149,6 +156,8 @@ AccountResponse account = await server.getAccount(accountId); // Type error!
 Simulate a transaction to estimate resources and preview results. Required before submitting any Soroban transaction.
 
 ```dart
+// From your app: contractId (String), sourceAccountId (String)
+// From the setup above: server (SorobanServer)
 // Load account for sequence number
 Account? account = await server.getAccount(sourceAccountId);
 if (account == null) throw Exception('Account not found');
@@ -199,6 +208,8 @@ if (simResponse.resultError != null) {
 Submit a signed transaction to the network. Returns immediately; poll `getTransaction` for results.
 
 ```dart
+// From your app: keyPair (KeyPair)
+// From the setup above: server (SorobanServer), simResponse (SimulateTransactionResponse), tx (Transaction)
 // After simulation, apply results to the transaction
 tx.sorobanTransactionData = simResponse.transactionData;
 tx.addResourceFee(simResponse.minResourceFee!);
@@ -207,17 +218,22 @@ tx.setSorobanAuth(simResponse.sorobanAuth);
 // Sign and submit
 tx.sign(keyPair, Network.TESTNET);
 final sendResponse = await server.sendTransaction(tx);
-print('Status: ${sendResponse.status}');
 print('Hash: ${sendResponse.hash}');
 
-if (sendResponse.status == SendTransactionResponse.STATUS_ERROR) {
-  print('Error: ${sendResponse.errorResultXdr}');
+final status = sendResponse.status;
+if (status == SendTransactionResponse.STATUS_ERROR) {
+  throw Exception('Rejected: ${sendResponse.errorResultXdr}'); // nothing to poll
+} else if (status == SendTransactionResponse.STATUS_TRY_AGAIN_LATER) {
+  // Not accepted now: wait a few seconds, then send the same signed transaction again
+} else if (status == SendTransactionResponse.STATUS_PENDING ||
+    status == SendTransactionResponse.STATUS_DUPLICATE) {
+  // Accepted or already known: poll the result with sendResponse.hash (getTransaction below)
 }
 ```
 
 **Response fields:** `status`, `hash`, `latestLedger`, `errorResultXdr`.
 
-**Status values:** `STATUS_PENDING`, `STATUS_DUPLICATE`, `STATUS_TRY_AGAIN_LATER`, `STATUS_ERROR`.
+**Status values:** `STATUS_PENDING` (accepted, poll the hash), `STATUS_DUPLICATE` (already submitted, poll the hash), `STATUS_TRY_AGAIN_LATER` (not accepted now, send again later), `STATUS_ERROR` (rejected, the reason is in `errorResultXdr`).
 
 ---
 
@@ -226,6 +242,8 @@ if (sendResponse.status == SendTransactionResponse.STATUS_ERROR) {
 Poll for the status and result of a submitted transaction.
 
 ```dart
+// From the setup above: sendResponse (SendTransactionResponse), server (SorobanServer)
+// From your app: txHash (String)
 // Single check
 final txResponse = await server.getTransaction(txHash);
 
@@ -239,12 +257,16 @@ if (txResponse.status == GetTransactionResponse.STATUS_SUCCESS) {
   print('Transaction failed: ${txResponse.resultXdr}');
 }
 
-// Polling pattern: loop until confirmed or failed
-GetTransactionResponse result;
-do {
-  await Future.delayed(Duration(seconds: 3));
-  result = await server.getTransaction(sendResponse.hash!);
-} while (result.status == GetTransactionResponse.STATUS_NOT_FOUND);
+// Polling: pollTransaction retries while NOT_FOUND, at most maxAttempts times (default 30,
+// one second apart); the answer can still be NOT_FOUND after the limit
+GetTransactionResponse result = await server.pollTransaction(sendResponse.hash!);
+if (result.status == GetTransactionResponse.STATUS_SUCCESS) {
+  print('Return value: ${result.getResultValue()}');
+} else if (result.status == GetTransactionResponse.STATUS_FAILED) {
+  print('Transaction failed: ${result.resultXdr}');
+} else {
+  // NOT_FOUND after the limit: keep the hash and check again later
+}
 ```
 
 **Response fields:** `status`, `latestLedger`, `latestLedgerCloseTime`, `oldestLedger`, `oldestLedgerCloseTime`, `ledger`, `createdAt`, `applicationOrder`, `feeBump`, `envelopeXdr`, `resultXdr`, `resultMetaXdr`, `txHash`, `diagnosticEventsXdr`, `events`.
@@ -264,6 +286,8 @@ do {
 Read specific ledger entries by their XDR-encoded keys.
 
 ```dart
+// From your app: contractId (String)
+// From the setup above: server (SorobanServer)
 // Build a ledger key for contract data
 final ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
 ledgerKey.contractData = XdrLedgerKeyContractData(
@@ -291,11 +315,34 @@ if (response.entries != null && response.entries!.isNotEmpty) {
 
 ---
 
+### getLedgers
+
+Retrieve a page of ledgers with their close times and, on request, their header and metadata XDR. The start ledger must lie inside the server's retention window.
+
+```dart
+// From the setup above: server (SorobanServer)
+final latest = await server.getLatestLedger();
+final response = await server.getLedgers(GetLedgersRequest(
+  startLedger: latest.sequence! - 10,
+  paginationOptions: PaginationOptions(limit: 5),
+));
+for (final ledger in response.ledgers ?? <LedgerInfo>[]) {
+  print('Ledger ${ledger.sequence} closed at ${ledger.ledgerCloseTime}');
+}
+// Next page: GetLedgersRequest(paginationOptions: PaginationOptions(cursor: response.cursor))
+```
+
+**Response fields:** `ledgers` (`LedgerInfo`: `hash`, `sequence`, `ledgerCloseTime`, `headerXdr`, `metadataXdr`), `latestLedger`, `latestLedgerCloseTime`, `oldestLedger`, `oldestLedgerCloseTime`, `cursor`.
+
+---
+
 ### getContractData
 
 Convenience method to read a single contract data entry.
 
 ```dart
+// From your app: contractId (String)
+// From the setup above: server (SorobanServer)
 final entry = await server.getContractData(
   contractId,
   XdrSCVal.forSymbol('counter'),
@@ -317,6 +364,7 @@ if (entry != null) {
 Retrieve a paginated list of transactions from ledger history.
 
 ```dart
+// From the setup above: server (SorobanServer)
 final request = GetTransactionsRequest(
   startLedger: 1000,
   paginationOptions: PaginationOptions(limit: 50),
@@ -346,10 +394,12 @@ if (response.transactions != null) {
 Retrieve contract events within a ledger range with optional filters.
 
 ```dart
+// From your app: contractId (String)
+// From the setup above: server (SorobanServer)
 // Get transfer events from a specific contract
 final filter = EventFilter(
   type: 'contract',
-  contractIds: ['CABC...'],
+  contractIds: [contractId], // the C... id of the contract
   topics: [
     TopicFilter([
       '*',
@@ -392,6 +442,8 @@ if (response.events != null) {
 `SorobanServer` includes convenience methods for loading contract bytecode and metadata:
 
 ```dart
+// From your app: contractId (String)
+// From the setup above: server (SorobanServer)
 // Load contract bytecode by deployed contract ID
 XdrContractCodeEntry? code = await server.loadContractCodeForContractId(contractId);
 if (code != null) {
@@ -425,6 +477,7 @@ For full introspection details (enumerating parameters, UDTs, events), see [Soro
 All `SorobanServer` methods return response objects extending `SorobanRpcResponse`. Check `isErrorResponse` and `error` for JSON-RPC-level errors:
 
 ```dart
+// From the setup above: server (SorobanServer)
 final health = await server.getHealth();
 if (health.isErrorResponse) {
   print('RPC error: ${health.error?.message}');
@@ -455,6 +508,7 @@ For detailed error handling patterns (simulation errors, send errors, restore pr
 | `getVersionInfo` | `getVersionInfo()` | `GetVersionInfoResponse` |
 | `getLatestLedger` | `getLatestLedger()` | `GetLatestLedgerResponse` |
 | `getLedgerEntries` | `getLedgerEntries(List<String> keys)` | `GetLedgerEntriesResponse` |
+| `getLedgers` | `getLedgers(GetLedgersRequest)` | `GetLedgersResponse` |
 | `getTransaction` | `getTransaction(String hash)` | `GetTransactionResponse` |
 | `getTransactions` | `getTransactions(GetTransactionsRequest)` | `GetTransactionsResponse` |
 | `getEvents` | `getEvents(GetEventsRequest)` | `GetEventsResponse` |

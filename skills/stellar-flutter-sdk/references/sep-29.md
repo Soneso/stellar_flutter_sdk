@@ -43,12 +43,27 @@ class AccountRequiresMemoException implements Exception {
 ## Quick Start
 
 ```dart
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair senderKeyPair = KeyPair.fromSecretSeed('SDAYCKMBSHSMI5MDI3M3CUOV73ARJGPHKW7YQFCHOMSE3FGM7XNTBTVV');
-// Account whose config.memo_required data entry is 1
-String destinationId = 'GC5K7EUJIROBOQHHG4TFUAGZVWVALJTNESW7ZQLYMEFZGZFHNWFEKTHF';
+
+// Testnet setup: a funded sender and a funded destination that requires a memo
+KeyPair senderKeyPair = KeyPair.random();
+KeyPair destinationKeyPair = KeyPair.random();
+await FriendBot.fundTestAccount(senderKeyPair.accountId);
+await FriendBot.fundTestAccount(destinationKeyPair.accountId);
+String destinationId = destinationKeyPair.accountId;
+
+AccountResponse destinationAccount = await sdk.accounts.account(destinationId);
+Transaction flagTransaction = TransactionBuilder(destinationAccount)
+    .addOperation(ManageDataOperationBuilder(
+      'config.memo_required', Uint8List.fromList(utf8.encode('1'))).build())
+    .build();
+flagTransaction.sign(destinationKeyPair, Network.TESTNET);
+await sdk.submitTransaction(flagTransaction);
 
 AccountResponse senderAccount = await sdk.accounts.account(senderKeyPair.accountId);
 Transaction transaction = TransactionBuilder(senderAccount)
@@ -82,8 +97,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
+// From the section Quick Start: destinationKeyPair (KeyPair)
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair exchangeKeyPair = KeyPair.fromSecretSeed('SAVSYZG4KFDZTL4OHPALGT5VVG3XKIEDFE2CJIWLWK2FTKWDNDMXT4WB');
+KeyPair exchangeKeyPair = destinationKeyPair; // from the Quick Start setup
 AccountResponse exchangeAccount = await sdk.accounts.account(exchangeKeyPair.accountId);
 
 Transaction transaction = TransactionBuilder(exchangeAccount)
@@ -102,8 +118,9 @@ To remove the requirement, pass `null` as the value. This deletes the entry:
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Quick Start: destinationKeyPair (KeyPair)
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair exchangeKeyPair = KeyPair.fromSecretSeed('SAVSYZG4KFDZTL4OHPALGT5VVG3XKIEDFE2CJIWLWK2FTKWDNDMXT4WB');
+KeyPair exchangeKeyPair = destinationKeyPair; // from the Quick Start setup
 AccountResponse exchangeAccount = await sdk.accounts.account(exchangeKeyPair.accountId);
 
 Transaction transaction = TransactionBuilder(exchangeAccount)
@@ -138,10 +155,10 @@ The check stops at the first account that requires a memo. Use `operationIndex` 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Quick Start: destinationId (String), senderKeyPair (KeyPair)
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair senderKeyPair = KeyPair.fromSecretSeed('SDAYCKMBSHSMI5MDI3M3CUOV73ARJGPHKW7YQFCHOMSE3FGM7XNTBTVV');
 String walletId = 'GB2HGBJLC5NL5J4REQHUXXHTYLIQLKLFA4UEPUN7X5JCPWREODUR2EWG';   // no flag
-String exchangeId = 'GC5K7EUJIROBOQHHG4TFUAGZVWVALJTNESW7ZQLYMEFZGZFHNWFEKTHF'; // config.memo_required = 1
+String exchangeId = destinationId; // from the Quick Start setup: config.memo_required = 1
 
 AccountResponse senderAccount = await sdk.accounts.account(senderKeyPair.accountId);
 Transaction transaction = TransactionBuilder(senderAccount)
@@ -167,10 +184,10 @@ The fee bump envelope carries no memo and no operations. The inner transaction i
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Quick Start: destinationId (String), senderKeyPair (KeyPair)
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair senderKeyPair = KeyPair.fromSecretSeed('SDAYCKMBSHSMI5MDI3M3CUOV73ARJGPHKW7YQFCHOMSE3FGM7XNTBTVV');
-KeyPair feePayerKeyPair = KeyPair.fromSecretSeed('SAWVUHBTLOYJUOZO5B5PRDFYWVUCLWVTEB5MTWT5XGHUPE52WXXOFTLU');
-String destinationId = 'GC5K7EUJIROBOQHHG4TFUAGZVWVALJTNESW7ZQLYMEFZGZFHNWFEKTHF'; // config.memo_required = 1
+KeyPair feePayerKeyPair = KeyPair.random(); // testnet fee payer, funded on the next line
+await FriendBot.fundTestAccount(feePayerKeyPair.accountId);
 
 AccountResponse senderAccount = await sdk.accounts.account(senderKeyPair.accountId);
 Transaction innerTransaction = TransactionBuilder(senderAccount)
@@ -201,9 +218,9 @@ A multiplexed destination is never looked up, even when its base account require
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Quick Start: destinationId (String), senderKeyPair (KeyPair)
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair senderKeyPair = KeyPair.fromSecretSeed('SDAYCKMBSHSMI5MDI3M3CUOV73ARJGPHKW7YQFCHOMSE3FGM7XNTBTVV');
-String baseAccountId = 'GC5K7EUJIROBOQHHG4TFUAGZVWVALJTNESW7ZQLYMEFZGZFHNWFEKTHF'; // config.memo_required = 1
+String baseAccountId = destinationId; // from the Quick Start setup: config.memo_required = 1
 
 MuxedAccount muxedDestination = MuxedAccount(baseAccountId, BigInt.from(12345));
 
@@ -229,9 +246,8 @@ print(response.success); // true
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Quick Start: destinationId (String, config.memo_required = 1), senderKeyPair (KeyPair)
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair senderKeyPair = KeyPair.fromSecretSeed('SDAYCKMBSHSMI5MDI3M3CUOV73ARJGPHKW7YQFCHOMSE3FGM7XNTBTVV');
-String destinationId = 'GC5K7EUJIROBOQHHG4TFUAGZVWVALJTNESW7ZQLYMEFZGZFHNWFEKTHF'; // config.memo_required = 1
 
 AccountResponse senderAccount = await sdk.accounts.account(senderKeyPair.accountId);
 Transaction transaction = TransactionBuilder(senderAccount)
@@ -252,6 +268,7 @@ Use it only after running `checkMemoRequired()` yourself, or for destinations yo
 **Catching only `ErrorResponse` around the submit call**
 
 ```dart
+// From the section Quick Start: sdk (StellarSDK), transaction (Transaction)
 // WRONG: AccountRequiresMemoException is not an ErrorResponse; it escapes this handler
 try {
   await sdk.submitTransaction(transaction);
@@ -275,6 +292,7 @@ try {
 **Disabling the check "to avoid the extra request"**
 
 ```dart
+// From the section Quick Start: sdk (StellarSDK), transaction (Transaction)
 // WRONG: turns off SEP-29 protection for every payment
 await sdk.submitTransaction(transaction, skipMemoRequiredCheck: true);
 
@@ -286,6 +304,8 @@ await sdk.submitTransaction(transaction);
 **Rebuilding after the exception with the same account object**
 
 ```dart
+// From your app: paymentOp (Operation)
+// From the section Quick Start: sdk (StellarSDK), senderAccount (AccountResponse), senderKeyPair (KeyPair), transaction (Transaction)
 // WRONG: build() already advanced senderAccount's sequence number; this
 // transaction skips a sequence number and fails with tx_bad_seq
 transaction = TransactionBuilder(senderAccount)
@@ -304,6 +324,7 @@ transaction = TransactionBuilder(senderAccount)
 **Testing the data entry by key presence only**
 
 ```dart
+// From the section Quick Start: destinationId (String), sdk (StellarSDK), transaction (Transaction)
 // WRONG: an entry holding '0' or any other value does not require a memo
 AccountResponse destination = await sdk.accounts.account(destinationId);
 bool requiresMemo = destination.data.keys.contains('config.memo_required');
@@ -319,6 +340,9 @@ try {
 **Setting the flag with a value other than `1`**
 
 ```dart
+import 'dart:convert';
+import 'dart:typed_data';
+
 // WRONG: 'true', '1 ' or 'yes' are ignored by the check; senders are not stopped
 ManageDataOperationBuilder('config.memo_required', Uint8List.fromList(utf8.encode('true'))).build();
 
@@ -344,8 +368,8 @@ This payment to an account that does not exist passes the check and fails on the
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Quick Start: senderKeyPair (KeyPair)
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair senderKeyPair = KeyPair.fromSecretSeed('SDAYCKMBSHSMI5MDI3M3CUOV73ARJGPHKW7YQFCHOMSE3FGM7XNTBTVV');
 String destinationId = KeyPair.random().accountId; // valid id, not on the network
 
 AccountResponse senderAccount = await sdk.accounts.account(senderKeyPair.accountId);

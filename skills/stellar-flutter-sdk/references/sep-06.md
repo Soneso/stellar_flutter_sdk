@@ -2,7 +2,7 @@
 
 **Purpose:** Non-interactive deposits and withdrawals through anchors without user-facing web flows. The user provides all required information in API requests — no popups or webviews.
 **Prerequisites:** Requires JWT from SEP-10 (see `references/sep-10.md`); anchor must publish `TRANSFER_SERVER` in `stellar.toml`
-**Spec:** SEP-0006 v4.3.0
+**Spec:** [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
 
 Use SEP-06 when you can collect all user information programmatically. Use SEP-24 (`references/sep-24.md`) when the anchor requires an interactive KYC flow.
 
@@ -42,6 +42,8 @@ TransferServerService service =
 
 Method signature:
 ```dart
+import 'package:http/http.dart' as http;
+
 static Future<TransferServerService> fromDomain(
   String domain, {
   http.Client? httpClient,
@@ -62,6 +64,8 @@ TransferServerService service =
 
 Constructor signature:
 ```dart
+import 'package:http/http.dart' as http;
+
 TransferServerService(
   String _transferServiceAddress, {
   http.Client? httpClient,
@@ -92,13 +96,14 @@ TransferServerService service = await TransferServerService.fromDomain(
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 TransferServerService service =
     await TransferServerService.fromDomain('anchor.example.com');
 
 // Optional: pass JWT and/or language code (ISO 639-1)
 InfoResponse info = await service.info(jwt: jwtToken, language: 'en');
 // Or without arguments:
-InfoResponse info = await service.info();
+InfoResponse infoWithoutArgs = await service.info();
 ```
 
 Method signature:
@@ -266,6 +271,7 @@ DepositRequest({
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token), userAccountId (String)
 TransferServerService service =
     await TransferServerService.fromDomain('anchor.example.com');
 
@@ -342,6 +348,8 @@ try {
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token), userAccountId (String)
+// From the section From domain (recommended): service (TransferServerService)
 DepositRequest request = DepositRequest(
   assetCode: 'USD',
   account: userAccountId,
@@ -400,6 +408,7 @@ DepositExchangeRequest({
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token), userAccountId (String)
 TransferServerService service =
     await TransferServerService.fromDomain('anchor.example.com');
 
@@ -463,6 +472,7 @@ WithdrawRequest({
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token), userAccountId (String)
 TransferServerService service =
     await TransferServerService.fromDomain('anchor.example.com');
 
@@ -559,6 +569,7 @@ WithdrawExchangeRequest({
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 TransferServerService service =
     await TransferServerService.fromDomain('anchor.example.com');
 
@@ -605,6 +616,7 @@ FeeRequest({
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 TransferServerService service =
     await TransferServerService.fromDomain('anchor.example.com');
 InfoResponse info = await service.info();
@@ -650,6 +662,7 @@ AnchorTransactionsRequest({
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token), userAccountId (String)
 TransferServerService service =
     await TransferServerService.fromDomain('anchor.example.com');
 
@@ -697,6 +710,7 @@ At least one of `id`, `stellarTransactionId`, or `externalTransactionId` must be
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token), stellarTransactionHash (String)
 TransferServerService service =
     await TransferServerService.fromDomain('anchor.example.com');
 
@@ -713,7 +727,7 @@ print('Kind: ${tx.kind}');
 
 // Or query by Stellar transaction hash
 AnchorTransactionRequest request2 = AnchorTransactionRequest(
-  stellarTransactionId: '17a670bc424ff5ce3b386dbfa...',
+  stellarTransactionId: stellarTransactionHash,
   jwt: jwtToken,
 );
 
@@ -733,21 +747,42 @@ import 'dart:async';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 Future<AnchorTransaction> pollForCompletion(
-    TransferServerService service, String txId, String jwt) async {
+    TransferServerService service, String txId, String jwt,
+    {Duration deadline = const Duration(minutes: 30)}) async {
+  // Statuses after which the transfer does not change any more
+  const Set<String> terminalStatuses = {
+    'completed', 'refunded', 'expired', 'error',
+    'no_market', 'too_small', 'too_large',
+  };
+  const Duration minInterval = Duration(seconds: 5);
+  const Duration maxInterval = Duration(minutes: 1);
+  DateTime stopAt = DateTime.now().add(deadline);
+  Duration delay = minInterval;
+  String lastStatus = 'unknown';
   while (true) {
-    AnchorTransactionResponse response = await service.transaction(
-      AnchorTransactionRequest(id: txId, jwt: jwt),
-    );
+    Duration remaining = stopAt.difference(DateTime.now());
+    if (remaining <= Duration.zero) {
+      throw TimeoutException('Transaction $txId is still $lastStatus', deadline);
+    }
+    // The request may take no longer than the time left
+    AnchorTransactionResponse response = await service
+        .transaction(AnchorTransactionRequest(id: txId, jwt: jwt))
+        .timeout(remaining);
     AnchorTransaction tx = response.transaction;
+    lastStatus = tx.status;
 
-    if (tx.status == 'completed' || tx.status == 'error' ||
-        tx.status == 'refunded' || tx.status == 'expired') {
+    if (terminalStatuses.contains(tx.status)) {
       return tx;
     }
 
-    // Use statusEta if provided, otherwise default polling interval
-    int waitSeconds = tx.statusEta ?? 5;
-    await Future.delayed(Duration(seconds: waitSeconds));
+    // A positive statusEta when the anchor gives one, else a delay that doubles
+    // up to one minute; at least the minimum interval, at most the time left
+    int? eta = tx.statusEta;
+    Duration wait = eta != null && eta > 0 ? Duration(seconds: eta) : delay;
+    if (wait < minInterval) wait = minInterval;
+    delay = delay * 2 > maxInterval ? maxInterval : delay * 2;
+    remaining = stopAt.difference(DateTime.now());
+    await Future.delayed(wait < remaining ? wait : remaining);
   }
 }
 ```
@@ -775,6 +810,7 @@ PatchTransactionRequest(
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 
+// From your app: jwtToken (String, the SEP-10 token)
 TransferServerService service =
     await TransferServerService.fromDomain('anchor.example.com');
 
@@ -817,6 +853,7 @@ if (tx.status == 'pending_transaction_info_update') {
 ## 11. AnchorTransaction — All Fields
 
 ```dart
+// From the section PatchTransactionRequest: tx (AnchorTransaction)
 // Required fields (always present)
 tx.id;                     // String — unique anchor-generated ID
 tx.kind;                   // String — 'deposit', 'deposit-exchange', 'withdrawal', 'withdrawal-exchange'
@@ -907,6 +944,7 @@ tx.claimableBalanceId;     // String? — Claimable Balance ID if deposit used c
 | `pending_anchor` | Anchor is processing internally |
 | `pending_stellar` | Stellar transaction pending |
 | `pending_trust` | User must add a trustline for the asset |
+| `pending_user` | User must take an additional action before the transfer can complete |
 | `pending_customer_info_update` | Anchor needs more KYC info via SEP-12 |
 | `pending_transaction_info_update` | Anchor needs more transaction info — check `requiredInfoUpdates`, then PATCH |
 | `on_hold` | On hold (e.g., compliance review) |
@@ -927,6 +965,8 @@ Three domain-specific exceptions are thrown from `deposit()`, `depositExchange()
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: request (DepositRequest)
+// From the section From domain (recommended): service (TransferServerService)
 try {
   DepositResponse response = await service.deposit(request);
 
@@ -993,11 +1033,12 @@ FeeRequest(operation: 'deposit', assetCode: 'USD', amount: 123.09);
 **WRONG: `PatchTransactionRequest` takes `id` as positional, not named**
 
 ```dart
+// From your app: token (String, the SEP-10 token)
 // WRONG: id is positional — named form causes compile error
-PatchTransactionRequest(id: 'tx-123', fields: {...}, jwt: token);
+PatchTransactionRequest(id: 'tx-123', fields: {'dest': '0123456789'}, jwt: token);
 
 // CORRECT: id is the first positional argument
-PatchTransactionRequest('tx-123', fields: {...}, jwt: token);
+PatchTransactionRequest('tx-123', fields: {'dest': '0123456789'}, jwt: token);
 ```
 
 **WRONG: forgetting the memo when sending a Stellar payment for a withdrawal**
@@ -1014,6 +1055,7 @@ When `withdraw()` returns, you must build a Stellar payment to `WithdrawResponse
 **WRONG: `WithdrawAsset.types` values are `Map<String, AnchorField>?`, not `AnchorField`**
 
 ```dart
+// From your app: asset (WithdrawAsset)
 // WRONG: each type value is a fields map, not a single AnchorField
 if (asset.types != null) {
   asset.types!.forEach((typeName, field) {
@@ -1037,11 +1079,14 @@ if (asset.types != null) {
 **WRONG: treating `patchTransaction` response as a typed SDK object**
 
 ```dart
+import 'package:http/http.dart' as http;
+
+// From the section PatchTransactionRequest: patchRequest (PatchTransactionRequest)
+// From the section From domain (recommended): service (TransferServerService)
 // WRONG: patchTransaction does not return a typed response
 DepositResponse r = await service.patchTransaction(patchRequest); // compile error
 
 // CORRECT: returns raw http.Response — check statusCode
-import 'package:http/http.dart' as http;
 http.Response response = await service.patchTransaction(patchRequest);
 print(response.statusCode); // 200 = success
 ```
@@ -1049,6 +1094,7 @@ print(response.statusCode); // 200 = success
 **WRONG: passing `claimableBalanceSupported` as a bool**
 
 ```dart
+// From your app: id (String, the user's account)
 // WRONG: field type is String?, not bool
 DepositRequest(assetCode: 'USD', account: id, claimableBalanceSupported: true);
 

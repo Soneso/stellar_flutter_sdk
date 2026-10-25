@@ -33,6 +33,7 @@
 `KYCService.fromDomain()` fetches the anchor's `stellar.toml`, reads `KYC_SERVER` (falls back to `TRANSFER_SERVER`), and returns a configured `KYCService`. Throws `Exception` if neither field is found.
 
 ```dart
+import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 try {
@@ -43,8 +44,6 @@ try {
 }
 
 // With custom HTTP client (timeouts, proxies, etc.)
-import 'package:http/http.dart' as http;
-
 final client = http.Client();
 final kycService = await KYCService.fromDomain(
   'testanchor.stellar.org',
@@ -59,11 +58,13 @@ Use when you already know the KYC endpoint URL.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'package:http/http.dart' as http;
 
+// From your app: myClient (http.Client)
 final kycService = KYCService('https://api.anchor.com/kyc');
 
 // With optional custom client and headers
-final kycService = KYCService(
+final kycServiceWithClient = KYCService(
   'https://api.anchor.com/kyc',
   httpClient: myClient,
   httpRequestHeaders: {'X-Custom': 'value'},
@@ -84,6 +85,7 @@ Retrieve a customer's current verification status and the fields the anchor need
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 final kycService = await KYCService.fromDomain('testanchor.stellar.org');
 
 final request = GetCustomerInfoRequest()
@@ -111,9 +113,7 @@ if (response.fields != null) {
     // field.type        — "string", "binary", "number", or "date"
     // field.description — String? human-readable description
     // field.optional    — bool? false/null means required; true means optional
-    // field.choices     — List<String>? valid values (empty list if unconstrained)
-    // WRONG: if (field.choices != null) — choices is [] not null when unconstrained
-    // CORRECT: if (field.choices != null && field.choices!.isNotEmpty)
+    // field.choices: List<String>? valid values, null when the field has no fixed set
     final required = (field.optional == true) ? 'optional' : 'required';
     print('$fieldName ($required): ${field.description}');
     if (field.choices != null && field.choices!.isNotEmpty) {
@@ -146,6 +146,7 @@ Submit or update customer data. Returns a `PutCustomerInfoResponse` with `id` �
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 final kycService = await KYCService.fromDomain('testanchor.stellar.org');
 
 final personFields = NaturalPersonKYCFields()
@@ -216,6 +217,7 @@ All organization fields are automatically sent with the `organization.` prefix p
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 final kycService = await KYCService.fromDomain('testanchor.stellar.org');
 
 final orgFields = OrganizationKYCFields()
@@ -252,6 +254,8 @@ Attach financial account details to a natural person or organization.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
+// From the section From domain (recommended): kycService (KYCService)
 final financialFields = FinancialAccountKYCFields()
   // Traditional bank account
   ..bankName = 'First National Bank'
@@ -306,6 +310,8 @@ Attach payment card details to a natural person or organization. All card field 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
+// From the section From domain (recommended): kycService (KYCService)
 final cardFields = CardKYCFields()
   ..number = '4111111111111111'
   ..expirationDate = '29-11'       // YY-MM format (November 2029)
@@ -343,6 +349,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Natural person fields: customerId (String)
+// From your app: jwtToken (String, the SEP-10 token)
 final kycService = await KYCService.fromDomain('testanchor.stellar.org');
 
 final idFrontBytes = await File('id_front.jpg').readAsBytes();
@@ -403,6 +411,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Natural person fields: customerId (String)
+// From your app: jwtToken (String, the SEP-10 token)
 final kycService = await KYCService.fromDomain('testanchor.stellar.org');
 
 final request = PutCustomerInfoRequest()
@@ -425,13 +435,15 @@ final response = await kycService.putCustomerInfo(request);
 
 ## Put customer verification (deprecated)
 
-`PUT /customer/verification` is **deprecated in SEP-12 v1.12.0**. The preferred approach is to submit verification codes via `PUT /customer` using `customFields` with the `_verification` suffix.
+`PUT /customer/verification` is **deprecated in SEP-12**. The preferred approach is to submit verification codes via `PUT /customer` using `customFields` with the `_verification` suffix.
 
 The deprecated endpoint is supported for backwards compatibility:
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Natural person fields: customerId (String)
+// From your app: jwtToken (String, the SEP-10 token)
 final kycService = await KYCService.fromDomain('testanchor.stellar.org');
 
 // DEPRECATED: use PUT /customer with customFields instead
@@ -463,6 +475,8 @@ Register a URL to receive POST notifications when a customer's status changes. T
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 
+// From the section Natural person fields: customerId (String)
+// From your app: jwtToken (String, the SEP-10 token)
 final kycService = await KYCService.fromDomain('testanchor.stellar.org');
 
 final request = PutCustomerCallbackRequest()
@@ -491,6 +505,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Natural person fields: customerId (String)
+// From your app: jwtToken (String, the SEP-10 token)
 final kycService = await KYCService.fromDomain('testanchor.stellar.org');
 
 // Upload the file — takes Uint8List and jwt string
@@ -535,6 +551,8 @@ Retrieve information about uploaded files, either by file ID or customer ID.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Natural person fields: customerId (String)
+// From your app: jwtToken (String, the SEP-10 token)
 final kycService = await KYCService.fromDomain('testanchor.stellar.org');
 
 // Get a specific file by ID (named parameter)
@@ -575,6 +593,7 @@ Delete all personal data stored by the anchor for a given Stellar account. Used 
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 
+// From your app: accountId (String), jwtToken (String, the SEP-10 token)
 final kycService = await KYCService.fromDomain('testanchor.stellar.org');
 
 // First argument is the Stellar account ID (G... address) — NOT the customer UUID
@@ -610,6 +629,8 @@ Future<http.Response> deleteCustomer(String account, String? memo, String? memoT
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Natural person fields: customerId (String)
+// From your app: jwtToken (String, the SEP-10 token)
 final kycService = await KYCService.fromDomain('testanchor.stellar.org');
 
 try {
@@ -683,7 +704,7 @@ try {
 | `type` | `String` | `"string"`, `"binary"`, `"number"`, or `"date"` |
 | `description` | `String?` | Human-readable description |
 | `optional` | `bool?` | `null`/`false` = required; `true` = optional |
-| `choices` | `List<String>?` | Valid values; returns `[]` (not `null`) when unconstrained |
+| `choices` | `List<String>?` | Valid values; `null` when the field has no fixed set |
 
 ### GetCustomerInfoProvidedField
 
@@ -725,6 +746,7 @@ Public properties (no getter methods):
 **WRONG: birthDate, idIssueDate, idExpirationDate expect DateTime — not strings**
 
 ```dart
+// From the section File uploads (binary fields): personFields (NaturalPersonKYCFields)
 // WRONG: strings are not accepted for these typed DateTime? properties
 personFields.birthDate = '1990-05-15';         // compile error
 personFields.idIssueDate = '2020-01-15';       // compile error
@@ -740,6 +762,7 @@ personFields.idExpirationDate = DateTime(2030, 1, 15);
 **WRONG: occupation is int, not String**
 
 ```dart
+// From the section File uploads (binary fields): personFields (NaturalPersonKYCFields)
 // WRONG: string — occupation is typed int?
 personFields.occupation = '2512';  // compile error
 
@@ -750,6 +773,7 @@ personFields.occupation = 2512;
 **WRONG: VATNumber is mixed-case — not vatNumber**
 
 ```dart
+// From the section Financial account fields: orgFields (OrganizationKYCFields)
 // WRONG: property does not exist
 orgFields.vatNumber = 'DE123456789';  // compile error
 
@@ -761,6 +785,7 @@ orgFields.VATNumber = 'DE123456789';
 **WRONG: OrganizationKYCFields.registrationDate is String, not DateTime**
 
 ```dart
+// From the section Financial account fields: orgFields (OrganizationKYCFields)
 // WRONG: DateTime — registrationDate is typed String?, not DateTime?
 orgFields.registrationDate = DateTime(2010, 6, 15);  // compile error
 
@@ -772,9 +797,10 @@ orgFields.registrationDate = '2010-06-15';
 **WRONG: accessing CustomerFileResponse via getter methods — it has public properties**
 
 ```dart
+// From your app: fileResponse (CustomerFileResponse)
 // WRONG: there are no getter methods on CustomerFileResponse
-final id = fileResponse.getFileId();          // NoSuchMethodError at runtime
-final ct = fileResponse.getContentType();     // NoSuchMethodError at runtime
+final id = fileResponse.getFileId();          // compile error: the method isn't defined
+final ct = fileResponse.getContentType();     // compile error: the method isn't defined
 
 // CORRECT: access public properties directly
 final id = fileResponse.fileId;
@@ -787,8 +813,9 @@ final cu = fileResponse.customerId;
 **WRONG: accessing GetCustomerFilesResponse.files via a getter**
 
 ```dart
+// From your app: response (GetCustomerFilesResponse)
 // WRONG: no getter method on GetCustomerFilesResponse
-final files = response.getFiles();  // NoSuchMethodError at runtime
+final files = response.getFiles();  // compile error: the method isn't defined
 
 // CORRECT: public property
 final files = response.files;  // List<CustomerFileResponse>
@@ -797,6 +824,8 @@ final files = response.files;  // List<CustomerFileResponse>
 **WRONG: putCustomerVerification() returns GetCustomerInfoResponse, not PutCustomerInfoResponse**
 
 ```dart
+// From the section From domain (recommended): kycService (KYCService)
+// From your app: request (PutCustomerVerificationRequest)
 // WRONG: treating the return value as PutCustomerInfoResponse
 // ignore: deprecated_member_use
 final response = await kycService.putCustomerVerification(request);
@@ -808,16 +837,20 @@ print(response.status);  // ACCEPTED, NEEDS_INFO, etc.
 **WRONG: deleteCustomer() first parameter is the Stellar account ID, not the customer UUID**
 
 ```dart
+// From your app: accountId (String), jwtToken (String, the SEP-10 token)
+// From the setup above: customerId (String), kycService (KYCService)
 // WRONG: passing the anchor-assigned customer UUID
 await kycService.deleteCustomer(customerId, null, null, jwtToken);  // 404
 
 // CORRECT: first argument is the Stellar account G... address
-await kycService.deleteCustomer('GABC...stellarAccountId', null, null, jwtToken);
+await kycService.deleteCustomer(accountId, null, null, jwtToken);
 ```
 
 **WRONG: deleteCustomer() and putCustomerCallback() don't throw on HTTP errors**
 
 ```dart
+// From your app: accountId (String), jwtToken (String, the SEP-10 token), request (PutCustomerCallbackRequest)
+// From the section From domain (recommended): kycService (KYCService)
 // These methods return http.Response directly — check statusCode manually
 final response = await kycService.deleteCustomer(accountId, null, null, jwtToken);
 if (response.statusCode != 200) {

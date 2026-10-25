@@ -25,6 +25,7 @@ Secret keys (S... seeds) give full control over an account. Compromised keys lea
 ### Never Hardcode Keys
 
 ```dart
+// From your app: SecureKeyStore (class)
 // WRONG -- secret key exposed in source code
 // KeyPair pair = KeyPair.fromSecretSeed('SDJHRQF4GCMIIKAAAQ6GR...');
 
@@ -32,8 +33,6 @@ Secret keys (S... seeds) give full control over an account. Compromised keys lea
 Future<KeyPair> loadKeyPair(SecureKeyStore store) async {
   String seed = await store.read('stellar_secret_seed');
   KeyPair keyPair = KeyPair.fromSecretSeed(seed);
-  // Clear seed from memory when done
-  seed = '';
   return keyPair;
 }
 ```
@@ -50,7 +49,7 @@ Use `flutter_secure_storage` (or equivalent) which delegates to platform-native 
 
 1. Generate keys on-device, never on a server
 2. Never log, print, or transmit secret seeds
-3. Clear secret seeds from memory when no longer needed
+3. Keep seeds and key pairs short-lived: local variables, no fields, no long-lived objects. Dart cannot erase a string from memory.
 4. Use `KeyPair.fromAccountId()` (public key only) for read-only operations
 5. For HD wallets, store only the mnemonic and derive keys on demand via `Wallet` (SEP-0005)
 
@@ -86,7 +85,7 @@ The length is checked before the string is base32-decoded, which bounds the work
 | Prefix | Encoded length | Payload |
 |--------|----------------|---------|
 | G, S, T, X, C, L | 56 | 32 bytes |
-| M | 69 | 40 bytes |
+| M, W | 69 | 40 bytes |
 | P | 69 to 165 | 40 to 100 bytes |
 | B | 58 | 33 bytes |
 
@@ -250,11 +249,14 @@ Mixing testnet and public network configurations leads to invalid signatures or 
 ```dart
 // Validate Horizon server matches expected network at startup
 Future<void> validateNetwork(StellarSDK sdk, Network expectedNetwork) async {
-  // WRONG: just trust the URL matches the network
-  // CORRECT: verify the server's reported passphrase
-  // Use sdk.root to check network passphrase matches
+  RootResponse root = await sdk.root();
+  if (root.networkPassphrase != expectedNetwork.networkPassphrase) {
+    throw StateError('Horizon serves "${root.networkPassphrase}", expected "${expectedNetwork.networkPassphrase}"');
+  }
 }
 ```
+
+For Soroban RPC, run the same check with `(await server.getNetwork()).passphrase`.
 
 Always pass the `Network` object from a single configuration source. Never construct `Network` objects with raw passphrase strings -- use `Network.TESTNET` and `Network.PUBLIC`.
 
@@ -272,10 +274,11 @@ class StellarConfig {
     rpcServer: SorobanServer('https://soroban-testnet.stellar.org:443'),
   );
 
-  factory StellarConfig.publicNet() => StellarConfig._(
+  // rpcUrl: a mainnet Soroban RPC endpoint of the provider you choose
+  factory StellarConfig.publicNet(String rpcUrl) => StellarConfig._(
     sdk: StellarSDK.PUBLIC,
     network: Network.PUBLIC,
-    rpcServer: SorobanServer('https://rpc.stellar.org'),
+    rpcServer: SorobanServer(rpcUrl),
   );
 }
 ```
@@ -285,6 +288,7 @@ class StellarConfig {
 Never expose secret keys in error messages, logs, or stack traces.
 
 ```dart
+// From your app: SecureKeyStore (class)
 // WRONG -- seed could appear in stack trace if fromSecretSeed throws
 void unsafeSign(String seed) {
   KeyPair kp = KeyPair.fromSecretSeed(seed);
@@ -293,17 +297,14 @@ void unsafeSign(String seed) {
 
 // CORRECT -- isolate key handling, catch and sanitize errors
 Future<void> safeSign(SecureKeyStore store) async {
-  String seed = '';
   try {
-    seed = await store.read('stellar_secret_seed');
+    String seed = await store.read('stellar_secret_seed');
     KeyPair kp = KeyPair.fromSecretSeed(seed);
     // ... build and sign transaction
   } on ErrorResponse catch (e) {
     // Log only safe information, never the seed
     print('Stellar error: HTTP ${e.code}');
     rethrow;
-  } finally {
-    seed = ''; // Clear from memory
   }
 }
 ```
@@ -373,7 +374,7 @@ The SDK uses pure Dart cryptographic libraries (`pointycastle`, `pinenacl`) with
 ## Security Checklist
 
 - [ ] Secret keys loaded from platform secure storage, never hardcoded
-- [ ] Secret keys cleared from memory after use
+- [ ] Secret seeds and key pairs kept short-lived, never stored in fields or logs
 - [ ] All user-supplied addresses validated with `StrKey` methods, with `FormatException` handled where `decode*` is called directly
 - [ ] Raw key bytes length-checked before `KeyPair.fromPublicKey` / `KeyPair.fromSecretSeedList`, or `ArgumentError` caught
 - [ ] Asset codes validated (1-12 alphanumeric characters)

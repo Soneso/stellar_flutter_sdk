@@ -18,6 +18,7 @@ Usage: python3 generate_api_reference.py
 
 from __future__ import annotations
 
+import functools
 import os
 import re
 import sys
@@ -48,6 +49,19 @@ SUPPRESSED_METHODS = frozenset({"toString", "hashCode", "noSuchMethod"})
 # Object operators/overrides that are intentionally suppressed from output but
 # must be excluded from the member-level coverage scan so it does not flag them.
 SUPPRESSED_MEMBER_NAMES = frozenset({"toString", "hashCode", "noSuchMethod", "runtimeType"})
+
+# Annotations that keep a member out of the reference: `@Deprecated`
+# (superseded API), `@visibleForTesting` (test-only API) and `@internal`
+# (package:meta, API the package keeps for its own use). The reference
+# describes consumer API.
+SKIPPED_MEMBER_ANNOTATIONS = frozenset({"Deprecated", "deprecated", "visibleForTesting", "internal"})
+
+# Annotations that keep a whole declaration (class, mixin, enum, extension,
+# typedef) out of the reference: superseded API and package-internal API.
+SKIPPED_DECLARATION_ANNOTATIONS = frozenset({"Deprecated", "deprecated", "internal"})
+
+# `@name` or `@prefix.name` at the start of an annotation.
+_ANNOTATION_NAME_RE = re.compile(r'@([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)')
 
 # Tokens that can appear where a field type would be but are not real types,
 # so a "Type name" field match starting with one of these is not a field.
@@ -95,6 +109,7 @@ class ClassInfo:
     """Parsed class/mixin/enum/extension/typedef information."""
     name: str
     kind: str = ""  # "abstract class", "final class", "mixin", "enum", "extension", "typedef", ...
+    type_params: str = ""  # as declared, e.g. "<T>" or "<B extends OperationBuilder<B>>"
     parent: str = ""
     interfaces: list[str] = field(default_factory=list)
     mixins: list[str] = field(default_factory=list)
@@ -235,6 +250,83 @@ def balance_parens(text: str, start: int) -> int:
 def compact_whitespace(s: str) -> str:
     """Normalize whitespace in a string."""
     return re.sub(r'\s+', ' ', s).strip()
+
+
+# --- Annotations ------------------------------------------------------------
+# Annotations are read as code: an `@` inside a string literal is text, and an
+# annotation's argument list is consumed with balanced parentheses, so
+# arguments that span lines or hold collections stay part of the annotation.
+
+def _read_annotation(text: str, i: int) -> tuple[str, int] | None:
+    """
+    When `text[i]` starts an annotation, return its simple name (the last
+    segment of `@prefix.name`) and the index just after it, its argument list
+    included. Otherwise return None.
+    """
+    m = _ANNOTATION_NAME_RE.match(text, i)
+    if not m:
+        return None
+    end = m.end()
+    k = end
+    while k < len(text) and text[k].isspace():
+        k += 1
+    if k < len(text) and text[k] == '(':
+        end = balance_parens(text, k) + 1
+    return m.group(1).rsplit('.', 1)[-1], end
+
+
+def split_leading_annotations(declaration: str) -> tuple[list[str], str]:
+    """
+    Split the annotations that open a declaration from the declaration itself.
+    Returns the annotation names in order and the remaining text.
+    """
+    names: list[str] = []
+    i = 0
+    n = len(declaration)
+    while True:
+        while i < n and declaration[i].isspace():
+            i += 1
+        annotation = _read_annotation(declaration, i) if i < n and declaration[i] == '@' else None
+        if annotation is None:
+            break
+        names.append(annotation[0])
+        i = annotation[1]
+    return names, declaration[i:]
+
+
+def strip_annotations(text: str) -> str:
+    """Remove every annotation outside string literals, parameter annotations included."""
+    out: list[str] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        ch = text[i]
+        if ch in ('"', "'"):
+            end = skip_string_literal(text, i)
+            out.append(text[i:end])
+            i = end
+            continue
+        if ch == '@':
+            annotation = _read_annotation(text, i)
+            if annotation is not None:
+                i = annotation[1]
+                while i < n and text[i].isspace():
+                    i += 1
+                continue
+        out.append(ch)
+        i += 1
+    return ''.join(out).strip()
+
+
+def _member_without_skipped_annotations(declaration: str) -> str | None:
+    """
+    The declaration with its annotations removed, or None when one of its
+    leading annotations keeps the member out of the reference.
+    """
+    names, rest = split_leading_annotations(compact_whitespace(declaration))
+    if SKIPPED_MEMBER_ANNOTATIONS.intersection(names):
+        return None
+    return strip_annotations(rest)
 
 
 # --- Per-line member classifier patterns (precompiled) ----------------------
@@ -566,21 +658,9 @@ def _split_top_level_declarations(body: str) -> list[tuple[str, str]]:
 
 def _classify_member(line: str, info: ClassInfo, class_name: str) -> None:
     """Classify a single normalized declaration line into the appropriate bucket."""
-    line = compact_whitespace(line)
-
-    # Members annotated @visibleForTesting are test-only and must not appear in
-    # the reference. Detect BEFORE the general annotation strip so the tag is
-    # still present in `line`.
-    if '@visibleForTesting' in line:
-        return
-
-    # Members annotated @Deprecated are excluded so the reference does not
-    # surface superseded API. Detect BEFORE the general annotation strip.
-    if '@Deprecated' in line or '@deprecated' in line:
-        return
-
-    # Remove remaining annotations like @override.
-    line = re.sub(r'@\w+(?:\([^)]*\))?\s*', '', line).strip()
+    # Members annotated @visibleForTesting, @Deprecated or @internal stay out;
+    # other annotations such as @override are removed.
+    line = _member_without_skipped_annotations(line)
     if not line:
         return
 
@@ -741,14 +821,8 @@ def scan_public_member_count(body: str, type_name: str) -> int:
     """
     count = 0
     for _kind, raw in _split_top_level_declarations(body):
-        line = compact_whitespace(raw)
-        # Mirror _classify_member: skip @visibleForTesting and @Deprecated
-        # members before strip.
-        if '@visibleForTesting' in line:
-            continue
-        if '@Deprecated' in line or '@deprecated' in line:
-            continue
-        line = re.sub(r'@\w+(?:\([^)]*\))?\s*', '', line).strip()
+        # Mirror _classify_member: the same annotations keep a member out.
+        line = _member_without_skipped_annotations(raw)
         if not line:
             continue
 
@@ -948,50 +1022,88 @@ def scan_public_declaration_names(filepath: Path) -> set[str]:
     names: set[str] = set()
     for m in _SANITY_DECL_RE.finditer(clean):
         name = m.group('cls') or m.group('ext') or m.group('td')
-        if name and not is_private(name) and not _preceded_by_deprecated(clean, m.start()):
+        if name and not is_private(name) and not _preceded_by_annotation(clean, m.start()):
             names.add(name)
     return names
 
 
 # Top-level type-declaration patterns (precompiled).
 _CLASS_RE = re.compile(
-    r'^[ \t]*((?:(?:abstract|final|sealed|base|interface)\s+)*)'
-    r'(mixin\s+class|class|mixin|enum)\s+'
-    r'(\w+)\s*(?:<[^{]*?>)?'
-    r'((?:\s+extends\s+[\w<>,?\s]+?)?)'
-    r'((?:\s+with\s+[\w<>,\s]+?)?)'
-    r'((?:\s+implements\s+[\w<>,\s]+?)?)'
+    r'^[ \t]*(?P<modifiers>(?:(?:abstract|final|sealed|base|interface)\s+)*)'
+    r'(?P<kind>mixin\s+class|class|mixin|enum)\s+'
+    r'(?P<name>\w+)\s*(?P<type_params><[^{]*?>)?'
+    r'(?P<extends_clause>(?:\s+extends\s+[\w<>,?\s]+?)?)'
+    r'(?P<with_clause>(?:\s+with\s+[\w<>,\s]+?)?)'
+    r'(?P<implements_clause>(?:\s+implements\s+[\w<>,\s]+?)?)'
     r'\s*\{',
     re.MULTILINE
 )
 _EXT_RE = re.compile(
-    r'^[ \t]*extension\s+(?:(\w+)\s*(?:<[^{]*?>)?\s+)?on\s+([\w<>,?\s.]+?)\s*\{',
+    r'^[ \t]*extension\s+(?:(?P<name>\w+)\s*(?P<type_params><[^{]*?>)?\s+)?'
+    r'on\s+(?P<on_type>[\w<>,?\s.]+?)\s*\{',
     re.MULTILINE
 )
 _TYPEDEF_RE = re.compile(r'^[ \t]*typedef\s+([^;{]+?)\s*;', re.MULTILINE)
 
 
-def _preceded_by_deprecated(text: str, start: int) -> bool:
+@functools.lru_cache(maxsize=8)
+def _annotation_openers(text: str) -> dict[int, int]:
+    """Map each `)` outside string literals to the index of its `(`."""
+    openers: dict[int, int] = {}
+    stack: list[int] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        ch = text[i]
+        if ch in ('"', "'"):
+            i = skip_string_literal(text, i)
+            continue
+        if ch == '(':
+            stack.append(i)
+        elif ch == ')' and stack:
+            openers[i] = stack.pop()
+        i += 1
+    return openers
+
+
+def annotations_before(text: str, start: int, openers: dict[int, int] | None = None) -> list[str]:
     """
-    True when the declaration starting at `start` is directly preceded by a
-    `@Deprecated` annotation, including a multi-line `@Deprecated(\n  '...')`
-    form. Runs on comment-stripped text, so the contiguous non-blank lines
-    above a declaration are annotation lines (and their continuations). Walks
-    that block backwards; a blank line, or a prior-declaration boundary
-    (`}`/`;`/`{`), ends the walk.
+    Names of the annotations directly before the declaration at `start`, read
+    backwards over whitespace, `@name` tokens and balanced argument lists, so
+    a multi-line argument or an `@` inside a string literal is read correctly.
+    Runs on comment-stripped text.
     """
-    line_start = text.rfind('\n', 0, start) + 1
-    for ln in reversed(text[:line_start].splitlines()):
-        s = ln.strip()
-        if not s:
+    if openers is None:
+        openers = _annotation_openers(text)
+    names: list[str] = []
+    i = start - 1
+    while True:
+        while i >= 0 and text[i].isspace():
+            i -= 1
+        if i < 0:
             break
-        if '@Deprecated' in s or '@deprecated' in s:
-            return True
-        # A line ending in a declaration boundary means we have walked past
-        # this declaration's annotation block into prior code.
-        if s.endswith('}') or s.endswith(';') or s.endswith('{'):
+        if text[i] == ')':
+            if i not in openers:
+                break
+            i = openers[i] - 1
+            while i >= 0 and text[i].isspace():
+                i -= 1
+        end = i + 1
+        while i >= 0 and (text[i].isalnum() or text[i] in '_$.'):
+            i -= 1
+        if end == i + 1 or i < 0 or text[i] != '@':
             break
-    return False
+        names.append(text[i + 1:end].rsplit('.', 1)[-1])
+        i -= 1
+    return names
+
+
+def _preceded_by_annotation(text: str, start: int) -> bool:
+    """
+    True when the declaration starting at `start` carries one of the
+    SKIPPED_DECLARATION_ANNOTATIONS (`@Deprecated`, `@deprecated`, `@internal`).
+    """
+    return bool(SKIPPED_DECLARATION_ANNOTATIONS.intersection(annotations_before(text, start)))
 
 
 def parse_dart_file(filepath: Path) -> list[ClassInfo]:
@@ -1002,16 +1114,17 @@ def parse_dart_file(filepath: Path) -> list[ClassInfo]:
 
     # --- Classes / mixins / mixin classes / enums ---
     for m in _CLASS_RE.finditer(clean):
-        modifiers_str = compact_whitespace(m.group(1) or "")
-        kind_word = compact_whitespace(m.group(2))  # "mixin class", "class", "mixin", "enum"
-        class_name = m.group(3)
-        extends_str = (m.group(4) or "").strip()
-        with_str = (m.group(5) or "").strip()
-        implements_str = (m.group(6) or "").strip()
+        modifiers_str = compact_whitespace(m.group('modifiers') or "")
+        kind_word = compact_whitespace(m.group('kind'))  # "mixin class", "class", "mixin", "enum"
+        class_name = m.group('name')
+        type_params = compact_whitespace(m.group('type_params') or "")
+        extends_str = (m.group('extends_clause') or "").strip()
+        with_str = (m.group('with_clause') or "").strip()
+        implements_str = (m.group('implements_clause') or "").strip()
 
         if is_private(class_name):
             continue
-        if _preceded_by_deprecated(clean, m.start()):
+        if _preceded_by_annotation(clean, m.start()):
             continue
 
         is_enum = (kind_word == "enum")
@@ -1061,6 +1174,7 @@ def parse_dart_file(filepath: Path) -> list[ClassInfo]:
             info = extract_top_level_members(body, class_name)
             info.kind = display_kind
 
+        info.type_params = type_params
         info.parent = parent
         info.mixins = mixins
         info.interfaces = interfaces
@@ -1068,11 +1182,12 @@ def parse_dart_file(filepath: Path) -> list[ClassInfo]:
 
     # --- Extensions ---
     for m in _EXT_RE.finditer(clean):
-        ext_name = m.group(1)
-        on_type = compact_whitespace(m.group(2) or "")
+        ext_name = m.group('name')
+        type_params = compact_whitespace(m.group('type_params') or "")
+        on_type = compact_whitespace(m.group('on_type') or "")
         if ext_name and is_private(ext_name):
             continue
-        if _preceded_by_deprecated(clean, m.start()):
+        if _preceded_by_annotation(clean, m.start()):
             continue
         brace_pos = m.end() - 1
         body_end = balance_braces(clean, brace_pos)
@@ -1085,6 +1200,7 @@ def parse_dart_file(filepath: Path) -> list[ClassInfo]:
         else:
             members.name = ext_name
         members.kind = "extension"
+        members.type_params = type_params
         members.on_type = on_type
         results.append(members)
 
@@ -1092,7 +1208,7 @@ def parse_dart_file(filepath: Path) -> list[ClassInfo]:
     # Modern:  typedef Name<...> = <aliased>;
     # Legacy:  typedef ReturnType Name(args);
     for m in _TYPEDEF_RE.finditer(clean):
-        if _preceded_by_deprecated(clean, m.start()):
+        if _preceded_by_annotation(clean, m.start()):
             continue
         decl = compact_whitespace(m.group(1))
         eq = decl.find('=')
@@ -1125,14 +1241,14 @@ def format_class_header(info: ClassInfo) -> str:
     if info.kind == "typedef":
         return f"## typedef {info.name}"
     if info.kind == "extension":
-        header = f"## extension {info.name}"
+        header = f"## extension {info.name}{info.type_params}"
         if info.on_type and not info.name.startswith("extension on "):
             header += f" on {info.on_type}"
         return header
     header = "## "
     if info.kind:
         header += f"{info.kind} "
-    header += info.name
+    header += info.name + info.type_params
     if info.parent:
         header += f" extends {info.parent}"
     if info.mixins:

@@ -3,7 +3,7 @@
 **Purpose:** Render any XDR value as a canonical JSON document and read it back to the same bytes.
 **Prerequisites:** None
 **SDK Class:** every generated `Xdr*` type, over the shared runtime `XdrJsonHelper`
-**Specification:** SEP-0051 v2.0.1, Draft
+**Specification:** written against SEP-0051 v2.0.1
 
 ## Overview
 
@@ -27,14 +27,18 @@ There is no service class and no separate import. The methods come with the XDR 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-String envelopeBase64 = 'AAAAAgAAAADmmSZkwY3163TMouB2TY8MljqXw2IxVYTGyvDrR6Yt...';
+// An envelope to render (built offline here; usually received or read from storage)
+Transaction tx = TransactionBuilder(Account(KeyPair.random().accountId, BigInt.one))
+    .addOperation(PaymentOperationBuilder(KeyPair.random().accountId, Asset.NATIVE, '10').build())
+    .build();
+String envelopeBase64 = tx.toEnvelopeXdrBase64();
 
 XdrTransactionEnvelope envelope =
     XdrTransactionEnvelope.fromBase64EncodedXdrString(envelopeBase64);
 
 String json = envelope.toXdrJson();
-// {"tx":{"tx":{"source_account":"GDTJSJTEYGG7L23UZSROA5SNR4GJMOUXYNRDCVMEY3FPB22HUYWQBZIA",
-//  "fee":2792036,"seq_num":"29059748724737","cond":"none","memo":"none", ... }}
+// {"tx":{"tx":{"source_account":"G...","fee":100,"seq_num":"2","cond":"none",
+//  "memo":"none", ... }}
 
 XdrTransactionEnvelope parsed = XdrTransactionEnvelope.fromXdrJson(json);
 print(parsed.toBase64EncodedXdrString() == envelopeBase64); // true
@@ -484,6 +488,9 @@ print(peer.toXdrJson());
 ## Common Pitfalls
 
 ```dart
+import 'dart:convert';
+
+// From the section Quick Start: memo (XdrMemo)
 // WRONG: no XDR type declares toJson(), so jsonEncode throws
 // JsonUnsupportedObjectError rather than producing XDR-JSON
 String bad = jsonEncode(memo);
@@ -493,6 +500,7 @@ String good = memo.toXdrJson();
 ```
 
 ```dart
+// From the section Quick Start: memo (XdrMemo)
 // WRONG: toXdrJsonValue returns the tree, not the text
 String bad = memo.toXdrJsonValue() as String;
 

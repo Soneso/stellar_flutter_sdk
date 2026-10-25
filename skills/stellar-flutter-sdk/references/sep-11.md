@@ -32,7 +32,7 @@ TxRep.fromTransactionEnvelopeXdrBase64(String transactionEnvelopeXdrBase64): Str
 TxRep.transactionEnvelopeXdrBase64FromTxRep(String txRep): String
 ```
 
-Both methods handle `ENVELOPE_TYPE_TX`, `ENVELOPE_TYPE_TX_V0`, and `ENVELOPE_TYPE_TX_FEE_BUMP` transparently.
+`fromTransactionEnvelopeXdrBase64` reads `ENVELOPE_TYPE_TX`, `ENVELOPE_TYPE_TX_V0`, and `ENVELOPE_TYPE_TX_FEE_BUMP` envelopes and writes a V0 envelope as `ENVELOPE_TYPE_TX`. `transactionEnvelopeXdrBase64FromTxRep` accepts the types `ENVELOPE_TYPE_TX` and `ENVELOPE_TYPE_TX_FEE_BUMP` only.
 
 ---
 
@@ -43,8 +43,12 @@ Convert a base64-encoded XDR transaction envelope to Txrep for display or inspec
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-// From an existing base64 XDR string
-String xdrBase64 = 'AAAAAgAAAAArFkuQQ4QuQY6SkLc5xx...';
+// A transaction envelope to inspect (built offline here; usually received from elsewhere)
+Account source = Account(KeyPair.random().accountId, BigInt.one);
+Transaction tx = TransactionBuilder(source)
+    .addOperation(PaymentOperationBuilder(KeyPair.random().accountId, Asset.NATIVE, '10').build())
+    .build();
+String xdrBase64 = tx.toEnvelopeXdrBase64();
 String txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdrBase64);
 print(txRep);
 ```
@@ -55,14 +59,14 @@ Build a transaction programmatically and convert it:
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // Fund and load account
-KeyPair sourceKP = KeyPair.fromSecretSeed('SBXXX...');
+KeyPair sourceKP = KeyPair.random(); // testnet account, funded on the next line
 await FriendBot.fundTestAccount(sourceKP.accountId);
 AccountResponse sourceAccount = await StellarSDK.TESTNET.accounts.account(sourceKP.accountId);
 
 // Build a payment transaction
 Asset usdc = Asset.createNonNativeAsset('USDC', 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN');
 PaymentOperation payment = PaymentOperationBuilder(
-  'GDEST...',
+  KeyPair.random().accountId, // any G... destination
   usdc,
   '50',
 ).build();
@@ -125,7 +129,11 @@ SubmitTransactionResponse response =
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-String originalXdr = 'AAAAAgAAAAArFkuQQ4QuQY...';
+Account source = Account(KeyPair.random().accountId, BigInt.one);
+Transaction tx = TransactionBuilder(source)
+    .addOperation(PaymentOperationBuilder(KeyPair.random().accountId, Asset.NATIVE, '10').build())
+    .build();
+String originalXdr = tx.toEnvelopeXdrBase64();
 String txRep = TxRep.fromTransactionEnvelopeXdrBase64(originalXdr);
 String reconstructed = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
 
@@ -145,7 +153,15 @@ Fee bump transactions use the `feeBump.` prefix hierarchy. The inner transaction
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-String feeBumpXdr = 'AAAABQAAAABkfT0dQuoYYNgS...';
+Account source = Account(KeyPair.random().accountId, BigInt.one);
+Transaction inner = TransactionBuilder(source)
+    .addOperation(PaymentOperationBuilder(KeyPair.random().accountId, Asset.NATIVE, '10').build())
+    .build();
+FeeBumpTransaction feeBump = FeeBumpTransactionBuilder(inner)
+    .setBaseFee(200)
+    .setFeeAccount(KeyPair.random().accountId)
+    .build();
+String feeBumpXdr = feeBump.toEnvelopeXdrBase64();
 String txRep = TxRep.fromTransactionEnvelopeXdrBase64(feeBumpXdr);
 print(txRep);
 ```
@@ -195,8 +211,7 @@ Key structural rules for fee bump Txrep:
 ### Envelope type (first line)
 
 ```
-type: ENVELOPE_TYPE_TX           # Standard transaction (V1) — most common
-type: ENVELOPE_TYPE_TX_V0        # Legacy V0 transaction
+type: ENVELOPE_TYPE_TX           # Standard transaction; a V0 envelope is written as this type
 type: ENVELOPE_TYPE_TX_FEE_BUMP  # Fee bump wrapper
 ```
 
@@ -216,7 +231,7 @@ tx.seqNum: 46489056724385793  # Sequence number (64-bit integer as BigInt in Dar
 tx.memo.type: MEMO_NONE
 
 tx.memo.type: MEMO_TEXT
-tx.memo.text: "Hello"          # UTF-8 string in JSON double quotes, max 28 bytes
+tx.memo.text: "Hello"          # double-quoted, SEP-11 escapes, max 28 bytes
 
 tx.memo.type: MEMO_ID
 tx.memo.id: 12345              # Unsigned 64-bit integer
@@ -228,7 +243,7 @@ tx.memo.type: MEMO_RETURN
 tx.memo.retHash: 0102030405... # 32 bytes, lowercase hex (64 hex chars)
 ```
 
-> The SDK uses `JsonEncoder` to output memo text values, so special characters are escaped (`"` becomes `\"`). The parser strips surrounding double quotes when reading.
+> The SDK writes memo text in double quotes with SEP-11 escapes: `\"`, `\\`, `\n`, `\r`, `\t`, and `\xNN` for each UTF-8 byte of a non-ASCII or non-printable character. The parser reverses them; it also reads the `\uNNNN` form and unquoted text.
 
 ### Asset format
 
@@ -354,7 +369,7 @@ tx.operations[0].body.createPassiveSellOfferOp.price.d: 2
 
 ### SET_OPTIONS
 
-All SET_OPTIONS fields use `._present` guards. Every field must have a `._present` line, even when `false`.
+All SET_OPTIONS fields use `._present` guards. The parser reads a field's value only when its `._present` line says `true`; a field without that line stays unset.
 
 ```
 tx.operations[0].body.type: SET_OPTIONS
@@ -787,10 +802,10 @@ tx.operations[N].body.destination: G...
 tx.operations[N].body.manageBuyOfferOp.buyAmount: 120000000
 ```
 
-**SET_OPTIONS: all 9 optional fields require `._present` guards:**
+**SET_OPTIONS: a value without its `._present: true` line is dropped:**
 
 ```
-# WRONG (parser throws — missing _present line):
+# WRONG: no _present line, so the parser ignores the value and homeDomain stays unset
 tx.operations[N].body.setOptionsOp.homeDomain: "example.com"
 
 # CORRECT: _present must appear before each optional field value
@@ -824,6 +839,7 @@ tx.operations[0].body.paymentOp.amount: 100000000
 **Method name: `fromTransactionEnvelopeXdrBase64`, not `toTxRep`:**
 
 ```dart
+// From the section Txrep to XDR: xdrBase64 (String)
 // WRONG: TxRep.toTxRep(xdr)
 // CORRECT:
 String txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdrBase64);
@@ -832,17 +848,17 @@ String txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdrBase64);
 **Method name: `transactionEnvelopeXdrBase64FromTxRep`, not `fromTxRep`:**
 
 ```dart
+// From the setup above: txRep (String)
 // WRONG: TxRep.fromTxRep(txRep)
 // CORRECT:
 String xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
 ```
 
-**Memo text field uses JSON double-quoted string:**
+**Memo text uses SEP-11 escapes, not JSON escapes:**
 
 ```
-# WRONG: tx.memo.text: Hello world
-# CORRECT: must be JSON-quoted
-tx.memo.text: "Hello world"
+# The SDK writes double quotes, C-style escapes and \xNN per UTF-8 byte of a non-ASCII character
+tx.memo.text: "Gr\xc3\xbc\xc3\x9fe \"quoted\""
 ```
 
 **Memo hash / retHash is lowercase hex, not base64:**
@@ -860,8 +876,8 @@ signatures[0].hint: b51d604e         # 8 hex chars — last 4 bytes of signing k
 signatures[0].signature: c52a9c15... # 128 hex chars — 64-byte Ed25519 signature
 ```
 
-**`diskReadBytes` vs `readBytes` in Soroban resources:**
+**Soroban resources use `diskReadBytes`:**
 
-The SDK outputs `diskReadBytes`. The parser also accepts `readBytes` as a legacy alias for backward compatibility.
+The SDK writes and reads `diskReadBytes`; it has no `readBytes` alias.
 
 ---

@@ -127,7 +127,8 @@ jobs:
           fi
           exit "$status"
 
-  # Every path AGENTS.md names exists; the check needs the checkout and the runner's Python.
+  # Python-only checks on the checkout with the runner's Python: the skill
+  # generator's tests and the existence of every path AGENTS.md names.
   agents-md-paths:
     runs-on: ubuntu-latest
 
@@ -137,6 +138,9 @@ jobs:
 
       - name: Run the path checker's tests
         run: python3 .github/scripts/test_check_agents_md_paths.py
+
+      - name: Run the skill generator's tests
+        run: python3 -m unittest discover -s tools/skill-generator/tests
 
       - name: Check the paths AGENTS.md names
         run: python3 .github/scripts/check_agents_md_paths.py

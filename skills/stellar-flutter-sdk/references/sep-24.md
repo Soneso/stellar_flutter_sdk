@@ -37,6 +37,8 @@ TransferServerSEP24Service service =
 
 Method signature:
 ```dart
+import 'package:http/http.dart' as http;
+
 static Future<TransferServerSEP24Service> fromDomain(
   String domain, {
   http.Client? httpClient,
@@ -57,6 +59,8 @@ TransferServerSEP24Service service =
 
 Constructor signature:
 ```dart
+import 'package:http/http.dart' as http;
+
 TransferServerSEP24Service(
   String transferServiceAddress, {
   http.Client? httpClient,
@@ -93,7 +97,7 @@ TransferServerSEP24Service service =
 // Optional: pass a language code (ISO 639-1, e.g. 'en', 'de')
 SEP24InfoResponse infoResponse = await service.info('en');
 // Or without language:
-SEP24InfoResponse infoResponse = await service.info();
+SEP24InfoResponse infoWithoutLang = await service.info();
 ```
 
 Method signature:
@@ -192,6 +196,7 @@ The `/fee` endpoint is deprecated in favor of SEP-38 `GET /price`. Only use it i
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 TransferServerSEP24Service service =
     await TransferServerSEP24Service.fromDomain('testanchor.stellar.org');
 SEP24InfoResponse info = await service.info();
@@ -239,6 +244,7 @@ A deposit converts external funds (bank transfer, crypto, etc.) into Stellar tok
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 TransferServerSEP24Service service =
     await TransferServerSEP24Service.fromDomain('testanchor.stellar.org');
 
@@ -294,13 +300,14 @@ Future<SEP24InteractiveResponse> deposit(SEP24DepositRequest request)
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token), userAccountId (String)
 TransferServerSEP24Service service =
     await TransferServerSEP24Service.fromDomain('testanchor.stellar.org');
 
 SEP24DepositRequest request = SEP24DepositRequest()
   ..assetCode = 'USD'
   ..amount = '100.0'   // String, not double
-  ..account = 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+  ..account = userAccountId   // the user's G... or M... account that receives the deposit
   ..memo = '12345'
   ..memoType = 'id'    // 'text', 'id', or 'hash'
   ..lang = 'en-US'
@@ -315,6 +322,8 @@ print('Open: ${response.url}');
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
+// From the section From domain (recommended): service (TransferServerSEP24Service)
 // Get quoteId from SEP-38 service first
 SEP24DepositRequest request = SEP24DepositRequest()
   ..assetCode = 'USDC'
@@ -331,9 +340,10 @@ SEP24InteractiveResponse response = await service.deposit(request);
 Pass KYC data to pre-fill the anchor's interactive form. Use `StandardKYCFields` with `NaturalPersonKYCFields` for individuals and `OrganizationKYCFields` for businesses.
 
 ```dart
-import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'dart:typed_data';
 
+// From your app: incomeProofBytes (Uint8List), jwtToken (String, the SEP-10 token)
 TransferServerSEP24Service service =
     await TransferServerSEP24Service.fromDomain('testanchor.stellar.org');
 
@@ -367,7 +377,7 @@ SEP24DepositRequest request = SEP24DepositRequest()
   ..kycFields = kycFields
   // Anchor-specific fields not in SEP-9:
   ..customFields = {'employer_name': 'Tech Corp'}
-  ..customFiles = {'proof_of_income': Uint8List.fromList([...])}
+  ..customFiles = {'proof_of_income': incomeProofBytes} // Uint8List, for example from a file picker
   ..jwt = jwtToken;
 
 SEP24InteractiveResponse response = await service.deposit(request);
@@ -376,6 +386,8 @@ SEP24InteractiveResponse response = await service.deposit(request);
 ### Deposit with claimable balance support
 
 ```dart
+// From your app: jwtToken (String, the SEP-10 token)
+// From the section From domain (recommended): service (TransferServerSEP24Service)
 SEP24DepositRequest request = SEP24DepositRequest()
   ..assetCode = 'USD'
   // Tell the anchor the client supports receiving claimable balances.
@@ -401,6 +413,7 @@ A withdrawal converts Stellar tokens into external assets sent to a bank account
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 TransferServerSEP24Service service =
     await TransferServerSEP24Service.fromDomain('testanchor.stellar.org');
 
@@ -444,6 +457,8 @@ Future<SEP24InteractiveResponse> withdraw(SEP24WithdrawRequest request)
 ### Withdrawal with refund memo
 
 ```dart
+// From your app: jwtToken (String, the SEP-10 token)
+// From the section From domain (recommended): service (TransferServerSEP24Service)
 SEP24WithdrawRequest request = SEP24WithdrawRequest()
   ..assetCode = 'USD'
   ..amount = '500.0'
@@ -459,6 +474,8 @@ SEP24InteractiveResponse response = await service.withdraw(request);
 ### Withdrawal with SEP-38 quote (cross-asset)
 
 ```dart
+// From your app: jwtToken (String, the SEP-10 token)
+// From the section From domain (recommended): service (TransferServerSEP24Service)
 SEP24WithdrawRequest request = SEP24WithdrawRequest()
   ..assetCode = 'USDC'
   ..destinationAsset = 'iso4217:EUR'  // user sends USDC, receives EUR
@@ -474,8 +491,11 @@ SEP24InteractiveResponse response = await service.withdraw(request);
 After the user completes the interactive flow, poll for `pending_user_transfer_start` status, then send the Stellar payment to the anchor's account.
 
 ```dart
+import 'dart:convert';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: issuerAccountId (String), jwtToken (String, the SEP-10 token), secretSeed (String)
+// From the section Withdrawal Flow: transactionId (String)
 TransferServerSEP24Service service =
     await TransferServerSEP24Service.fromDomain('testanchor.stellar.org');
 
@@ -504,9 +524,17 @@ if (tx.status == 'pending_user_transfer_start') {
 
     Asset asset = Asset.createNonNativeAsset('USD', issuerAccountId);
 
+    // The memo type decides how the memo string is read
+    Memo paymentMemo = switch (memoType) {
+      'text' => Memo.text(memo),
+      'id' => Memo.id(BigInt.parse(memo)),
+      'hash' => Memo.hash(base64Decode(memo)), // base64-encoded 32 bytes
+      _ => throw Exception('Unsupported withdraw memo type: $memoType'),
+    };
+
     Transaction transaction = new TransactionBuilder(sourceAccount)
         .addOperation(PaymentOperationBuilder(anchorAccount, asset, amount).build())
-        .addMemo(Memo.text(memo))  // adjust for memoType
+        .addMemo(paymentMemo)
         .build();
 
     transaction.sign(sourceKeyPair, Network.TESTNET);
@@ -526,6 +554,8 @@ Use `transaction()` to query a single transaction by ID. Always use the `id` fro
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
+// From the section Withdrawal Flow: transactionId (String)
 TransferServerSEP24Service service =
     await TransferServerSEP24Service.fromDomain('testanchor.stellar.org');
 
@@ -573,9 +603,10 @@ At least one of `id`, `stellarTransactionId`, or `externalTransactionId` must be
 ### Polling loop
 
 ```dart
-import 'dart:async';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
+// From the setup above: service (TransferServerSEP24Service), transactionId (String)
 const terminalStatuses = {
   'completed', 'refunded', 'expired', 'error',
   'no_market', 'too_small', 'too_large',
@@ -585,46 +616,54 @@ SEP24TransactionRequest request = SEP24TransactionRequest()
   ..id = transactionId
   ..jwt = jwtToken;
 
-// Poll every 5 seconds until terminal status
-Timer? pollingTimer;
-pollingTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
+// One request at a time: wait for the answer, then pause, until a terminal
+// status or the deadline; other errors end the loop by propagating
+Duration deadline = const Duration(minutes: 30);
+const Duration minInterval = Duration(seconds: 5);
+const Duration maxInterval = Duration(minutes: 1);
+DateTime stopAt = DateTime.now().add(deadline);
+Duration delay = minInterval;
+while (DateTime.now().isBefore(stopAt)) {
+  SEP24Transaction tx;
   try {
-    SEP24TransactionResponse response = await service.transaction(request);
-    SEP24Transaction tx = response.transaction;
-
-    print('Status: ${tx.status}');
-
-    if (terminalStatuses.contains(tx.status)) {
-      timer.cancel();
-      if (tx.status == 'completed') {
-        print('Transaction completed! Amount out: ${tx.amountOut}');
-      } else if (tx.status == 'error') {
-        print('Error: ${tx.message}');
-      }
-      return;
-    }
-
-    if (tx.status == 'pending_user_transfer_start' && tx.kind == 'withdrawal') {
-      timer.cancel();
-      // User must send the Stellar payment now
-      // See "Completing a withdrawal" above
-      return;
-    }
-
-    // Use statusEta hint if provided
-    if (tx.statusEta != null && tx.statusEta! > 0) {
-      print('Expected update in ${tx.statusEta} seconds');
-    }
+    // The request may take no longer than the time left
+    tx = (await service.transaction(request).timeout(stopAt.difference(DateTime.now()))).transaction;
   } on SEP24TransactionNotFoundException {
-    pollingTimer?.cancel();
     print('Transaction not found');
+    break;
   } on SEP24AuthenticationRequiredException {
-    pollingTimer?.cancel();
     print('Re-authenticate and retry');
-  } catch (e) {
-    print('Error polling: $e');
+    break;
   }
-});
+
+  print('Status: ${tx.status}');
+
+  if (terminalStatuses.contains(tx.status)) {
+    if (tx.status == 'completed') {
+      print('Transaction completed. Amount out: ${tx.amountOut}');
+    } else if (tx.status == 'error') {
+      print('Error: ${tx.message}');
+    }
+    break;
+  }
+
+  if (tx.status == 'pending_user_transfer_start' && tx.kind == 'withdrawal') {
+    // User must send the Stellar payment now
+    // See "Completing a withdrawal" above
+    break;
+  }
+
+  // A positive statusEta when the anchor gives one, else a delay that doubles
+  // up to one minute; at least the minimum interval, at most the time left
+  int? eta = tx.statusEta;
+  Duration wait = eta != null && eta > 0 ? Duration(seconds: eta) : delay;
+  if (wait < minInterval) wait = minInterval;
+  delay = delay * 2 > maxInterval ? maxInterval : delay * 2;
+  Duration remaining = stopAt.difference(DateTime.now());
+  if (remaining > Duration.zero) {
+    await Future.delayed(wait < remaining ? wait : remaining);
+  }
+}
 ```
 
 ---
@@ -636,6 +675,7 @@ pollingTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 TransferServerSEP24Service service =
     await TransferServerSEP24Service.fromDomain('testanchor.stellar.org');
 
@@ -675,6 +715,8 @@ Future<SEP24TransactionsResponse> transactions(SEP24TransactionsRequest request)
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
+// From the section From domain (recommended): service (TransferServerSEP24Service)
 SEP24TransactionsRequest request = SEP24TransactionsRequest()
   ..assetCode = 'USD'
   ..limit = 10
@@ -762,6 +804,8 @@ The `SEP24Transaction` object is returned inside `SEP24TransactionResponse.trans
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
+// From the setup above: service (TransferServerSEP24Service), transactionId (String)
 SEP24TransactionResponse response = await service.transaction(
   SEP24TransactionRequest()
     ..id = transactionId
@@ -776,7 +820,7 @@ print('Status: ${tx.status}');
 if (tx.moreInfoUrl != null) print('More info: ${tx.moreInfoUrl}');
 print('Started: ${tx.startedAt}');
 
-// Amount fields — strings (compare as strings or cast to double for arithmetic)
+// Amount fields: decimal strings; compare them as stroops with Util.decimalStringToStroops
 if (tx.amountIn != null) print('Amount in: ${tx.amountIn}');
 if (tx.amountOut != null) print('Amount out: ${tx.amountOut}');
 if (tx.amountFee != null) print('Fee: ${tx.amountFee}');
@@ -851,6 +895,8 @@ When a transaction is refunded (`status == 'refunded'` or `refunds != null`), in
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
+// From the setup above: service (TransferServerSEP24Service), transactionId (String)
 SEP24TransactionResponse response = await service.transaction(
   SEP24TransactionRequest()
     ..id = transactionId
@@ -890,6 +936,8 @@ Three exceptions can be thrown by SEP-24 service methods:
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
+// From the section Withdrawal Flow: transactionId (String)
 TransferServerSEP24Service service =
     await TransferServerSEP24Service.fromDomain('testanchor.stellar.org');
 
@@ -956,6 +1004,7 @@ SEP24DepositRequest request = SEP24DepositRequest()
 **Wrong: `claimableBalanceSupported` is `String?`, not `bool`**
 
 ```dart
+// From the setup above: request (SEP24DepositRequest)
 // WRONG: field is String?, not bool
 request.claimableBalanceSupported = true;  // type error
 
@@ -966,6 +1015,8 @@ request.claimableBalanceSupported = 'true';
 **Wrong: using `transactions()` (plural) for ID-based lookup**
 
 ```dart
+// From your app: jwtToken (String, the SEP-10 token)
+// From the setup above: service (TransferServerSEP24Service), transactionId (String)
 // WRONG: SEP24TransactionsRequest has no 'id' field
 SEP24TransactionsRequest request = SEP24TransactionsRequest()
   ..jwt = jwtToken
@@ -1010,6 +1061,7 @@ SEP24WithdrawRequest request = SEP24WithdrawRequest()
 The anchor sets `withdrawMemo` to null until KYC is verified, even when status is `pending_user_transfer_start`. Do not send the Stellar payment if the memo is null.
 
 ```dart
+// From the section RefundPayment fields: tx (SEP24Transaction)
 // WRONG: withdrawMemo may be null even in pending_user_transfer_start
 String memo = tx.withdrawMemo!;  // throws if KYC not yet verified
 
@@ -1027,14 +1079,18 @@ if (tx.status == 'pending_user_transfer_start') {
 
 **Wrong: comparing `amountIn`, `amountOut`, `amountFee` as numbers**
 
-These fields are `String?`, not `double`. Cast to double only for arithmetic.
+These fields are decimal strings (`String?`). Compare them exactly as stroops, never through `double`.
 
 ```dart
+// From the section RefundPayment fields: tx (SEP24Transaction)
 // WRONG: these fields are strings
-if (tx.amountIn! > 100.0) { ... }  // type error
+if (tx.amountIn! > 100.0) { /* ... */ }  // type error
 
-// CORRECT: cast to double for comparison
-if (tx.amountIn != null && double.parse(tx.amountIn!) > 100.0) { ... }
+// CORRECT: compare as BigInt stroops
+if (tx.amountIn != null &&
+    Util.decimalStringToStroops(tx.amountIn!) > Util.decimalStringToStroops('100')) {
+  print('More than 100 received');
+}
 ```
 
 **Wrong: not awaiting `fromDomain()`**
@@ -1052,16 +1108,16 @@ TransferServerSEP24Service service =
 **Wrong: using `Util.readFile()` for KYC file uploads on web platforms**
 
 ```dart
-// WRONG: Util.readFile() is not available on web platforms
+import 'dart:typed_data';
+
+// From the section Deposit with KYC pre-fill: personFields (NaturalPersonKYCFields)
+// From your app: pickedFileBytes (Uint8List)
+// Native platforms (Android, iOS, desktop): read the file
 personFields.photoIdFront = await Util.readFile('/path/to/id.jpg');
 
-// CORRECT for native (non-web) platforms:
-personFields.photoIdFront = await Util.readFile('/path/to/id.jpg');
-
-// CORRECT for web: use a file picker and pass bytes via customFiles
-Uint8List fileBytes = ...;  // obtained via file picker
-SEP24DepositRequest request = SEP24DepositRequest()
-  ..customFiles = {'photo_id_front': fileBytes};
+// WRONG on web: Util.readFile() has no file system to read from there
+// CORRECT on web: assign the bytes a file picker returns
+personFields.photoIdFront = pickedFileBytes; // Uint8List from the file picker
 ```
 
 ---

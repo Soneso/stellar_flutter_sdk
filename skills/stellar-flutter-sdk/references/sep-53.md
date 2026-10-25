@@ -26,7 +26,7 @@ import 'dart:typed_data';
 
 void main() {
   // Sign with a full keypair (has private key)
-  KeyPair signer = KeyPair.fromSecretSeed('SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW');
+  KeyPair signer = KeyPair.fromSecretSeed('SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW'); // SEP-0053 spec test vector, public, never fund
   Uint8List signature = signer.signMessageString('Hello, World!');
 
   // Transmit the signature as base64 or hex
@@ -47,8 +47,9 @@ void main() {
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:convert';
+import 'dart:typed_data';
 
-KeyPair keyPair = KeyPair.fromSecretSeed('SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW');
+KeyPair keyPair = KeyPair.fromSecretSeed('SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW'); // SEP-0053 spec test vector, public, never fund
 
 // Sign a UTF-8 string — SDK handles UTF-8 encoding internally
 Uint8List signature = keyPair.signMessageString('Hello, World!');
@@ -65,7 +66,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
-KeyPair keyPair = KeyPair.fromSecretSeed('SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW');
+KeyPair keyPair = KeyPair.fromSecretSeed('SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW'); // SEP-0053 spec test vector, public, never fund
 
 // Sign raw bytes directly
 Uint8List messageBytes = Uint8List.fromList([0xDB, 0x36, 0x43, 0x3F]);
@@ -80,7 +81,10 @@ Uint8List jsonSig = keyPair.signMessage(jsonBytes);
 ### Check Before Signing
 
 ```dart
-KeyPair keyPair = KeyPair.fromSecretSeed('SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW');
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'dart:typed_data';
+
+KeyPair keyPair = KeyPair.fromSecretSeed('SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW'); // SEP-0053 spec test vector, public, never fund
 
 // canSign() returns true only if the keypair has a private key
 if (keyPair.canSign()) {
@@ -101,6 +105,7 @@ Verification only requires the public key. Use `KeyPair.fromAccountId()` to crea
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:convert';
+import 'dart:typed_data';
 
 // Receiver side: only needs the signer's account ID
 KeyPair verifier = KeyPair.fromAccountId('GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L');
@@ -122,6 +127,7 @@ if (valid) {
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'dart:convert';
 import 'dart:typed_data';
 
 KeyPair verifier = KeyPair.fromAccountId('GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L');
@@ -142,8 +148,9 @@ Signatures are 64-byte `Uint8List`. SEP-53 does not mandate a specific string en
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:convert';
+import 'dart:typed_data';
 
-KeyPair keyPair = KeyPair.fromSecretSeed('SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW');
+KeyPair keyPair = KeyPair.fromSecretSeed('SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW'); // SEP-0053 spec test vector, public, never fund
 Uint8List signature = keyPair.signMessageString('Hello, World!');
 
 // Encode for storage or transmission
@@ -155,22 +162,23 @@ Uint8List fromBase64 = base64.decode(base64Sig);
 Uint8List fromHex    = Util.hexToBytes(hexSig);
 ```
 
-## Cross-SDK Interoperability
+## Verifying the Specification Vector
 
-Signatures produced by the Flutter SDK are compatible with other Stellar SDKs (Java, Python, etc.) implementing SEP-53. To verify a signature received from another SDK:
+The SEP-53 specification publishes test vectors (Spec Test Vectors below). This fence verifies its UTF-8 vector:
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:convert';
+import 'dart:typed_data';
 
-// Signature produced by a different Stellar SDK, received as base64
-String signatureFromOtherSdk = 'CDU265Xs8y3OWbB/56H9jPgUss5G9A0qFuTqH2zs2YDgTm+++dIfmAEceFqB7bhfN3am59lCtDXrCtwH2k1GBA==';
+// SEP-53 test vector signature of the UTF-8 message, as base64
+String vectorSignatureBase64 = 'CDU265Xs8y3OWbB/56H9jPgUss5G9A0qFuTqH2zs2YDgTm+++dIfmAEceFqB7bhfN3am59lCtDXrCtwH2k1GBA==';
 
 KeyPair verifier = KeyPair.fromAccountId('GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L');
-Uint8List signature = base64.decode(signatureFromOtherSdk);
+Uint8List signature = base64.decode(vectorSignatureBase64);
 
 bool valid = verifier.verifyMessageString('こんにちは、世界！', signature);
-print('Cross-SDK verification: $valid'); // true
+print('Vector verification: $valid'); // true
 ```
 
 ## Protocol Details
@@ -192,7 +200,7 @@ The prefix provides domain separation — message signatures cannot be confused 
 These vectors from the SEP-53 specification can be used to validate interoperability:
 
 ```
-Secret seed: SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW
+Secret seed: SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW  # SEP-0053 spec test vector, public, never fund
 Account ID:  GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L
 
 Message: "Hello, World!" (ASCII)
@@ -208,6 +216,7 @@ Signature (hex): 083536eb95ecf32dce59b07fe7a1fd8cf814b2ce46f40d2a16e4ea1f6cecd98
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'dart:typed_data';
 
 KeyPair publicOnly = KeyPair.fromAccountId('GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L');
 
@@ -226,6 +235,11 @@ bool result = publicOnly.verifyMessageString('Hello', Uint8List(64)); // false, 
 ## Common Pitfalls
 
 ```dart
+import 'dart:typed_data';
+import 'dart:convert';
+
+// From your app: base64SignatureString (String)
+// From the section Verifying the Specification Vector: verifier (KeyPair)
 // WRONG: passing a base64 string directly to verifyMessageString as the signature
 bool bad = verifier.verifyMessageString('Hello', Uint8List.fromList('abc123'.codeUnits));
 
@@ -235,6 +249,10 @@ bool good = verifier.verifyMessageString('Hello', sig);
 ```
 
 ```dart
+import 'dart:typed_data';
+import 'dart:convert';
+
+// From the section Signature Serialization: keyPair (KeyPair)
 // WRONG: using signMessage with a pre-encoded UTF-8 string when signMessageString is available
 Uint8List sig1 = keyPair.signMessage(Uint8List.fromList(utf8.encode('Hello')));
 
@@ -244,10 +262,14 @@ Uint8List sig2 = keyPair.signMessageString('Hello');
 ```
 
 ```dart
+import 'dart:typed_data';
+
+// From your app: badSignature (Uint8List)
+// From the section Signature Serialization: keyPair (KeyPair)
 // WRONG: assuming verify throws on invalid signature
 try {
   keyPair.verifyMessageString('msg', badSignature); // does NOT throw
-} catch (e) { ... }
+} catch (e) { /* handle the error */ }
 
 // CORRECT: check the return value
 bool valid = keyPair.verifyMessageString('msg', badSignature);
@@ -255,6 +277,10 @@ if (!valid) { /* handle invalid signature */ }
 ```
 
 ```dart
+import 'dart:typed_data';
+import 'dart:convert';
+
+// From the section Signature Serialization: keyPair (KeyPair)
 // WRONG: using sign() directly for message signing (bypasses the SEP-53 prefix/hash)
 Uint8List sig = keyPair.sign(utf8.encode('Hello') as Uint8List);
 
