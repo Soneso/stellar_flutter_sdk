@@ -323,7 +323,7 @@ try {
 
 Muxed contract addresses (defined in [CAP-84](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md)) pair a contract ID with an unsigned 64-bit ID. A W-address has 69 characters. Its 40-byte payload contains the 32-byte contract hash followed by the 8-byte big-endian ID.
 
-W addresses are valid for `MuxedAddress` contract parameters and never as Soroban authorization addresses.
+W addresses are valid for `MuxedAddress` contract parameters and never as Soroban authorization addresses. As the contract to invoke or load, a contract data owner or part of a contract data key, a W-address throws `ArgumentError` before any request. Pass its base C-address.
 
 ### Creating muxed contracts
 

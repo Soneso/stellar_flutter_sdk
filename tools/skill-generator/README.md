@@ -100,11 +100,14 @@ The parser recognizes these top-level declaration shapes:
 
 - `class`, including any combination of the modifiers `abstract`, `final`,
   `sealed`, `base`, `interface` (in any order), with optional type parameters
-  and `extends` / `with` / `implements` clauses
+  and `extends` / `with` / `implements` clauses; the section header prints the
+  type parameters as declared, bounds included
+  (`## abstract class OperationBuilder<B extends OperationBuilder<B>>`)
 - `mixin class`
 - `mixin`
 - `enum` (values plus any methods/getters after the values block)
-- `extension Name on Type` (named; members extracted like class members).
+- `extension Name on Type` (named; members extracted like class members; the
+  header prints the type parameters of `extension Name<T> on Type`).
   Anonymous extensions are emitted only when they have an `on Type` and at
   least one member
 - `typedef`, both the modern `typedef Name = ...;` form and the legacy
@@ -115,6 +118,12 @@ Public filter: a declaration is emitted only when its declaring file is
 reachable from the public barrel (`lib/stellar_flutter_sdk.dart`) via the
 transitive `export` graph, and the declared name is public (no leading
 underscore). Conditional exports select the platform implementation target.
+Three annotations keep a member out: `@Deprecated` (superseded API),
+`@visibleForTesting` (test-only API), and `@internal` (API the package keeps
+for its own use). A class, mixin, enum, extension, or typedef annotated
+`@Deprecated` or `@internal` is left out as a whole. Annotations are read as
+code: an `@` inside a string literal is text, and an argument list may span
+lines. The reference lists the current consumer API.
 
 ## Coverage sanity scan
 

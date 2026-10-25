@@ -11,6 +11,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 Convert a signed transaction to base64 XDR for storage, sharing, or submission:
 
 ```dart
+// From your app: tx (Transaction)
 // After building and signing a transaction (see operations.md)
 String xdrBase64 = tx.toEnvelopeXdrBase64();
 print('Signed XDR: $xdrBase64');
@@ -21,6 +22,7 @@ print('Signed XDR: $xdrBase64');
 Parse a base64 XDR string back into a transaction object:
 
 ```dart
+// From the section Transaction Envelope Encoding: xdrBase64 (String)
 AbstractTransaction decoded = AbstractTransaction.fromEnvelopeXdrString(xdrBase64);
 
 if (decoded is Transaction) {
@@ -41,6 +43,7 @@ if (decoded is Transaction) {
 Base64 is the compact form; XDR-JSON is the readable one. Every generated `Xdr*` type carries four members over the shared runtime `XdrJsonHelper`:
 
 ```dart
+// From this section: T (class, the generated Xdr type that declares these members)
 String toXdrJson();                             // canonical document as text
 Object? toXdrJsonValue();                       // the same document as a Dart tree
 static T fromXdrJson(String json);              // parse from text
@@ -48,6 +51,7 @@ static T fromXdrJsonValue(Object? value);       // read from a tree
 ```
 
 ```dart
+// From the section Transaction Envelope Encoding: xdrBase64 (String)
 XdrTransactionEnvelope envelope =
     XdrTransactionEnvelope.fromBase64EncodedXdrString(xdrBase64);
 
@@ -127,10 +131,11 @@ XdrSCVal vec = XdrSCVal.forVec([
   XdrSCVal.forBool(true),
 ]);
 
-// The host requires key order; sortedScMap sorts entries into that order.
-XdrSCVal map = XdrSCVal.forMap([
-  XdrSCMapEntry(XdrSCVal.forSymbol('balance'), XdrSCVal.forI128BigInt(BigInt.from(1000000))),
+// The host requires map keys in its order: sortedScMap sorts the entries into it,
+// XdrSCVal.forMap keeps the order it is given
+XdrSCVal map = sortedScMap([
   XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
+  XdrSCMapEntry(XdrSCVal.forSymbol('balance'), XdrSCVal.forI128BigInt(BigInt.from(1000000))),
 ]);
 ```
 
@@ -139,6 +144,7 @@ XdrSCVal map = XdrSCVal.forMap([
 Property getters return XDR wrapper types for numeric values. Unwrap to get Dart primitives:
 
 ```dart
+// From your app: txResponse (GetTransactionResponse)
 XdrSCVal val = txResponse.getResultValue()!;
 
 // Direct Dart types (no unwrapping needed)
@@ -187,25 +193,28 @@ print(restored.sym);  // 'hello'
 Build XDR ledger keys for querying specific ledger entries:
 
 ```dart
+import 'dart:typed_data';
+
+// From your app: accountId (String, G...), contractId (String, C...), issuerAccountId (String), wasmHashBytes (Uint8List)
 // Account
-XdrLedgerKey accountKey = XdrLedgerKey.forAccountId('GABC...');
+XdrLedgerKey accountKey = XdrLedgerKey.forAccountId(accountId);
 
 // Trustline
 XdrLedgerKey trustKey = XdrLedgerKey.forTrustLine(
-  'GABC...',
+  accountId,
   Asset.createNonNativeAsset('USDC', issuerAccountId).toXdr(),
 );
 
 // Contract data
 XdrLedgerKey contractDataKey = XdrLedgerKey.forContractData(
-  XdrSCAddress.forContractId('CABC...'),
+  XdrSCAddress.forContractId(contractId),
   XdrSCVal.forSymbol('counter'),
   XdrContractDataDurability.PERSISTENT,
 );
 
 // Contract instance (metadata)
 XdrLedgerKey instanceKey = XdrLedgerKey.forContractData(
-  XdrSCAddress.forContractId('CABC...'),
+  XdrSCAddress.forContractId(contractId),
   XdrSCVal.forLedgerKeyContractInstance(),
   XdrContractDataDurability.PERSISTENT,
 );
@@ -248,6 +257,7 @@ XdrSCVal addressArg = XdrSCVal.forAddress(accountAddr);
 Inspect Soroban resource allocation from simulation results or existing transactions:
 
 ```dart
+// From your app: base64SorobanData (String), server (SorobanServer), tx (Transaction)
 // From simulation response
 SimulateTransactionResponse sim =
     await server.simulateTransaction(SimulateTransactionRequest(tx));
@@ -275,6 +285,7 @@ XdrSorobanTransactionData parsedData =
 Always inspect transaction details before signing XDR from external sources:
 
 ```dart
+// From your app: externalXdr (String)
 AbstractTransaction parsed = AbstractTransaction.fromEnvelopeXdrString(externalXdr);
 
 if (parsed is Transaction) {
@@ -296,16 +307,29 @@ if (parsed is Transaction) {
 Serialize and deserialize authorization entries for remote signing workflows (e.g., when a non-invoker must sign on a separate server):
 
 ```dart
+// From your app: agreedInvocation (String, base64 XDR of the invocation tree the signer agreed to authorize), server (SorobanServer), signerKeyPair (KeyPair), simResponse (SimulateTransactionResponse)
 // Encode auth entry for transport to remote signer
 SorobanAuthorizationEntry authEntry = simResponse.sorobanAuth!.first;
 String base64 = authEntry.toBase64EncodedXdrString();
 // Send base64 to remote signer
 
-// Remote signer: decode, sign, return
+// Remote signer: decode, check, set the expiration, sign, return
 SorobanAuthorizationEntry received =
     SorobanAuthorizationEntry.fromBase64EncodedXdr(base64);
+// Sign only an entry for this signer whose whole invocation tree is the agreed one
+SorobanAddressCredentials? credentials = received.credentials.innerAddressCredentials;
+if (credentials == null ||
+    credentials.address.accountId != signerKeyPair.accountId ||
+    received.rootInvocation.toXdr().toBase64EncodedXdrString() != agreedInvocation) {
+  throw StateError('The entry does not authorize the agreed invocation');
+}
+// The signature commits to signatureExpirationLedger, so set it before signing
+int latestLedger = (await server.getLatestLedger()).sequence!;
+credentials.signatureExpirationLedger = latestLedger + 100;
 received.sign(signerKeyPair, Network.TESTNET);
 String signedBase64 = received.toBase64EncodedXdrString();
 // Return signedBase64 to invoker
 ```
+
+On the invoker side, `AssembledTransaction.signAuthEntries(signerKeyPair: ..., authorizeEntryDelegate: ...)` sets the expiration and hands each matching entry to a remote signer ([Multi-Auth Contract Invocation](./soroban_contracts.md#multi-auth-contract-invocation)).
 

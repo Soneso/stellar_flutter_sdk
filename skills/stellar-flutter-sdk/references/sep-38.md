@@ -108,6 +108,7 @@ Returns all assets the anchor supports for exchange, with optional delivery meth
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 SEP38QuoteService service = await SEP38QuoteService.fromDomain('anchor.example.com');
 
 // JWT is optional — omit for unauthenticated call
@@ -167,6 +168,7 @@ Returns indicative (non-binding) prices for all tradeable buy assets given a sel
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 SEP38QuoteService service = await SEP38QuoteService.fromDomain('anchor.example.com');
 
 SEP38PricesResponse response = await service.prices(
@@ -187,6 +189,7 @@ For off-chain assets, providing delivery method and country code yields more acc
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 SEP38QuoteService service = await SEP38QuoteService.fromDomain('anchor.example.com');
 
 // What can I buy for 500 BRL sent via PIX in Brazil?
@@ -194,7 +197,7 @@ SEP38PricesResponse response = await service.prices(
   sellAsset: 'iso4217:BRL',
   sellAmount: '500',
   sellDeliveryMethod: 'PIX',  // name from info().assets[n].sellDeliveryMethods
-  countryCode: 'BRA',         // ISO 3166-1 alpha-3 or ISO 3166-2 code
+  countryCode: 'BR',          // ISO 3166-2 or ISO-3166-1 alpha-2 code
   jwtToken: jwtToken,
 );
 ```
@@ -223,7 +226,7 @@ throws: SEP38BadRequest (HTTP 400), SEP38UnknownResponse (other)
 | Property | Type | Description |
 |----------|------|-------------|
 | `asset` | `String` | Asset identifier in SEP-38 format |
-| `price` | `String` | Indicative price of one sell-asset unit in terms of this buy asset |
+| `price` | `String` | Indicative price of one unit of this buy asset in terms of the sell asset |
 | `decimals` | `int` | Decimal precision for this asset |
 
 ---
@@ -235,6 +238,7 @@ Returns an indicative price for a specific asset pair with fee details. You must
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 SEP38QuoteService service = await SEP38QuoteService.fromDomain('anchor.example.com');
 
 // Query by sell amount: how much BRL do I receive for 100 USDC?
@@ -260,6 +264,7 @@ If you know the desired receive amount, use `buyAmount` instead:
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 SEP38QuoteService service = await SEP38QuoteService.fromDomain('anchor.example.com');
 
 // How much USDC do I need to sell to receive 500 BRL?
@@ -282,6 +287,7 @@ For off-chain assets, specify delivery methods for more accurate quotes:
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 SEP38QuoteService service = await SEP38QuoteService.fromDomain('anchor.example.com');
 
 SEP38PriceResponse response = await service.price(
@@ -290,7 +296,7 @@ SEP38PriceResponse response = await service.price(
   buyAsset: 'stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
   sellAmount: '500',
   sellDeliveryMethod: 'PIX',
-  countryCode: 'BRA',
+  countryCode: 'BR',
   jwtToken: jwtToken,
 );
 ```
@@ -302,6 +308,7 @@ The response always includes a `SEP38Fee` object. The optional `details` list co
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section From domain (recommended): service (SEP38QuoteService)
 SEP38PriceResponse response = await service.price(
   context: 'sep6',
   sellAsset: 'stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
@@ -355,6 +362,7 @@ A firm quote is a binding commitment from the anchor to exchange assets at the g
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 SEP38QuoteService service = await SEP38QuoteService.fromDomain('anchor.example.com');
 
 SEP38PostQuoteRequest request = SEP38PostQuoteRequest(
@@ -383,6 +391,8 @@ Use `expireAfter` to request a minimum quote validity period. The anchor may gra
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
+// From the section From domain (recommended): service (SEP38QuoteService)
 SEP38PostQuoteRequest request = SEP38PostQuoteRequest(
   context: 'sep6',
   sellAsset: 'iso4217:USD',
@@ -405,13 +415,15 @@ Include delivery method names (from `info()`) when exchanging off-chain assets:
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
+// From the section From domain (recommended): service (SEP38QuoteService)
 SEP38PostQuoteRequest request = SEP38PostQuoteRequest(
   context: 'sep6',
   sellAsset: 'iso4217:BRL',
   buyAsset: 'stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
   buyAmount: '100',
   sellDeliveryMethod: 'PIX',   // name from info().assets[n].sellDeliveryMethods
-  countryCode: 'BRA',
+  countryCode: 'BR',
 );
 
 SEP38QuoteResponse quote = await service.postQuote(request, jwtToken);
@@ -451,6 +463,7 @@ Retrieves a previously-created firm quote by its ID. Authentication is **require
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 SEP38QuoteService service = await SEP38QuoteService.fromDomain('anchor.example.com');
 
 String quoteId = 'de762cda-a193-4961-861e-57b31fed6eb3'; // from postQuote() response
@@ -494,6 +507,7 @@ throws: SEP38BadRequest (HTTP 400), SEP38PermissionDenied (HTTP 403),
 Represents the total fee and optional itemized breakdown.
 
 ```dart
+// From the section Request with delivery methods: quote (SEP38QuoteResponse)
 SEP38Fee fee = quote.fee;
 
 print('Total fee: ${fee.total}');   // String — total fee amount
@@ -538,6 +552,7 @@ if (fee.details != null) {
 Use the `name` value as the `sellDeliveryMethod` or `buyDeliveryMethod` parameter in `prices()`, `price()`, and `SEP38PostQuoteRequest`.
 
 ```dart
+// From the section From domain (recommended): service (SEP38QuoteService)
 // Discover delivery methods from info, then use the name in subsequent calls
 SEP38InfoResponse info = await service.info();
 
@@ -562,6 +577,7 @@ Wrap quote service calls in `try-catch` blocks in production. The SDK throws spe
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: jwtToken (String, the SEP-10 token)
 SEP38QuoteService service = await SEP38QuoteService.fromDomain('anchor.example.com');
 
 try {
@@ -610,6 +626,8 @@ All `SEP38*` exceptions extend `SEP38ResponseException` (which implements `Excep
 
 ```dart
 // Accessing error details from different exception types
+try {
+  // a SEP38QuoteService call
 } on SEP38BadRequest catch (e) {
   print(e.error);   // String — error message from anchor
   print(e);         // toString(): "SEP38 response - error:<message>"
@@ -644,15 +662,19 @@ sell_amount = price * (buy_amount + fee.total)
 `totalPrice` always includes fees. `price` is the raw exchange rate before fees.
 
 ```dart
-// Example: selling 542 BRL to buy 100 USDC, fee = 8.40 USDC in sell-asset
-// totalPrice = "5.42", price = "5.00"
-// Verification: sell_amount = total_price * buy_amount => 542 = 5.42 * 100 ✓
+// From the section From domain (recommended): service (SEP38QuoteService)
+// Example: selling 542 BRL to buy 100 USDC, fee = 8.40 USDC (fee.asset is the buy asset)
+// totalPrice = "5.42", price = "5.00": 542 = 5.00 * (100 + 8.40) and 542 = 5.42 * 100
 
-SEP38PriceResponse r = await service.price(...);
-double totalPriceNum = double.parse(r.totalPrice);
-double buyAmountNum  = double.parse(r.buyAmount);
-// Effective sell cost including fees:
-double effectiveSell = totalPriceNum * buyAmountNum;
+// The anchor computes the amounts; read them instead of multiplying prices
+SEP38PriceResponse r = await service.price(
+  context: 'sep6',
+  sellAsset: 'iso4217:BRL',
+  buyAsset: 'stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
+  buyAmount: '100',
+);
+print('Sell ${r.sellAmount} for ${r.buyAmount}'); // sellAmount already includes the fee
+print('Fee: ${r.fee.total} ${r.fee.asset}');
 ```
 
 ---
@@ -662,6 +684,7 @@ double effectiveSell = totalPriceNum * buyAmountNum;
 **Wrong: providing both sellAmount and buyAmount**
 
 ```dart
+// From the section From domain (recommended): service (SEP38QuoteService)
 // WRONG: throws ArgumentError before the HTTP call — never reaches the server
 await service.price(
   context: 'sep6',
@@ -683,6 +706,8 @@ await service.price(
 **Wrong: providing neither sellAmount nor buyAmount**
 
 ```dart
+// From your app: jwtToken (String, the SEP-10 token)
+// From the section From domain (recommended): service (SEP38QuoteService)
 // WRONG: throws ArgumentError — exactly one amount is required
 SEP38PostQuoteRequest request = SEP38PostQuoteRequest(
   context: 'sep6',
@@ -704,6 +729,8 @@ SEP38PostQuoteRequest request = SEP38PostQuoteRequest(
 **Wrong: passing jwtToken as a named parameter to postQuote/getQuote**
 
 ```dart
+// From your app: jwtToken (String, the SEP-10 token), quoteId (String)
+// From the setup above: request (SEP38PostQuoteRequest), service (SEP38QuoteService)
 // WRONG: jwtToken is a positional parameter in postQuote and getQuote — not named
 await service.postQuote(request, jwtToken: jwtToken); // compile error
 await service.getQuote(quoteId, jwtToken: jwtToken);  // compile error
@@ -716,6 +743,7 @@ await service.getQuote(quoteId, jwtToken);
 **Wrong: treating expiresAt as a String**
 
 ```dart
+// From the section Error Handling: quote (SEP38QuoteResponse)
 // WRONG: expiresAt is DateTime, not a String
 // SEP38QuoteResponse.fromJson() calls DateTime.parse() on the JSON 'expires_at' value
 String s = quote.expiresAt; // type error
@@ -728,6 +756,7 @@ bool isValid = quote.expiresAt.isAfter(DateTime.now());
 **Wrong: assuming fee.details is always present**
 
 ```dart
+// From the section Error Handling: quote (SEP38QuoteResponse)
 // WRONG: details is null when the anchor omits the itemized breakdown
 for (SEP38FeeDetails detail in quote.fee.details!) { /* throws if details is null */ }
 
@@ -742,12 +771,13 @@ if (quote.fee.details != null) {
 **Wrong: using totalPrice as the raw exchange rate for display**
 
 ```dart
-// WRONG: totalPrice includes fees — it is not the raw exchange rate
-double rate = double.parse(price.totalPrice); // misleading for display
+// From your app: price (SEP38PriceResponse)
+// WRONG: totalPrice includes fees, so it is not the raw exchange rate
+String rate = price.totalPrice; // misleading for display
 
-// CORRECT: use price for the raw rate; totalPrice for the effective sell cost calculation
-double rawRate       = double.parse(price.price);       // exchange rate without fees
-double effectiveRate = double.parse(price.totalPrice);  // satisfies: sell = totalPrice * buy
+// CORRECT: price is the raw rate; sellAmount and buyAmount are the anchor's fee-inclusive amounts
+String rawRate = price.price;       // exchange rate without fees
+String youPay  = price.sellAmount;  // satisfies: sell = totalPrice * buy
 ```
 
 **Wrong: fromDomain without await**

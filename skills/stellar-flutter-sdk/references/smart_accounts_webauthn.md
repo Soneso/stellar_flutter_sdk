@@ -74,6 +74,8 @@ adapters implement these.
 ### `WebAuthnProvider`
 
 ```dart
+import 'dart:typed_data';
+
 abstract class WebAuthnProvider {
   const WebAuthnProvider();
 
@@ -124,6 +126,8 @@ class WebAuthnAuthenticationResult {
 ### `WebAuthnAllowCredential`
 
 ```dart
+import 'dart:typed_data';
+
 class WebAuthnAllowCredential {
   const WebAuthnAllowCredential({required this.id, this.transports});
   final Uint8List id;               // raw credential ID bytes
@@ -168,6 +172,8 @@ abstract class OZStorageAdapter {
 ### `OZStoredCredential` and `OZStoredCredentialUpdate`
 
 ```dart
+import 'dart:typed_data';
+
 class OZStoredCredential {
   OZStoredCredential({
     required this.credentialId,   // String, Base64URL-encoded
@@ -231,6 +237,8 @@ The config takes the provider and adapter directly. The provider parameter is
 `webauthnProvider` (all lowercase after `web`).
 
 ```dart
+// From your app: provider (WebAuthnProvider)
+// From the section OZInMemoryStorageAdapter: storage (OZInMemoryStorageAdapter)
 final config = OZSmartAccountConfig(
   rpcUrl: 'https://soroban-testnet.stellar.org',
   networkPassphrase: Network.TESTNET.networkPassphrase,
@@ -748,6 +756,7 @@ interface directly. Minimal skeleton:
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: MyDatabase (class)
 class MyDatabaseStorageAdapter implements OZStorageAdapter {
   MyDatabaseStorageAdapter(this._db);
   final MyDatabase _db;
@@ -760,59 +769,78 @@ class MyDatabaseStorageAdapter implements OZStorageAdapter {
     return result;
   }
 
-  @override
-  Future<void> save(OZStoredCredential credential) => _withLock(() async {
-        try {
-          await _db.upsertCredential(credential);
-        } catch (e) {
-          throw SmartAccountStorageException.writeFailed('save:${credential.credentialId}', cause: e);
-        }
-      });
+  // Map every database error to the SDK's storage exceptions.
+  Future<T> _read<T>(String key, Future<T> Function() body) async {
+    try {
+      return await body();
+    } catch (e) {
+      throw SmartAccountStorageException.readFailed(key, cause: e);
+    }
+  }
+
+  Future<T> _write<T>(String key, Future<T> Function() body) async {
+    try {
+      return await body();
+    } catch (e) {
+      throw SmartAccountStorageException.writeFailed(key, cause: e);
+    }
+  }
 
   @override
-  Future<OZStoredCredential?> get(String credentialId) =>
-      _withLock(() => _db.loadCredential(credentialId));
+  Future<void> save(OZStoredCredential credential) => _withLock(() => _write(
+      'save:${credential.credentialId}', () => _db.upsertCredential(credential)));
+
+  @override
+  Future<OZStoredCredential?> get(String credentialId) => _withLock(
+      () => _read('get:$credentialId', () => _db.loadCredential(credentialId)));
 
   @override
   Future<List<OZStoredCredential>> getByContract(String contractId) =>
-      _withLock(() => _db.loadCredentialsByContract(contractId));
+      _withLock(() => _read('getByContract:$contractId',
+          () => _db.loadCredentialsByContract(contractId)));
 
   @override
-  Future<List<OZStoredCredential>> getAll() => _withLock(() => _db.loadAllCredentials());
+  Future<List<OZStoredCredential>> getAll() =>
+      _withLock(() => _read('getAll', () => _db.loadAllCredentials()));
 
   @override
-  Future<void> delete(String credentialId) =>
-      _withLock(() => _db.deleteCredential(credentialId));
+  Future<void> delete(String credentialId) => _withLock(() =>
+      _write('delete:$credentialId', () => _db.deleteCredential(credentialId)));
 
   @override
   Future<void> update(String credentialId, OZStoredCredentialUpdate updates) =>
       _withLock(() async {
-        final existing = await _db.loadCredential(credentialId);
+        final existing = await _read(
+            'update:$credentialId', () => _db.loadCredential(credentialId));
         if (existing == null) {
           throw SmartAccountCredentialException.notFound(credentialId);
         }
-        await _db.upsertCredential(existing.applyUpdate(updates));
+        await _write('update:$credentialId',
+            () => _db.upsertCredential(existing.applyUpdate(updates)));
       });
 
   @override
-  Future<void> clear() => _withLock(() => _db.clearCredentials());
+  Future<void> clear() =>
+      _withLock(() => _write('clear', () => _db.clearCredentials()));
 
   @override
-  Future<void> saveSession(OZStoredSession session) => _withLock(() => _db.saveSession(session));
+  Future<void> saveSession(OZStoredSession session) =>
+      _withLock(() => _write('saveSession', () => _db.saveSession(session)));
 
   @override
   Future<OZStoredSession?> getSession() => _withLock(() async {
-        final s = await _db.loadSession();
+        final s = await _read('getSession', () => _db.loadSession());
         if (s == null) return null;
         if (s.isExpired) {
-          await _db.deleteSession();
+          await _write('getSession', () => _db.deleteSession());
           return null;
         }
         return s;
       });
 
   @override
-  Future<void> clearSession() => _withLock(() => _db.clearSession());
+  Future<void> clearSession() =>
+      _withLock(() => _write('clearSession', () => _db.clearSession()));
 }
 ```
 
@@ -841,7 +869,7 @@ non-obvious requirements are:
 
 | Field | Requirement |
 |-------|-------------|
-| `WebAuthnRegistrationResult.publicKey` | If the platform returns COSE / SPKI instead of the raw point, pass the raw bytes and let the SDK's extraction strategies recover it. |
+| `WebAuthnRegistrationResult.publicKey` | The 65-byte uncompressed P-256 point (`0x04` + X + Y). Convert COSE or SPKI output to this form in the provider: `createWallet` recovers the point from other formats, but `addNewPasskeySigner` passes the bytes unchanged and rejects anything else. |
 | `WebAuthnRegistrationResult.credentialId` | The SDK Base64URL-encodes the raw bytes for storage. |
 | `WebAuthnRegistrationResult.attestationObject` | Raw CBOR as delivered by the authenticator; used by SDK fallback extraction. |
 | `WebAuthnAuthenticationResult.signature` | DER-encoded ECDSA P-256. The SDK normalises to compact 64-byte low-S `r \|\| s`. Do **not** pre-normalise. |

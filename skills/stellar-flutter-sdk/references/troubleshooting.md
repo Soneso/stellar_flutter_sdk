@@ -35,6 +35,7 @@ Soroban RPC errors use a different pattern -- all responses extend `SorobanRpcRe
 ## Horizon HTTP Error Handling
 
 ```dart
+// From your app: accountId (String), sdk (StellarSDK)
 try {
   AccountResponse account = await sdk.accounts.account(accountId);
   print('Balance: ${account.balances.first.balance}');
@@ -68,6 +69,7 @@ try {
 When a transaction fails, `SubmitTransactionResponse.success` returns `false`. Diagnostic data is available through the `extras` field.
 
 ```dart
+// From your app: sdk (StellarSDK), transaction (Transaction)
 try {
   SubmitTransactionResponse response =
       await sdk.submitTransaction(transaction);
@@ -128,7 +130,7 @@ When `transactionResultCode` is `tx_failed`, individual operations report their 
 | `op_not_authorized` | Asset requires authorization | Issuer must authorize the trustline |
 | `op_line_full` | Destination trustline at limit | Destination must increase trust limit |
 | `op_no_destination` | Destination account does not exist | Create account first or verify address |
-| `op_low_reserve` | Below minimum XLM reserve | Add XLM to cover base reserve (0.5 XLM per entry) |
+| `op_low_reserve` | Below minimum XLM reserve | Add XLM to cover one base reserve per subentry (`LedgerResponse.baseReserveInStroops`) |
 | `op_already_exists` | Offer/entry already exists | Use update instead of create |
 | `op_no_issuer` | Asset issuer account not found | Verify issuer account ID |
 | `op_bad_auth` | Insufficient signature weight for multi-sig | Check signer weights vs operation thresholds |
@@ -144,6 +146,7 @@ When `transactionResultCode` is `tx_failed`, individual operations report their 
 **Solution:** Check the source balance before building the transaction:
 
 ```dart
+// From your app: accountId (String), sdk (StellarSDK)
 AccountResponse account = await sdk.accounts.account(accountId);
 for (Balance balance in account.balances) {
   if (balance.assetType == Asset.TYPE_NATIVE) {
@@ -152,7 +155,7 @@ for (Balance balance in account.balances) {
 }
 ```
 
-Account minimum balance = `(2 + subentryCount) * 0.5 XLM`. Funds below this minimum cannot be spent.
+Account minimum balance = `(2 + subentryCount + numSponsoring - numSponsored) * baseReserve`, with the counts from `AccountResponse` and the base reserve, a network parameter, from the latest ledger (`LedgerResponse.baseReserveInStroops`). Funds below this minimum cannot be spent.
 
 ### Missing Trustline (op_no_trust)
 
@@ -161,10 +164,11 @@ Account minimum balance = `(2 + subentryCount) * 0.5 XLM`. Funds below this mini
 **Solution:** The recipient must establish a trustline before receiving the asset:
 
 ```dart
+// From your app: asset (Asset), recipientKeyPair (KeyPair), sdk (StellarSDK)
 AccountResponse account =
     await sdk.accounts.account(recipientKeyPair.accountId);
 Transaction transaction = TransactionBuilder(account)
-    .addOperation(ChangeTrustOperationBuilder(asset).build())
+    .addOperation(ChangeTrustOperationBuilder(asset, ChangeTrustOperationBuilder.MAX_LIMIT).build())
     .build();
 transaction.sign(recipientKeyPair, Network.TESTNET);
 await sdk.submitTransaction(transaction);
@@ -181,6 +185,17 @@ KeyPair newKeyPair = KeyPair.random();
 bool funded = await FriendBot.fundTestAccount(newKeyPair.accountId);
 ```
 
+To check whether an account exists, catch the 404 (the SDK has no helper for it):
+
+```dart
+// From your app: accountId (String), sdk (StellarSDK)
+bool exists = true;
+try { await sdk.accounts.account(accountId); } on ErrorResponse catch (e) {
+  if (e.code != 404) rethrow;
+  exists = false;
+}
+```
+
 ### Bad Sequence Number (tx_bad_seq)
 
 **Cause:** The transaction's sequence number does not match the account's current sequence number + 1. Common scenarios:
@@ -190,8 +205,10 @@ bool funded = await FriendBot.fundTestAccount(newKeyPair.accountId);
 **Key behavior:** `TransactionBuilder.build()` **mutates** the source account object's sequence number. After `build()`, the account object's sequence is incremented internally. This means:
 
 ```dart
-// CORRECT: reload account, build() increments sequence internally
+// From your app: accountId (String), op (Operation), op1 (Operation), op2 (Operation), sdk (StellarSDK)
 AccountResponse account = await sdk.accounts.account(accountId);  // on-chain seq N
+
+// CORRECT: reload account, build() increments sequence internally
 Transaction tx = TransactionBuilder(account)
     .addOperation(op).build();  // tx uses seq N+1, account object now at N+1
 await sdk.submitTransaction(tx);  // on-chain seq advances to N+1
@@ -320,6 +337,7 @@ Soroban uses `SorobanServer` with JSON-RPC. Errors appear at two levels: RPC-lev
 ### Simulation Errors
 
 ```dart
+// From your app: server (SorobanServer), transaction (Transaction, the contract call to simulate)
 SimulateTransactionResponse simResponse = await server
     .simulateTransaction(SimulateTransactionRequest(transaction));
 
@@ -352,6 +370,8 @@ transaction.setSorobanAuth(simResponse.sorobanAuth);
 ### SendTransaction Status Codes
 
 ```dart
+// From your app: server (SorobanServer)
+// From the section Bad Sequence Number (tx_bad_seq): tx (Transaction)
 SendTransactionResponse sendResponse = await server.sendTransaction(tx);
 
 switch (sendResponse.status) {
@@ -382,19 +402,25 @@ switch (sendResponse.status) {
 
 **Expired ledger entries** (`SimulateTransactionResponse.restorePreamble` non-null): Archived state must be restored before invoking. See [Soroban Contracts](./soroban_contracts.md) > Restore Expired Data.
 
-**Resource limits exceeded:** If simulation succeeds but `sendTransaction` returns `STATUS_ERROR`, add a buffer to `minResourceFee`:
+**Resource limits exceeded:** a higher fee does not raise the limits. `addResourceFee` adds only to the fee of the transaction it is called on; the resource limits sit in `sorobanTransactionData`. Rebuild the transaction, simulate it with an instruction leeway, and apply the new data once:
 
 ```dart
-// Add 15% buffer to resource fee
-int bufferedFee = (simResponse.minResourceFee! * 1.15).ceil();
-transaction.addResourceFee(bufferedFee);
+// From your app: invokeOp (Operation, the contract call), keyPair (KeyPair, the source account's key pair), server (SorobanServer)
+Account? fresh = await server.getAccount(keyPair.accountId);
+Transaction rebuilt = TransactionBuilder(fresh!).addOperation(invokeOp).build();
+SimulateTransactionResponse sim = await server.simulateTransaction(
+    SimulateTransactionRequest(rebuilt, resourceConfig: ResourceConfig(500000))); // extra instructions
+rebuilt.sorobanTransactionData = sim.transactionData;
+rebuilt.addResourceFee(sim.minResourceFee!);
+rebuilt.setSorobanAuth(sim.sorobanAuth);
+rebuilt.sign(keyPair, Network.TESTNET);
 ```
 
 **Delegated auth (WITH_DELEGATES) submission fails:** after `setSorobanAuth`, the initial simulation excluded the delegate authorization, so its resources are understated — re-simulate with the delegated entry attached and apply the returned `sorobanTransactionData` / `addResourceFee` before submitting. Multiple G-address signatures on one node must be added in ascending public-key order (the SDK appends in call order, no sorting).
 
 **V2 entries on an old network:** emitting `ADDRESS_V2` / `WITH_DELEGATES` below protocol 27 invalidates the tx — set `useUpgradedAuth: false` there and build legacy entries via the `forAddressLegacy` / `forAddressCredentialsLegacy` factories. If simulation with `useUpgradedAuth` at its default (`true`) still yields legacy `ADDRESS` entries, the RPC does not support the flag (silently ignored) or the simulation did not run in recording mode — detect support by inspecting `credentials.arm`, never by an error code.
 
-**Switch no longer compiles after upgrade:** the new union cases on `SorobanCredentials` / `XdrSorobanCredentialsType` / `XdrEnvelopeType` / `XdrHashIDPreimage` require a `default` arm in exhaustive switches.
+**Switch over XDR enum types:** `XdrSorobanCredentialsType`, `XdrEnvelopeType` and the other XDR enum types are classes of constants, so a `switch` over them gets no exhaustiveness check. Give it a `default` arm that throws, so a case the code does not handle surfaces.
 
 ---
 
@@ -404,12 +430,14 @@ transaction.addResourceFee(bufferedFee);
 
 2. **Inspect transaction XDR before submission:**
    ```dart
+   // From the section Missing Trustline (op_no_trust): transaction (Transaction)
    String envelopeXdr = transaction.toEnvelopeXdrBase64();
    // Paste into Stellar Laboratory XDR viewer to inspect contents
    ```
 
 3. **Decode failed transaction results:**
    ```dart
+   // From your app: resultXdrString (String)
    XdrTransactionResult result =
        XdrTransactionResult.fromBase64EncodedXdrString(resultXdrString);
    print('Result code: ${result.result.discriminant}');
@@ -421,6 +449,7 @@ transaction.addResourceFee(bufferedFee);
 
 6. **Check transaction status on Horizon after uncertain submission:**
    ```dart
+   // From your app: sdk (StellarSDK), txHash (String)
    try {
      TransactionResponse tx = await sdk.transactions.transaction(txHash);
      print('Confirmed in ledger: ${tx.ledger}');
@@ -441,7 +470,7 @@ transaction.addResourceFee(bufferedFee);
 
 **Missing trustline:** Sending non-native assets to an account without a trustline fails with `op_no_trust`. The destination must execute `ChangeTrustOperation` before receiving the asset.
 
-**XLM reserve requirements:** Every subentry (trustline, offer, data entry, signer) requires 0.5 XLM base reserve. Creating entries without sufficient XLM fails with `op_low_reserve`.
+**XLM reserve requirements:** Every subentry (trustline, offer, data entry, signer) requires one base reserve, a network parameter (`LedgerResponse.baseReserveInStroops`). Creating entries without sufficient XLM fails with `op_low_reserve`.
 
 **Forgetting to apply simulation data:** After simulating a Soroban transaction, you must call `sorobanTransactionData =`, `addResourceFee()`, and `setSorobanAuth()` on the transaction before signing and submitting.
 
@@ -457,36 +486,14 @@ transaction.addResourceFee(bufferedFee);
 
 | Platform | Status | Notes |
 |----------|--------|-------|
-| Android  | Full   | Native crypto via pinenacl/pointycastle (pure Dart) |
-| iOS      | Full   | Same pure Dart crypto, no platform channels needed |
-| Web      | Full   | Since v3.0.0 with BigInt migration, no dart:io deps |
+| Android  | Full   | Pure Dart crypto (pinenacl, pointycastle); smart-account WebAuthn and platform storage use platform channels |
+| iOS      | Full   | Same pure Dart crypto; smart-account WebAuthn and platform storage use platform channels |
+| Web      | Full   | No dart:io dependency; 64-bit integers are `BigInt` |
 
 ### Crypto Libraries
 
 All cryptographic operations use **pure Dart** libraries with no platform-specific FFI:
 
-- **Ed25519 signing**: `pinenacl` ^0.6.0
-- **Cryptographic hashing**: `pointycastle` ^4.0.0 + `crypto` ^3.0.6
-- **No native code**: Works identically across all platforms
-
-### Key Dependencies
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `http` | ^1.5.0 | HTTP client for Horizon requests |
-| `dio` | ^5.9.0 | HTTP client for Soroban RPC (JSON-RPC) |
-| `pointycastle` | ^4.0.0 | Cryptographic operations |
-| `pinenacl` | ^0.6.0 | Ed25519 signing |
-| `toml` | ^0.17.0 | stellar.toml parsing (SEP-0001) |
-| `decimal` | ^3.2.4 | Precise decimal arithmetic |
-
-### v3.0.0 Breaking Changes (BigInt Migration)
-
-Version 3.0.0 migrated all 64-bit integer types to `BigInt` for JavaScript/web compatibility:
-
-- `Memo.id(id)`: `int` -> `BigInt`
-- `MuxedAccount(accountId, id)`: `int?` -> `BigInt?`
-- `Account` sequence number: `BigInt`
-- `XdrSCVal.forU64/forI64`: `int` -> `BigInt`
-- `XdrInt64.int64` / `XdrUint64.uint64`: `int` -> `BigInt`
-- Offer IDs (`ManageSellOfferOperationBuilder` etc.): `BigInt`
+- **Ed25519 signing**: `pinenacl`
+- **Cryptographic hashing**: `pointycastle` and `crypto`
+- **Platform channels**: only the smart-account WebAuthn provider and the platform storage adapter call native code, through the SDK's Flutter plugin

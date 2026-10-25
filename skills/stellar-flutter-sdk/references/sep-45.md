@@ -26,8 +26,9 @@
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: contractSignerSeed (String)
 // Your contract account (C... address) — must implement __check_auth
-const contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ';
+const contractId = 'CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV';
 
 // Signer registered in your contract's __check_auth — must have private key
 final signer = KeyPair.fromSecretSeed(contractSignerSeed);
@@ -36,7 +37,7 @@ final signer = KeyPair.fromSecretSeed(contractSignerSeed);
 final webAuth = await WebAuthForContracts.fromDomain('anchor.example.com', Network.TESTNET);
 final jwtToken = await webAuth.jwtToken(contractId, [signer]);
 
-print('Authenticated! Token: ${jwtToken.substring(0, 50)}...');
+print('Authenticated');
 ```
 
 ---
@@ -73,6 +74,7 @@ static Future<WebAuthForContracts> fromDomain(
   Network network, {
   http.Client? httpClient,
   Map<String, String>? httpRequestHeaders,
+  SorobanServer? sorobanServer,  // RPC client for the ledger lookup in jwtToken()
 })
 ```
 
@@ -85,7 +87,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 final webAuth = WebAuthForContracts(
   'https://auth.anchor.example.com/sep45',               // authEndpoint
-  'CCALHRGH5RXIDJDRLPPG4ZX2S563TB2QKKJR4STWKVQCYB6JVPYQXHRG', // webAuthContractId (C...)
+  'CA7A3N2BB35XMTFPAYWVZEF4TEYXW7DAEWDXJNQGUPR5SWSM2UVZCJM2', // webAuthContractId (C...)
   'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',  // serverSigningKey (G...)
   'anchor.example.com',                                  // serverHomeDomain
   Network.TESTNET,                                       // network
@@ -103,12 +105,14 @@ WebAuthForContracts(
   http.Client? httpClient,
   Map<String, String>? httpRequestHeaders,
   String? sorobanRpcUrl,     // defaults to soroban-testnet.stellar.org / soroban.stellar.org
+  SorobanServer? sorobanServer, // RPC client to use instead of one built from sorobanRpcUrl
 })
 ```
 
 The constructor throws `ArgumentError` if any parameter is invalid (wrong prefix, bad URL, empty domain).
 
 ```dart
+// From your app: domain (String), endpoint (String), serverSigningKey (String), webAuthContractId (String)
 // WRONG: webAuthContractId and serverSigningKey are swapped
 WebAuthForContracts(endpoint, serverSigningKey, webAuthContractId, domain, Network.TESTNET);
 // → ArgumentError: webAuthContractId must be a contract address starting with 'C'
@@ -123,6 +127,7 @@ By default the SDK uses `https://soroban-testnet.stellar.org` (testnet) or
 `https://soroban.stellar.org` (pubnet). Pass `sorobanRpcUrl` to override.
 
 ```dart
+// From your app: serverSigningKey (String), webAuthContractId (String)
 final webAuth = WebAuthForContracts(
   'https://auth.anchor.example.com/sep45',
   webAuthContractId,
@@ -165,16 +170,17 @@ Returns the JWT token string. Throws on any failure — see [Error Handling](#er
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: contractSignerSeed (String)
 final webAuth = await WebAuthForContracts.fromDomain('anchor.example.com', Network.TESTNET);
 
-const contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ';
+const contractId = 'CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV';
 final signer = KeyPair.fromSecretSeed(contractSignerSeed);
 
 // Simple: auto-expiration, default home domain
 final jwtToken = await webAuth.jwtToken(contractId, [signer]);
 
 // With explicit home domain and custom expiration
-final jwtToken = await webAuth.jwtToken(
+final jwtTokenWithOptions = await webAuth.jwtToken(
   contractId,
   [signer],
   homeDomain: 'anchor.example.com',
@@ -184,7 +190,25 @@ final jwtToken = await webAuth.jwtToken(
 
 **Signature expiration:** When signers are provided and `signatureExpirationLedger` is `null`, the SDK calls `SorobanServer.getLatestLedger()` and sets expiration to `sequence + 10` (~50–60 seconds). If the signers array is empty, this Soroban RPC call is skipped entirely.
 
-**Protocol 27 credentials (CAP-71):** signing accepts `ADDRESS`, `ADDRESS_V2`, and `ADDRESS_WITH_DELEGATES` entries transparently and preserves the arm — no flow change. For `ADDRESS_WITH_DELEGATES` entries, supply every signer the contract's `__check_auth` requires, including delegate signers, in the `signers` list.
+**Protocol 27 credentials (CAP-71):** signing accepts `ADDRESS`, `ADDRESS_V2`, and `ADDRESS_WITH_DELEGATES` entries and preserves the arm, with no flow change. `jwtToken` and `signAuthorizationEntries` sign the top-level node only. For a delegate node, this code replaces steps 5 and 6 of the [step-by-step flow](#step-by-step-authentication): it signs the entries and sends them. It sets the expiration ledger on the client entry before any signature, because the signed payload covers that ledger.
+
+```dart
+// From the section Step-by-Step Authentication: authEntries (List<SorobanAuthorizationEntry>), contractId (String), expirationLedger (int), webAuth (WebAuthForContracts)
+// From your app: delegateAddress (String, G... address of the delegate node), delegateKeyPair (KeyPair), topLevelSigners (List<KeyPair>, keys the client contract checks on the top-level node, empty if only the delegate signs)
+for (final entry in authEntries) {
+  final credentials = entry.credentials.innerAddressCredentials;
+  // Only the client entry is signed here. The server entry already carries the
+  // server signature and passes unchanged; a client-domain entry gets the
+  // client-domain key's signature the same way: expiration first, then sign.
+  if (credentials == null || credentials.address.toXdr().toStrKey() != contractId) continue;
+  credentials.signatureExpirationLedger = expirationLedger;
+  for (final signer in topLevelSigners) {
+    entry.sign(signer, Network.TESTNET);
+  }
+  entry.sign(delegateKeyPair, Network.TESTNET, forAddress: delegateAddress);
+}
+final jwtToken = await webAuth.sendSignedChallenge(authEntries);
+```
 
 ---
 
@@ -199,7 +223,7 @@ final webAuth = await WebAuthForContracts.fromDomain('anchor.example.com', Netwo
 
 // Empty signers list — no signatures added, no Soroban RPC call made
 final jwtToken = await webAuth.jwtToken(
-  'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ',
+  'CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV',
   [],
 );
 ```
@@ -217,9 +241,10 @@ Non-custodial wallets can prove their domain identity so the anchor can attribut
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: contractSignerSeed (String), walletSigningSecretSeed (String)
 final webAuth = await WebAuthForContracts.fromDomain('anchor.example.com', Network.TESTNET);
 
-const contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ';
+const contractId = 'CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV';
 final signer = KeyPair.fromSecretSeed(contractSignerSeed);
 final clientDomainKeyPair = KeyPair.fromSecretSeed(walletSigningSecretSeed);
 
@@ -241,9 +266,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: contractSignerSeed (String), signingServerToken (String)
 final webAuth = await WebAuthForContracts.fromDomain('anchor.example.com', Network.TESTNET);
 
-const contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ';
+const contractId = 'CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV';
 final signer = KeyPair.fromSecretSeed(contractSignerSeed);
 
 // Callback receives ONE SorobanAuthorizationEntry and must return it signed
@@ -287,15 +313,17 @@ Callback signature: `Future<SorobanAuthorizationEntry> Function(SorobanAuthoriza
 
 ```dart
 // WRONG: SEP-10 delegate pattern — receives/returns base64 XDR string
-Future<String> sep10Delegate(String transactionXdr) async { ... }
+Future<String> sep10Delegate(String transactionXdr) async { /* sign the XDR */ return transactionXdr; }
 
 // CORRECT: SEP-45 callback — receives and returns SorobanAuthorizationEntry
-Future<SorobanAuthorizationEntry> sep45Callback(SorobanAuthorizationEntry entry) async { ... }
+Future<SorobanAuthorizationEntry> sep45Callback(SorobanAuthorizationEntry entry) async { /* sign the entry */ return entry; }
 ```
 
 When `clientDomain` is provided, you must supply either `clientDomainAccountKeyPair` or `clientDomainSigningCallback`. Providing neither throws `ArgumentError`.
 
 ```dart
+// From the section Quick Start: contractId (String), signer (KeyPair), webAuth (WebAuthForContracts)
+// From your app: walletKeyPair (KeyPair)
 // WRONG: clientDomain provided without either signing means — throws ArgumentError
 await webAuth.jwtToken(contractId, [signer],
   clientDomain: 'wallet.example.com',
@@ -320,7 +348,8 @@ For maximum control, call each step individually.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-const contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ';
+// From your app: contractSignerSeed (String)
+const contractId = 'CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV';
 final signer = KeyPair.fromSecretSeed(contractSignerSeed);
 const homeDomain = 'anchor.example.com';
 
@@ -357,7 +386,7 @@ try {
   // Step 6: POST signed entries and get JWT
   final jwtToken = await webAuth.sendSignedChallenge(signedEntries);
 
-  print('JWT Token: $jwtToken');
+  print('Authenticated');
 } catch (e) {
   print('Error: $e');
 }
@@ -403,6 +432,7 @@ By default the SDK submits signed challenges as `application/x-www-form-urlencod
 To switch to JSON, set the public field:
 
 ```dart
+// From the section Quick Start: webAuth (WebAuthForContracts)
 // Default: form-urlencoded (useFormUrlEncoded = true)
 webAuth.useFormUrlEncoded = true;
 
@@ -424,6 +454,7 @@ Returned by `getChallenge()`. Contains the authorization entries to decode, vali
 | `networkPassphrase` | `String?` | Optional — server's network passphrase for validation |
 
 ```dart
+// From the section Quick Start: contractId (String), webAuth (WebAuthForContracts)
 final challengeResponse = await webAuth.getChallenge(contractId);
 final xdr = challengeResponse.authorizationEntries;
 final passphrase = challengeResponse.networkPassphrase; // may be null
@@ -466,13 +497,14 @@ Submit exceptions implement `Exception` directly. All exception classes are impo
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: contractSignerSeed (String)
 final webAuth = await WebAuthForContracts.fromDomain('anchor.example.com', Network.TESTNET);
-const contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ';
+const contractId = 'CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV';
 final signer = KeyPair.fromSecretSeed(contractSignerSeed);
 
 try {
   final jwtToken = await webAuth.jwtToken(contractId, [signer]);
-  print('JWT: $jwtToken');
+  print('Authenticated');
 
 } on ArgumentError catch (e) {
   // Bad parameters: non-C... clientAccountId, clientDomain without signing means,
@@ -605,9 +637,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   // Server configuration must match WebAuthForContracts initialization
-  const serverAccountId = 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP';
-  const serverSecretSeed = 'SAWDHXQG6ROJSU4QGCW7NSTYFHPTPIVC2NC7QKVTO7PZCSO2WEBGM54W';
-  final serverKeyPair = KeyPair.fromSecretSeed(serverSecretSeed);
+  final serverKeyPair = KeyPair.random(); // test key of the mock server
+  final serverAccountId = serverKeyPair.accountId;
 
   const webAuthContractId = 'CA7A3N2BB35XMTFPAYWVZEF4TEYXW7DAEWDXJNQGUPR5SWSM2UVZCJM2';
   const domain = 'example.stellar.org';
@@ -736,6 +767,12 @@ The mock server signs its own entry before sending the challenge, and each clien
 When using `clientDomainSigningCallback` (without `clientDomainAccountKeyPair`), the SDK fetches the client domain's stellar.toml after the challenge. Provide three responses in order:
 
 ```dart
+import 'package:http/testing.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+// From the setup above: challengeXdr (String), successJwt (String)
+// From your app: clientDomainAccount (String, the client domain signing account)
 var requestCount = 0;
 final mockClient = MockClient((request) async {
   requestCount++;
@@ -762,16 +799,19 @@ final mockClient = MockClient((request) async {
 **WRONG: passing a G... or M... address to jwtToken()**
 
 ```dart
+// From the section Quick Start: signer (KeyPair), webAuth (WebAuthForContracts)
 // WRONG: jwtToken() requires a C... contract address — throws ArgumentError
 await webAuth.jwtToken('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP', [signer]);
 
 // CORRECT: pass the C... contract address
-await webAuth.jwtToken('CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ', [signer]);
+await webAuth.jwtToken('CDZJIDQW5WTPAZ64PGIJGVEIDNK72LL3LKUZWG3G6GWXYQKI2JNIVFNV', [signer]);
 ```
 
 **WRONG: signers must contain KeyPairs with private keys**
 
 ```dart
+// From your app: accountId (String), secretSeed (String)
+// From the section Quick Start: contractId (String), webAuth (WebAuthForContracts)
 // WRONG: KeyPair.fromAccountId() has no private key and cannot sign
 final publicOnly = KeyPair.fromAccountId(accountId);
 await webAuth.jwtToken(contractId, [publicOnly]);
@@ -785,19 +825,28 @@ await webAuth.jwtToken(contractId, [signer]);
 **WRONG: treating SubInvocationsFound as a recoverable error**
 
 ```dart
+// From the section Error Handling: contractId (String), signer (KeyPair), webAuth (WebAuthForContracts)
 // WRONG: logging and continuing — could authorize unintended contract operations
+try {
+  await webAuth.jwtToken(contractId, [signer]);
 } on ContractChallengeValidationErrorSubInvocationsFound catch (e) {
   print('Warning: $e'); // Do NOT retry or sign
+}
 
 // CORRECT: abort and alert
+try {
+  await webAuth.jwtToken(contractId, [signer]);
 } on ContractChallengeValidationErrorSubInvocationsFound catch (e) {
   // This indicates a potentially malicious server — abort immediately
   rethrow;
+}
 ```
 
 **WRONG: network mismatch between WebAuthForContracts and the anchor**
 
 ```dart
+// From the setup above: contractId (String), domain (String)
+// From your app: endpoint (String), signingKey (String)
 // WRONG: pubnet WebAuthForContracts against a testnet anchor
 final webAuth = WebAuthForContracts(endpoint, contractId, signingKey, domain, Network.PUBLIC);
 // → ContractChallengeValidationErrorInvalidServerSignature or InvalidNetworkPassphrase
@@ -809,6 +858,8 @@ final webAuth = WebAuthForContracts(endpoint, contractId, signingKey, domain, Ne
 **WRONG: wrong constructor parameter order**
 
 ```dart
+// From the section Testing with MockClient: domain (String), webAuthContractId (String)
+// From your app: endpoint (String), serverSigningKey (String)
 // WRONG: confusing webAuthContractId (C...) and serverSigningKey (G...)
 WebAuthForContracts(endpoint, serverSigningKey, webAuthContractId, domain, Network.TESTNET);
 // → ArgumentError: webAuthContractId must be a contract address starting with 'C'
@@ -817,18 +868,21 @@ WebAuthForContracts(endpoint, serverSigningKey, webAuthContractId, domain, Netwo
 WebAuthForContracts(endpoint, webAuthContractId, serverSigningKey, domain, Network.TESTNET);
 ```
 
-**WRONG: using fromDomain() then assigning a mock httpClient**
+**WRONG: assigning a mock httpClient after fromDomain()**
 
-`fromDomain()` uses its own `http.Client` for the stellar.toml fetch and creates the internal client. After `fromDomain()` returns, you can replace `webAuth.httpClient`, but the stellar.toml was already fetched with a real HTTP call. For testing, always construct `WebAuthForContracts` manually and pass the mock via the `httpClient` named parameter.
+`fromDomain()` takes an `httpClient` and uses it for the stellar.toml fetch and for the later auth requests. A mock assigned after `fromDomain()` returns comes too late for the toml fetch.
 
 ```dart
-// WRONG: fromDomain() uses real network for stellar.toml — mock arrives too late
+import 'package:http/testing.dart';
+
+// From the section Testing with MockClient: mockClient (MockClient)
+// WRONG: fromDomain() fetched stellar.toml over the network before this assignment
 final webAuth = await WebAuthForContracts.fromDomain('anchor.example.com', Network.TESTNET);
 webAuth.httpClient = mockClient; // too late to mock the toml fetch
 
-// CORRECT: construct manually for full mock control
-final webAuth = WebAuthForContracts(
-  authServer, webAuthContractId, serverAccountId, domain, Network.TESTNET,
+// CORRECT: pass the mock to fromDomain(); it serves stellar.toml, the challenge GET, and the token POST
+final webAuth = await WebAuthForContracts.fromDomain(
+  'anchor.example.com', Network.TESTNET,
   httpClient: mockClient,
 );
 ```
@@ -836,6 +890,7 @@ final webAuth = WebAuthForContracts(
 **WRONG: ContractChallengeRequestErrorResponse fields**
 
 ```dart
+// From your app: e (ContractChallengeRequestErrorResponse, the caught exception)
 // WRONG: no 'code' or 'body' fields on ContractChallengeRequestErrorResponse
 print(e.code);    // does not exist
 print(e.body);    // does not exist
@@ -848,6 +903,7 @@ print(e.statusCode);  // int? HTTP status code
 **WRONG: SubmitContractChallengeErrorResponseException field name**
 
 ```dart
+// From your app: e (SubmitContractChallengeErrorResponseException, the caught exception)
 // WRONG: no 'message' field
 print(e.message);
 

@@ -2,7 +2,7 @@
 
 **Purpose:** Standard vocabulary for KYC (Know Your Customer) and AML (Anti-Money Laundering) data fields.
 **Prerequisites:** None
-**Standard:** [SEP-0009 v1.18.0](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md)
+**Standard:** [SEP-0009](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md)
 
 SEP-09 fields are used by [SEP-12](sep-12.md) (`PutCustomerInfoRequest.kycFields`), SEP-24, and SEP-31.
 
@@ -75,7 +75,7 @@ p.additionalName = 'Michael';      // String?  → 'additional_name' (middle nam
 p.sex            = 'male';         // String?  → 'sex' (male | female | other)
 
 // Birth
-p.birthDate        = DateTime(1990, 5, 15);  // DateTime?  → 'birth_date' (via toIso8601String())
+p.birthDate        = DateTime(1990, 5, 15);  // DateTime?  → 'birth_date' (sent as YYYY-MM-DD)
 p.birthPlace       = 'New York, NY';         // String?    → 'birth_place'
 p.birthCountryCode = 'USA';                  // String?    → 'birth_country_code' (ISO 3166-1 alpha-3)
 
@@ -95,8 +95,8 @@ p.addressCountryCode = 'USA';         // String? → 'address_country_code' (ISO
 p.idType          = 'passport';              // String?   → 'id_type' (passport | drivers_license | id_card | etc.)
 p.idNumber        = 'AB123456';             // String?   → 'id_number'
 p.idCountryCode   = 'USA';                  // String?   → 'id_country_code' (ISO 3166-1 alpha-3)
-p.idIssueDate     = DateTime(2020, 1, 15);  // DateTime? → 'id_issue_date' (via toIso8601String())
-p.idExpirationDate = DateTime(2030, 1, 15); // DateTime? → 'id_expiration_date' (via toIso8601String())
+p.idIssueDate     = DateTime(2020, 1, 15);  // DateTime? → 'id_issue_date' (sent as YYYY-MM-DD)
+p.idExpirationDate = DateTime(2030, 1, 15); // DateTime? → 'id_expiration_date' (sent as YYYY-MM-DD)
 
 // Tax
 p.taxId     = '123-45-6789';  // String? → 'tax_id'
@@ -122,7 +122,7 @@ p.cardKYCFields             = CardKYCFields();             // CardKYCFields?
 File properties are stored on the same object but returned **only** by `files()`, not by `fields()`. Assign raw `Uint8List` bytes; the SDK sends them as multipart/form-data when submitting via SEP-12 `putCustomerInfo()`.
 
 ```dart
-import 'dart:typed_data';
+import 'dart:io';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 NaturalPersonKYCFields p = NaturalPersonKYCFields();
@@ -138,6 +138,14 @@ p.proofOfLiveness         = await File('/path/to/selfie.mp4').readAsBytes();    
 ### fields() and files() output
 
 ```dart
+import 'dart:typed_data';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+NaturalPersonKYCFields p = NaturalPersonKYCFields()
+  ..firstName = 'John'
+  ..lastName = 'Doe'
+  ..emailAddress = 'john@example.com';
+
 // Text fields — omits all null fields, omits all file properties
 Map<String, String> fields = p.fields();
 // e.g. {'first_name': 'John', 'last_name': 'Doe', 'email_address': 'john@example.com', ...}
@@ -149,9 +157,9 @@ Map<String, Uint8List> files = p.files();
 // occupation (int) is automatically converted to string in the output:
 // p.occupation = 2512  →  fields['occupation'] == '2512'
 //
-// DateTime fields are serialized with toIso8601String():
-// p.birthDate = DateTime(1990, 5, 15)  →  fields['birth_date'] == '1990-05-15T00:00:00.000'
-// p.idIssueDate = DateTime(2020, 1, 1) →  fields['id_issue_date'] == '2020-01-01T00:00:00.000'
+// DateTime fields are sent as dates without a time (YYYY-MM-DD):
+// p.birthDate = DateTime(1990, 5, 15)  →  fields['birth_date'] == '1990-05-15'
+// p.idIssueDate = DateTime(2020, 1, 1) →  fields['id_issue_date'] == '2020-01-01'
 //
 // financialAccountKYCFields and cardKYCFields are merged into fields() output automatically
 ```
@@ -196,6 +204,7 @@ org.cardKYCFields             = CardKYCFields();             // keys stay 'card.
 ### File properties
 
 ```dart
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -262,7 +271,7 @@ fin.mobileMoneyNumber   = '+254712345678';   // String? → 'mobile_money_number
 fin.mobileMoneyProvider = 'M-Pesa';          // String? → 'mobile_money_provider'
 
 // Crypto
-fin.cryptoAddress = 'GABC...';           // String? → 'crypto_address'
+fin.cryptoAddress = 'GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV'; // String? → 'crypto_address'
 // fin.cryptoMemo is @Deprecated — use externalTransferMemo instead
 ```
 
@@ -420,6 +429,7 @@ CardKYCFields.country_code_field_key;   // 'card.country_code'
 
 ```dart
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 Future<void> buildPersonKYC() async {
@@ -469,7 +479,7 @@ Future<void> buildPersonKYC() async {
   // Text fields for submission
   Map<String, String> textFields = person.fields();
   // {'first_name': 'Jane', 'last_name': 'Doe',
-  //  'birth_date': '1990-05-15T00:00:00.000',
+  //  'birth_date': '1990-05-15',
   //  'bank_name': 'First National Bank', 'bank_account_number': '1234567890', ...}
 
   // File fields for submission
@@ -488,6 +498,7 @@ Future<void> buildPersonKYC() async {
 
 ```dart
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 Future<void> buildOrgKYC() async {
@@ -536,6 +547,7 @@ Future<void> buildOrgKYC() async {
 Assign the `StandardKYCFields` container to `PutCustomerInfoRequest.kycFields`. The SEP-12 service calls `fields()` and `files()` on the nested objects internally when sending the request.
 
 ```dart
+import 'dart:io';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 Future<void> submitKYC(String jwtToken) async {
@@ -568,8 +580,9 @@ For the full SEP-12 API (status polling, verification, file uploads, etc.) see [
 **WRONG: `request.KYCFields` (uppercase K) — property does not exist in Dart SDK**
 
 ```dart
-// WRONG: PHP has uppercase KYCFields; Dart has lowercase kycFields
-request.KYCFields = kyc;   // ignored / compile error
+// From the section Integration with SEP-12: kyc (StandardKYCFields), request (PutCustomerInfoRequest)
+// WRONG: the property is lowercase kycFields
+request.KYCFields = kyc;   // compile error
 
 // CORRECT: Dart property is all-lowercase camelCase
 request.kycFields = kyc;
@@ -578,9 +591,11 @@ request.kycFields = kyc;
 **WRONG: `StandardKYCFields` has a `fields()` method**
 
 ```dart
-// WRONG: the container has no fields() method
+// From the section Integration with SEP-12: person (NaturalPersonKYCFields), request (PutCustomerInfoRequest)
 StandardKYCFields kyc = StandardKYCFields();
 kyc.naturalPersonKYCFields = person;
+
+// WRONG: the container has no fields() method
 Map<String, String> data = kyc.fields(); // compile error — method does not exist
 
 // CORRECT: call fields() on the nested object
@@ -593,6 +608,7 @@ request.kycFields = kyc;
 **WRONG: `occupation` expects `int`, not `String`**
 
 ```dart
+// From the section Integration with SEP-12: person (NaturalPersonKYCFields)
 // WRONG: string assignment
 person.occupation = '2512';  // type mismatch — property is int?
 
@@ -604,6 +620,7 @@ person.occupation = 2512;
 **WRONG: `birthDate`, `idIssueDate`, and `idExpirationDate` are all `DateTime?`**
 
 ```dart
+// From the section Integration with SEP-12: person (NaturalPersonKYCFields)
 // WRONG: string for any date field
 person.birthDate        = '1990-05-15';        // type mismatch
 person.idIssueDate      = '2020-01-15';        // type mismatch
@@ -613,10 +630,10 @@ person.idExpirationDate = '2030-01-15';        // type mismatch
 person.birthDate        = DateTime(1990, 5, 15);
 person.idIssueDate      = DateTime(2020, 1, 15);
 person.idExpirationDate = DateTime(2030, 1, 15);
-// In fields() output: DateTime.toIso8601String() → '1990-05-15T00:00:00.000'
+// In fields() output: the date without a time, '1990-05-15'
 ```
 
-Note: Unlike PHP where `birthDate` is a string and id dates are DateTime, in the Dart SDK **all three date fields are `DateTime?`**.
+Note: **all three date fields are `DateTime?`**; the SDK sends them as `YYYY-MM-DD`.
 
 **WRONG: `OrganizationKYCFields.VAT_number_field_key` value is mixed-case**
 
@@ -632,8 +649,10 @@ String key = OrganizationKYCFields.VAT_number_field_key; // 'organization.VAT_nu
 **WRONG: card fields nested under an organization get the `organization.` prefix**
 
 ```dart
-// WRONG: assuming org prefix applies to card fields too
+// From the setup above: org (OrganizationKYCFields)
 Map<String, String> fields = org.fields();
+
+// WRONG: assuming org prefix applies to card fields too
 fields['organization.card.number']; // does not exist
 
 // CORRECT: card fields always use 'card.' prefix, even under an organization
@@ -643,6 +662,9 @@ fields['card.number']; // correct key
 **WRONG: calling `files()` on `FinancialAccountKYCFields` or `CardKYCFields`**
 
 ```dart
+import 'dart:typed_data';
+
+// From the setup above: card (CardKYCFields), fin (FinancialAccountKYCFields), org (OrganizationKYCFields), person (NaturalPersonKYCFields)
 // WRONG: neither class has a files() method
 fin.files(); // compile error
 card.files(); // compile error
@@ -655,6 +677,7 @@ Map<String, Uint8List> orgFiles    = org.files();
 **WRONG: `FinancialAccountKYCFields.fields()` positional prefix parameter**
 
 ```dart
+// From the section keyPrefix parameter: fin (FinancialAccountKYCFields)
 // WRONG: passing prefix as positional argument
 fin.fields('organization.');  // compile error — it is a named parameter
 
@@ -665,6 +688,7 @@ fin.fields(keyPrefix: 'organization.');
 **WRONG: `cryptoMemo` for new code**
 
 ```dart
+// From the section keyPrefix parameter: fin (FinancialAccountKYCFields)
 // WRONG: deprecated — still works but discouraged
 fin.cryptoMemo = '12345678';
 

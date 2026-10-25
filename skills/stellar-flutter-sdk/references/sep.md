@@ -1,8 +1,8 @@
 # SEP Implementations
 
-The Flutter SDK implements 21 Stellar Ecosystem Proposals (SEPs) that cover authentication, asset transfers, identity verification, data rendering, and other standardized protocols for integrating with anchors and other Stellar services.
+The Flutter SDK implements the Stellar Ecosystem Proposals (SEPs) in the table below. They cover authentication, asset transfers, identity verification, data rendering, and other standardized protocols for integrating with anchors and other Stellar services.
 
-Seventeen of them have a reference page here. The contract introspection section of the [Smart Contracts Guide](soroban_contracts.md#contract-introspection) covers SEP-46, SEP-47 and SEP-48. The remaining one has no page of its own:
+Most of them have a reference page here. The contract introspection section of the [Smart Contracts Guide](soroban_contracts.md#contract-introspection) covers SEP-46, SEP-47 and SEP-48. The remaining one has no page of its own:
 
 - SEP-23 (StrKey) is the address and key encoding, exposed as the `StrKey` class and used throughout the SDK. The [Security Guide](security.md) covers the validation patterns; `api_reference.md` has the full signature list.
 
@@ -20,7 +20,7 @@ Seventeen of them have a reference page here. The contract introspection section
 | SEP-10 | Web Authentication | Authenticate accounts and obtain JWT tokens | [Details](sep-10.md) |
 | SEP-11 | Txrep | Convert transactions to human-readable format | [Details](sep-11.md) |
 | SEP-12 | KYC API | Submit and manage customer information | [Details](sep-12.md) |
-| SEP-23 | StrKey Encoding | Encode, decode and validate G, S, M, T, X, P, C, L and B strkeys | [Details](security.md#address-validation) |
+| SEP-23 | StrKey Encoding | Encode, decode, and validate G, S, M, T, X, P, C, L, B, and W strkeys | [Details](security.md#address-validation) |
 | SEP-24 | Interactive Deposit/Withdrawal | Interactive web flows for fiat on/off ramps | [Details](sep-24.md) |
 | SEP-29 | Account Memo Requirements | Check destinations for a memo requirement before submitting a payment | [Details](sep-29.md) |
 | SEP-30 | Account Recovery | Recover access to accounts via identity verification | [Details](sep-30.md) |
@@ -45,12 +45,14 @@ StellarToml toml = await StellarToml.fromDomain('anchor.example.com');
 
 **SEP-10: Authenticate and get JWT**
 ```dart
+// From your app: userKeyPair (KeyPair)
 WebAuth webAuth = await WebAuth.fromDomain('anchor.example.com', Network.TESTNET);
 String jwt = await webAuth.jwtToken(userKeyPair.accountId, [userKeyPair]);
 ```
 
 **SEP-24: Start interactive deposit**
 ```dart
+// From the setup above: jwt (String)
 TransferServerSEP24Service sep24 = await TransferServerSEP24Service.fromDomain('anchor.example.com');
 SEP24DepositRequest request = SEP24DepositRequest();
 request.assetCode = 'USDC';

@@ -43,9 +43,9 @@ Stellar has multiple networks with unique passphrases:
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-Network network = Network.TESTNET;   // Development (free test XLM via Friendbot)
-Network network = Network.PUBLIC;    // Production (real assets)
-Network network = Network.FUTURENET; // Upcoming protocol features
+Network network = Network.TESTNET; // Development (free test XLM via Friendbot)
+// Production (real assets): Network.PUBLIC
+// Upcoming protocol features: Network.FUTURENET
 ```
 
 ### Accounts
@@ -344,11 +344,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 // Testnet (https://horizon-testnet.stellar.org)
 StellarSDK sdk = StellarSDK.TESTNET;
 
-// Public network (https://horizon.stellar.org)
-StellarSDK sdk = StellarSDK.PUBLIC;
-
-// Custom Horizon server
-StellarSDK sdk = StellarSDK("https://horizon.your-company.com");
+// Public network (https://horizon.stellar.org): StellarSDK.PUBLIC
+// Custom Horizon server: StellarSDK("https://horizon.your-company.com")
 ```
 
 ## Soroban RPC
@@ -365,8 +362,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 // Testnet
 SorobanServer server = SorobanServer("https://soroban-testnet.stellar.org");
 
-// Mainnet
-SorobanServer server = SorobanServer("https://soroban.stellar.org");
+// Mainnet: SorobanServer("https://soroban.stellar.org")
 ```
 
 ### Health Check

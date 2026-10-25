@@ -30,7 +30,7 @@ print(keyPair.accountId);   // G... public key
 print(keyPair.secretSeed);  // S... secret seed
 
 // Create from existing secret seed
-KeyPair keyPair = KeyPair.fromSecretSeed("SCZKREUX6MLD26HUQK2PGDGUDA2RA6RXHYYYECEZ6VGVANDMWZNYNRRN");
+KeyPair importedKeyPair = KeyPair.fromSecretSeed("SCZKREUX6MLD26HUQK2PGDGUDA2RA6RXHYYYECEZ6VGVANDMWZNYNRRN");
 
 // Create public-key-only keypair (cannot sign)
 KeyPair publicOnly = KeyPair.fromAccountId("GABC123...");
@@ -153,16 +153,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 StellarSDK sdk = StellarSDK.TESTNET;
 Network network = Network.TESTNET;
 
-// Public network (production)
-StellarSDK sdk = StellarSDK.PUBLIC;
-Network network = Network.PUBLIC;
-
-// Futurenet (preview upcoming features)
-StellarSDK sdk = StellarSDK.FUTURENET;
-Network network = Network.FUTURENET;
-
-// Custom Horizon server
-StellarSDK sdk = StellarSDK("https://my-horizon-server.example.com");
+// Public network (production): StellarSDK.PUBLIC and Network.PUBLIC
+// Futurenet (preview upcoming features): StellarSDK.FUTURENET and Network.FUTURENET
+// Custom Horizon server: StellarSDK("https://my-horizon-server.example.com")
 ```
 
 ---
@@ -268,7 +261,7 @@ Memos attach data to transactions (payment references, user IDs). Time bounds li
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // Add memo
-Transaction transaction = TransactionBuilder(account)
+Transaction memoTransaction = TransactionBuilder(account)
     .addOperation(operation)
     .addMemo(Memo.text("Payment for invoice #1234"))
     .build();
@@ -278,13 +271,13 @@ Transaction transaction = TransactionBuilder(account)
 // Time bounds (valid for next 5 minutes)
 int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 TimeBounds timeBounds = TimeBounds(now, now + 300);
-Transaction transaction = TransactionBuilder(account)
+Transaction timeBoundTransaction = TransactionBuilder(account)
     .addOperation(operation)
     .addTimeBounds(timeBounds)
     .build();
 
 // Custom fee (stroops per operation, default 100)
-Transaction transaction = TransactionBuilder(account)
+Transaction customFeeTransaction = TransactionBuilder(account)
     .addOperation(operation)
     .setMaxOperationFee(200)
     .build();
@@ -353,7 +346,7 @@ Transfer XLM or custom assets between accounts.
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // Native XLM payment
-PaymentOperation paymentOp = PaymentOperationBuilder(
+PaymentOperation nativePaymentOp = PaymentOperationBuilder(
   "GDEST...",    // destination
   Asset.NATIVE,  // asset (XLM)
   "100",         // amount
@@ -361,7 +354,7 @@ PaymentOperation paymentOp = PaymentOperationBuilder(
 
 // Custom asset payment
 Asset usdAsset = AssetTypeCreditAlphaNum4("USD", "GISSUER...");
-PaymentOperation paymentOp = PaymentOperationBuilder(
+PaymentOperation usdPaymentOp = PaymentOperationBuilder(
   "GDEST...", // destination
   usdAsset,   // asset
   "50.25",    // amount
@@ -485,7 +478,7 @@ AccountMergeOperation mergeOp = AccountMergeOperationBuilder(
 ).build();
 
 // Or merge a different account (must also sign the transaction)
-AccountMergeOperation mergeOp = AccountMergeOperationBuilder("GDEST...")
+AccountMergeOperation otherAccountMergeOp = AccountMergeOperationBuilder("GDEST...")
     .setSourceAccount("GACCOUNT_TO_MERGE...")
     .build();
 ```
@@ -1292,18 +1285,18 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 StellarSDK sdk = StellarSDK.TESTNET;
 
 // Transactions in a specific ledger
-Page<TransactionResponse> txPage = await sdk.transactions
+Page<TransactionResponse> ledgerTxPage = await sdk.transactions
     .forLedger(12345678)
     .execute();
 
 // Transactions affecting a claimable balance
-Page<TransactionResponse> txPage = await sdk.transactions
+Page<TransactionResponse> claimableBalanceTxPage = await sdk.transactions
     .forClaimableBalance(
         "00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be")
     .execute();
 
 // Transactions affecting a liquidity pool
-Page<TransactionResponse> txPage = await sdk.transactions
+Page<TransactionResponse> liquidityPoolTxPage = await sdk.transactions
     .forLiquidityPool("poolid...")
     .execute();
 ```
@@ -1400,17 +1393,17 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 StellarSDK sdk = StellarSDK.TESTNET;
 
 // Effects for an account
-Page<EffectResponse> effectsPage = await sdk.effects
+Page<EffectResponse> accountEffectsPage = await sdk.effects
     .forAccount("GABC...")
     .limit(50)
     .execute();
 
 // Effects for a specific operation
-Page<EffectResponse> effectsPage = await sdk.effects
+Page<EffectResponse> operationEffectsPage = await sdk.effects
     .forOperation("123456789")
     .execute();
 
-for (EffectResponse effect in effectsPage.records) {
+for (EffectResponse effect in operationEffectsPage.records) {
   print(effect.type);
 }
 ```
@@ -1486,16 +1479,16 @@ StellarSDK sdk = StellarSDK.TESTNET;
 Asset usdAsset = Asset.createNonNativeAsset("USD", "GISSUER...");
 
 // Find offers selling XLM
-Page<OfferResponse> offersPage = await sdk.offers
+Page<OfferResponse> sellingXlmOffersPage = await sdk.offers
     .forSellingAsset(Asset.NATIVE)
     .execute();
 
 // Find offers buying USD
-Page<OfferResponse> offersPage = await sdk.offers
+Page<OfferResponse> buyingUsdOffersPage = await sdk.offers
     .forBuyingAsset(usdAsset)
     .execute();
 
-for (OfferResponse offer in offersPage.records) {
+for (OfferResponse offer in buyingUsdOffersPage.records) {
   print("${offer.id}: ${offer.amount} at ${offer.price}");
 }
 ```
@@ -1941,7 +1934,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 StellarSDK sdk = StellarSDK.TESTNET;
 
 // Stream transactions for a specific account
-StreamSubscription<TransactionResponse> subscription = sdk.transactions
+StreamSubscription<TransactionResponse> accountSubscription = sdk.transactions
     .forAccount("GABC...")
     .cursor("now")
     .stream()
@@ -1951,7 +1944,7 @@ StreamSubscription<TransactionResponse> subscription = sdk.transactions
 });
 
 // Stream all transactions on the network
-StreamSubscription<TransactionResponse> subscription = sdk.transactions
+StreamSubscription<TransactionResponse> networkSubscription = sdk.transactions
     .cursor("now")
     .stream()
     .listen((TransactionResponse tx) {
