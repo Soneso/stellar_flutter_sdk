@@ -357,6 +357,8 @@ XdrSCVal result2 = await client.invokeMethod(
 );
 ```
 
+Polling counts status-request time toward `timeoutInSeconds` and stops when a terminal transaction status arrives. If the transaction is unresolved at the deadline, one final status request can take up to three seconds. Failed status requests are retried. A timeout throws `Exception`, naming the last status-request error if any.
+
 ## Installing and Deploying
 
 Put your contract on the network. Install uploads the WASM bytecode once; deploy creates contract instances from that code.

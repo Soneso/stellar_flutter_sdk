@@ -322,9 +322,9 @@ SEP-51 fixes one rendering per value, and that is the only rendering this SDK em
 - a repeated object key is refused; Dart's own parser would silently keep the last occurrence;
 - an enum takes its wire name, not the XDR identifier and not the numeric value;
 - a fixed-length field is held to its declared length, and a variable-length field to its declared maximum;
-- nesting is bounded at `XdrJsonHelper.maxDepth`, which is 128, the same bound the binary decoder applies. The bound is checked before the document reaches the JSON encoder or parser.
+- nesting is bounded at `XdrJsonHelper.maxDepth`, which is 128; the binary decoder bounds the nesting of recursive types at `XdrDataInputStream.maxXdrDecodeDepth`, which is 500, and throws an `Exception` past it. The JSON bound is checked before the document reaches the JSON encoder or parser.
 
-Each of these throws a `FormatException` carrying the message shown:
+Each of these JSON checks throws a `FormatException` carrying the message shown:
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';

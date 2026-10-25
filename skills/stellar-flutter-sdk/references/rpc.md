@@ -309,7 +309,7 @@ if (response.entries != null && response.entries!.isNotEmpty) {
 }
 ```
 
-**Response type:** `GetLedgerEntriesResponse` with `List<LedgerEntry>? entries` and `int? latestLedger`. Each `LedgerEntry` has `key`, `xdr`, `lastModifiedLedgerSeq`, `liveUntilLedgerSeq?`, and `ledgerEntryDataXdr` getter. **NOTE:** The type is `LedgerEntry`, NOT `LedgerEntryResult`.
+**Response type:** `GetLedgerEntriesResponse` with `List<LedgerEntry>? entries` and `int? latestLedger`. Each `LedgerEntry` has `key`, `xdr`, `lastModifiedLedgerSeq`, `liveUntilLedgerSeq?`, `ext?` (the base64-encoded extension from the RPC `extXdr` response key), the `ledgerEntryDataXdr` getter, and the `ledgerKeyXdr` getter (`key` decoded as an `XdrLedgerKey`). **NOTE:** The type is `LedgerEntry`, NOT `LedgerEntryResult`.
 
 **Entry types:** `ACCOUNT`, `CONTRACT_DATA`, `CONTRACT_CODE`, `TRUSTLINE`.
 

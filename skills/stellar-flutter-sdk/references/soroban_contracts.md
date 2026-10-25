@@ -197,6 +197,8 @@ XdrSCVal result2 = await client.invokeMethod(
 List<String> methods = client.getMethodNames(); // ['transfer', 'balance', ...]
 ```
 
+Polling counts status-request time toward `timeoutInSeconds` and stops when a terminal transaction status arrives. If the transaction is unresolved at the deadline, one final status request can take up to three seconds. Failed status requests are retried. A timeout throws `Exception`, naming the last status-request error if any.
+
 **Preferred: use `funcArgsToXdrSCValues` for type-safe invocation:**
 
 ```dart
@@ -269,6 +271,8 @@ Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban a
 Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban auth targets; use the underlying G... or C... address instead
 Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban delegate addresses: WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC
 ```
+
+A `W...` address throws `ArgumentError` before any request as the contract to invoke or load, a contract data owner or part of a contract data key. Pass its base `C...` address.
 
 ```dart
 // From your app: delegateKeyPair (KeyPair), sourceEntry (SorobanAuthorizationEntry), topLevelKeyPair (KeyPair)

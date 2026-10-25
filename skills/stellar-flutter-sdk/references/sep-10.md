@@ -197,7 +197,7 @@ void main() async {
 ## Memo-Based Authentication
 
 For services that distinguish users sharing a single Stellar account via an integer memo.
-The `memo` parameter must be a positive integer (`int`, not `BigInt`).
+The `memo` parameter must be a non-negative integer (`int`, not `BigInt`).
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
