@@ -7,15 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.10.0] - 2026-10-25
+
 ### Added
 - `ContractCreditedEffectResponse` carries `contractMuxed` and `contractMuxedId` when Horizon reports a transfer or mint to a muxed contract address.
 - `LedgerEntry.ledgerKeyXdr` decodes the entry key as an `XdrLedgerKey`.
 
 ### Changed
-- Breaking: the `InvokeContractHostFunction` constructor and its `contractID` setter accept only a contract (`C...`) address or the 64-character hex of a contract id as the contract to invoke and throw `ArgumentError` for any other input: "The contract to invoke must be a contract (C...) address, got <kind> address: <address>", where the kind is an account (G...), a muxed account (M...), a muxed contract (W...), a claimable balance (B...) or a liquidity pool (L...), followed by "; use its base contract (C...) address" for a muxed contract, "The contract to invoke must be a contract (C...) address, got a secret seed (S...) instead of an address" for a secret seed, which the message never repeats, or "The contract to invoke must be a contract (C...) address: <address>" for any other input that is no address. `AssembledTransaction.build` and `AssembledTransaction.buildWithOp` throw it before any request. A host function decoded from XDR keeps a target of any address kind, and `toXdr` re-encodes it unchanged.
-- Breaking: `SorobanClient.forClientOptions`, `SorobanServer.loadContractCodeForContractId` and `SorobanServer.loadContractInfoForContractId` reject any other contract id the same way before any request, with the subject "The contract to load".
-- Breaking: `SorobanServer.getContractData` rejects any other contract id the same way before any request, with the subject "The contract data owner", and throws `ArgumentError` "Contract data keys cannot contain muxed account (M...) or muxed contract (W...) addresses" for a key that holds such an address, also inside a `Vec` element or a `Map` key or value.
+- The `InvokeContractHostFunction` constructor and its `contractID` setter accept only a contract (`C...`) address or the 64-character hex of a contract id as the contract to invoke and throw `ArgumentError` for any other input: "The contract to invoke must be a contract (C...) address, got <kind> address: <address>", where the kind is an account (G...), a muxed account (M...), a muxed contract (W...), a claimable balance (B...) or a liquidity pool (L...), followed by "; use its base contract (C...) address" for a muxed contract, "The contract to invoke must be a contract (C...) address, got a secret seed (S...) instead of an address" for a secret seed, which the message never repeats, or "The contract to invoke must be a contract (C...) address: <address>" for any other input that is no address. `AssembledTransaction.build` and `AssembledTransaction.buildWithOp` throw it before any request. A host function decoded from XDR keeps a target of any address kind, and `toXdr` re-encodes it unchanged.
+- `SorobanClient.forClientOptions`, `SorobanServer.loadContractCodeForContractId` and `SorobanServer.loadContractInfoForContractId` reject any other contract id the same way before any request, with the subject "The contract to load".
+- `SorobanServer.getContractData` rejects any other contract id the same way before any request, with the subject "The contract data owner", and throws `ArgumentError` "Contract data keys cannot contain muxed account (M...) or muxed contract (W...) addresses" for a key that holds such an address, also inside a `Vec` element or a `Map` key or value.
 - `Address` and `MuxedContract` compare by value: two instances are equal when they encode to the same XDR address, and they serve as map keys and set members.
+- The Horizon compatibility matrix targets Horizon v30.0.0 and the Soroban RPC matrix targets stellar-rpc v30.0.0; both retain their reported coverage.
+- The documentation and the agent skill describe where a muxed contract (`W...`) address throws `ArgumentError` before any request. It throws as the contract to invoke or load, as a contract data owner, and inside a contract data key. They also describe the bound of 500 levels on binary XDR decoding and the deadline rule of transaction status polling. The examples of the getting-started and SDK usage pages declare each variable once per fence. The skill's examples declare the names they use, and none prints a secret seed or token. The skill describes SEP-30 recovery with two servers, a smart account backup signer in its own Default context rule, and the 48-byte SEP-10 challenge nonce. Its remote signer checks the authorization invocation and sets the signature expiration ledger before signing. Its Horizon examples use the SDK's request builders, and its security example takes a mainnet RPC URL the developer supplies. Agent skill 1.9.0 carries the API reference generated from the public API of 3.10.0.
 
 ### Deprecated
 - `EventInfo.inSuccessfulContractCall`: Stellar RPC 30 and later omit the field; the SDK still reads it from older servers.
@@ -30,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `URIScheme.addSignature` refuses a link whose first query parameter is `signature`.
 - `AssembledTransaction.send` and `signAndSend` end status polling when `timeoutInSeconds` has elapsed, including the time of each status request, and make a last status request at the deadline. They retry failed status requests and name the last request error in the timeout exception.
 - `LedgerEntry.ext` reads the extension from the RPC `extXdr` response key.
+- The agent skill's generated API reference keeps the type parameters of generic classes in their section headers and omits members annotated `@internal`.
 
 ## [3.9.0] - 2026-10-15
 
