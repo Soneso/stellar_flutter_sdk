@@ -103,4 +103,42 @@ void main() {
       throwsFormatException,
     );
   });
+
+  test('equals a pair of the same contract and id built another way', () {
+    final (contractId, id, muxedContractId) = vectors.last;
+    final pairs = [
+      MuxedContract(contractId, id),
+      MuxedContract(
+        '363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103',
+        BigInt.parse('123456'),
+      ),
+      MuxedContract.fromMuxedContractId(muxedContractId),
+      MuxedContract.fromXdr(
+        XdrMuxedContract(
+          XdrUint64(BigInt.from(123456)),
+          XdrHash(StrKey.decodeContractId(contractId)),
+        ),
+      ),
+    ];
+    for (final pair in pairs) {
+      expect(pair, equals(pairs.first));
+      expect(pair.hashCode, pairs.first.hashCode);
+    }
+    expect(pairs.toSet(), hasLength(1));
+  });
+
+  test('differs from a pair with another id or another contract', () {
+    final (contractId, id, _) = vectors.first;
+    final pair = MuxedContract(contractId, id);
+    final otherId = MuxedContract.fromMuxedContractId(vectors[1].$3);
+    final otherContract = MuxedContract(vectors.last.$1, id);
+    expect(pair == otherId, isFalse);
+    expect(pair == otherContract, isFalse);
+
+    final byPair = {pair: 'pair', otherId: 'id', otherContract: 'contract'};
+    expect(byPair, hasLength(3));
+    expect(byPair[MuxedContract(contractId, BigInt.zero)], 'pair');
+    expect(byPair[MuxedContract(contractId, vectors[1].$2)], 'id');
+    expect(byPair[MuxedContract(vectors.last.$1, BigInt.zero)], 'contract');
+  });
 }

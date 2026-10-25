@@ -13,6 +13,7 @@ import 'xdr/xdr.dart';
 /// The pair renders as a muxed contract address, a W strkey whose payload is
 /// the 32-byte contract hash followed by the big-endian id. Instances are
 /// immutable; every constructor holds the id to the unsigned 64-bit range.
+/// Two instances are equal when they pair the same contract with the same id.
 ///
 /// Protocol specification:
 /// - [CAP-84](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md)
@@ -84,4 +85,16 @@ class MuxedContract {
   /// Returns the [Address] of type [Address.TYPE_MUXED_CONTRACT] for this
   /// pair.
   Address toAddress() => Address.forMuxedContractId(muxedContractId);
+
+  /// Returns `true` if [other] is a [MuxedContract] with the same contract
+  /// and id.
+  @override
+  bool operator ==(Object other) =>
+      other is MuxedContract &&
+      contractId == other.contractId &&
+      id == other.id;
+
+  /// Returns a hash code consistent with [==].
+  @override
+  int get hashCode => Object.hash(contractId, id);
 }

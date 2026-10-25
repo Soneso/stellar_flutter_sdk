@@ -23,6 +23,11 @@ import '../xdr/xdr.dart';
 /// Addresses are used as arguments to contract functions and can represent
 /// different authorization contexts in Soroban transactions.
 ///
+/// Two addresses are equal when they encode to the same [XdrSCAddress],
+/// whichever spelling of the id they were built from. An address that serves
+/// as a map key or set member keeps its hash only while its id fields stay
+/// unchanged.
+///
 /// Factory methods:
 /// - [Address.forAccountId]: Create from Stellar account ID (G...)
 /// - [Address.forContractId]: Create from contract ID (C...)
@@ -344,6 +349,35 @@ class Address {
     XdrHashIDPreimage.encode(stream, preimage);
     final contractIdBytes = Util.hash(Uint8List.fromList(stream.bytes));
     return StrKey.encodeContractId(contractIdBytes);
+  }
+
+  /// Returns `true` if [other] is an [Address] that encodes to the same
+  /// [XdrSCAddress]. An address whose id does not encode equals only an
+  /// address of the same type with the same id strings.
+  @override
+  bool operator ==(Object other) =>
+      other is Address && _identity == other._identity;
+
+  /// Returns a hash code consistent with [==].
+  @override
+  int get hashCode => _identity.hashCode;
+
+  /// The base64 XDR of [toXdr], or the type and the id strings when [toXdr]
+  /// rejects them, so that comparing never throws.
+  Object get _identity {
+    try {
+      return toXdr().toBase64EncodedXdrString();
+    } on Exception {
+      return (
+        _type,
+        accountId,
+        contractId,
+        muxedAccountId,
+        claimableBalanceId,
+        liquidityPoolId,
+        muxedContractId,
+      );
+    }
   }
 }
 
