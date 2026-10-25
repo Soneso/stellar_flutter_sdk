@@ -19,14 +19,20 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 **IMPORTANT:** Always add signers and set thresholds in a SINGLE transaction. Setting thresholds first in a separate transaction may lock you out if the new thresholds require signatures you haven't added yet.
 
 ```dart
+// From your app: destination (String), primarySecretSeed (String)
 StellarSDK sdk = StellarSDK.TESTNET;
 Network network = Network.TESTNET;
 
-KeyPair primaryKeyPair = KeyPair.fromSecretSeed('SXXXXX...');
+KeyPair primaryKeyPair = KeyPair.fromSecretSeed(primarySecretSeed); // S... seed of the account, from secure storage
 KeyPair secondaryKeyPair = KeyPair.random();
 String primaryId = primaryKeyPair.accountId;
 
 AccountResponse account = await sdk.accounts.account(primaryId);
+// The thresholds set here count on two signers: the master key and the new key.
+// Any other signer would keep its weight against them, so this setup stops.
+if (account.signers.any((s) => s.key != primaryId)) {
+  throw StateError('The account has other signers; plan its thresholds separately');
+}
 
 // Add signer + set thresholds in ONE transaction
 XdrSignerKey signerKey =
@@ -73,6 +79,8 @@ print('Multi-sig tx hash: ${payResponse.hash}');
 When co-signers are on different machines, use XDR serialization to pass the transaction:
 
 ```dart
+// From the section Multi-Signature Accounts: account (AccountResponse), sdk (StellarSDK)
+// From your app: destination (String), signerAKeyPair (KeyPair), signerBKeyPair (KeyPair), signerBApproves (function, shows the transaction to signer B and returns the decision)
 // Signer A: Build and share unsigned XDR
 Transaction tx = TransactionBuilder(account)
     .addOperation(
@@ -82,15 +90,22 @@ Transaction tx = TransactionBuilder(account)
 String unsignedXdr = tx.toEnvelopeXdrBase64();
 // Send unsignedXdr to Signer B
 
-// Signer B: Decode, inspect (see xdr.md), sign, return
+// Signer B: Decode, decide (see xdr.md for the fields), sign, return
 AbstractTransaction received =
     AbstractTransaction.fromEnvelopeXdrString(unsignedXdr);
+if (!await signerBApproves(received)) {
+  throw StateError('Signer B declined the transaction');
+}
 received.sign(signerBKeyPair, Network.TESTNET);
 String partiallySigned = received.toEnvelopeXdrBase64();
 
-// Signer A: Add final signature and submit
+// Signer A: Sign only the transaction A built; a signature leaves its hash unchanged
 AbstractTransaction withBSig =
     AbstractTransaction.fromEnvelopeXdrString(partiallySigned);
+if (Util.bytesToHex(withBSig.hash(Network.TESTNET)) !=
+    Util.bytesToHex(tx.hash(Network.TESTNET))) {
+  throw StateError('The returned transaction differs from the one signer A built');
+}
 withBSig.sign(signerAKeyPair, Network.TESTNET);
 SubmitTransactionResponse response =
     await sdk.submitTransactionEnvelopeXdrBase64(withBSig.toEnvelopeXdrBase64());
@@ -101,6 +116,8 @@ SubmitTransactionResponse response =
 Build the inner transaction with a low fee using `setMaxOperationFee`, then wrap it:
 
 ```dart
+// From your app: destination (String), feePayerKeyPair (KeyPair), innerAccountId (String), innerKeyPair (KeyPair)
+// From the section Multi-Signature Accounts: network (Network), sdk (StellarSDK)
 // Step 1: Build inner transaction with low fee
 AccountResponse innerSource = await sdk.accounts.account(innerAccountId);
 Transaction innerTx = TransactionBuilder(innerSource)
@@ -132,7 +149,8 @@ print('Fee bump success: ${response.success}');
 StellarSDK sdk = StellarSDK.TESTNET;
 Network network = Network.TESTNET;
 
-KeyPair sponsorKeyPair = KeyPair.fromSecretSeed('SXXXXX...');
+KeyPair sponsorKeyPair = KeyPair.random(); // testnet sponsor, funded below
+await FriendBot.fundTestAccount(sponsorKeyPair.accountId);
 KeyPair sponsoredKeyPair = KeyPair.random();
 
 AccountResponse sponsorAccount =
@@ -170,6 +188,8 @@ print('Sponsored account exists with 0 XLM (reserves are sponsored)');
 To check sponsorship counts after the sponsoring transaction:
 
 ```dart
+// From the section Multi-Signature Accounts: sdk (StellarSDK)
+// From your app: sponsorId (String)
 AccountResponse sponsor = await sdk.accounts.account(sponsorId);
 int sponsoring = sponsor.numSponsoring; // reserves this account sponsors for others
 int sponsored = sponsor.numSponsored;   // reserves others sponsor for this account
@@ -178,12 +198,13 @@ int sponsored = sponsor.numSponsored;   // reserves others sponsor for this acco
 ## Liquidity Pools
 
 ```dart
+// From your app: issuerAccountId (String), secretSeed (String)
 StellarSDK sdk = StellarSDK.TESTNET;
 Network network = Network.TESTNET;
 
-KeyPair keyPair = KeyPair.fromSecretSeed('SXXXXX...');
+KeyPair keyPair = KeyPair.fromSecretSeed(secretSeed); // S... seed of an account with a USDC trustline, from secure storage
 Asset assetA = Asset.NATIVE;
-Asset assetB = Asset.createNonNativeAsset('USDC', issuerAccountId);
+Asset assetB = Asset.createNonNativeAsset('USDC', issuerAccountId); // issuerAccountId: the USDC issuer's G... id
 
 // Step 1: Establish trustline to the pool share asset
 AssetTypePoolShare poolShareAsset = AssetTypePoolShare(assetA: assetA, assetB: assetB);
@@ -201,7 +222,10 @@ await sdk.submitTransaction(trustTx);
 
 // Step 2: Deposit into the pool
 account = await sdk.accounts.account(keyPair.accountId); // refresh sequence
-String poolId = poolShareAsset.poolId; // compute pool ID from asset pair
+// The pool exists once a trustline to its share exists; Horizon returns its id
+Page<LiquidityPoolResponse> pools =
+    await sdk.liquidityPools.forReserveAssets(assetA, assetB).execute();
+String poolId = pools.records.first.poolId;
 
 Transaction depositTx = TransactionBuilder(account)
     .addOperation(
@@ -224,15 +248,15 @@ print('Deposited to pool: $poolId');
 
 ```dart
 // Create a muxed account (virtual sub-account under a G... account)
-// v3.0.0: id parameter is BigInt
-MuxedAccount muxed = MuxedAccount('GABC...', BigInt.from(12345));
+String baseAccountId = KeyPair.random().accountId; // the G... account behind the muxed address
+MuxedAccount muxed = MuxedAccount(baseAccountId, BigInt.from(12345)); // id: unsigned 64-bit BigInt
 print('Muxed ID: ${muxed.accountId}');    // M... address
 print('Base account: ${muxed.ed25519AccountId}');
 print('Sub ID: ${muxed.id}');
 
 // Use in payment operation (source account override)
 PaymentOperationBuilder paymentBuilder =
-    PaymentOperationBuilder('GDESTINATION...', Asset.NATIVE, '10.0');
+    PaymentOperationBuilder(KeyPair.random().accountId, Asset.NATIVE, '10.0'); // any G... destination
 paymentBuilder.setMuxedSourceAccount(muxed);
 Operation payment = paymentBuilder.build();
 ```
@@ -242,23 +266,43 @@ Operation payment = paymentBuilder.build();
 Submit without waiting for ingestion (returns immediately):
 
 ```dart
+// From the section Multi-Signature Accounts: sdk (StellarSDK)
+// From your app: transaction (Transaction)
 SubmitAsyncTransactionResponse asyncResponse =
     await sdk.submitAsyncTransaction(transaction);
 
 print('Hash: ${asyncResponse.hash}');
 print('Status: ${asyncResponse.txStatus}');
 // Possible statuses: txStatusPending, txStatusDuplicate, txStatusTryAgainLater, txStatusError
-// Poll getTransaction() later to check final result
+// Final result later: sdk.transactions.transaction(asyncResponse.hash), a bounded number
+// of tries while Horizon answers 404 (not yet ingested)
 ```
 
 ## Manual Sequence Numbers
+
+`TransactionBuilder.build()` mutates the source account's sequence number. A good practice is to reload the account from Horizon before building a new transaction. Don't increment manually unless you have a specific reason. `build()` handles it. Stale sequence numbers cause `tx_bad_seq` errors.
+
+```dart
+// From your app: accountId (String), op (Operation)
+// From the section Multi-Signature Accounts: sdk (StellarSDK)
+// CORRECT: reload account, build() increments sequence internally
+AccountResponse account = await sdk.accounts.account(accountId); // on-chain seq N
+Transaction tx = TransactionBuilder(account).addOperation(op).build(); // uses seq N+1
+await sdk.submitTransaction(tx);
+
+// WRONG: manually incrementing, build() already does this
+AccountResponse account = await sdk.accounts.account(accountId); // on-chain seq N
+account.incrementSequenceNumber(); // now N+1
+Transaction tx = TransactionBuilder(account).addOperation(op).build(); // seq N+2: tx_bad_seq
+```
 
 `TransactionBuilder.build()` reads the source account's sequence number, puts that value plus one in the transaction, then advances the account object — never increment manually for a normal submission. For a transaction that must carry a specific future sequence (e.g., pre-authorized transactions), construct the `Account` with one less than the sequence you want the transaction to carry:
 
 ```dart
 StellarSDK sdk = StellarSDK.TESTNET;
-String accountId = 'GXXXXX...';       // source account
-String destinationId = 'GYYYYY...';   // whatever the transaction does
+String accountId = KeyPair.random().accountId; // testnet source account, funded below
+await FriendBot.fundTestAccount(accountId);
+String destinationId = KeyPair.random().accountId; // whatever the transaction does
 Operation op = PaymentOperationBuilder(destinationId, Asset.NATIVE, '10').build();
 
 AccountResponse account = await sdk.accounts.account(accountId); // on-chain seq N

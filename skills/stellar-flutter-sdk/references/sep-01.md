@@ -92,7 +92,7 @@ print(stellarToml.currencies?.first.code);               // USDC
 ### TOML syntax rules for stellar.toml
 
 Use these TOML markers correctly — the SDK corrects common mistakes (see
-[Common Pitfalls](#7-common-pitfalls)), but writing them correctly is best:
+[Common Pitfalls](#8-common-pitfalls)), but writing them correctly is best:
 
 | Section | Correct TOML |
 |---------|-------------|
@@ -148,6 +148,7 @@ info.authServer;                    // String?  SEP-03 compliance (deprecated)
 Always null-check endpoints before using them:
 
 ```dart
+// From the section From a domain: stellarToml (StellarToml)
 GeneralInformation info = stellarToml.generalInformation;
 
 if (info.webAuthEndpoint == null) {
@@ -294,15 +295,16 @@ parameters, identical to `fromDomain()`.
 Tokens deployed as Soroban smart contracts use `contract` instead of `issuer`:
 
 ```dart
+// From your app: currency (Currency)
 // Classic Stellar asset: has issuer, no contract
-currency.code == 'USDC'
-currency.issuer == 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN'
-currency.contract == null
+currency.code == 'USDC';
+currency.issuer == 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN';
+currency.contract == null;
 
 // Soroban token: has contract, issuer may be null
-currency.code == 'USDC'
-currency.contract == 'CC4DZNN2TPLUOAIRBI3CY7TGRFFCCW6GNVVRRQ3QIIBY6TM6M2RVMBMC'
-currency.issuer == null  // not set for contract-only tokens
+currency.code == 'USDC';
+currency.contract == 'CC4DZNN2TPLUOAIRBI3CY7TGRFFCCW6GNVVRRQ3QIIBY6TM6M2RVMBMC';
+currency.issuer == null;  // not set for contract-only tokens
 ```
 
 ---
@@ -395,6 +397,7 @@ try {
 **Wrong capitalization for kYCServer:**
 
 ```dart
+// From the section General Information: info (GeneralInformation)
 // WRONG: info.kycServer  -- property does not exist
 // CORRECT: info.kYCServer  -- uppercase YC
 String? kycUrl = info.kYCServer;
@@ -403,6 +406,7 @@ String? kycUrl = info.kYCServer;
 **Confusing property name: pointsOfContact vs principals:**
 
 ```dart
+// From the section From a domain: stellarToml (StellarToml)
 // WRONG: stellarToml.principals  -- property does not exist
 // CORRECT: stellarToml.pointsOfContact  -- the Dart property name
 List<PointOfContact>? contacts = stellarToml.pointsOfContact;
@@ -411,6 +415,7 @@ List<PointOfContact>? contacts = stellarToml.pointsOfContact;
 **Accessing documentation without null check:**
 
 ```dart
+// From the section From a domain: stellarToml (StellarToml)
 // WRONG: will throw if [DOCUMENTATION] section is absent
 print(stellarToml.documentation!.orgName);
 
@@ -425,8 +430,10 @@ print(stellarToml.documentation?.orgName);
 **Not null-checking service endpoints before use:**
 
 ```dart
-// WRONG: will pass null to another service if anchor doesn't publish the endpoint
-WebAuth webAuth = WebAuth(stellarToml.generalInformation.webAuthEndpoint!);
+// From the section From a domain: stellarToml (StellarToml)
+// WRONG: throws at runtime when the anchor does not publish the endpoint or the key
+GeneralInformation published = stellarToml.generalInformation;
+WebAuth webAuth = WebAuth(published.webAuthEndpoint!, Network.PUBLIC, published.signingKey!, 'anchor.example.com');
 
 // CORRECT: verify support before proceeding
 final info = stellarToml.generalInformation;
@@ -438,8 +445,9 @@ if (info.webAuthEndpoint == null || info.signingKey == null) {
 **accounts is never null (unlike other list fields):**
 
 ```dart
+// From the section From a domain: stellarToml (StellarToml)
 // WRONG: null check is unnecessary, may confuse readers
-if (stellarToml.generalInformation.accounts != null) { ... }
+if (stellarToml.generalInformation.accounts != null) { /* ... */ }
 
 // CORRECT: accounts is List<String> (never null, may be empty [])
 final accounts = stellarToml.generalInformation.accounts;  // always a List

@@ -171,6 +171,8 @@ After resolving a federation address, always check for memo instructions and
 attach them to your payment transaction:
 
 ```dart
+import 'dart:convert';
+
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 Future<void> payFederationAddress(
@@ -198,6 +200,8 @@ Future<void> payFederationAddress(
         // Base64-encoded 32-byte hash
         memo = MemoHash(base64Decode(fed.memo!));
         break;
+      default:
+        throw Exception('Unsupported memo type: ${fed.memoType}');
     }
   }
 
@@ -246,8 +250,12 @@ For `resolveStellarAccountId`, `resolveStellarTransactionId`, and
 `resolveForward`, the same named parameters apply:
 
 ```dart
+import 'package:http/http.dart' as http;
+
+// From your app: accountId (String)
+// From the setup above: client (http.Client)
 FederationResponse response = await Federation.resolveStellarAccountId(
-  'G...',
+  accountId,
   'https://api.example.com/federation',
   httpClient: client,
   httpRequestHeaders: {'Authorization': 'Bearer token'},
@@ -363,19 +371,24 @@ await Federation.resolveStellarAddress('bob*example.com');
 **Passing a domain name instead of a full URL to resolveStellarAccountId:**
 
 ```dart
+// From your app: accountId (String)
 // WRONG: resolveStellarAccountId does NOT auto-discover the federation server
 // A bare domain will be parsed as a relative URI; the HTTP request will fail
-await Federation.resolveStellarAccountId('G...', 'example.com');
+await Federation.resolveStellarAccountId(accountId, 'example.com');
 
 // CORRECT: pass the full federation server URL (https://...)
-await Federation.resolveStellarAccountId('G...', 'https://api.example.com/federation');
+await Federation.resolveStellarAccountId(accountId, 'https://api.example.com/federation');
 ```
 
 **Not attaching the memo when one is required:**
 
 ```dart
-// WRONG: omitting the memo causes unroutable payments at many exchanges
+import 'dart:convert';
+
+// From your app: account (AccountResponse)
 FederationResponse fed = await Federation.resolveStellarAddress('alice*exchange.com');
+
+// WRONG: omitting the memo causes unroutable payments at many exchanges
 TransactionBuilder(account)
     .addOperation(PaymentOperationBuilder(fed.accountId!, Asset.NATIVE, '10').build())
     // forgot .addMemo(...)
@@ -384,8 +397,15 @@ TransactionBuilder(account)
 // CORRECT: always check and attach memo
 Memo memo = Memo.none();
 if (fed.memoType != null && fed.memo != null) {
-  if (fed.memoType == 'text') memo = Memo.text(fed.memo!);
-  if (fed.memoType == 'id')   memo = Memo.id(BigInt.parse(fed.memo!));
+  if (fed.memoType == 'text') {
+    memo = Memo.text(fed.memo!);
+  } else if (fed.memoType == 'id') {
+    memo = Memo.id(BigInt.parse(fed.memo!));
+  } else if (fed.memoType == 'hash') {
+    memo = Memo.hash(base64Decode(fed.memo!)); // base64-encoded 32-byte hash
+  } else {
+    throw Exception('Unsupported memo type: ${fed.memoType}');
+  }
 }
 TransactionBuilder(account)
     .addOperation(PaymentOperationBuilder(fed.accountId!, Asset.NATIVE, '10').build())
@@ -396,6 +416,7 @@ TransactionBuilder(account)
 **Treating memo as an int — it is always String:**
 
 ```dart
+// From the setup above: fed (FederationResponse)
 // WRONG: response.memo is String? — there is no int field
 int memoId = fed.memo; // compile error
 
@@ -408,6 +429,7 @@ if (fed.memoType == 'id') {
 **Assuming all FederationResponse fields are non-null:**
 
 ```dart
+// From the setup above: fed (FederationResponse)
 // WRONG: forward lookups do not return stellarAddress; it will be null
 print(fed.stellarAddress!.length); // throws if null
 

@@ -416,7 +416,7 @@ The specification fixes one rendering per value, and that is the only rendering 
 - a repeated object key is refused rather than resolved in favor of the last occurrence;
 - an enum takes its wire name, not the XDR identifier and not the numeric value;
 - a fixed-length field is held to its declared length, and a variable-length field to its declared maximum;
-- nesting is bounded at 128 containers, the same bound the binary decoder applies.
+- nesting is bounded at 128 containers; the binary decoder has its own bound of 500 levels of recursive types and throws an `Exception` past it.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -441,7 +441,7 @@ report(
         '{"min_time":"1","min_time":"2","max_time":"3"}'));
 ```
 
-The nesting bound is checked before the document reaches the JSON encoder or parser, so a deeply nested document is reported rather than exhausting the stack. `XdrJsonHelper` is the shared runtime the generated types delegate to, and it carries the bound as a constant:
+The JSON nesting bound is checked before the document reaches the JSON encoder or parser, so a deeply nested document is reported rather than exhausting the stack. `XdrJsonHelper` is the shared runtime the generated types delegate to, and it carries the bound as a constant:
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';

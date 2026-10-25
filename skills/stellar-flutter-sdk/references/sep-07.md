@@ -14,7 +14,7 @@
 6. [Sign and Submit a Transaction](#6-sign-and-submit-a-transaction)
 7. [Parse URI Parameters](#7-parse-uri-parameters)
 8. [Replace Parameters (SEP-11 Txrep)](#8-replace-parameters-sep-11-txrep)
-9. [SubmitUriSchemeTransactionResponse](#9-submiturisschemetransactionresponse)
+9. [SubmitUriSchemeTransactionResponse](#9-submiturischemetransactionresponse)
 10. [Testing with Mock HTTP](#10-testing-with-mock-http)
 11. [Parameter Constants](#11-parameter-constants)
 12. [Common Pitfalls](#12-common-pitfalls)
@@ -26,6 +26,7 @@
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: uriSigningSeed (String, S... seed of the key published as URI_REQUEST_SIGNING_KEY, from secure storage)
 final uriScheme = URIScheme();
 
 // Payment request URI (web+stellar:pay?)
@@ -54,9 +55,10 @@ final transaction = TransactionBuilder(sourceAccount)
 
 final txUri = uriScheme.generateSignTransactionURI(
   transaction.toEnvelopeXdrBase64(),
+  networkPassphrase: Network.TESTNET.networkPassphrase, // absent means the public network
   originDomain: 'example.com',
 );
-final signerKeyPair = KeyPair.fromSecretSeed('S...');
+final signerKeyPair = KeyPair.fromSecretSeed(uriSigningSeed);
 final signedTxUri = uriScheme.addSignature(txUri, signerKeyPair);
 ```
 
@@ -106,8 +108,10 @@ print(uri);
 
 ```dart
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+final uriScheme = URIScheme();
 
 // Create a 32-byte hash for MEMO_HASH
 final hashBytes = sha256.convert(utf8.encode('my-identifier')).bytes;
@@ -131,8 +135,8 @@ final uri = uriScheme.generatePayOperationURI(
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: xdrBase64 (String, the output of transaction.toEnvelopeXdrBase64())
 final uriScheme = URIScheme();
-// xdrBase64 is the output of transaction.toEnvelopeXdrBase64()
 final uri = uriScheme.generateSignTransactionURI(xdrBase64);
 print(uri);
 // web+stellar:tx?xdr=AAAAAgAAAAD...
@@ -144,8 +148,10 @@ print(uri);
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 final sdk = StellarSDK.TESTNET;
-final keyPair = KeyPair.fromSecretSeed('S...');
-final sourceAccount = await sdk.accounts.account(keyPair.accountId);
+// The wallet signs, so the URI builder needs only the source account id
+final sourceAccountId = KeyPair.random().accountId; // testnet account, funded below
+await FriendBot.fundTestAccount(sourceAccountId);
+final sourceAccount = await sdk.accounts.account(sourceAccountId);
 
 final setOp = SetOptionsOperationBuilder()
     ..setHomeDomain('www.example.com');
@@ -156,6 +162,7 @@ final transaction = TransactionBuilder(sourceAccount)
 final uriScheme = URIScheme();
 final uri = uriScheme.generateSignTransactionURI(
   transaction.toEnvelopeXdrBase64(),
+  networkPassphrase: Network.TESTNET.networkPassphrase, // absent means the public network
 );
 print(uri);
 ```
@@ -165,6 +172,7 @@ print(uri);
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: forwardedRequestUri (String), xdrBase64 (String)
 final uriScheme = URIScheme();
 
 final uri = uriScheme.generateSignTransactionURI(
@@ -172,7 +180,7 @@ final uri = uriScheme.generateSignTransactionURI(
   replace: 'sourceAccount:X,operations[0].destination:Y;X:Account paying fees,Y:Recipient',
   callback: 'url:https://multisig.example.com/collect',  // must be prefixed with "url:"
   publicKey: 'GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV', // which account should sign
-  chain: 'web+stellar:tx?xdr=AAAA...&origin_domain=originator.com&signature=...', // max 7 levels deep
+  chain: forwardedRequestUri, // max 7 levels deep
   message: 'Please sign to update your home domain',  // max 300 chars
   networkPassphrase: Network.TESTNET.networkPassphrase, // omit for public network
   originDomain: 'example.com',                          // requires addSignature() call after generation
@@ -190,6 +198,7 @@ print(uri);
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: uriSigningSeed (String, S... seed of the URI signing key, from secure storage), xdrBase64 (String)
 final uriScheme = URIScheme();
 
 // Generate URI with origin_domain FIRST (addSignature requires it to be present for
@@ -200,7 +209,7 @@ final uri = uriScheme.generateSignTransactionURI(
 );
 
 // Sign with the keypair whose public key is in stellar.toml as URI_REQUEST_SIGNING_KEY
-final signerKeyPair = KeyPair.fromSecretSeed('S...');
+final signerKeyPair = KeyPair.fromSecretSeed(uriSigningSeed);
 final signedUri = uriScheme.addSignature(uri, signerKeyPair);
 
 print(signedUri);
@@ -212,6 +221,7 @@ print(signedUri);
 **Pay URI signing works identically:**
 
 ```dart
+// From the section Quick Start: signerKeyPair (KeyPair), uriScheme (URIScheme)
 final uri = uriScheme.generatePayOperationURI(
   'GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV',
   amount: '50',
@@ -223,7 +233,7 @@ final signedUri = uriScheme.addSignature(uri, signerKeyPair);
 **Your domain's `stellar.toml` must contain:**
 
 ```toml
-URI_REQUEST_SIGNING_KEY = "GBCD..."  # public key of signerKeyPair
+URI_REQUEST_SIGNING_KEY = "GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV"  # public key of signerKeyPair
 ```
 
 ---
@@ -238,7 +248,7 @@ URI_REQUEST_SIGNING_KEY = "GBCD..."  # public key of signerKeyPair
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 final uriScheme = URIScheme();
-final uri = 'web+stellar:pay?destination=GDGUF...&amount=100';
+final uri = 'web+stellar:pay?destination=GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV&amount=100';
 
 final result = uriScheme.isValidSep7Url(uri);
 if (result.result) {
@@ -270,8 +280,9 @@ Validation checks performed:
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: receivedUri (String, the web+stellar URI the wallet received)
 final uriScheme = URIScheme();
-final uri = 'web+stellar:tx?xdr=...&origin_domain=example.com&signature=...';
+final uri = receivedUri;
 
 final result = await uriScheme.isValidSep7SignedUrl(uri);
 if (result.result) {
@@ -295,23 +306,35 @@ if (result.result) {
 
 ### Signature verification with known public key
 
-`verifySignature()` checks the signature without fetching stellar.toml. Returns `bool` (never throws).
+`verifySignature()` checks the signature without fetching stellar.toml. It returns a `bool` for a well-formed signature and throws `FormatException` when the `signature` parameter is not base64.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 final uriScheme = URIScheme();
-final uri = 'web+stellar:tx?xdr=...&signature=...';
-final signingKey = 'GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV';
+final signerKeyPair = KeyPair.random(); // stands for the origin domain's URI signing key
+final uri = uriScheme.addSignature(
+  uriScheme.generatePayOperationURI(
+    'GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV',
+    amount: '10',
+    originDomain: 'example.com',
+  ),
+  signerKeyPair,
+);
+final signingKey = signerKeyPair.accountId; // the G... key the URI should be signed with
 
-if (uriScheme.verifySignature(uri, signingKey)) {
-  print('Signature is valid');
-} else {
-  print('Invalid or malformed');
+try {
+  if (uriScheme.verifySignature(uri, signingKey)) {
+    print('Signature is valid'); // Output: Signature is valid
+  } else {
+    print('Wrong signature, invalid URI or no signature');
+  }
+} on FormatException {
+  print('The signature parameter is not base64');
 }
 ```
 
-Returns `false` if: `signerPublicKey` is invalid, URI is invalid, URI has no `signature` parameter, or signature mismatch.
+Returns `false` if: `signerPublicKey` is invalid, URI is invalid, URI has no `signature` parameter, or signature mismatch. Throws `FormatException` for a `signature` value that is not base64.
 
 ---
 
@@ -325,9 +348,10 @@ Returns `false` if: `signerPublicKey` is invalid, URI is invalid, URI has no `si
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: receivedUri (String, the web+stellar:tx URI the wallet received), signerSecretSeed (String, the user's S... seed, from the wallet's secure storage), userApproves (function, shows the transaction with the URI's origin_domain and msg and returns the user's decision)
 final uriScheme = URIScheme();
-final uri = 'web+stellar:tx?xdr=AAAAAgAAAAD...';
-final signerKeyPair = KeyPair.fromSecretSeed('S...');
+final uri = receivedUri; // the web+stellar:tx URI the wallet received
+final signerKeyPair = KeyPair.fromSecretSeed(signerSecretSeed);
 
 // Validate the URI before signing (wallets should always do this)
 final validationResult = await uriScheme.isValidSep7SignedUrl(uri);
@@ -336,7 +360,17 @@ if (!validationResult.result) {
   return;
 }
 
-// Display transaction details to user and get approval...
+// The user sees the transaction and who asks for it; without approval nothing is signed or submitted
+final parsed = uriScheme.tryParseSep7Url(uri);
+final xdr = parsed?.queryParameters[URIScheme.xdrParameterName];
+if (parsed == null || xdr == null) {
+  print('Not a transaction URI');
+  return;
+}
+if (!await userApproves(AbstractTransaction.fromEnvelopeXdrString(xdr), parsed)) {
+  print('Declined by the user');
+  return;
+}
 
 try {
   final response = await uriScheme.signAndSubmitTransaction(
@@ -388,7 +422,7 @@ It also supports `FeeBumpTransaction` in addition to regular `Transaction`.
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 final uriScheme = URIScheme();
-final uri = 'web+stellar:pay?destination=GABC...&amount=100&asset_code=USD&msg=Invoice';
+final uri = 'web+stellar:pay?destination=GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV&amount=100&asset_code=USD&msg=Invoice';
 
 final parsed = uriScheme.tryParseSep7Url(uri);
 if (parsed != null) {
@@ -406,8 +440,19 @@ if (parsed != null) {
   final signature = parsed.queryParameters[URIScheme.signatureParameterName];
 }
 
-// For tx URIs
-final txUri = 'web+stellar:tx?xdr=AAAA...&callback=url:https://example.com&pubkey=GABC...';
+// For tx URIs: a transaction envelope, built here as in section 3
+final payer = KeyPair.random();
+final xdrBase64 = TransactionBuilder(Account(payer.accountId, BigInt.zero))
+    .addOperation(PaymentOperationBuilder(
+            'GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV', Asset.NATIVE, '100')
+        .build())
+    .build()
+    .toEnvelopeXdrBase64();
+final txUri = uriScheme.generateSignTransactionURI(
+  xdrBase64,
+  callback: 'url:https://example.com',
+  publicKey: 'GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV',
+);
 final txParsed = uriScheme.tryParseSep7Url(txUri);
 if (txParsed != null) {
   print(txParsed.operationType);                             // "tx"
@@ -420,6 +465,7 @@ if (txParsed != null) {
 Check `operationType` before accessing operation-specific keys:
 
 ```dart
+// From the setup above: parsed (ParsedSep7UrlResult)
 if (parsed.operationType == URIScheme.operationTypeTx) {
   // has xdr, optionally: replace, callback, pubkey, chain
 } else if (parsed.operationType == URIScheme.operationTypePay) {
@@ -438,6 +484,7 @@ The `replace` parameter lets the URI request the wallet fill in specific fields 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Parse URI Parameters: xdrBase64 (String)
 final uriScheme = URIScheme();
 
 final replacements = [
@@ -462,6 +509,7 @@ final uri = uriScheme.generateSignTransactionURI(
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Compose a replace string: uri (String)
 final uriScheme = URIScheme();
 
 // After parsing a URI:
@@ -494,6 +542,7 @@ Field path format (Txrep SEP-11 notation):
 Returned by `signAndSubmitTransaction()`. Exactly one of the two fields is non-null, depending on whether a callback URL was present in the URI.
 
 ```dart
+// From the section Sign and Submit a Transaction: response (SubmitUriSchemeTransactionResponse)
 // Direct network submission (no callback in URI):
 final txResponse = response.submitTransactionResponse; // SubmitTransactionResponse?
 if (txResponse != null) {
@@ -529,6 +578,7 @@ import 'package:http/testing.dart';
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Parse URI Parameters: xdrBase64 (String)
 final signerKeyPair = KeyPair.random();
 final signerAccountId = signerKeyPair.accountId;
 
@@ -566,6 +616,7 @@ import 'package:http/testing.dart';
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From the section Parse URI Parameters: xdrBase64 (String)
 final uriScheme = URIScheme();
 
 uriScheme.httpClient = MockClient((request) async {
@@ -577,7 +628,7 @@ uriScheme.httpClient = MockClient((request) async {
   return http.Response(json.encode({'error': 'Bad request'}), 400);
 });
 
-final signerKeyPair = KeyPair.fromSecretSeed('S...');
+final signerKeyPair = KeyPair.random(); // any key: the mocked callback accepts the signed XDR
 final uri = uriScheme.generateSignTransactionURI(
   xdrBase64,
   callback: 'url:https://examplepost.com',
@@ -597,6 +648,10 @@ uriScheme.httpClient = http.Client();
 ### Mock toml failure scenarios
 
 ```dart
+import 'package:http/testing.dart';
+import 'package:http/http.dart' as http;
+
+// From the section Quick Start: uriScheme (URIScheme)
 // TOML not found (404): isValidSep7SignedUrl returns result=false,
 // reason="Toml not found or invalid for 'domain'"
 uriScheme.httpClient = MockClient((_) async => http.Response('Not Found', 404));
@@ -649,6 +704,8 @@ All constants are static on `URIScheme`:
 **Use `addSignature()`, not the deprecated `signURI()`:**
 
 ```dart
+// From the section Quick Start: signerKeyPair (KeyPair), uriScheme (URIScheme)
+// From the section Mock callback submission: uri (String)
 // WRONG: signURI() is @Deprecated, use addSignature() instead
 final signedUri = uriScheme.signURI(uri, signerKeyPair); // deprecated
 
@@ -659,10 +716,12 @@ final signedUri = uriScheme.addSignature(uri, signerKeyPair);
 **Use `isValidSep7SignedUrl()`, not the deprecated `checkUIRSchemeIsValid()`:**
 
 ```dart
+// From the section Mock callback submission: uri (String)
+// From the section Quick Start: uriScheme (URIScheme)
 // WRONG: checkUIRSchemeIsValid() is @Deprecated and throws URISchemeError (also deprecated)
 try {
   await uriScheme.checkUIRSchemeIsValid(uri); // deprecated
-} on URISchemeError catch (e) { ... }
+} on URISchemeError catch (e) { /* handle the error */ }
 
 // CORRECT: isValidSep7SignedUrl() returns IsValidSep7UrlResult with result and reason
 final result = await uriScheme.isValidSep7SignedUrl(uri);
@@ -674,6 +733,8 @@ if (!result.result) {
 **Callback value must be prefixed with `url:`:**
 
 ```dart
+// From the section Quick Start: uriScheme (URIScheme)
+// From the section Parse URI Parameters: xdrBase64 (String)
 // WRONG: raw URL, signAndSubmitTransaction() will NOT route to callback
 final uri = uriScheme.generateSignTransactionURI(
   xdrBase64,
@@ -691,6 +752,8 @@ final uri = uriScheme.generateSignTransactionURI(
 **Signing requires `origin_domain` to already be in the URI:**
 
 ```dart
+// From your app: keyPair (KeyPair)
+// From the setup above: uriScheme (URIScheme), xdrBase64 (String)
 // WRONG: generate without origin_domain, then sign
 final uri = uriScheme.generateSignTransactionURI(xdrBase64);
 final signed = uriScheme.addSignature(uri, keyPair);
@@ -708,6 +771,8 @@ final signed = uriScheme.addSignature(uri, keyPair);
 **`addSignature()` throws if signature already present:**
 
 ```dart
+// From your app: keyPair (KeyPair)
+// From the setup above: signedUri (String), uriScheme (URIScheme), xdrBase64 (String)
 // WRONG: signing a URI that already has a signature parameter
 final doubleSignedUri = uriScheme.addSignature(signedUri, keyPair);
 // throws ArgumentError: "sep7 url already contains a 'signature' parameter"
@@ -720,6 +785,8 @@ final signed = uriScheme.addSignature(uri, keyPair); // uri has no signature yet
 **`signAndSubmitTransaction()` defaults to public network when network is null:**
 
 ```dart
+// From your app: keyPair (KeyPair)
+// From the setup above: uri (String), uriScheme (URIScheme)
 // WRONG: omitting network for testnet transactions
 final response = await uriScheme.signAndSubmitTransaction(uri, keyPair);
 // submits to PUBLIC network, so testnet transactions fail with tx_bad_seq or are lost
@@ -733,6 +800,7 @@ final response = await uriScheme.signAndSubmitTransaction(
 **Callback HTTP response field is `body`, not `getBody()`:**
 
 ```dart
+// From your app: response (SubmitUriSchemeTransactionResponse)
 // WRONG: http.Response does not have getBody()
 final body = response.response!.getBody(); // no such method
 
@@ -744,6 +812,8 @@ final status = response.response!.statusCode;
 **`tryParseSep7Url()` returns decoded parameter values; no need to URL-decode manually:**
 
 ```dart
+// From the setup above: uri (String)
+// From the section Quick Start: uriScheme (URIScheme)
 // WRONG: parsing query params manually
 final encodedCallback = uri.split('callback=')[1].split('&')[0]; // fragile
 final callback = Uri.decodeComponent(encodedCallback);
@@ -757,6 +827,8 @@ final callback = parsed?.queryParameters['callback'];
 **Use `tryParseSep7Url()`, not the deprecated `getParameterValue()`:**
 
 ```dart
+// From the setup above: uri (String)
+// From the section Quick Start: uriScheme (URIScheme)
 // WRONG: getParameterValue() is @Deprecated
 final xdr = uriScheme.getParameterValue(URIScheme.xdrParameterName, uri);
 

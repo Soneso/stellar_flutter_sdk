@@ -9,7 +9,8 @@ All operations use the builder pattern: `*OperationBuilder(...).build()`. Every 
 Creates and funds a new account on the network.
 
 ```dart
-CreateAccountOperationBuilder(destinationAccountId, startingBalance)
+// From your app: destinationAccountId (String), startingBalance (String)
+CreateAccountOperationBuilder(destinationAccountId, startingBalance);
 ```
 
 - `destinationAccountId` (String): G... account ID to create
@@ -28,7 +29,8 @@ var createOp = CreateAccountOperationBuilder(
 Sends an asset to an existing account.
 
 ```dart
-PaymentOperationBuilder(destinationAccountId, asset, amount)
+// From your app: amount (String), asset (Asset), destinationAccountId (String)
+PaymentOperationBuilder(destinationAccountId, asset, amount);
 ```
 
 - `destinationAccountId` (String): G... or M... recipient
@@ -36,6 +38,7 @@ PaymentOperationBuilder(destinationAccountId, asset, amount)
 - `amount` (String): Decimal amount to send
 
 ```dart
+// From your app: issuerAccountId (String), recipientId (String)
 // Send XLM
 var payXlm = PaymentOperationBuilder(
   recipientId,
@@ -53,9 +56,10 @@ var payUsd = PaymentOperationBuilder(recipientId, usd, '50.0').build();
 Send payment through a path, guaranteeing the destination receives an exact amount.
 
 ```dart
+// From your app: destAmount (String), destAsset (Asset), destinationAccountId (String), sendAsset (Asset), sendMax (String)
 PathPaymentStrictReceiveOperationBuilder(
   sendAsset, sendMax, destinationAccountId, destAsset, destAmount,
-)
+);
 ```
 
 - `sendAsset` (Asset): Asset to send from source
@@ -64,16 +68,20 @@ PathPaymentStrictReceiveOperationBuilder(
 - `destAsset` (Asset): Asset recipient receives
 - `destAmount` (String): Exact amount recipient receives
 
-```dart
-// WRONG: omitting setPath() — path payments FAIL without an explicit path
-var pathOp = PathPaymentStrictReceiveOperationBuilder(
-  Asset.NATIVE, '20.0', recipientId, usd, '10.0',
-).build(); // op_no_source_account or op_too_few_offers
+The path defaults to empty, a direct conversion through one order book or liquidity pool; `setPath()` adds intermediate assets (`sdk.strictReceivePaths` finds them).
 
-// CORRECT: always call setPath() with intermediate assets (empty list for direct)
+```dart
+// From your app: intermediateAsset (Asset), recipientId (String)
+// From the section PaymentOperation: usd (AssetTypeCreditAlphaNum4)
+// Direct conversion: no setPath() needed
 var pathOp = PathPaymentStrictReceiveOperationBuilder(
   Asset.NATIVE, '20.0', recipientId, usd, '10.0',
-).setPath([]).build(); // direct path, or [intermediateAsset] for multi-hop
+).build();
+
+// Multi-hop: intermediate assets in order
+var multiHopOp = PathPaymentStrictReceiveOperationBuilder(
+  Asset.NATIVE, '20.0', recipientId, usd, '10.0',
+).setPath([intermediateAsset]).build();
 ```
 
 ### PathPaymentStrictSendOperation
@@ -81,15 +89,18 @@ var pathOp = PathPaymentStrictReceiveOperationBuilder(
 Send exact amount from source, recipient gets at least a minimum.
 
 ```dart
+// From your app: destAsset (Asset), destMin (String), destinationAccountId (String), sendAmount (String), sendAsset (Asset)
 PathPaymentStrictSendOperationBuilder(
   sendAsset, sendAmount, destinationAccountId, destAsset, destMin,
-)
+);
 ```
 
 ```dart
+// From your app: recipientId (String)
+// From the section PaymentOperation: usd (AssetTypeCreditAlphaNum4)
 var pathSendOp = PathPaymentStrictSendOperationBuilder(
   Asset.NATIVE, '10.0', recipientId, usd, '4.5',
-).setPath([]).build(); // always call setPath()
+).build(); // direct conversion; setPath([...]) adds intermediate assets
 ```
 
 ### AccountMergeOperation
@@ -97,6 +108,7 @@ var pathSendOp = PathPaymentStrictSendOperationBuilder(
 Merges source account into destination, transferring all XLM.
 
 ```dart
+// From your app: destinationAccountId (String)
 var mergeOp = AccountMergeOperationBuilder(destinationAccountId).build();
 ```
 
@@ -107,7 +119,8 @@ var mergeOp = AccountMergeOperationBuilder(destinationAccountId).build();
 Creates, updates, or deletes a sell offer on the DEX. Offer ID defaults to `"0"` (new offer).
 
 ```dart
-ManageSellOfferOperationBuilder(selling, buying, amount, price)
+// From your app: amount (String), buying (Asset), price (String), selling (Asset)
+ManageSellOfferOperationBuilder(selling, buying, amount, price);
 ```
 
 - `selling` (Asset): Asset to sell
@@ -116,6 +129,7 @@ ManageSellOfferOperationBuilder(selling, buying, amount, price)
 - `price` (String): Price per unit of selling in buying
 
 ```dart
+// From your app: issuerAccountId (String)
 var xlm = Asset.NATIVE;
 var usd = AssetTypeCreditAlphaNum4('USD', issuerAccountId);
 
@@ -142,10 +156,12 @@ var cancelOp = ManageSellOfferOperationBuilder(usd, xlm, '0', '2.5')
 Creates, updates, or deletes a buy offer. Same pattern as sell, but `amount` is the buying amount.
 
 ```dart
-ManageBuyOfferOperationBuilder(selling, buying, amount, price)
+// From your app: amount (String), buying (Asset), price (String), selling (Asset)
+ManageBuyOfferOperationBuilder(selling, buying, amount, price);
 ```
 
 ```dart
+// From the section ManageSellOfferOperation: usd (AssetTypeCreditAlphaNum4), xlm (Asset)
 var buyOp = ManageBuyOfferOperationBuilder(xlm, usd, '50.0', '0.4').build();
 ```
 
@@ -154,6 +170,7 @@ var buyOp = ManageBuyOfferOperationBuilder(xlm, usd, '50.0', '0.4').build();
 Creates a passive sell offer that does not take existing offers at the same price.
 
 ```dart
+// From the section ManageSellOfferOperation: usd (AssetTypeCreditAlphaNum4), xlm (Asset)
 var passiveOp = CreatePassiveSellOfferOperationBuilder(
   usd, xlm, '100.0', '2.5',
 ).build();
@@ -166,6 +183,7 @@ var passiveOp = CreatePassiveSellOfferOperationBuilder(
 Configures account flags, thresholds, signers, and home domain. All settings are optional.
 
 ```dart
+// From your app: signerAccountId (String)
 // Set home domain
 var domainOp = SetOptionsOperationBuilder()
     .setHomeDomain('example.com')
@@ -199,7 +217,15 @@ var removeSignerOp = SetOptionsOperationBuilder()
 **Multi-sig setup must be atomic:** Each `SetOptionsOperation` can set only ONE signer. To add multiple signers and configure thresholds, include all operations in a SINGLE transaction. If you raise thresholds in a separate transaction first, subsequent operations may require more signatures than available, locking you out.
 
 ```dart
+// From your app: account (AccountResponse), network (Network), primaryKeyPair (KeyPair), signerAKey (XdrSignerKey), signerBKey (XdrSignerKey)
 // Correct: add 2 signers + set thresholds in ONE transaction
+// The thresholds count on three signers of weight 1: the master key and two
+// different new keys. Another signer would change the quorum, and a repeated
+// key would leave high threshold 3 out of reach, so this setup stops.
+if (account.signers.any((s) => s.key != primaryKeyPair.accountId) ||
+    signerAKey.toBase64EncodedXdrString() == signerBKey.toBase64EncodedXdrString()) {
+  throw StateError('Unexpected signers; compute the thresholds for this account');
+}
 var addA = SetOptionsOperationBuilder().setSigner(signerAKey, 1).build();
 var addB = SetOptionsOperationBuilder().setSigner(signerBKey, 1).build();
 var thresholds = SetOptionsOperationBuilder()
@@ -222,13 +248,15 @@ tx.sign(primaryKeyPair, network);
 Creates, updates, or removes a trustline for non-native assets.
 
 ```dart
-ChangeTrustOperationBuilder(asset, limit)
+// From your app: asset (Asset), limit (String)
+ChangeTrustOperationBuilder(asset, limit);
 ```
 
 - `asset` (Asset): The asset to trust
 - `limit` (String): Max amount to hold (`"0"` to remove, `ChangeTrustOperationBuilder.MAX_LIMIT` for max)
 
 ```dart
+// From your app: issuerAccountId (String)
 var usd = AssetTypeCreditAlphaNum4('USD', issuerAccountId);
 
 // Create trustline with max limit
@@ -245,7 +273,8 @@ var removeTrustOp = ChangeTrustOperationBuilder(usd, '0').build();
 Use `SetTrustLineFlagsOperation` instead.
 
 ```dart
-AllowTrustOperationBuilder(trustorAccountId, assetCode, authorized)
+// From your app: assetCode (String), authorized (int), trustorAccountId (String)
+AllowTrustOperationBuilder(trustorAccountId, assetCode, authorized);
 ```
 
 ### SetTrustLineFlagsOperation
@@ -253,13 +282,16 @@ AllowTrustOperationBuilder(trustorAccountId, assetCode, authorized)
 Sets or clears flags on a trustline. Source must be the asset issuer.
 
 ```dart
-SetTrustLineFlagsOperationBuilder(trustorAccountId, asset, clearFlags, setFlags)
+// From your app: asset (Asset), clearFlags (int), setFlags (int), trustorAccountId (String)
+SetTrustLineFlagsOperationBuilder(trustorAccountId, asset, clearFlags, setFlags);
 ```
 
 - `clearFlags` (int): Flags to clear (1=AUTHORIZED, 2=AUTHORIZED_TO_MAINTAIN_LIABILITIES, 4=CLAWBACK_ENABLED)
 - `setFlags` (int): Flags to set
 
 ```dart
+// From your app: issuerAccountId (String), trustorAccountId (String)
+// From the section ChangeTrustOperation: usd (AssetTypeCreditAlphaNum4)
 // Authorize a trustline
 var authOp = SetTrustLineFlagsOperationBuilder(
   trustorAccountId, usd, 0, 1,
@@ -276,7 +308,10 @@ var freezeOp = SetTrustLineFlagsOperationBuilder(
 Sets, updates, or deletes key-value data on an account.
 
 ```dart
-ManageDataOperationBuilder(name, value)
+import 'dart:typed_data';
+
+// From your app: name (String), value (Uint8List)
+ManageDataOperationBuilder(name, value);
 ```
 
 - `name` (String): Key name (max 64 bytes)
@@ -299,7 +334,7 @@ var deleteDataOp = ManageDataOperationBuilder('my_key', null).build();
 // ManageDataOperationBuilder('key', utf8.encode('value')) // Type error!
 
 // CORRECT: wrap in Uint8List.fromList()
-ManageDataOperationBuilder('key', Uint8List.fromList(utf8.encode('value')))
+ManageDataOperationBuilder('key', Uint8List.fromList(utf8.encode('value')));
 ```
 
 ### BumpSequenceOperation
@@ -317,10 +352,12 @@ var bumpOp = BumpSequenceOperationBuilder(BigInt.from(100000)).build();
 Creates a claimable balance with specified claimants and predicates.
 
 ```dart
-CreateClaimableBalanceOperationBuilder(claimants, asset, amount)
+// From your app: amount (String), asset (Asset), claimants (List<Claimant>)
+CreateClaimableBalanceOperationBuilder(claimants, asset, amount);
 ```
 
 ```dart
+// From your app: recipientAccountId (String)
 // Unconditional claimant
 var claimant = Claimant(
   recipientAccountId,
@@ -348,6 +385,7 @@ var timedClaimant = Claimant(
 Claims an existing claimable balance by its ID.
 
 ```dart
+// From your app: claimableBalanceResponse (ClaimableBalanceResponse)
 // WRONG: ClaimableBalanceResponse does NOT have .id
 // CORRECT: use .balanceId to get the balance ID string
 String balanceId = claimableBalanceResponse.balanceId;
@@ -360,6 +398,7 @@ var claimOp = ClaimClaimableBalanceOperationBuilder(balanceId).build();
 Issuer claws back a claimable balance (requires clawback enabled).
 
 ```dart
+// From the section ClaimClaimableBalanceOperation: balanceId (String)
 var clawbackBalanceOp = ClawbackClaimableBalanceOperationBuilder(balanceId).build();
 ```
 
@@ -370,6 +409,7 @@ var clawbackBalanceOp = ClawbackClaimableBalanceOperationBuilder(balanceId).buil
 Begins sponsoring reserves for another account.
 
 ```dart
+// From your app: sponsoredAccountId (String)
 var beginSponsorOp = BeginSponsoringFutureReservesOperationBuilder(
   sponsoredAccountId,
 ).build();
@@ -386,10 +426,12 @@ var endSponsorOp = EndSponsoringFutureReservesOperationBuilder().build();
 **Sponsorship sandwich pattern** (all operations in one transaction):
 
 ```dart
+// From the setup above: beginSponsorOp (BeginSponsoringFutureReservesOperation), endSponsorOp (EndSponsoringFutureReservesOperation)
+// From your app: createAccountOp (Operation), transaction (TransactionBuilder)
 transaction
   .addOperation(beginSponsorOp)         // source: sponsor
   .addOperation(createAccountOp)         // sponsored action
-  .addOperation(endSponsorOp)            // source: sponsored account
+  .addOperation(endSponsorOp);           // source: sponsored account
 ```
 
 ### RevokeSponsorshipOperation
@@ -397,6 +439,8 @@ transaction
 Revokes sponsorship of ledger entries or signers. One method call per builder.
 
 ```dart
+// From your app: accountId (String), asset (Asset), dataName (String), ed25519AccountId (String), offerId (int), preAuthTxHash (String), sha256Hash (String), signerAccountId (String), sponsorAccountId (String)
+// From the section ClaimClaimableBalanceOperation: balanceId (String)
 var builder = RevokeSponsorshipOperationBuilder();
 
 // Revoke account sponsorship
@@ -433,10 +477,13 @@ var revokeOp = builder.setSourceAccount(sponsorAccountId).build();
 Issuer claws back (burns) assets from an account.
 
 ```dart
-ClawbackOperationBuilder(asset, fromAccountId, amount)
+// From your app: amount (String), asset (Asset), fromAccountId (String)
+ClawbackOperationBuilder(asset, fromAccountId, amount);
 ```
 
 ```dart
+// From your app: holderAccountId (String), issuerAccountId (String)
+// From the section ChangeTrustOperation: usd (AssetTypeCreditAlphaNum4)
 var clawbackOp = ClawbackOperationBuilder(
   usd, holderAccountId, '100.0',
 ).setSourceAccount(issuerAccountId).build();
@@ -449,6 +496,7 @@ var clawbackOp = ClawbackOperationBuilder(
 Deposits both assets into an AMM liquidity pool.
 
 ```dart
+// From your app: poolId (String)
 LiquidityPoolDepositOperationBuilder(
   liquidityPoolId: poolId,
   maxAmountA: '1000.0',
@@ -463,6 +511,7 @@ LiquidityPoolDepositOperationBuilder(
 Withdraws assets from a liquidity pool by redeeming pool shares.
 
 ```dart
+// From your app: poolId (String)
 LiquidityPoolWithdrawOperationBuilder(
   liquidityPoolId: poolId,
   amount: '100.0',        // pool shares to redeem
@@ -478,12 +527,16 @@ LiquidityPoolWithdrawOperationBuilder(
 Invokes Soroban smart contract functions. Wraps a `HostFunction` subclass.
 
 ```dart
-InvokeHostFuncOpBuilder(hostFunction)
+// From your app: hostFunction (HostFunction)
+InvokeHostFuncOpBuilder(hostFunction);
 ```
 
 **Upload WASM:**
 
 ```dart
+import 'dart:typed_data';
+
+// From your app: wasmBytes (Uint8List)
 var uploadFn = UploadContractWasmHostFunction(wasmBytes);
 var uploadOp = InvokeHostFuncOpBuilder(uploadFn).build();
 ```
@@ -491,6 +544,7 @@ var uploadOp = InvokeHostFuncOpBuilder(uploadFn).build();
 **Create contract from WASM hash:**
 
 ```dart
+// From your app: deployerAccountId (String), wasmId (String)
 var deployerAddress = Address.forAccountId(deployerAccountId);
 var createFn = CreateContractHostFunction(deployerAddress, wasmId);
 var createOp = InvokeHostFuncOpBuilder(createFn).build();
@@ -499,6 +553,8 @@ var createOp = InvokeHostFuncOpBuilder(createFn).build();
 **Create contract with constructor args:**
 
 ```dart
+// From the setup above: deployerAddress (Address)
+// From your app: wasmHash (String)
 var createFn = CreateContractWithConstructorHostFunction(
   deployerAddress, wasmHash, [XdrSCVal.forU32(42)],
 );
@@ -508,6 +564,7 @@ var createOp = InvokeHostFuncOpBuilder(createFn).build();
 **Invoke contract function:**
 
 ```dart
+// From your app: contractId (String), fromId (String), toId (String)
 var invokeFn = InvokeContractHostFunction(
   contractId,
   'transfer',
@@ -523,6 +580,7 @@ var invokeOp = InvokeHostFuncOpBuilder(invokeFn).build();
 **Deploy Stellar Asset Contract (SAC):**
 
 ```dart
+// From the section ChangeTrustOperation: usd (AssetTypeCreditAlphaNum4)
 var sacFn = DeploySACWithAssetHostFunction(usd);
 var sacOp = InvokeHostFuncOpBuilder(sacFn).build();
 ```
@@ -535,7 +593,7 @@ Extends the time-to-live of Soroban contract state entries.
 var extendOp = ExtendFootprintTTLOperationBuilder(100000).build();
 ```
 
-The `extendTo` parameter is the absolute ledger number to extend to (not a delta). The transaction must include a `sorobanTransactionData` footprint specifying which entries to extend.
+`extendTo` is a number of ledgers: after the operation the entries live until at least the current ledger plus `extendTo`. The maximum is the network's `maxEntryTTL` minus 1. The transaction must include a `sorobanTransactionData` footprint specifying which entries to extend.
 
 ### RestoreFootprintOperation
 

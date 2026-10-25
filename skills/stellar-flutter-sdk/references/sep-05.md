@@ -38,8 +38,8 @@ Wallet wallet = await Wallet.from(mnemonic);
 
 // 3. Derive keypair for account 0
 KeyPair keyPair = await wallet.getKeyPair(index: 0);
-print(keyPair.accountId);  // G... public key
-print(keyPair.secretSeed); // S... secret key — store securely, never log
+String accountId = keyPair.accountId;  // G... public key
+String secretSeed = keyPair.secretSeed; // S... secret key: store securely, never log
 ```
 
 ---
@@ -88,6 +88,8 @@ to any generation or parsing method.
 | `LANGUAGE_CHINESE_TRADITIONAL` | Chinese Traditional   |
 | `LANGUAGE_MALAY`               | Malay                 |
 
+`Wallet.validate` and `Wallet.from` look the words up without Unicode normalization, so an app normalizes typed or pasted input to NFKD first. This affects every Korean word and the French, Spanish, and Japanese words with accents or voicing marks. The examples normalize with `unorm.nfkd` from `package:unorm_dart`, which the SDK already depends on; the app adds `unorm_dart` to its own `pubspec.yaml` to import it.
+
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -115,6 +117,7 @@ validation fails.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// Public test mnemonic from the SDK tests: never fund its accounts
 Wallet wallet = await Wallet.from(
     "shell green recycle learn purchase able oxygen right echo claim hill again "
     "hidden evidence nice decade panic enemy cake version say furnace garment glue");
@@ -122,14 +125,14 @@ Wallet wallet = await Wallet.from(
 // getKeyPair returns a full KeyPair (public + private)
 KeyPair keyPair0 = await wallet.getKeyPair(index: 0);
 print(keyPair0.accountId);  // GCVSEBHB6CTMEHUHIUY4DDFMWQ7PJTHFZGOK2JUD5EG2ARNVS6S22E3K
-print(keyPair0.secretSeed); // SATLGMF3SP2V47SJLBFVKZZJQARDOBDQ7DNSSPUV7NLQNPN3QB7M74XH
+String secretSeed0 = keyPair0.secretSeed; // SATLGMF3SP2V47SJLBFVKZZJQARDOBDQ7DNSSPUV7NLQNPN3QB7M74XH
 
 KeyPair keyPair1 = await wallet.getKeyPair(index: 1);
 print(keyPair1.accountId);  // GBPHPX7SZKYEDV5CVOA5JOJE2RHJJDCJMRWMV4KBOIE5VSDJ6VAESR2W
-print(keyPair1.secretSeed); // SCAYXPIDEUVDGDTKF4NGVMN7HCZOTZJ43E62EEYKVUYXEE7HMU4DFQA6
+String secretSeed1 = keyPair1.secretSeed; // SCAYXPIDEUVDGDTKF4NGVMN7HCZOTZJ43E62EEYKVUYXEE7HMU4DFQA6
 
-// getAccountId is a convenience method — returns only the G... public key
-// without exposing the private key; more efficient if you only need the address
+// getAccountId is a convenience wrapper: it derives the same key pair internally
+// and returns only its G... account id
 String accountId = await wallet.getAccountId(index: 0);
 print(accountId); // GCVSEBHB6CTMEHUHIUY4DDFMWQ7PJTHFZGOK2JUD5EG2ARNVS6S22E3K
 ```
@@ -182,6 +185,7 @@ cannot be recovered even with a correct mnemonic.
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // Same mnemonic, different passphrase → completely different keypairs
+// SEP-0005 test vector mnemonic: public, never fund its accounts
 Wallet walletNoPass = await Wallet.from(
     "cable spray genius state float twenty onion head street palace net private "
     "method loan turn phrase state blanket interest dry amazing dress blast tube");
@@ -196,7 +200,7 @@ KeyPair kp0WithPass = await walletWithPass.getKeyPair(index: 0);
 
 // These produce different public keys
 print(kp0WithPass.accountId);  // GDAHPZ2NSYIIHZXM56Y36SBVTV5QKFIZGYMMBHOU53ETUSWTP62B63EQ
-print(kp0WithPass.secretSeed); // SAFWTGXVS7ELMNCXELFWCFZOPMHUZ5LXNBGUVRCY3FHLFPXK4QPXYP2X
+String seedWithPass = kp0WithPass.secretSeed; // SAFWTGXVS7ELMNCXELFWCFZOPMHUZ5LXNBGUVRCY3FHLFPXK4QPXYP2X
 
 KeyPair kp1WithPass = await walletWithPass.getKeyPair(index: 1);
 print(kp1WithPass.accountId);  // GDY47CJARRHHL66JH3RJURDYXAMIQ5DMXZLP3TDAUJ6IN2GUOFX4OJOC
@@ -216,13 +220,14 @@ export, another library, or stored externally), you can skip the mnemonic step.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// BIP-39 seed of a SEP-0005 test vector: public, never fund its accounts
 Wallet wallet = await Wallet.fromBip39HexSeed(
     "e4a5a632e70943ae7f07659df1332160937fad82587216a4c64315a0fb39497e"
     "e4a01f76ddab4cba68147977f3a147b6ad584c41808e8238a07f6cc4b582f186");
 
 KeyPair kp0 = await wallet.getKeyPair(index: 0);
 print(kp0.accountId);  // GDRXE2BQUC3AZNPVFSCEZ76NJ3WWL25FYFK6RGZGIEKWE4SOOHSUJUJ6
-print(kp0.secretSeed); // SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2G4O34RMTB343OYPXU5DJDVMN
+String secretSeed0 = kp0.secretSeed; // SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2G4O34RMTB343OYPXU5DJDVMN
 
 KeyPair kp1 = await wallet.getKeyPair(index: 1);
 print(kp1.accountId);  // GBAW5XGWORWVFE2XTJYDTLDHXTY2Q2MO73HYCGB3XMFMQ562Q2W2GJQX
@@ -236,7 +241,7 @@ print(kp1.accountId);  // GBAW5XGWORWVFE2XTJYDTLDHXTY2Q2MO73HYCGB3XMFMQ562Q2W2GJ
 import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-Uint8List seedBytes = ...; // your 64-byte seed
+// From your app: seedBytes (Uint8List, your 64-byte seed)
 Wallet wallet = await Wallet.fromBip39Seed(seedBytes);
 KeyPair kp = await wallet.getKeyPair(index: 0);
 ```
@@ -250,6 +255,7 @@ BIP-39 checksum is correct. Returns `Future<bool>`.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'package:unorm_dart/unorm_dart.dart' as unorm;
 
 // Valid mnemonic
 bool valid = await Wallet.validate(
@@ -262,9 +268,10 @@ bool invalid = await Wallet.validate(
 print(invalid); // false
 
 // Validate a non-English mnemonic — pass the matching language constant
+// and normalize typed or pasted words to NFKD first (section 3)
 bool validKorean = await Wallet.validate(
-    "절차 튀김 건강 평가 테스트 민족 몹시 어른 주민 형제 발레 만점 "
-    "산길 물고기 방면 여학생 결국 수명 애정 정치 관심 상자 축하 고무신",
+    unorm.nfkd("절차 튀김 건강 평가 테스트 민족 몹시 어른 주민 형제 발레 만점 "
+        "산길 물고기 방면 여학생 결국 수명 애정 정치 관심 상자 축하 고무신"),
     language: LANGUAGE_KOREAN);
 print(validKorean); // true
 
@@ -283,6 +290,7 @@ try {
 **Not awaiting async factory methods and instance methods:**
 
 ```dart
+// From the section Wallet Class Overview: mnemonic (String)
 // WRONG: all three factories return Future<Wallet>, not Wallet
 Wallet wallet = Wallet.from(mnemonic);             // compile error
 KeyPair kp    = wallet.getKeyPair(index: 0);       // compile error
@@ -296,18 +304,22 @@ String id     = await wallet.getAccountId(index: 0);
 **Forgetting the language parameter when parsing a non-English mnemonic:**
 
 ```dart
+import 'package:unorm_dart/unorm_dart.dart' as unorm;
+
 // WRONG: English word list won't find Korean words — throws ArgumentError('Invalid mnemonic')
 Wallet wallet = await Wallet.from("절차 튀김 건강 평가 테스트 민족 몹시 어른 주민 형제 발레 만점");
 
 // CORRECT: pass the matching language constant
 Wallet wallet = await Wallet.from(
-    "절차 튀김 건강 평가 테스트 민족 몹시 어른 주민 형제 발레 만점",
+    unorm.nfkd("절차 튀김 건강 평가 테스트 민족 몹시 어른 주민 형제 발레 만점 "
+        "산길 물고기 방면 여학생 결국 수명 애정 정치 관심 상자 축하 고무신"),
     language: LANGUAGE_KOREAN);
 ```
 
 **Misunderstanding the BIP-39 passphrase — it changes the wallet entirely:**
 
 ```dart
+// From the section Wallet Class Overview: mnemonic (String)
 // WRONG assumption: passphrase "protects" the same accounts
 // In BIP-39, the passphrase is mixed into the seed derivation and produces a
 // completely different wallet. Without the exact passphrase you cannot
@@ -321,6 +333,7 @@ Wallet wallet = await Wallet.from(mnemonic, passphrase: "my-extra-secret");
 **Using language constants as string literals:**
 
 ```dart
+// From the section Wallet Class Overview: mnemonic (String)
 // WRONG: typos won't be caught at compile time; falls back to English silently
 Wallet wallet = await Wallet.from(mnemonic, language: "Korean");
 

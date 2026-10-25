@@ -22,6 +22,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 ### Install WASM Code
 
 ```dart
+import 'dart:typed_data';
+
+// From your app: keyPair (KeyPair), wasmBytes (Uint8List)
 String wasmId = await SorobanClient.install(
   installRequest: InstallRequest(
     wasmBytes: wasmBytes,
@@ -36,6 +39,8 @@ print('WASM hash: $wasmId');
 ### Deploy Contract Instance
 
 ```dart
+// From your app: keyPair (KeyPair)
+// From the section Install WASM Code: wasmId (String)
 SorobanClient client = await SorobanClient.deploy(
   deployRequest: DeployRequest(
     sourceAccountKeyPair: keyPair,
@@ -52,6 +57,8 @@ print('Contract ID: ${client.getContractId()}');
 **Always match the exact type from contract introspection** -- do not guess based on convention:
 
 ```dart
+// From your app: keyPair (KeyPair)
+// From the section Install WASM Code: wasmId (String)
 // WRONG: using forSymbol because "token names are symbols" -- crashes with UnreachableCodeReached
 // XdrSCVal.forSymbol('MyToken')  // WRONG if spec says String (type 16)
 // CORRECT: spec says String -> use forString; spec says Symbol -> use forSymbol
@@ -75,6 +82,8 @@ SorobanClient client = await SorobanClient.deploy(
 **Preferred: use `funcArgsToXdrSCValues` when you have the contract spec.** It auto-converts native Dart values to the correct `XdrSCVal` types -- no manual type mapping needed:
 
 ```dart
+// From your app: keyPair (KeyPair)
+// From the section Install WASM Code: wasmId (String)
 // Load spec from installed WASM
 SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 SorobanContractInfo? info = await server.loadContractInfoForWasmId(wasmId);
@@ -108,11 +117,8 @@ transaction is built (an unresolvable reference throws naming the owner and the 
 loads the spec from the resolved wasm, and returns a ready client:
 
 ```dart
-Future<SorobanClient> deployFromReference() async {
-  // Secret seed of the funded account that signs the deployment
-  KeyPair keyPair = KeyPair.fromSecretSeed(
-      'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI');
-
+// keyPair: the account that signs and pays for the deployment
+Future<SorobanClient> deployFromReference(KeyPair keyPair) async {
   return SorobanClient.deployFromExternalRef(
     deployRequest: DeployFromExternalRefRequest.forTagString(
       sourceAccountKeyPair: keyPair,
@@ -154,10 +160,11 @@ executable does not enter it), so the address is known before deploying. The sal
 ### Invoke Contract Methods
 
 ```dart
+// From your app: contractId (String), destinationAccountId (String), keyPair (KeyPair)
 SorobanClient client = await SorobanClient.forClientOptions(
   options: ClientOptions(
     sourceAccountKeyPair: keyPair,
-    contractId: 'CABC...',
+    contractId: contractId, // the C... id of the contract
     network: Network.TESTNET,
     rpcUrl: 'https://soroban-testnet.stellar.org:443',
   ),
@@ -174,7 +181,7 @@ XdrSCVal result = await client.invokeMethod(
   name: 'transfer',
   args: [
     XdrSCVal.forAccountAddress(keyPair.accountId),
-    XdrSCVal.forAccountAddress('GDEST...'),
+    XdrSCVal.forAccountAddress(destinationAccountId), // the receiving G... account
     XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000000)),
   ],
 );
@@ -190,9 +197,13 @@ XdrSCVal result2 = await client.invokeMethod(
 List<String> methods = client.getMethodNames(); // ['transfer', 'balance', ...]
 ```
 
+Polling counts status-request time toward `timeoutInSeconds` and stops when a terminal transaction status arrives. If the transaction is unresolved at the deadline, one final status request can take up to three seconds. Failed status requests are retried. A timeout throws `Exception`, naming the last status-request error if any.
+
 **Preferred: use `funcArgsToXdrSCValues` for type-safe invocation:**
 
 ```dart
+// From the section Deploy Contract Instance: client (SorobanClient)
+// From your app: keyPair (KeyPair)
 // SorobanClient already has the spec loaded
 ContractSpec spec = client.getContractSpec();
 
@@ -219,6 +230,7 @@ The SAC `transfer` destination accepts `M...` and `W...` addresses through its `
 When a contract call requires authorization from multiple parties (e.g., a swap), use `signAuthEntries` on `AssembledTransaction`:
 
 ```dart
+// From your app: aliceKeyPair (KeyPair), bobKeyPair (KeyPair), client (SorobanClient, a client of the atomic swap contract), tokenAContractId (String), tokenBContractId (String)
 AssembledTransaction swapTx = await client.buildInvokeMethodTx(
   name: 'swap',
   args: [
@@ -260,7 +272,11 @@ Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban a
 Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban delegate addresses: WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC
 ```
 
+A `W...` address throws `ArgumentError` before any request as the contract to invoke or load, a contract data owner or part of a contract data key. Pass its base `C...` address.
+
 ```dart
+// From your app: delegateKeyPair (KeyPair), sourceEntry (SorobanAuthorizationEntry), topLevelKeyPair (KeyPair)
+// From the section Deploy with Constructor Arguments: server (SorobanServer)
 // Build a WITH_DELEGATES entry from an ADDRESS/ADDRESS_V2 entry; the builder
 // sorts delegate arrays by XDR-encoded address bytes and rejects duplicates.
 int exp = (await server.getLatestLedger()).sequence! + 100;
@@ -283,8 +299,9 @@ Delegates share one payload bound to the top-level address; they carry no nonce/
 Full control over simulation, signing, and submission. Use when you need custom transaction construction.
 
 ```dart
+// From your app: contractId (String), destinationAccountId (String), senderSecretSeed (String)
 SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
-KeyPair sender = KeyPair.fromSecretSeed('SXXXXX...');
+KeyPair sender = KeyPair.fromSecretSeed(senderSecretSeed); // S... seed of the funded sender, from secure storage
 Account? account = await server.getAccount(sender.accountId);
 if (account == null) throw Exception('Account not found');
 
@@ -293,7 +310,7 @@ InvokeContractHostFunction invokeFn = InvokeContractHostFunction(
   contractId, 'transfer',
   arguments: [
     XdrSCVal.forAccountAddress(sender.accountId),
-    XdrSCVal.forAccountAddress('GDEST...'),
+    XdrSCVal.forAccountAddress(destinationAccountId), // the receiving G... account
     XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000000)),
   ],
 );
@@ -316,24 +333,32 @@ tx.setSorobanAuth(sim.sorobanAuth);
 tx.sign(sender, Network.TESTNET);
 SendTransactionResponse sendResp = await server.sendTransaction(tx);
 
-// 4. Poll for result
-if (sendResp.status == SendTransactionResponse.STATUS_PENDING) {
-  GetTransactionResponse txResp;
-  do {
-    await Future.delayed(Duration(seconds: 3));
-    txResp = await server.getTransaction(sendResp.hash!);
-  } while (txResp.status == GetTransactionResponse.STATUS_NOT_FOUND);
+// 4. ERROR means rejected before inclusion: nothing to poll
+// (the four send statuses: RPC Reference, sendTransaction)
+if (sendResp.status == SendTransactionResponse.STATUS_ERROR) {
+  throw Exception('Rejected: ${sendResp.errorResultXdr}');
+}
 
-  if (txResp.status == GetTransactionResponse.STATUS_SUCCESS) {
-    XdrSCVal? result = txResp.getResultValue();
-    print('Result: $result');
-  }
+// 5. Poll for the result: pollTransaction retries while NOT_FOUND, at most 30 times
+// one second apart; the answer can still be NOT_FOUND after the limit
+GetTransactionResponse txResp = await server.pollTransaction(sendResp.hash!);
+if (txResp.status == GetTransactionResponse.STATUS_SUCCESS) {
+  XdrSCVal? result = txResp.getResultValue();
+  print('Result: $result');
+} else if (txResp.status == GetTransactionResponse.STATUS_FAILED) {
+  print('Failed: ${txResp.resultXdr}');
+} else {
+  // NOT_FOUND after the limit: keep the hash and check again later
 }
 ```
 
 **Low-level deployment** follows the same simulate→sign→poll pattern:
 
 ```dart
+import 'dart:typed_data';
+
+// From the setup above: constructorArgs (List<XdrSCVal>), wasmId (String)
+// From your app: deployer (KeyPair), wasmBytes (Uint8List)
 // Upload WASM
 UploadContractWasmHostFunction uploadFn = UploadContractWasmHostFunction(wasmBytes);
 // Build tx with InvokeHostFuncOpBuilder(uploadFn).build(), simulate, sign, poll
@@ -399,6 +424,7 @@ XdrSCVal addressVal = XdrSCVal.forAddress(forAccount);
 Extract typed results from contract invocations. Numeric XDR wrappers must be unwrapped:
 
 ```dart
+// From your app: txResponse (GetTransactionResponse)
 XdrSCVal? result = txResponse.getResultValue();
 
 // Direct types (no unwrapping)
@@ -514,6 +540,8 @@ for (dynamic key in native.keys) {
 ```
 
 ```dart
+import 'dart:typed_data';
+
 // A Bytes key becomes a lowercase hex String, not a Uint8List.
 XdrSCVal val = XdrSCVal.forMap([
   XdrSCMapEntry(
@@ -605,6 +633,8 @@ dynamic correct = native[BigInt.from(5)]; // 'u64 five'
 Read contract data directly from the ledger without invoking the contract:
 
 ```dart
+// From your app: contractId (String)
+// From the section Deploy with Constructor Arguments: server (SorobanServer)
 XdrSCVal key = XdrSCVal.forSymbol('counter');
 LedgerEntry? entry = await server.getContractData(
   contractId, key, XdrContractDataDurability.PERSISTENT,
@@ -627,6 +657,21 @@ For querying multiple entries at once, see [RPC Reference](./rpc.md) (`getLedger
 Prevent contract data from being archived:
 
 ```dart
+// From your app: contractId (String), keyPair (KeyPair)
+// From the section Deploy with Constructor Arguments: server (SorobanServer)
+// The entry to extend: the counter (PERSISTENT) read in Reading Contract State
+XdrLedgerKey dataKey = XdrLedgerKey.forContractData(
+  XdrSCAddress.forContractId(contractId),
+  XdrSCVal.forSymbol('counter'),
+  XdrContractDataDurability.PERSISTENT,
+);
+// The operation extends the read-only footprint the transaction declares
+XdrLedgerFootprint footprint = XdrLedgerFootprint([dataKey], []);
+XdrSorobanResources resources =
+    XdrSorobanResources(footprint, XdrUint32(0), XdrUint32(0), XdrUint32(0));
+XdrSorobanTransactionData transactionData = XdrSorobanTransactionData(
+    XdrSorobanTransactionDataExt(0), resources, XdrInt64(BigInt.zero));
+
 ExtendFootprintTTLOperation extendOp =
     ExtendFootprintTTLOperationBuilder(100000).build();
 
@@ -635,8 +680,9 @@ if (account == null) throw Exception('Account not found');
 Transaction tx = TransactionBuilder(account!)
     .addOperation(extendOp)
     .build();
+tx.sorobanTransactionData = transactionData;
 
-// Simulate to get footprint and fees
+// Simulate for the resource fee
 SimulateTransactionResponse sim =
     await server.simulateTransaction(SimulateTransactionRequest(tx));
 tx.sorobanTransactionData = sim.transactionData;
@@ -645,11 +691,22 @@ tx.sign(keyPair, Network.TESTNET);
 await server.sendTransaction(tx);
 ```
 
+An archived entry is not extended; restore it first (next section). For contract code the key is `XdrLedgerKey.forContractCode(Util.hexToBytes(wasmHash))`.
+
 ### Restore Expired Data
 
-When simulation returns a `restorePreamble`, entries must be restored before invoking:
+When simulation returns a `restorePreamble`, entries must be restored before invoking. With `SorobanClient`, `MethodOptions(restore: true)` does this: it restores, reloads the account, rebuilds, and simulates the call again, and throws when the restore fails. The fence shows the low-level way:
 
 ```dart
+// From your app: contractId (String), keyPair (KeyPair)
+// From the section Deploy with Constructor Arguments: server (SorobanServer)
+// The original invocation (any contract call)
+InvokeHostFunctionOperation invokeOp =
+    InvokeHostFuncOpBuilder(InvokeContractHostFunction(contractId, 'increment')).build();
+Account? account = await server.getAccount(keyPair.accountId);
+if (account == null) throw Exception('Account not found');
+Transaction tx = TransactionBuilder(account).addOperation(invokeOp).build();
+
 SimulateTransactionResponse sim =
     await server.simulateTransaction(SimulateTransactionRequest(tx));
 
@@ -666,13 +723,25 @@ if (sim.restorePreamble != null) {
   restoreTx.sign(keyPair, Network.TESTNET);
   SendTransactionResponse restoreResp = await server.sendTransaction(restoreTx);
 
-  // Wait for restore to complete, then re-simulate and submit the original
-  GetTransactionResponse restoreResult;
-  do {
-    await Future.delayed(Duration(seconds: 3));
-    restoreResult = await server.getTransaction(restoreResp.hash!);
-  } while (restoreResult.status == GetTransactionResponse.STATUS_NOT_FOUND);
+  // pollTransaction: at most 30 tries; the answer can still be NOT_FOUND after the limit
+  GetTransactionResponse restoreResult = await server.pollTransaction(restoreResp.hash!);
+  if (restoreResult.status != GetTransactionResponse.STATUS_SUCCESS) {
+    throw Exception('Restore failed: ${restoreResult.status}');
+  }
+
+  // The restore used the next sequence number: reload, rebuild, simulate again
+  account = await server.getAccount(keyPair.accountId);
+  if (account == null) throw Exception('Account not found');
+  tx = TransactionBuilder(account).addOperation(invokeOp).build();
+  sim = await server.simulateTransaction(SimulateTransactionRequest(tx));
 }
+
+// The usual steps: apply the simulation, sign, send, then poll as in Low-Level: SorobanServer
+tx.sorobanTransactionData = sim.transactionData;
+tx.addResourceFee(sim.minResourceFee!);
+tx.setSorobanAuth(sim.sorobanAuth);
+tx.sign(keyPair, Network.TESTNET);
+SendTransactionResponse sendResp = await server.sendTransaction(tx);
 ```
 
 ---
@@ -682,6 +751,7 @@ if (sim.restorePreamble != null) {
 Wrap a classic Stellar asset for use in Soroban:
 
 ```dart
+// From your app: issuerAccountId (String)
 // For a specific asset
 Asset usdcAsset = Asset.createNonNativeAsset('USDC', issuerAccountId);
 DeploySACWithAssetHostFunction sacFn = DeploySACWithAssetHostFunction(usdcAsset);
@@ -704,6 +774,8 @@ Parse a contract's spec to discover its functions, types, and events programmati
 import 'dart:io';
 import 'dart:typed_data'; // Required for Uint8List
 
+// From your app: contractId (String)
+// From the section Install WASM Code: wasmId (String)
 // From local WASM bytecode (offline)
 Uint8List wasmBytes = File('contract.wasm').readAsBytesSync();
 SorobanContractInfo contractInfo =
@@ -712,7 +784,7 @@ SorobanContractInfo contractInfo =
 // From network (by WASM hash or contract ID)
 SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 SorobanContractInfo? info = await server.loadContractInfoForWasmId(wasmId);
-SorobanContractInfo? info = await server.loadContractInfoForContractId(contractId);
+SorobanContractInfo? infoById = await server.loadContractInfoForContractId(contractId);
 ```
 
 A contract created from a CAP-85 external reference (Protocol 28) resolves automatically.
@@ -737,6 +809,7 @@ See `rpc.md` > Contract Introspection Helpers for `getExternalRefWasmHash()`.
 ### Listing Functions and Parameters
 
 ```dart
+// From the section Loading Contract Info: contractInfo (SorobanContractInfo)
 for (XdrSCSpecFunctionV0 func in contractInfo.funcs) {
   print('Function: ${func.name}');
   for (XdrSCSpecFunctionInputV0 input in func.inputs) {
@@ -757,6 +830,7 @@ See the mapping table below to convert these to human-readable names or `XdrSCVa
 ### Listing Struct Types
 
 ```dart
+// From the section Loading Contract Info: contractInfo (SorobanContractInfo)
 for (XdrSCSpecUDTStructV0 struct in contractInfo.udtStructs) {
   print('Struct: ${struct.name}');
   for (XdrSCSpecUDTStructFieldV0 field in struct.fields) {
@@ -768,6 +842,7 @@ for (XdrSCSpecUDTStructV0 struct in contractInfo.udtStructs) {
 ### Listing Enum Types
 
 ```dart
+// From the section Loading Contract Info: contractInfo (SorobanContractInfo)
 for (XdrSCSpecUDTEnumV0 enumType in contractInfo.udtEnums) {
   print('Enum: ${enumType.name}');
   for (XdrSCSpecUDTEnumCaseV0 case_ in enumType.cases) {
@@ -781,6 +856,7 @@ for (XdrSCSpecUDTEnumV0 enumType in contractInfo.udtEnums) {
 `XdrSCSpecUDTUnionCaseV0` is a **discriminated union** -- access the name through the specific case variant:
 
 ```dart
+// From the section Loading Contract Info: contractInfo (SorobanContractInfo)
 for (XdrSCSpecUDTUnionV0 union in contractInfo.udtUnions) {
   print('Union: ${union.name}');
   for (XdrSCSpecUDTUnionCaseV0 case_ in union.cases) {
@@ -793,6 +869,8 @@ for (XdrSCSpecUDTUnionV0 union in contractInfo.udtUnions) {
       case XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0:
         print('  ${case_.tupleCase!.name} (tuple)');
         break;
+      default:
+        throw StateError('Unknown union case kind ${case_.discriminant.value}');
     }
   }
 }
@@ -801,6 +879,7 @@ for (XdrSCSpecUDTUnionV0 union in contractInfo.udtUnions) {
 ### Listing Error Enum Types
 
 ```dart
+// From the section Loading Contract Info: contractInfo (SorobanContractInfo)
 for (XdrSCSpecUDTErrorEnumV0 errorEnum in contractInfo.udtErrorEnums) {
   print('Error Enum: ${errorEnum.name}');
   for (XdrSCSpecUDTErrorEnumCaseV0 case_ in errorEnum.cases) {
@@ -812,6 +891,7 @@ for (XdrSCSpecUDTErrorEnumV0 errorEnum in contractInfo.udtErrorEnums) {
 ### Listing Events
 
 ```dart
+// From the section Loading Contract Info: contractInfo (SorobanContractInfo)
 for (XdrSCSpecEventV0 event in contractInfo.events) {
   print('Event: ${event.name}');
   // WRONG: event.topics, event.body -- XdrSCSpecEventV0 has NO topics/body getters

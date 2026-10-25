@@ -5,7 +5,7 @@
 
 SEP-08 defines a protocol for regulated assets — assets where an issuer-run approval server must evaluate and co-sign every transaction. This enables compliance with securities regulations, KYC/AML requirements, velocity limits, and jurisdiction-based restrictions.
 
-**Spec:** [SEP-0008 v1.7.4](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md)
+**Spec:** [SEP-0008](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md)
 
 ## Table of Contents
 
@@ -29,6 +29,7 @@ SEP-08 defines a protocol for regulated assets — assets where an issuer-run ap
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: destinationId (String), senderSeed (String)
 // Load stellar.toml from issuer domain — extracts regulated asset definitions
 final service = await RegulatedAssetsService.fromDomain('regulated-asset-issuer.com');
 
@@ -73,7 +74,7 @@ Per SEP-08:
 2. **stellar.toml discovery**: The issuer's `stellar.toml` (SEP-01) lists assets with `regulated=true` and an `approval_server` URL. The toml **must** include `NETWORK_PASSPHRASE` for the service to initialize.
 3. **Transaction composition**: Build and sign the transaction normally using the regulated asset. Do not add authorization operations yourself — the approval server handles that.
 4. **Approval**: POST the signed transaction XDR envelope to the approval server (not to Stellar). The server evaluates compliance rules and returns one of five statuses.
-5. **Network submission**: If approved (`success` or `revised`), parse the returned XDR and submit it to the Stellar network.
+5. **Network submission**: Submit a `success` transaction as returned. Show a `revised` transaction to the user and submit it only after the user approves and signs it (`signRevision` in section 9).
 
 ---
 
@@ -97,6 +98,8 @@ try {
 
 `fromDomain()` signature:
 ```dart
+import 'package:http/http.dart' as http;
+
 static Future<RegulatedAssetsService> fromDomain(
   String domain, {
   http.Client? httpClient,           // custom HTTP client (timeouts, proxies)
@@ -119,6 +122,8 @@ final service = RegulatedAssetsService(toml);
 
 Constructor signature:
 ```dart
+import 'package:http/http.dart' as http;
+
 RegulatedAssetsService(
   StellarToml tomlData, {
   http.Client? httpClient,
@@ -206,6 +211,7 @@ Build and sign a transaction normally, then submit the base64-encoded XDR envelo
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: destinationId (String), senderSeed (String)
 final service = await RegulatedAssetsService.fromDomain('regulated-asset-issuer.com');
 final regulatedAsset = service.regulatedAssets.first;
 
@@ -245,6 +251,8 @@ The approval server returns one of five response types. Use `is` checks to branc
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: approvalServer (String), userApproves (function, shows the revision with the server's message and returns the user's decision)
+// From the section Complete Workflow Example: senderKeyPair (KeyPair), service (RegulatedAssetsService), signRevision (function), txXdr (String)
 final response = await service.postTransaction(txXdr, approvalServer);
 
 if (response is PostTransactionSuccess) {
@@ -256,11 +264,15 @@ if (response is PostTransactionSuccess) {
   await service.sdk.submitTransactionEnvelopeXdrBase64(response.tx);
 
 } else if (response is PostTransactionRevised) {
-  // Transaction was modified for compliance — review before submitting
+  // Transaction was modified for compliance: the user reviews and signs the revision
   // message is REQUIRED (String, never null) for revised
   print('Revised: ${response.message}');
-  // WARNING: inspect response.tx vs original — server may have added operations
-  await service.sdk.submitTransactionEnvelopeXdrBase64(response.tx);
+  // signRevision checks the revision and signs it only on the user's approval (Complete Workflow Example)
+  String? signedRevision = await signRevision(txXdr, response.tx, response.message,
+      senderKeyPair, service.network, userApproves);
+  if (signedRevision != null) {
+    await service.sdk.submitTransactionEnvelopeXdrBase64(signedRevision);
+  }
 
 } else if (response is PostTransactionPending) {
   // Approval delayed — retry after timeout milliseconds
@@ -310,6 +322,8 @@ When the server returns `action_required` with `actionMethod == "POST"`, you can
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: approvalServer (String)
+// From the section Complete Workflow Example: service (RegulatedAssetsService), txXdr (String)
 final response = await service.postTransaction(txXdr, approvalServer);
 
 if (response is PostTransactionActionRequired) {
@@ -379,6 +393,8 @@ Future<void> sendRegulatedAssetPayment({
   required String senderSeed,
   required String destinationId,
   required String amount,
+  // Shows the revised transaction and the server's message; returns the user's decision
+  required Future<bool> Function(Transaction revised, String message) userApproves,
 }) async {
   // Step 1: Initialize service from issuer's stellar.toml
   RegulatedAssetsService service;
@@ -432,9 +448,10 @@ Future<void> sendRegulatedAssetPayment({
       approvedTxXdr = response.tx;
 
     } else if (response is PostTransactionRevised) {
-      // Transaction was modified — review what changed
+      // Transaction was modified: the user reviews and signs the revision
       print('Revised: ${response.message}');
-      approvedTxXdr = response.tx;
+      approvedTxXdr = await signRevision(txXdr, response.tx, response.message,
+          senderKeyPair, service.network, userApproves);
 
     } else if (response is PostTransactionPending) {
       final waitMs = response.timeout;  // int, 0 = unknown
@@ -458,7 +475,8 @@ Future<void> sendRegulatedAssetPayment({
           if (retry is PostTransactionSuccess) {
             approvedTxXdr = retry.tx;
           } else if (retry is PostTransactionRevised) {
-            approvedTxXdr = retry.tx;
+            approvedTxXdr = await signRevision(txXdr, retry.tx, retry.message,
+                senderKeyPair, service.network, userApproves);
           } else {
             print('Unexpected response after action: $retry');
             return;
@@ -485,7 +503,7 @@ Future<void> sendRegulatedAssetPayment({
     throw Exception('Action endpoint error (HTTP ${e.code}): ${e.body}');
   }
 
-  // Step 5: Submit approved transaction to Stellar network
+  // Step 5: Submit the approved transaction; a revision the user rejected stays null
   if (approvedTxXdr != null) {
     // submitTransactionEnvelopeXdrBase64 accepts the base64 XDR string directly
     final result = await service.sdk.submitTransactionEnvelopeXdrBase64(approvedTxXdr);
@@ -495,6 +513,39 @@ Future<void> sendRegulatedAssetPayment({
       print('Submission failed: ${result.extras?.resultCodes}');
     }
   }
+}
+
+// SEP-8: the wallet checks a revised transaction, shows it to the user, and
+// signs it only when the user approves. A rejection signs nothing and returns null.
+Future<String?> signRevision(String originalXdr, String revisedXdr, String message,
+    KeyPair userKeyPair, Network network,
+    Future<bool> Function(Transaction revised, String message) userApproves) async {
+  Transaction original = AbstractTransaction.fromEnvelopeXdrString(originalXdr) as Transaction;
+  Transaction revised = AbstractTransaction.fromEnvelopeXdrString(revisedXdr) as Transaction;
+  // An operation without its own source uses the transaction source
+  MuxedAccount sourceOf(Operation op, Transaction tx) => op.sourceAccount ?? tx.sourceAccount;
+  // The original operations stay unchanged, with the same source (mux ID included),
+  // and in their order; operations the server adds must not use the user account
+  List<Operation> originalOps = original.operations;
+  int kept = 0;
+  for (Operation op in revised.operations) {
+    if (kept < originalOps.length &&
+        op.toXdrBase64() == originalOps[kept].toXdrBase64() &&
+        sourceOf(op, revised).accountId == sourceOf(originalOps[kept], original).accountId) {
+      kept++;
+      continue;
+    }
+    String source = sourceOf(op, revised).ed25519AccountId;
+    if (source == userKeyPair.accountId) {
+      throw Exception('The revision adds or changes an operation on the user account');
+    }
+  }
+  if (kept < originalOps.length) {
+    throw Exception('The revision removes or changes an original operation');
+  }
+  if (!await userApproves(revised, message)) return null;
+  revised.sign(userKeyPair, network);
+  return revised.toEnvelopeXdrBase64();
 }
 ```
 
@@ -573,6 +624,8 @@ class PostActionNextUrl extends PostActionResponse {
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: approvalServer (String)
+// From the section Complete Workflow Example: txXdr (String)
 try {
   final service = await RegulatedAssetsService.fromDomain('regulated-asset-issuer.com');
   final response = await service.postTransaction(txXdr, approvalServer);
@@ -626,6 +679,7 @@ try {
 **Wrong: calling `toXdrBase64()` instead of `toEnvelopeXdrBase64()`**
 
 ```dart
+// From the section Complete Workflow Example: tx (Transaction)
 // WRONG: toXdrBase64() serializes the transaction body without the envelope wrapper
 // The approval server will not be able to parse or sign it
 String txXdr = tx.toXdrBase64();  // incorrect
@@ -637,6 +691,7 @@ String txXdr = tx.toEnvelopeXdrBase64();
 **Wrong: submitting to Stellar network before getting approval**
 
 ```dart
+// From the section Quick Start: asset (RegulatedAsset), service (RegulatedAssetsService), tx (Transaction)
 // WRONG: submitting directly bypasses the approval server entirely
 await service.sdk.submitTransaction(tx);
 
@@ -652,8 +707,10 @@ if (response is PostTransactionSuccess) {
 **Wrong: `PostTransactionPending.timeout` is milliseconds, not seconds**
 
 ```dart
-// WRONG: treating timeout as seconds
+// From your app: response (PostTransactionResponse)
 final pending = response as PostTransactionPending;
+
+// WRONG: treating timeout as seconds
 await Future.delayed(Duration(seconds: pending.timeout)); // waits 5000 seconds if timeout=5000!
 
 // CORRECT: timeout is milliseconds
@@ -663,8 +720,9 @@ await Future.delayed(Duration(milliseconds: pending.timeout));
 **Wrong: `PostTransactionPending.timeout` is `int`, not `int?`**
 
 ```dart
+// From your app: response (PostTransactionPending)
 // WRONG: null-checking timeout — it always defaults to 0 (int), never null
-if (response.timeout == null) { ... }  // never true
+if (response.timeout == null) { /* ... */ }  // never true
 
 // CORRECT: check for 0 to detect "unknown" wait time
 if (response.timeout == 0) {
@@ -677,23 +735,26 @@ if (response.timeout == 0) {
 **Wrong: `PostTransactionRevised.message` is a required `String`, not `String?`**
 
 ```dart
+// From your app: response (PostTransactionResponse)
 // WRONG: null-checking message on revised (it is always set)
 if (response is PostTransactionRevised) {
-  if (response.message != null) { ... }  // redundant — always non-null
+  if (response.message != null) { /* ... */ }  // redundant: always non-null
 }
 
 // NOTE: For success, message IS nullable (String?)
 // For revised, message is always a String
 if (response is PostTransactionSuccess) {
-  if (response.message != null) { ... }  // correct — nullable here
+  if (response.message != null) { /* ... */ }  // correct: nullable here
 }
 ```
 
 **Wrong: `PostTransactionActionRequired.actionMethod` defaults to `"GET"`, not `null`**
 
 ```dart
+// From your app: fields (Map<String,dynamic>), response (PostTransactionActionRequired)
+// From the section Quick Start: service (RegulatedAssetsService)
 // WRONG: checking for null — actionMethod always has a value
-if (response.actionMethod == null) { ... }  // never executes
+if (response.actionMethod == null) { /* ... */ }  // never executes
 
 // CORRECT: check for "POST" to use programmatic posting; otherwise use browser ("GET")
 if (response.actionMethod == 'POST') {
@@ -707,6 +768,8 @@ if (response.actionMethod == 'POST') {
 **Wrong: forgetting to resubmit the ORIGINAL transaction after `PostActionDone`**
 
 ```dart
+// From your app: actionResponse (PostActionResponse), approvalServer (String)
+// From the setup above: service (RegulatedAssetsService), txXdr (String)
 // WRONG: PostActionDone has no tx property — there is nothing to submit from it
 if (actionResponse is PostActionDone) {
   await service.sdk.submitTransaction(actionResponse.something); // no such field!
@@ -722,6 +785,7 @@ if (actionResponse is PostActionDone) {
 **Wrong: using `nextUrl` property as `next_url` (snake_case)**
 
 ```dart
+// From your app: actionResponse (PostActionNextUrl)
 // WRONG: snake_case — that is the JSON key name, not the Dart property
 print(actionResponse.next_url);  // compile error
 
@@ -732,6 +796,7 @@ print(actionResponse.nextUrl);
 **Wrong: accessing `regulatedAssets` before checking it is non-empty**
 
 ```dart
+// From the section Quick Start: service (RegulatedAssetsService)
 // WRONG: will throw RangeError if stellar.toml has no qualifying regulated assets
 final asset = service.regulatedAssets.first;
 
@@ -746,6 +811,7 @@ final asset = service.regulatedAssets.first;
 **Wrong: `RegulatedAsset.issuerId` vs nonexistent `getIssuer()`**
 
 ```dart
+// From the setup above: asset (RegulatedAsset)
 // WRONG: there are no getter methods — access fields directly
 final issuer = asset.getIssuer();   // compile error
 final code   = asset.getCode();     // compile error
@@ -758,18 +824,19 @@ final code   = asset.code;      // String
 **Network resolution: explicit parameter vs stellar.toml**
 
 ```dart
+// From the section From StellarToml data: toml (StellarToml)
 // Pass network explicitly
 final service = RegulatedAssetsService(toml, network: Network.TESTNET);
 
 // fromDomain() forwards horizonUrl and network to the constructor
-final service = await RegulatedAssetsService.fromDomain(
+final serviceFromDomain = await RegulatedAssetsService.fromDomain(
   'example.com',
   horizonUrl: 'https://custom-horizon.example.com',
   network: Network.TESTNET,  // forwarded to constructor
 );
 
 // Or let the service read NETWORK_PASSPHRASE from stellar.toml
-final service = await RegulatedAssetsService.fromDomain('example.com');
+final serviceTomlNetwork = await RegulatedAssetsService.fromDomain('example.com');
 
 // Note: if network is not passed and stellar.toml lacks NETWORK_PASSPHRASE,
 // throws IncompleteInitData — ensure at least one source of network is present

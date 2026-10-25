@@ -24,7 +24,7 @@ Results are returned as `Page<T>` objects:
 ```dart
 class Page<T> {
   List<T> records;   // list of result objects
-  Links links;       // next, prev, self URIs
+  PageLinks? links;  // next, prev, self links
 }
 ```
 
@@ -33,6 +33,9 @@ class Page<T> {
 `sdk.accounts` returns `AccountsRequestBuilder`.
 
 ```dart
+import 'dart:typed_data';
+
+// From your app: accountId (String), issuerAccountId (String), poolId (String), sdk (StellarSDK), signerAccountId (String), sponsorAccountId (String)
 // Get single account
 AccountResponse account = await sdk.accounts.account(accountId);
 print('Sequence: ${account.sequenceNumber}');
@@ -50,20 +53,20 @@ if (account.data.keys.contains('my_key')) {
 }
 
 // Filter accounts
-Page<AccountResponse> page = await sdk.accounts
+Page<AccountResponse> bySigner = await sdk.accounts
     .forSigner(signerAccountId)
     .limit(20)
     .execute();
 
-Page<AccountResponse> page = await sdk.accounts
+Page<AccountResponse> byAsset = await sdk.accounts
     .forAsset(AssetTypeCreditAlphaNum4('USD', issuerAccountId))
     .execute();
 
-Page<AccountResponse> page = await sdk.accounts
+Page<AccountResponse> bySponsor = await sdk.accounts
     .forSponsor(sponsorAccountId)
     .execute();
 
-Page<AccountResponse> page = await sdk.accounts
+Page<AccountResponse> byPool = await sdk.accounts
     .forLiquidityPool(poolId)
     .execute();
 ```
@@ -78,7 +81,7 @@ Page<AccountResponse> page = await sdk.accounts
 | `signers` | List\<Signer\> | Account signers with weights |
 | `thresholds` | Thresholds | low, med, high thresholds |
 | `flags` | Flags | authRequired, authRevocable, authImmutable, authClawbackEnabled |
-| `data` | Map\<String, String\> | Key-value data entries |
+| `data` | AccountResponseData | Key-value data entries (`keys`, `[]` for the base64 value, `getDecoded(key)` for the bytes) |
 | `sponsor` | String? | Sponsoring account ID |
 | `homeDomain` | String? | Federation home domain |
 | `subentryCount` | int | Number of sub-entries |
@@ -90,6 +93,7 @@ Page<AccountResponse> page = await sdk.accounts
 `sdk.transactions` returns `TransactionsRequestBuilder`.
 
 ```dart
+// From your app: accountId (String), balanceId (String), poolId (String), sdk (StellarSDK), txHash (String)
 // Get single transaction by hash
 TransactionResponse tx = await sdk.transactions.transaction(txHash);
 print('Fee charged: ${tx.feeCharged}');
@@ -138,6 +142,7 @@ await sdk.transactions.forLiquidityPool(poolId).execute();
 ### Submitting Transactions
 
 ```dart
+// From your app: feeBumpTx (FeeBumpTransaction), sdk (StellarSDK), transaction (Transaction), xdrBase64String (String)
 // Synchronous submit (waits for ledger inclusion)
 SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
 if (response.success) {
@@ -146,7 +151,7 @@ if (response.success) {
 }
 
 // Fee bump transaction
-SubmitTransactionResponse response = await sdk.submitFeeBumpTransaction(feeBumpTx);
+SubmitTransactionResponse feeBumpResponse = await sdk.submitFeeBumpTransaction(feeBumpTx);
 
 // Asynchronous submit (returns immediately with status)
 SubmitAsyncTransactionResponse asyncResponse =
@@ -173,6 +178,7 @@ if (asyncResponse.txStatus == SubmitAsyncTransactionResponse.txStatusPending) {
 When querying a fee bump transaction, `TransactionResponse` includes both the outer and inner transaction details:
 
 ```dart
+// From your app: feeBumpHash (String), sdk (StellarSDK)
 TransactionResponse tx = await sdk.transactions.transaction(feeBumpHash);
 
 // Inner (original) transaction details
@@ -194,6 +200,7 @@ if (feeBump != null) {
 `sdk.operations` returns `OperationsRequestBuilder`.
 
 ```dart
+// From your app: accountId (String), balanceId (String), operationId (String), poolId (String), sdk (StellarSDK), txHash (String)
 // Get single operation
 OperationResponse op = await sdk.operations.operation(operationId);
 
@@ -211,9 +218,6 @@ await sdk.operations.forLiquidityPool(poolId).execute();
 
 // Include failed operations
 await sdk.operations.forAccount(accountId).includeFailed(true).execute();
-
-// Join transactions
-await sdk.operations.forAccount(accountId).join('transactions').execute();
 ```
 
 ## Payments
@@ -221,6 +225,7 @@ await sdk.operations.forAccount(accountId).join('transactions').execute();
 `sdk.payments` returns `PaymentsRequestBuilder`. Returns payment-type operations (payment, create_account, path_payment, account_merge).
 
 ```dart
+// From your app: accountId (String), sdk (StellarSDK), txHash (String)
 Page<OperationResponse> payments = await sdk.payments
     .forAccount(accountId)
     .order(RequestBuilderOrder.DESC)
@@ -250,6 +255,7 @@ await sdk.payments.forTransaction(txHash).execute();
 `sdk.ledgers` returns `LedgersRequestBuilder`.
 
 ```dart
+// From your app: sdk (StellarSDK)
 // Get single ledger
 LedgerResponse ledger = await sdk.ledgers.ledger(12345);
 print('Closed at: ${ledger.closedAt}');
@@ -269,6 +275,7 @@ Page<LedgerResponse> ledgers = await sdk.ledgers
 `sdk.effects` returns `EffectsRequestBuilder`.
 
 ```dart
+// From your app: accountId (String), operationId (String), poolId (String), sdk (StellarSDK), txHash (String)
 Page<EffectResponse> effects = await sdk.effects
     .forAccount(accountId)
     .limit(20)
@@ -286,6 +293,7 @@ await sdk.effects.forLiquidityPool(poolId).execute();
 `sdk.offers` returns `OffersRequestBuilder`.
 
 ```dart
+// From your app: accountId (String), offerId (String), sdk (StellarSDK), sellerAccountId (String), sponsorAccountId (String), usdAsset (Asset)
 // Get single offer
 OfferResponse offer = await sdk.offers.offer(offerId);
 
@@ -310,6 +318,7 @@ Query parameters define the market from the **offer creator's perspective**:
 - `buyingAsset` = what offers want to BUY
 
 ```dart
+// From your app: issuerAccountId (String), sdk (StellarSDK)
 // Example: Query the USD/XLM market (USD priced in XLM)
 OrderBookResponse orderBook = await sdk.orderBook
     .sellingAsset(AssetTypeCreditAlphaNum4('USD', issuerAccountId))
@@ -332,6 +341,7 @@ for (var bid in orderBook.bids) {
 `sdk.trades` returns `TradesRequestBuilder`.
 
 ```dart
+// From your app: accountId (String), issuerAccountId (String), offerId (String), poolId (String), sdk (StellarSDK), usdAsset (Asset)
 Page<TradeResponse> trades = await sdk.trades
     .forAccount(accountId)
     .execute();
@@ -359,6 +369,7 @@ Page<TradeAggregationResponse> candles = await sdk.tradeAggregations(
 `sdk.assets` returns `AssetsRequestBuilder`.
 
 ```dart
+// From your app: issuerAccountId (String), sdk (StellarSDK)
 Page<AssetResponse> assets = await sdk.assets
     .assetCode('USD')
     .assetIssuer(issuerAccountId)
@@ -370,6 +381,7 @@ Page<AssetResponse> assets = await sdk.assets
 `sdk.claimableBalances` returns `ClaimableBalancesRequestBuilder`.
 
 ```dart
+// From your app: claimantAccountId (String), sdk (StellarSDK), sponsorAccountId (String), usdAsset (Asset)
 // Get single claimable balance. forBalanceId takes the B... strkey, the bare
 // 64 character hash hex, the 66 character one byte tagged hex, or the 72
 // character XDR form, and sends Horizon's 72 character form.
@@ -394,28 +406,30 @@ await sdk.claimableBalances.forSponsor(sponsorAccountId).execute();
 `sdk.liquidityPools` returns `LiquidityPoolsRequestBuilder`.
 
 ```dart
+// From your app: poolId (String), sdk (StellarSDK), usdAsset (Asset)
 // Get single pool
 LiquidityPoolResponse pool =
-    await sdk.liquidityPools.liquidityPool(poolId);
+    await sdk.liquidityPools.forPoolId(poolId);
 
 // Filter by reserve assets
 Page<LiquidityPoolResponse> pools = await sdk.liquidityPools
-    .forReserveAssets([Asset.NATIVE, usdAsset])
+    .forReserveAssets(Asset.NATIVE, usdAsset)
     .execute();
 ```
 
 ## Path Finding
 
 ```dart
+// From your app: sdk (StellarSDK), senderAccountId (String), usdAsset (Asset)
 // Strict receive: find paths to receive exact amount
-Page<PathResponse> paths = await sdk.strictReceivePaths
+Page<PathResponse> receivePaths = await sdk.strictReceivePaths
     .destinationAsset(usdAsset)
     .destinationAmount('100.0')
     .sourceAccount(senderAccountId)
     .execute();
 
 // Strict send: find paths sending exact amount
-Page<PathResponse> paths = await sdk.strictSendPaths
+Page<PathResponse> sendPaths = await sdk.strictSendPaths
     .sourceAsset(Asset.NATIVE)
     .sourceAmount('50.0')
     .destinationAssets([usdAsset])
@@ -425,6 +439,7 @@ Page<PathResponse> paths = await sdk.strictSendPaths
 ## Fee Stats
 
 ```dart
+// From your app: sdk (StellarSDK)
 FeeStatsResponse feeStats = await sdk.feeStats.execute();
 print('Base fee: ${feeStats.lastLedgerBaseFee}');
 print('Capacity: ${feeStats.lastLedgerCapacityUsage}');
@@ -442,12 +457,14 @@ print('Max fee (p99): ${feeStats.maxFee.p99}');
 ## Health Check
 
 ```dart
+// From your app: sdk (StellarSDK)
 HealthResponse health = await sdk.health.execute();
 ```
 
 ## Root
 
 ```dart
+// From your app: sdk (StellarSDK)
 RootResponse root = await sdk.root();
 print('Horizon version: ${root.horizonVersion}');
 print('Core version: ${root.stellarCoreVersion}');
@@ -458,6 +475,7 @@ print('Core version: ${root.stellarCoreVersion}');
 Navigate through paginated results using the `Page` object.
 
 ```dart
+// From your app: accountId (String), sdk (StellarSDK)
 // First page
 Page<TransactionResponse> page = await sdk.transactions
     .forAccount(accountId)

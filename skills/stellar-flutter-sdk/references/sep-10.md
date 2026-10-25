@@ -26,6 +26,7 @@
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: userSecretSeed (String)
 // Load config from anchor's stellar.toml and run the full SEP-10 flow in one call
 final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
 
@@ -33,7 +34,7 @@ final userKeyPair = KeyPair.fromSecretSeed(userSecretSeed);
 final jwtToken = await webAuth.jwtToken(userKeyPair.accountId, [userKeyPair]);
 
 // Use jwtToken as Bearer token for SEP-12, SEP-24, SEP-31, etc.
-print('Authenticated! Token: $jwtToken');
+print('Authenticated as ${userKeyPair.accountId}');
 ```
 
 ---
@@ -101,6 +102,7 @@ WebAuth(
 Note: parameter order is `authEndpoint, network, serverSigningKey, serverHomeDomain`.
 
 ```dart
+// From your app: serverSigningKey (String)
 // WRONG: wrong parameter order — signingKey before network
 WebAuth('https://example.com/auth', serverSigningKey, Network.TESTNET, 'example.com');
 
@@ -148,6 +150,7 @@ exist on-chain — SEP-10 only proves key ownership.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: userSecretSeed (String)
 void main() async {
   final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
 
@@ -158,7 +161,7 @@ void main() async {
     [userKeyPair],
   );
 
-  print('JWT: $jwtToken');
+  print('Authenticated as ${userKeyPair.accountId}');
 }
 ```
 
@@ -172,6 +175,7 @@ required keypairs — their combined weight must satisfy the server's requiremen
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: secretSeed1 (String), secretSeed2 (String)
 void main() async {
   final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
 
@@ -184,7 +188,7 @@ void main() async {
     [signer1, signer2],
   );
 
-  print('JWT: $jwtToken');
+  print('Authenticated');
 }
 ```
 
@@ -193,11 +197,12 @@ void main() async {
 ## Memo-Based Authentication
 
 For services that distinguish users sharing a single Stellar account via an integer memo.
-The `memo` parameter must be a positive integer (`int`, not `BigInt`).
+The `memo` parameter must be a non-negative integer (`int`, not `BigInt`).
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: sharedSecretSeed (String)
 void main() async {
   final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
 
@@ -210,7 +215,7 @@ void main() async {
     memo: userId,
   );
 
-  print('JWT for user $userId: $jwtToken');
+  print('Authenticated: $userId');
 }
 ```
 
@@ -228,6 +233,7 @@ G... keypair in `signers`.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: baseSecretSeed (String)
 void main() async {
   final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
 
@@ -242,17 +248,19 @@ void main() async {
     [baseKeyPair],  // sign with the underlying G... keypair
   );
 
-  print('JWT: $jwtToken');
+  print('Authenticated');
 }
 ```
 
 ```dart
+// From your app: accountId (String), keyPair (KeyPair)
+// From the setup above: muxedAccountId (String), webAuth (WebAuth)
 // WRONG: memo with M... address — throws NoMemoForMuxedAccountsException
-await webAuth.jwtToken('MAAAA...', [keyPair], memo: 12345);
+await webAuth.jwtToken(muxedAccountId, [keyPair], memo: 12345);
 
 // CORRECT: use one method of user identification, never both
-await webAuth.jwtToken('MAAAA...', [keyPair]);          // muxed account only
-await webAuth.jwtToken('GAAA...', [keyPair], memo: 12345); // G... + memo only
+await webAuth.jwtToken(muxedAccountId, [keyPair]);          // muxed account only
+await webAuth.jwtToken(accountId, [keyPair], memo: 12345); // G... + memo only
 ```
 
 ---
@@ -270,6 +278,7 @@ must publish a `SIGNING_KEY` that matches the keypair.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: userSecretSeed (String), walletSigningSecretSeed (String)
 void main() async {
   final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
 
@@ -283,7 +292,7 @@ void main() async {
     clientDomainAccountKeyPair: clientDomainKeyPair,
   );
 
-  print('JWT: $jwtToken');
+  print('Authenticated as ${userKeyPair.accountId}');
 }
 ```
 
@@ -299,6 +308,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: signingServerToken (String), userSecretSeed (String)
 void main() async {
   final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
   final userKeyPair = KeyPair.fromSecretSeed(userSecretSeed);
@@ -335,13 +345,15 @@ void main() async {
     clientDomainSigningDelegate: signingDelegate,
   );
 
-  print('JWT: $jwtToken');
+  print('Authenticated as ${userKeyPair.accountId}');
 }
 ```
 
 Delegate signature: `Future<String> Function(String transactionXdr)`
 
 ```dart
+// From your app: accountId (String), keyPair (KeyPair), sign (function)
+// From the section Quick Start: webAuth (WebAuth)
 // WRONG: delegate provided without clientDomain — throws MissingClientDomainException
 await webAuth.jwtToken(accountId, [keyPair],
   clientDomainSigningDelegate: (xdr) async => await sign(xdr),
@@ -365,6 +377,7 @@ which domain the challenge should be issued for.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: userSecretSeed (String)
 void main() async {
   final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
   final userKeyPair = KeyPair.fromSecretSeed(userSecretSeed);
@@ -375,7 +388,7 @@ void main() async {
     homeDomain: 'other-domain.com',
   );
 
-  print('JWT: $jwtToken');
+  print('Authenticated as ${userKeyPair.accountId}');
 }
 ```
 
@@ -394,6 +407,8 @@ lower-level access — `jwtToken()` handles the full flow automatically.
 | `networkPassphrase` | `String?` | Optional: server's network passphrase for verification |
 
 ```dart
+// From your app: accountId (String)
+// From the section Quick Start: webAuth (WebAuth)
 // Low-level access
 final challengeResponse = await webAuth.getChallengeResponse(accountId);
 final xdr = challengeResponse.transaction!;
@@ -430,13 +445,14 @@ The three submit exceptions implement `Exception` directly.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// From your app: userSecretSeed (String)
 void main() async {
   try {
     final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
     final userKeyPair = KeyPair.fromSecretSeed(userSecretSeed);
 
     final jwtToken = await webAuth.jwtToken(userKeyPair.accountId, [userKeyPair]);
-    print('JWT: $jwtToken');
+    print('Authenticated as ${userKeyPair.accountId}');
 
   } on NoWebAuthEndpointFoundException catch (e) {
     // stellar.toml exists but is missing WEB_AUTH_ENDPOINT
@@ -599,24 +615,23 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   // Server configuration — must match what WebAuth is initialized with
-  const serverAccountId = 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP';
-  const serverSecretSeed = 'SAWDHXQG6ROJSU4QGCW7NSTYFHPTPIVC2NC7QKVTO7PZCSO2WEBGM54W';
-  final serverKeyPair = KeyPair.fromSecretSeed(serverSecretSeed);
+  final serverKeyPair = KeyPair.random(); // test key of the mock server
+  final serverAccountId = serverKeyPair.accountId;
 
   const domain = 'place.domain.com';
   const authServer = 'http://api.stellar.org/auth';
 
-  // Client keypair
-  const clientSecretSeed = 'SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX';
-  final clientKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+  // Client keypair (test key)
+  final clientKeyPair = KeyPair.random();
   final clientAccountId = clientKeyPair.accountId;
 
-  const successJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+  const successJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test'; // any string: the mock returns it as the token
 
-  Uint8List generateNonce([int length = 64]) {
+  // SEP-10 nonce: 48 random bytes, base64-encoded to the 64-byte data value
+  Uint8List generateNonce() {
     final random = Random.secure();
-    final values = List<int>.generate(length, (_) => random.nextInt(256));
-    return Uint8List.fromList(base64Url.encode(values).codeUnits);
+    final values = List<int>.generate(48, (_) => random.nextInt(256));
+    return Uint8List.fromList(base64.encode(values).codeUnits);
   }
 
   // Build a valid challenge transaction (mimics what the server would produce)
@@ -694,12 +709,14 @@ void main() {
 **Wrong: `memo` with M... muxed account**
 
 ```dart
+// From your app: accountId (String), keyPair (KeyPair)
+// From the setup above: muxedAccountId (String), webAuth (WebAuth)
 // WRONG: throws NoMemoForMuxedAccountsException
-await webAuth.jwtToken('MAAAA...', [keyPair], memo: 12345);
+await webAuth.jwtToken(muxedAccountId, [keyPair], memo: 12345);
 
 // CORRECT: choose one method of user identification
-await webAuth.jwtToken('MAAAA...', [keyPair]);              // muxed account encodes the memo
-await webAuth.jwtToken('GAAA...', [keyPair], memo: 12345);  // G... account + separate memo
+await webAuth.jwtToken(muxedAccountId, [keyPair]);              // muxed account encodes the memo
+await webAuth.jwtToken(accountId, [keyPair], memo: 12345);  // G... account + separate memo
 ```
 
 **Wrong: network passphrase mismatch**
@@ -709,6 +726,8 @@ with. If they differ, `ChallengeValidationErrorInvalidSignature` is thrown even 
 the challenge was technically valid on its own network.
 
 ```dart
+// From the section Testing with MockClient: domain (String)
+// From your app: endpoint (String), signingKey (String)
 // WRONG: WebAuth on public network but anchor signed for testnet
 // → ChallengeValidationErrorInvalidSignature (signatures won't verify)
 final webAuth = WebAuth(endpoint, Network.PUBLIC, signingKey, domain);
@@ -720,6 +739,8 @@ final webAuth = WebAuth(endpoint, Network.TESTNET, signingKey, domain);
 **Wrong: `signers` list must contain KeyPairs with secret keys**
 
 ```dart
+// From your app: accountId (String), secretSeed (String)
+// From the section Quick Start: webAuth (WebAuth)
 // WRONG: KeyPair.fromAccountId() has no private key and cannot sign
 final publicOnly = KeyPair.fromAccountId(accountId);
 await webAuth.jwtToken(accountId, [publicOnly]);
@@ -733,6 +754,8 @@ await webAuth.jwtToken(accountId, [fullKeyPair]);
 **Wrong: `clientDomain` without any signing method**
 
 ```dart
+// From your app: accountId (String), keyPair (KeyPair)
+// From the setup above: clientDomainKeyPair (KeyPair), webAuth (WebAuth)
 // WRONG: clientDomain without signing key or delegate — throws MissingClientDomainSigningKeyException
 await webAuth.jwtToken(accountId, [keyPair],
   clientDomain: 'mywallet.com',
@@ -749,6 +772,8 @@ await webAuth.jwtToken(accountId, [keyPair],
 **Wrong: `clientDomainSigningDelegate` without `clientDomain`**
 
 ```dart
+// From your app: accountId (String), keyPair (KeyPair), sign (function)
+// From the section Quick Start: webAuth (WebAuth)
 // WRONG: throws MissingClientDomainException
 await webAuth.jwtToken(accountId, [keyPair],
   clientDomainSigningDelegate: (xdr) async => await sign(xdr),
@@ -764,6 +789,8 @@ await webAuth.jwtToken(accountId, [keyPair],
 **Wrong: `memo` parameter type is `int`, not `BigInt`**
 
 ```dart
+// From your app: accountId (String), keyPair (KeyPair)
+// From the section Quick Start: webAuth (WebAuth)
 // WRONG: memo expects int?, not BigInt
 await webAuth.jwtToken(accountId, [keyPair], memo: BigInt.from(12345));
 
@@ -777,6 +804,8 @@ await webAuth.jwtToken(accountId, [keyPair], memo: 12345);
 indicate potential malicious server behavior. Never retry or ignore them.
 
 ```dart
+// From your app: accountId (String), keyPair (KeyPair)
+// From the section Quick Start: webAuth (WebAuth)
 try {
   final jwt = await webAuth.jwtToken(accountId, [keyPair]);
 } on ChallengeValidationErrorInvalidSeqNr catch (e) {
@@ -790,15 +819,18 @@ try {
 }
 ```
 
-**Wrong: assigning httpClient after construction with fromDomain**
+**Mocking `fromDomain()`**
 
-`WebAuth.fromDomain()` creates its own internal `http.Client`. To use a custom
-`MockClient` for testing, construct `WebAuth` manually, then assign `httpClient`:
+`WebAuth.fromDomain()` takes an `httpClient` and uses it for the stellar.toml request
+and for every later auth request, so one `MockClient` covers the whole flow:
 
 ```dart
-// CORRECT pattern for testing
-final webAuth = WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
-webAuth.httpClient = MockClient((request) async { ... });
+import 'package:http/testing.dart';
+
+// From the section Testing with MockClient: domain (String)
+// From your app: mockClient (MockClient, answers https://<domain>/.well-known/stellar.toml with WEB_AUTH_ENDPOINT)
+// and SIGNING_KEY, then the challenge GET and the token POST (see Testing with MockClient)
+final webAuth = await WebAuth.fromDomain(domain, Network.TESTNET, httpClient: mockClient);
 ```
 
 ---
@@ -822,6 +854,9 @@ Use the token as a `Bearer` header for SEP-12 (KYC), SEP-24 (interactive deposit
 withdrawal), SEP-31 (cross-border payments), and any other authenticated anchor API.
 
 ```dart
+import 'package:http/http.dart' as http;
+
+// From the section Error Handling: jwtToken (String, the SEP-10 token)
 // Using JWT with http for a SEP-24 endpoint
 final response = await http.get(
   Uri.parse('https://anchor.example.com/sep24/info'),

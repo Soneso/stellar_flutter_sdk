@@ -1,24 +1,24 @@
 ---
 name: stellar-flutter-sdk
-description: Builds Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, XDR-JSON, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 21 SEP implementations with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
+description: Builds Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, XDR-JSON, and SEP protocol integration, with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
 license: MIT
-compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.9.0
+compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.10.0
 metadata:
-  version: "1.8.0"
-  sdk_version: "3.9.0"
+  version: "1.9.0"
+  sdk_version: "3.10.0"
 ---
 
 # Stellar SDK for Flutter
 
 ## Overview
 
-The Stellar Flutter SDK (`stellar_flutter_sdk`) is a full-featured Dart library for building Stellar blockchain applications on Android, iOS, and Web. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), and 21 SEP implementations. All APIs use Dart `Future` (async/await) for asynchronous operations and `Stream` for real-time event subscriptions. Version 3.0.0+ uses `BigInt` for all 64-bit integer types to ensure full web platform compatibility.
+The Stellar Flutter SDK (`stellar_flutter_sdk`) is a full-featured Dart library for building Stellar blockchain applications on Android, iOS, and Web. It covers the Horizon API, the Soroban RPC API, and the SEP implementations listed in the SEP guide. All APIs use Dart `Future` (async/await) for asynchronous operations and `Stream` for real-time event subscriptions. 64-bit integer types are `BigInt`, so the same code runs on the web platform.
 
 ## Installation
 
 ```yaml
 dependencies:
-  stellar_flutter_sdk: ^3.9.0
+  stellar_flutter_sdk: ^3.10.0
 ```
 
 > iOS: set the app's deployment target to 15.0 or higher. Passkey smart-account features need iOS 16 at runtime.
@@ -39,7 +39,7 @@ String secretSeed = keyPair.secretSeed; // S... secret seed
 // IMPORTANT: Store secretSeed securely. Never log or expose it.
 
 // From existing seed
-KeyPair keyPair = KeyPair.fromSecretSeed(secretSeed);
+KeyPair restored = KeyPair.fromSecretSeed(secretSeed);
 KeyPair publicOnly = KeyPair.fromAccountId(accountId); // public-key-only, cannot sign
 ```
 
@@ -52,7 +52,7 @@ String accountId = keyPair.accountId;
 // Fund on testnet using FriendBot (10,000 test XLM)
 await FriendBot.fundTestAccount(accountId);
 
-// Query account
+// Query account (a missing account throws a 404 ErrorResponse: Account Not Found in the Troubleshooting Guide)
 StellarSDK sdk = StellarSDK.TESTNET;
 AccountResponse account = await sdk.accounts.account(accountId);
 print('Sequence: ${account.sequenceNumber}');
@@ -66,11 +66,6 @@ for (Balance balance in account.balances) {
   }
 }
 
-// Check account existence (no built-in helper: use try/catch)
-bool exists = true;
-try { await sdk.accounts.account(accountId); } on ErrorResponse catch (e) {
-  if (e.code == 404) exists = false;
-}
 
 // Check signers
 for (Signer signer in account.signers) {
@@ -83,6 +78,7 @@ for (Signer signer in account.signers) {
 ### Assets
 
 ```dart
+// From your app: asset (Asset, for example balance.asset, operation.asset or offer.selling)
 Asset xlm = Asset.NATIVE; // Returns AssetTypeNative instance
 
 // 1-4 char code -> AssetTypeCreditAlphaNum4; 5-12 char -> AssetTypeCreditAlphaNum12
@@ -93,7 +89,6 @@ Asset? parsed = Asset.createFromCanonicalForm('USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHT
 
 // WRONG: asset.assetCode -- Asset base class has NO assetCode property
 // CORRECT: For type-specific access, cast to AssetTypeCreditAlphaNum
-Asset asset = ...; // from balance.asset, operation.asset, offer.selling, etc.
 if (asset is AssetTypeCreditAlphaNum) {
   String code = (asset as AssetTypeCreditAlphaNum).code;
   String issuer = (asset as AssetTypeCreditAlphaNum).issuerId;
@@ -123,6 +118,7 @@ Query patterns for retrieving blockchain data. All request builders support `.cu
 ### Query Accounts
 
 ```dart
+// From the section Accounts: accountId (String)
 StellarSDK sdk = StellarSDK.TESTNET;
 
 // Single account
@@ -142,6 +138,7 @@ for (AccountResponse acct in bySigner.records) {
 ### Query Transactions
 
 ```dart
+// From the section Accounts: accountId (String)
 StellarSDK sdk = StellarSDK.TESTNET;
 
 // Same builder pattern as accounts: forAccount(), limit(), order(), cursor()
@@ -168,6 +165,9 @@ Real-time update patterns using Server-Sent Events (SSE). Set cursor to `"now"` 
 ### Stream Payments
 
 ```dart
+import 'dart:async';
+
+// From the section Accounts: accountId (String), sdk (StellarSDK)
 // Stream pattern: same for payments, transactions, ledgers, operations, effects, offers
 StreamSubscription<OperationResponse> subscription = sdk.payments
     .forAccount(accountId)
@@ -183,7 +183,7 @@ StreamSubscription<OperationResponse> subscription = sdk.payments
 // subscription.cancel();
 ```
 
-Streams reconnect automatically on connection drops. Always cancel subscriptions to prevent resource leaks.
+When Horizon sends an SSE `close` event or an event fails to parse, the SDK opens a new connection with the same URI and no last event id. If the response ends without a close event, it does not reconnect. So keep the last `pagingToken` and resubscribe with `.cursor(...)`. Connection failures do not reach `onError` but surface as uncaught asynchronous errors; catch them with `runZonedGuarded` or the app's global error handler and watch for silence. Always cancel subscriptions to prevent resource leaks.
 
 For reconnection patterns and all streaming endpoints:
 [Horizon Streaming Guide](./references/horizon_streaming.md)
@@ -195,6 +195,7 @@ Complete transaction lifecycle: Build -> Sign -> Submit.
 ### Transaction Lifecycle
 
 ```dart
+// From your app: destinationAccountId (String), senderSecret (String)
 StellarSDK sdk = StellarSDK.TESTNET;
 Network network = Network.TESTNET;
 
@@ -233,24 +234,24 @@ if (response.success) {
 **Change Trust (Establish Trustline):**
 
 ```dart
-Asset usdc = Asset.createNonNativeAsset('USDC', 'GISSUER...');
-Operation trustline = ChangeTrustOperationBuilder(usdc).build();
-// Optional: set limit with ChangeTrustOperationBuilder(usdc, '1000.00')
+Asset usdc = Asset.createNonNativeAsset('USDC', 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN');
+Operation trustline = ChangeTrustOperationBuilder(usdc, ChangeTrustOperationBuilder.MAX_LIMIT).build();
+// A lower limit instead of the maximum: ChangeTrustOperationBuilder(usdc, '1000.00')
 ```
 
 **Manage Sell Offer (DEX):**
 
 ```dart
 Asset selling = AssetTypeNative();
-Asset buying = Asset.createNonNativeAsset('USDC', 'GISSUER...');
+Asset buying = Asset.createNonNativeAsset('USDC', 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN');
 
-// Create new offer (offerId defaults to BigInt.zero = new offer)
+// Create new offer (offerId defaults to "0" = new offer)
 Operation newOffer = ManageSellOfferOperationBuilder(
     selling, buying, '100.0', '0.5')  // sell 100 XLM at 0.5 USDC/XLM
     .build();
 ```
 
-For all 26+ operations with parameters and examples:
+For every operation with parameters and examples:
 [Operations Reference](./references/operations.md)
 
 ## 5. Soroban RPC API
@@ -265,7 +266,7 @@ GetHealthResponse health = await server.getHealth(); // .status, .latestLedger
 
 Assign `server.logger` to route log lines to your sink; without a logger they go to the `dart:developer` log.
 
-For all 12 RPC methods including event queries and transaction simulation:
+For the RPC methods, including event queries and transaction simulation:
 [RPC Reference](./references/rpc.md)
 
 ## 6. Smart Contracts
@@ -275,6 +276,9 @@ Contract deployment and invocation patterns using the high-level `SorobanClient`
 ### Deploy Contract
 
 ```dart
+import 'dart:typed_data';
+
+// From your app: secretSeed (String), wasmBytes (Uint8List)
 KeyPair keyPair = KeyPair.fromSecretSeed(secretSeed);
 String rpcUrl = 'https://soroban-testnet.stellar.org:443';
 
@@ -304,11 +308,13 @@ print('Contract ID: ${client.getContractId()}');
 ### Invoke Contract Function
 
 ```dart
+// From your app: contractId (String)
+// From the section Deploy Contract: keyPair (KeyPair), rpcUrl (String)
 // Create client for an existing contract
 SorobanClient client = await SorobanClient.forClientOptions(
   options: ClientOptions(
     sourceAccountKeyPair: keyPair,
-    contractId: 'CABC...',
+    contractId: contractId, // the C... id of the deployed contract
     network: Network.TESTNET,
     rpcUrl: rpcUrl,
   ),
@@ -316,7 +322,7 @@ SorobanClient client = await SorobanClient.forClientOptions(
 
 // Read call (simulation only)
 XdrSCVal result = await client.invokeMethod(name: 'get_count');
-print('Count: ${result.u32}');
+print('Count: ${result.u32!.uint32}');
 
 // Write call (simulates, signs, submits automatically)
 XdrSCVal incremented = await client.invokeMethod(
@@ -344,13 +350,14 @@ XDR (External Data Representation) is Stellar's binary serialization format.
 ### Transaction XDR Roundtrip
 
 ```dart
+// From the section Transaction Lifecycle: transaction (Transaction)
 // Encode: Transaction -> base64 XDR
 String xdrBase64 = transaction.toEnvelopeXdrBase64();
 
 // Decode: base64 XDR -> Transaction
 AbstractTransaction decoded = AbstractTransaction.fromEnvelopeXdrString(xdrBase64);
 if (decoded is Transaction) {
-  print('Source: ${decoded.sourceAccount}, Fee: ${decoded.fee}');
+  print('Source: ${decoded.sourceAccount.accountId}, Fee: ${decoded.fee}');
   print('Operations: ${decoded.operations.length}');
 }
 ```
@@ -360,7 +367,8 @@ if (decoded is Transaction) {
 ```dart
 // Common types: forBool(), forU32(), forI64(), forString(), forSymbol(), forBytes(), forVoid()
 XdrSCVal symVal  = XdrSCVal.forSymbol('transfer');
-XdrSCVal addrVal = XdrSCVal.forAddress(Address.forAccountId('GABC...').toXdr());
+XdrSCVal u32Val  = XdrSCVal.forU32(42);
+XdrSCVal addrVal = XdrSCVal.forAddress(Address.forAccountId(KeyPair.random().accountId).toXdr());
 XdrSCVal u128Val = XdrSCVal.forU128Parts(BigInt.zero, BigInt.from(1000));
 
 // Vec (array of XdrSCVal) and Map (array of XdrSCMapEntry)
@@ -386,6 +394,7 @@ For all XdrSCVal factory methods and type mapping:
 ### Horizon Errors
 
 ```dart
+// From the section Accounts: accountId (String), sdk (StellarSDK)
 try {
   AccountResponse account = await sdk.accounts.account(accountId);
 } on ErrorResponse catch (e) {
@@ -400,6 +409,8 @@ try {
 ### Transaction Submission Errors
 
 ```dart
+// From the section Accounts: sdk (StellarSDK)
+// From the section Transaction Lifecycle: transaction (Transaction)
 SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
 if (!response.success) {
   String? txCode = response.extras?.resultCodes?.transactionResultCode;
@@ -413,6 +424,7 @@ if (!response.success) {
 ### Soroban RPC Errors
 
 ```dart
+// From the section Soroban RPC API: server (SorobanServer)
 // Health check
 GetHealthResponse health = await server.getHealth();
 if (health.status != GetHealthResponse.HEALTHY) { /* server unhealthy */ }
@@ -434,16 +446,16 @@ For complete security patterns and platform-specific key storage:
 
 ## 11. SEP Implementations
 
-The Flutter SDK implements 21 Stellar Ecosystem Proposals (SEPs): authentication, deposit/withdrawal, federation, KYC, contract metadata and specs, XDR-JSON, and more. Seventeen have a reference page; SEP-46, SEP-47 and SEP-48 are covered by the Smart Contracts Guide, and SEP-23 (StrKey) inside other topics.
+The Flutter SDK implements Stellar Ecosystem Proposals (SEPs) for authentication, deposit/withdrawal, federation, KYC, contract metadata and specs, XDR-JSON, and more. Most have a reference page; SEP-46, SEP-47, and SEP-48 are covered by the Smart Contracts Guide, and SEP-23 (StrKey) inside other topics.
 
 For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 
 ## Reference Documentation
 
-- [Operations Reference](./references/operations.md) - All 26+ Stellar operations with examples
-- [Horizon API Reference](./references/horizon_api.md) - Complete Horizon endpoint coverage (50/50)
+- [Operations Reference](./references/operations.md) - Stellar operations with examples
+- [Horizon API Reference](./references/horizon_api.md) - Horizon endpoints and query builders
 - [Horizon Streaming Guide](./references/horizon_streaming.md) - SSE patterns for all streaming endpoints
-- [RPC Reference](./references/rpc.md) - All 12 Soroban RPC methods
+- [RPC Reference](./references/rpc.md) - Soroban RPC methods
 - [Smart Contracts Guide](./references/soroban_contracts.md) - Contract deployment, invocation, auth
 - [Smart Accounts Guide](./references/smart_accounts.md) - OZ kit core: config, wallet create/connect, signer types, transactions, credentials, external signers, events, indexer
 - [Smart Accounts - Policies](./references/smart_accounts_policies.md) - Signer management, context rules, policies, multi-signer operations
@@ -451,9 +463,9 @@ For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 - [XDR Guide](./references/xdr.md) - XDR encoding/decoding and debugging
 - [Troubleshooting Guide](./references/troubleshooting.md) - Error codes, platform & environment info
 - [Security Guide](./references/security.md) - Platform-specific key storage, production deployment
-- [SEP Implementations](./references/sep.md) - 21 SEP protocols: TOML, Federation, Web Auth, deposits, KYC
+- [SEP Implementations](./references/sep.md) - SEP protocols: TOML, Federation, Web Auth, deposits, KYC
 - [Advanced Features](./references/advanced.md) - Multi-sig, sponsorship, fee bumps, liquidity pools, muxed accounts, async submission
-- [API Reference (Signatures)](./references/api_reference.md) - All public class/method signatures (grep for any class or method not covered above)
+- [API Reference (Signatures)](./references/api_reference.md) - Public class and member signatures, except XDR types, deprecated API, and top-level functions (grep for any class or method not covered above)
 
 ## Common Pitfalls
 
@@ -468,30 +480,16 @@ double amount = 100.1234567;
 String amount = '100.1234567';
 ```
 
-**Sequence number management:** `TransactionBuilder.build()` mutates the source account's sequence number. A good practice is to reload the account from Horizon before building a new transaction. Don't increment manually unless you have a specific reason. `build()` handles it. Stale sequence numbers cause `tx_bad_seq` errors.
+**Sequence number management:** `TransactionBuilder.build()` advances the source account's sequence number; reload the account before building the next transaction and never increment it by hand (`tx_bad_seq` otherwise). The WRONG/CORRECT pair and specific future sequences: Manual Sequence Numbers in [Advanced Features](./references/advanced.md).
 
+**Missing signatures show at two levels:** `tx_bad_auth` when the transaction signatures miss the source account's low threshold, `op_bad_auth` (inside `tx_failed`) when an operation's source account misses the threshold of that operation.
 ```dart
-// CORRECT: reload account, build() increments sequence internally
-AccountResponse account = await sdk.accounts.account(accountId); // on-chain seq N
-Transaction tx = TransactionBuilder(account).addOperation(op).build(); // uses seq N+1
-await sdk.submitTransaction(tx);
-
-// WRONG: manually incrementing, build() already does this
-AccountResponse account = await sdk.accounts.account(accountId); // on-chain seq N
-account.incrementSequenceNumber(); // now N+1
-Transaction tx = TransactionBuilder(account).addOperation(op).build(); // seq N+2: tx_bad_seq
-```
-
-When a transaction must carry a specific future sequence (pre-authorized transactions), see Manual Sequence Numbers in [Advanced Features](./references/advanced.md).
-
-**Insufficient signatures return `op_bad_auth`, not `tx_bad_auth`:**
-```dart
-// WRONG: checking transaction code for auth failure
-String? txCode = response.extras?.resultCodes?.transactionResultCode; // 'tx_failed'
-if (txCode == 'tx_bad_auth') { /* never matches */ }
-
-// CORRECT: check operation codes for op_bad_auth
-List<String?>? opCodes = response.extras?.resultCodes?.operationsResultCodes; // ['op_bad_auth']
+// From the section Transaction Submission Errors: response (SubmitTransactionResponse)
+// WRONG: checking only the operation codes misses tx_bad_auth
+// CORRECT: check both levels
+String? txCode = response.extras?.resultCodes?.transactionResultCode;
+List<String?>? opCodes = response.extras?.resultCodes?.operationsResultCodes;
+bool badAuth = txCode == 'tx_bad_auth' || (opCodes?.contains('op_bad_auth') ?? false);
 ```
 
 **Fee calculation:** The fee is per operation. For a transaction with N operations at `setMaxOperationFee(200)`, the total fee is N * 200 stroops. The minimum base fee is 100 stroops per operation.
