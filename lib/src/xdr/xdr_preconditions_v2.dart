@@ -184,8 +184,9 @@ class XdrPreconditionsV2 {
       map,
       '$prefix.minSeqLedgerGap',
     );
-    int extraSignersLen = TxRepHelper.parseInt(
+    int extraSignersLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.extraSigners.len') ?? '0',
+      '$prefix.extraSigners.len',
     );
     List<XdrSignerKey> extraSigners = [];
     for (int i = 0; i < extraSignersLen; i++) {

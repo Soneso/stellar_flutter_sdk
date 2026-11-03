@@ -67,8 +67,9 @@ class XdrAllowTrustOp {
     XdrAllowTrustOpAsset asset = TxRepHelper.parseAllowTrustAsset(
       TxRepHelper.getValue(map, '$prefix.asset') ?? '',
     );
-    int authorize = TxRepHelper.parseInt(
+    int authorize = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.authorize') ?? '0',
+      '$prefix.authorize',
     );
     return XdrAllowTrustOp(trustor, asset, authorize);
   }

@@ -97,8 +97,9 @@ class XdrSorobanTransactionDataExt {
     Map<String, String> map,
     String prefix,
   ) {
-    int disc = TxRepHelper.parseInt(
+    int disc = TxRepHelper.parseInt32(
       TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+      '$prefix.v',
     );
     XdrSorobanTransactionDataExt result = XdrSorobanTransactionDataExt(disc);
     switch (result.discriminant) {

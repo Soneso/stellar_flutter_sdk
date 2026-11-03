@@ -46,7 +46,7 @@ class XdrSequenceNumber {
   static XdrSequenceNumber fromTxRep(Map<String, String> map, String prefix) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
-    return XdrSequenceNumber(TxRepHelper.parseBigInt(raw));
+    return XdrSequenceNumber(TxRepHelper.parseInt64(raw, prefix));
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

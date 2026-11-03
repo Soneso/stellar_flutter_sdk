@@ -98,8 +98,9 @@ class XdrSCContractInstance {
       '$prefix.storage._present',
     );
     if (storagePresent != null && storagePresent == 'true') {
-      int storageLen = TxRepHelper.parseInt(
+      int storageLen = TxRepHelper.parseUint32(
         TxRepHelper.getValue(map, '$prefix.storage.len') ?? '0',
+        '$prefix.storage.len',
       );
       storage = [];
       for (int i = 0; i < storageLen; i++) {

@@ -87,8 +87,9 @@ class XdrSorobanAuthorizedInvocation {
   ) {
     XdrSorobanAuthorizedFunction function =
         XdrSorobanAuthorizedFunction.fromTxRep(map, '$prefix.function');
-    int subInvocationsLen = TxRepHelper.parseInt(
+    int subInvocationsLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.subInvocations.len') ?? '0',
+      '$prefix.subInvocations.len',
     );
     List<XdrSorobanAuthorizedInvocation> subInvocations = [];
     for (int i = 0; i < subInvocationsLen; i++) {

@@ -647,7 +647,7 @@ class Generator < Xdrgen::Generators::Base
     end
 
     gen_txrep = should_generate_txrep?(dart_name)
-    txrep_ctx = { kind: :simple_typedef, dart_type: dart_type, field_name: field_name }
+    txrep_ctx = { kind: :simple_typedef, dart_type: dart_type, field_name: field_name, typespec: underlying }
     base_imports = Set.new(import_lines) + ["dart:convert", "dart:typed_data"]
     base_imports.add(SEP51_HELPER_IMPORT)
     base_imports.add("txrep_helper.dart") if gen_txrep && needs_txrep_helper?(txrep_ctx)
@@ -674,7 +674,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, class_name)
-    render_txrep_methods(out, class_name, { kind: :simple_typedef, dart_type: dart_type, field_name: field_name }) if gen_txrep
+    render_txrep_methods(out, class_name, txrep_ctx) if gen_txrep
     render_typedef_sep51_methods(out, class_name, decl, field_name)
 
     out.puts "}"
@@ -818,6 +818,7 @@ class Generator < Xdrgen::Generators::Base
     gen_txrep = should_generate_txrep?(dart_name)
     txrep_ctx = {
       kind: :array_typedef,
+      typespec: decl.type,
       element_type: element_type,
       fixed: decl.fixed?,
       size: decl.fixed? ? resolve_size(decl) : nil,
@@ -1148,7 +1149,7 @@ class Generator < Xdrgen::Generators::Base
     end
 
     # Integer discriminant
-    { kind: :int, dart_name: nil, enum_defn: nil, field_name: disc_field_name }
+    { kind: :int, dart_name: nil, enum_defn: nil, field_name: disc_field_name, typespec: dtype }
   end
 
   # ---------------------------------------------------------------------------
@@ -1212,6 +1213,7 @@ class Generator < Xdrgen::Generators::Base
         arm_info = resolve_dart_arm_info(da, union_name)
         arms << {
           case_labels: ["default"],
+          decl: da.declaration,
           void: false,
           field_name: field_name,
           xdr_field_name: xdr_arm_field_name,
@@ -2471,7 +2473,7 @@ class Generator < Xdrgen::Generators::Base
   # Simple typedef: always (fromTxRep calls TxRepHelper.getValue)
   # Fixed/variable opaque typedef: always (hex methods)
   # String typedef: always (escapeString/unescapeString)
-  # Array typedef (variable): always (TxRepHelper.parseInt for .len)
+  # Array typedef (variable): always (TxRepHelper.parseUint32 for .len)
   # Array typedef (fixed):    only when element type needs it
   # Structs:      only when at least one field uses TxRepHelper directly
   #               (opaque, optional, type_overridden, array/.len, compact types,
@@ -2511,7 +2513,7 @@ class Generator < Xdrgen::Generators::Base
     when AST::Declarations::Opaque
       return true  # bytesToHex / hexToBytes
     when AST::Declarations::Array
-      # Variable arrays use TxRepHelper.parseInt; fixed arrays do not (for named element)
+      # Variable arrays use TxRepHelper.parseUint32; fixed arrays do not (for named element)
       element_type = dart_type_for_typespec(decl.type)
       return true unless decl.fixed?
       return txrep_type_needs_helper?(element_type)
@@ -2553,7 +2555,7 @@ class Generator < Xdrgen::Generators::Base
         # Fixed array: only when element type calls TxRepHelper
         txrep_type_needs_helper?(type_context[:element_type])
       else
-        true  # TxRepHelper.parseInt for .len
+        true  # TxRepHelper.parseUint32 for .len
       end
     when :struct
       type_context[:fields].any? { |f| struct_field_needs_txrep_helper?(f) }
@@ -2577,7 +2579,7 @@ class Generator < Xdrgen::Generators::Base
     when :union
       render_union_txrep_methods(out, class_name, type_context[:disc_info], type_context[:arms])
     when :simple_typedef
-      render_simple_typedef_txrep_methods(out, class_name, type_context[:dart_type], type_context[:field_name])
+      render_simple_typedef_txrep_methods(out, class_name, type_context[:dart_type], type_context[:typespec], type_context[:field_name])
     when :fixed_opaque_typedef
       render_fixed_opaque_typedef_txrep_methods(out, class_name, type_context[:size])
     when :variable_opaque_typedef
@@ -2585,7 +2587,7 @@ class Generator < Xdrgen::Generators::Base
     when :string_typedef
       render_string_typedef_txrep_methods(out, class_name)
     when :array_typedef
-      render_array_typedef_txrep_methods(out, class_name, type_context[:element_type], type_context[:fixed], type_context[:size])
+      render_array_typedef_txrep_methods(out, class_name, type_context[:element_type], type_context[:fixed], type_context[:size], type_context[:typespec])
     end
   end
 
@@ -2731,10 +2733,10 @@ class Generator < Xdrgen::Generators::Base
           out.puts "    #{inner_type}? #{dart_name};"
           out.puts "    String? #{dart_name}Present = TxRepHelper.getValue(map, '\$prefix.#{xdr_name}._present');"
           out.puts "    if (#{dart_name}Present != null && #{dart_name}Present == 'true') {"
-          out.puts "      #{dart_name} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_name}")};"
+          out.puts "      #{dart_name} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_name}", decl.type)};"
           out.puts "    }"
         else
-          out.puts "    #{type_str} #{dart_name} = #{txrep_from_expr(type_str, "map", "$prefix.#{xdr_name}")};"
+          out.puts "    #{type_str} #{dart_name} = #{txrep_from_expr(type_str, "map", "$prefix.#{xdr_name}", decl.type)};"
         end
         next
       end
@@ -2746,13 +2748,13 @@ class Generator < Xdrgen::Generators::Base
           size = resolve_size(decl)
           out.puts "    List<#{element_type}> #{dart_name} = [];"
           out.puts "    for (int i = 0; i < #{size}; i++) {"
-          out.puts "      #{dart_name}.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_name}[$i]")});"
+          out.puts "      #{dart_name}.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_name}[$i]", decl.type)});"
           out.puts "    }"
         else
-          out.puts "    int #{dart_name}Len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}.len') ?? '0');"
+          out.puts "    int #{dart_name}Len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}.len') ?? '0', '\$prefix.#{xdr_name}.len');"
           out.puts "    List<#{element_type}> #{dart_name} = [];"
           out.puts "    for (int i = 0; i < #{dart_name}Len; i++) {"
-          out.puts "      #{dart_name}.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_name}[$i]")});"
+          out.puts "      #{dart_name}.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_name}[$i]", decl.type)});"
           out.puts "    }"
         end
       when AST::Declarations::Opaque
@@ -2767,13 +2769,13 @@ class Generator < Xdrgen::Generators::Base
             out.puts "      #{dart_name} = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}') ?? '');"
           elsif inner_type =~ /\AList<(.+)>\z/
             elem = $1
-            out.puts "      int #{dart_name}Len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}.len') ?? '0');"
+            out.puts "      int #{dart_name}Len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}.len') ?? '0', '\$prefix.#{xdr_name}.len');"
             out.puts "      #{dart_name} = [];"
             out.puts "      for (int i = 0; i < #{dart_name}Len; i++) {"
-            out.puts "        #{dart_name}.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_name}[$i]")});"
+            out.puts "        #{dart_name}.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_name}[$i]", decl.type)});"
             out.puts "      }"
           else
-            out.puts "      #{dart_name} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_name}")};"
+            out.puts "      #{dart_name} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_name}", decl.type)};"
           end
           out.puts "    }"
         else
@@ -2781,13 +2783,13 @@ class Generator < Xdrgen::Generators::Base
             out.puts "    Uint8List #{dart_name} = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}') ?? '');"
           elsif type_str =~ /\AList<(.+)>\z/
             elem = $1
-            out.puts "    int #{dart_name}Len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}.len') ?? '0');"
+            out.puts "    int #{dart_name}Len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}.len') ?? '0', '\$prefix.#{xdr_name}.len');"
             out.puts "    #{type_str} #{dart_name} = [];"
             out.puts "    for (int i = 0; i < #{dart_name}Len; i++) {"
-            out.puts "      #{dart_name}.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_name}[$i]")});"
+            out.puts "      #{dart_name}.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_name}[$i]", decl.type)});"
             out.puts "    }"
           else
-            out.puts "    #{type_str} #{dart_name} = #{txrep_from_expr(type_str, "map", "$prefix.#{xdr_name}")};"
+            out.puts "    #{type_str} #{dart_name} = #{txrep_from_expr(type_str, "map", "$prefix.#{xdr_name}", decl.type)};"
           end
         end
       end
@@ -2840,7 +2842,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
     out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
     if disc_info[:kind] == :int
-      out.puts "    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{df}') ?? '0');"
+      out.puts "    int disc = TxRepHelper.#{txrep_number_parser(disc_info[:typespec])}(TxRepHelper.getValue(map, '\$prefix.#{df}') ?? '0', '\$prefix.#{df}');"
       out.puts "    #{class_name} result = #{class_name}(disc);"
     else
       disc_type = disc_info[:dart_name]
@@ -2927,10 +2929,10 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        result._#{field} = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? '');"
     when :array
       element_type = arm[:element_type]
-      out.puts "        int #{field}Len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}.len') ?? '0');"
+      out.puts "        int #{field}Len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}.len') ?? '0', '\$prefix.#{xdr_field}.len');"
       out.puts "        result._#{field} = [];"
       out.puts "        for (int i = 0; i < #{field}Len; i++) {"
-      out.puts "          result._#{field}!.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_field}[$i]")});"
+      out.puts "          result._#{field}!.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_field}[$i]", arm[:decl].type)});"
       out.puts "        }"
     when :optional
       inner_type = arm[:inner_type]
@@ -2938,25 +2940,25 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        if (#{field}Present != null && #{field}Present == 'true') {"
       if inner_type =~ /\AList<(.+)>\z/
         elem = $1
-        out.puts "          int #{field}Len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}.len') ?? '0');"
+        out.puts "          int #{field}Len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}.len') ?? '0', '\$prefix.#{xdr_field}.len');"
         out.puts "          result._#{field} = [];"
         out.puts "          for (int i = 0; i < #{field}Len; i++) {"
-        out.puts "            result._#{field}!.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_field}[$i]")});"
+        out.puts "            result._#{field}!.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_field}[$i]", arm[:decl].type)});"
         out.puts "          }"
       else
-        out.puts "          result._#{field} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_field}")};"
+        out.puts "          result._#{field} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_field}", arm[:decl].type)};"
       end
       out.puts "        }"
     when :simple
       if dart_type =~ /\AList<(.+)>\z/
         elem = $1
-        out.puts "        int #{field}Len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}.len') ?? '0');"
+        out.puts "        int #{field}Len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}.len') ?? '0', '\$prefix.#{xdr_field}.len');"
         out.puts "        result._#{field} = [];"
         out.puts "        for (int i = 0; i < #{field}Len; i++) {"
-        out.puts "          result._#{field}!.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_field}[$i]")});"
+        out.puts "          result._#{field}!.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_field}[$i]", arm[:decl].type)});"
         out.puts "        }"
       else
-        out.puts "        result._#{field} = #{txrep_from_expr(dart_type, "map", "$prefix.#{xdr_field}")};"
+        out.puts "        result._#{field} = #{txrep_from_expr(dart_type, "map", "$prefix.#{xdr_field}", arm[:decl].type)};"
       end
     end
   end
@@ -2965,7 +2967,7 @@ class Generator < Xdrgen::Generators::Base
   # Simple typedef TxRep: wraps int, BigInt, bool, or a named type
   # ---------------------------------------------------------------------------
 
-  def render_simple_typedef_txrep_methods(out, class_name, dart_type, field_name = nil)
+  def render_simple_typedef_txrep_methods(out, class_name, dart_type, typespec, field_name = nil)
     field_name ||= underscore_field(class_name)
     out.puts ""
     out.puts "  void toTxRep(String prefix, List<String> lines) {"
@@ -2978,10 +2980,8 @@ class Generator < Xdrgen::Generators::Base
       out.puts "    String? raw = TxRepHelper.getValue(map, prefix);"
       out.puts "    if (raw == null) throw Exception('missing \$prefix');"
       case dart_type
-      when "int"
-        out.puts "    return #{class_name}(TxRepHelper.parseInt(raw));"
-      when "BigInt"
-        out.puts "    return #{class_name}(TxRepHelper.parseBigInt(raw));"
+      when "int", "BigInt"
+        out.puts "    return #{class_name}(TxRepHelper.#{txrep_number_parser(typespec)}(raw, prefix));"
       when "bool"
         out.puts "    return #{class_name}(raw == 'true');"
       when "double"
@@ -3059,7 +3059,7 @@ class Generator < Xdrgen::Generators::Base
   # Array typedef TxRep (e.g., XdrContractCostParams)
   # ---------------------------------------------------------------------------
 
-  def render_array_typedef_txrep_methods(out, class_name, element_type, is_fixed, size)
+  def render_array_typedef_txrep_methods(out, class_name, element_type, is_fixed, size, typespec)
     field_name = underscore_field(class_name)
     out.puts ""
     out.puts "  void toTxRep(String prefix, List<String> lines) {"
@@ -3075,13 +3075,13 @@ class Generator < Xdrgen::Generators::Base
     if is_fixed
       out.puts "    List<#{element_type}> items = [];"
       out.puts "    for (int i = 0; i < #{size}; i++) {"
-      out.puts "      items.add(#{txrep_from_expr(element_type, "map", "$prefix[$i]")});"
+      out.puts "      items.add(#{txrep_from_expr(element_type, "map", "$prefix[$i]", typespec)});"
       out.puts "    }"
     else
-      out.puts "    int len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.len') ?? '0');"
+      out.puts "    int len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.len') ?? '0', '\$prefix.len');"
       out.puts "    List<#{element_type}> items = [];"
       out.puts "    for (int i = 0; i < len; i++) {"
-      out.puts "      items.add(#{txrep_from_expr(element_type, "map", "$prefix[$i]")});"
+      out.puts "      items.add(#{txrep_from_expr(element_type, "map", "$prefix[$i]", typespec)});"
       out.puts "    }"
     end
     out.puts "    return #{class_name}(items);"
@@ -3133,8 +3133,22 @@ class Generator < Xdrgen::Generators::Base
     end
   end
 
+  # Numeric widths follow the XDR declaration, including typedef chains.
+  def txrep_number_parser(typespec)
+    case typespec
+    when AST::Typespecs::Int then "parseInt32"
+    when AST::Typespecs::UnsignedInt then "parseUint32"
+    when AST::Typespecs::Hyper then "parseInt64"
+    when AST::Typespecs::UnsignedHyper then "parseUint64"
+    when AST::Typespecs::Simple
+      txrep_number_parser(typespec.resolved_type.declaration.type)
+    else
+      raise "No TxRep integer parser for #{typespec.class}"
+    end
+  end
+
   # Return a Dart expression for fromTxRep of the given type.
-  def txrep_from_expr(dart_type, map_var, prefix_expr)
+  def txrep_from_expr(dart_type, map_var, prefix_expr, typespec)
     base_type = dart_type.sub(/\?\z/, '')
 
     if TXREP_COMPACT_TYPES.key?(base_type)
@@ -3143,10 +3157,8 @@ class Generator < Xdrgen::Generators::Base
     end
 
     case base_type
-    when "int"
-      "TxRepHelper.parseInt(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '0')"
-    when "BigInt"
-      "TxRepHelper.parseBigInt(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '0')"
+    when "int", "BigInt"
+      "TxRepHelper.#{txrep_number_parser(typespec)}(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '0', '#{prefix_expr}')"
     when "bool"
       "(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? 'false') == 'true'"
     when "double"

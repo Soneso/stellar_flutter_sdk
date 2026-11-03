@@ -129,8 +129,9 @@ class XdrPathPaymentStrictReceiveOp {
       TxRepHelper.getValue(map, '$prefix.destAsset') ?? '',
     );
     XdrInt64 destAmount = XdrInt64.fromTxRep(map, '$prefix.destAmount');
-    int pathLen = TxRepHelper.parseInt(
+    int pathLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.path.len') ?? '0',
+      '$prefix.path.len',
     );
     List<XdrAsset> path = [];
     for (int i = 0; i < pathLen; i++) {

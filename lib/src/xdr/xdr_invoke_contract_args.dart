@@ -86,8 +86,9 @@ class XdrInvokeContractArgs {
     String functionName = TxRepHelper.unescapeString(
       TxRepHelper.getValue(map, '$prefix.functionName') ?? '',
     );
-    int argsLen = TxRepHelper.parseInt(
+    int argsLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.args.len') ?? '0',
+      '$prefix.args.len',
     );
     List<XdrSCVal> args = [];
     for (int i = 0; i < argsLen; i++) {

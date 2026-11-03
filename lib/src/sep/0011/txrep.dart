@@ -192,7 +192,7 @@ class TxRep {
       if (feeStr == null) {
         throw Exception('missing feeBump.tx.fee');
       }
-      XdrInt64 fee = XdrInt64(BigInt.parse(feeStr));
+      XdrInt64 fee = XdrInt64(TxRepHelper.parseInt64(feeStr, 'feeBump.tx.fee'));
 
       XdrFeeBumpTransactionInnerTx innerTx = XdrFeeBumpTransactionInnerTx(
         XdrEnvelopeType.ENVELOPE_TYPE_TX,
@@ -305,12 +305,14 @@ class TxRep {
     // Fee.
     String? feeStr = TxRepHelper.getValue(map, '$prefix.fee');
     if (feeStr == null) throw Exception('missing $prefix.fee');
-    XdrUint32 fee = XdrUint32(int.parse(feeStr));
+    XdrUint32 fee = XdrUint32(TxRepHelper.parseUint32(feeStr, '$prefix.fee'));
 
     // Sequence number.
     String? seqStr = TxRepHelper.getValue(map, '$prefix.seqNum');
     if (seqStr == null) throw Exception('missing $prefix.seqNum');
-    XdrSequenceNumber seqNum = XdrSequenceNumber(BigInt.parse(seqStr));
+    XdrSequenceNumber seqNum = XdrSequenceNumber(
+      TxRepHelper.parseInt64(seqStr, '$prefix.seqNum'),
+    );
 
     // Preconditions — delegate to generated code, with backward compat
     // for old format (tx.timeBounds._present instead of tx.cond.type).
@@ -338,7 +340,7 @@ class TxRep {
     // Operations.
     String? opsLenStr = TxRepHelper.getValue(map, '$prefix.operations.len');
     if (opsLenStr == null) throw Exception('missing $prefix.operations.len');
-    int opsLen = int.parse(opsLenStr);
+    int opsLen = TxRepHelper.parseUint32(opsLenStr, '$prefix.operations.len');
     List<XdrOperation> operations = [];
     for (int i = 0; i < opsLen; i++) {
       operations.add(XdrOperation.fromTxRep(map, '$prefix.operations[$i]'));
@@ -437,7 +439,7 @@ class TxRep {
   ) {
     String? lenStr = TxRepHelper.getValue(map, '${prefix}signatures.len');
     if (lenStr == null) return [];
-    int len = int.parse(lenStr);
+    int len = TxRepHelper.parseUint32(lenStr, '${prefix}signatures.len');
     List<XdrDecoratedSignature> signatures = [];
     for (int i = 0; i < len; i++) {
       String? hintStr = TxRepHelper.getValue(

@@ -71,8 +71,9 @@ class XdrExtensionPoint {
   }
 
   static XdrExtensionPoint fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(
+    int disc = TxRepHelper.parseInt32(
       TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+      '$prefix.v',
     );
     XdrExtensionPoint result = XdrExtensionPoint(disc);
     switch (result.discriminant) {

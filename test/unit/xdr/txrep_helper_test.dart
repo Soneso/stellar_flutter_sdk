@@ -226,6 +226,29 @@ void main() {
   // parseInt / parseBigInt
   // ---------------------------------------------------------------------------
   group('TxRepHelper.parseInt', () {
+    test('accepts plus and validates tokens and int64 bounds', () {
+      expect(TxRepHelper.parseInt('+5'), 5);
+      expect(TxRepHelper.parseBigInt('+5'), BigInt.from(5));
+      for (final token in ['--5', '0xZZ', '0x', '5x', '-+5', '']) {
+        final invalid = throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            'Invalid integer for value: $token',
+          ),
+        );
+        expect(() => TxRepHelper.parseInt(token), invalid);
+        expect(() => TxRepHelper.parseBigInt(token), invalid);
+      }
+      for (final token in ['0x8000000000000000', '-0x8000000000000001']) {
+        expect(() => TxRepHelper.parseInt(token), throwsFormatException);
+      }
+      for (final bound in ['-9223372036854775808', '9223372036854775807']) {
+        expect(TxRepHelper.parseInt(bound), int.parse(bound));
+      }
+      expect(TxRepHelper.parseBigInt('18446744073709551616'), BigInt.one << 64);
+    });
+
     test('parses decimal', () {
       expect(TxRepHelper.parseInt('42'), 42);
     });
