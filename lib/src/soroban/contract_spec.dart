@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import '../xdr/xdr.dart';
 import '../util.dart';
 import 'sc_val_host_order.dart';
+import 'contract_address_guard.dart' show redactSecretSeeds;
 import 'soroban_auth.dart';
 
 /// Utility class for working with Soroban contract specifications.
@@ -80,12 +81,6 @@ import 'soroban_auth.dart';
 /// - [ContractSpecException] for type conversion errors
 class ContractSpec {
   final List<XdrSCSpecEntry> entries;
-
-  /// Maximum signed 64-bit integer value (web-safe).
-  static final BigInt _maxInt64 = BigInt.parse('7FFFFFFFFFFFFFFF', radix: 16);
-
-  /// Minimum signed 64-bit integer value (web-safe).
-  static final BigInt _minInt64 = -BigInt.parse('8000000000000000', radix: 16);
 
   /// Creates a ContractSpec from a list of spec entries.
   const ContractSpec(this.entries);
@@ -270,6 +265,9 @@ class ContractSpec {
   /// This is the core conversion method that handles all type mappings from Dart
   /// native types to Stellar XDR values.
   ///
+  /// Integer types of 64 bits or wider accept [BigInt] and decimal strings
+  /// within their signed or unsigned XDR range, including timepoint and duration.
+  ///
   /// [val] The native Dart value to convert
   /// [ty] The target type specification
   ///
@@ -370,32 +368,13 @@ class ContractSpec {
         }
         return XdrSCVal.forI32(intVal);
       case XdrSCSpecType.SC_SPEC_TYPE_U64:
-        final intVal = _parseInteger(val, 'u64');
-        if (intVal < 0) {
-          throw ContractSpecException.invalidType(
-            'Value $intVal out of range for u64',
-          );
-        }
-        return XdrSCVal.forU64(BigInt.from(intVal));
+        return XdrSCVal.forU64(_parseWideInteger(val, 'u64', 64));
       case XdrSCSpecType.SC_SPEC_TYPE_I64:
-        final intVal = _parseInteger(val, 'i64');
-        return XdrSCVal.forI64(BigInt.from(intVal));
+        return XdrSCVal.forI64(_parseWideInteger(val, 'i64', 64, signed: true));
       case XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT:
-        final intVal = _parseInteger(val, 'timepoint');
-        if (intVal < 0) {
-          throw ContractSpecException.invalidType(
-            'Value $intVal out of range for timepoint',
-          );
-        }
-        return XdrSCVal.forTimepoint(BigInt.from(intVal));
+        return XdrSCVal.forTimepoint(_parseWideInteger(val, 'timepoint', 64));
       case XdrSCSpecType.SC_SPEC_TYPE_DURATION:
-        final intVal = _parseInteger(val, 'duration');
-        if (intVal < 0) {
-          throw ContractSpecException.invalidType(
-            'Value $intVal out of range for duration',
-          );
-        }
-        return XdrSCVal.forDuration(BigInt.from(intVal));
+        return XdrSCVal.forDuration(_parseWideInteger(val, 'duration', 64));
       case XdrSCSpecType.SC_SPEC_TYPE_U128:
         return _handleU128Type(val);
       case XdrSCSpecType.SC_SPEC_TYPE_I128:
@@ -440,10 +419,12 @@ class ContractSpec {
       } else if (val >= -0x80000000 && val < 0) {
         return XdrSCVal.forI32(val);
       } else {
-        return XdrSCVal.forI64(BigInt.from(val));
+        return XdrSCVal.forI64(_parseWideInteger(val, 'i64', 64, signed: true));
       }
     } else if (val is BigInt) {
-      return XdrSCVal.forI128BigInt(val);
+      return XdrSCVal.forI128BigInt(
+        _parseWideInteger(val, 'i128', 128, signed: true),
+      );
     } else if (val is String) {
       return XdrSCVal.forString(val);
     } else if (val is Uint8List) {
@@ -487,37 +468,37 @@ class ContractSpec {
     );
   }
 
+  /// Parses wide integer inputs and checks the target XDR range.
+  BigInt _parseWideInteger(
+    dynamic val,
+    String typeName,
+    int bits, {
+    bool signed = false,
+  }) {
+    BigInt? value;
+    if (val is BigInt) {
+      value = val;
+    } else if (val is String) {
+      value = BigInt.tryParse(val);
+    } else if (val is int && val.isFinite) {
+      value = BigInt.from(val);
+    } else if (val is double && val.isFinite && val.truncateToDouble() == val) {
+      value = BigInt.from(val);
+    }
+    final limit = BigInt.one << (signed ? bits - 1 : bits);
+    final minimum = signed ? -limit : BigInt.zero;
+    if (value != null && value >= minimum && value < limit) return value;
+    throw ContractSpecException.invalidType(
+      'Value $val is not a $typeName integer in [$minimum, ${limit - BigInt.one}]',
+    );
+  }
+
   /// Handle 128-bit unsigned integer conversion
   XdrSCVal _handleU128Type(dynamic val) {
     if (val is XdrUInt128Parts) {
       return XdrSCVal.forU128(val);
     }
-
-    if (val is BigInt) {
-      if (val < BigInt.zero) {
-        throw ContractSpecException.invalidType(
-          'Value $val out of range for u128 (negative)',
-        );
-      }
-      return XdrSCVal.forU128BigInt(val);
-    }
-
-    // For small integers, convert to 128-bit parts
-    final intVal = _parseInteger(val, 'u128');
-    if (intVal < 0) {
-      throw ContractSpecException.invalidType(
-        'Value $intVal out of range for u128',
-      );
-    }
-
-    // Simple conversion for values that fit in int64
-    if (BigInt.from(intVal) <= _maxInt64) {
-      return XdrSCVal.forU128Parts(BigInt.zero, BigInt.from(intVal));
-    }
-
-    throw ContractSpecException.conversionFailed(
-      'Large u128 values require XdrUInt128Parts or BigInt object',
-    );
+    return XdrSCVal.forU128BigInt(_parseWideInteger(val, 'u128', 128));
   }
 
   /// Handle 128-bit signed integer conversion
@@ -525,22 +506,8 @@ class ContractSpec {
     if (val is XdrInt128Parts) {
       return XdrSCVal.forI128(val);
     }
-
-    if (val is BigInt) {
-      return XdrSCVal.forI128BigInt(val);
-    }
-
-    // For small integers, convert to 128-bit parts
-    final intVal = _parseInteger(val, 'i128');
-
-    // Simple conversion for values that fit in int64
-    if (BigInt.from(intVal) >= _minInt64 && BigInt.from(intVal) <= _maxInt64) {
-      final hi = intVal < 0 ? BigInt.from(-1) : BigInt.zero; // Sign extension
-      return XdrSCVal.forI128Parts(hi, BigInt.from(intVal));
-    }
-
-    throw ContractSpecException.conversionFailed(
-      'Large i128 values require XdrInt128Parts or BigInt object',
+    return XdrSCVal.forI128BigInt(
+      _parseWideInteger(val, 'i128', 128, signed: true),
     );
   }
 
@@ -549,25 +516,7 @@ class ContractSpec {
     if (val is XdrUInt256Parts) {
       return XdrSCVal.forU256(val);
     }
-
-    if (val is BigInt) {
-      if (val < BigInt.zero) {
-        throw ContractSpecException.invalidType(
-          'Value $val out of range for u256 (negative)',
-        );
-      }
-      return XdrSCVal.forU256BigInt(val);
-    }
-
-    // For small integers, convert to BigInt then to 256-bit
-    final intVal = _parseInteger(val, 'u256');
-    if (intVal < 0) {
-      throw ContractSpecException.invalidType(
-        'Value $intVal out of range for u256',
-      );
-    }
-
-    return XdrSCVal.forU256BigInt(BigInt.from(intVal));
+    return XdrSCVal.forU256BigInt(_parseWideInteger(val, 'u256', 256));
   }
 
   /// Handle 256-bit signed integer conversion
@@ -575,14 +524,9 @@ class ContractSpec {
     if (val is XdrInt256Parts) {
       return XdrSCVal.forI256(val);
     }
-
-    if (val is BigInt) {
-      return XdrSCVal.forI256BigInt(val);
-    }
-
-    // For small integers, convert to BigInt then to 256-bit
-    final intVal = _parseInteger(val, 'i256');
-    return XdrSCVal.forI256BigInt(BigInt.from(intVal));
+    return XdrSCVal.forI256BigInt(
+      _parseWideInteger(val, 'i256', 256, signed: true),
+    );
   }
 
   /// Handle bytes type conversion
@@ -1036,8 +980,8 @@ class ContractSpecException implements Exception {
   /// Exception for when a function is not found in the contract spec.
   factory ContractSpecException.functionNotFound(String name) {
     return ContractSpecException(
-      'Function not found: $name',
-      functionName: name,
+      'Function not found: ${redactSecretSeeds(name)}',
+      functionName: redactSecretSeeds(name),
     );
   }
 
@@ -1047,30 +991,39 @@ class ContractSpecException implements Exception {
     String? functionName,
   }) {
     return ContractSpecException(
-      'Required argument not found: $name',
-      argumentName: name,
-      functionName: functionName,
+      'Required argument not found: ${redactSecretSeeds(name)}',
+      argumentName: redactSecretSeeds(name),
+      functionName: functionName == null
+          ? null
+          : redactSecretSeeds(functionName),
     );
   }
 
   /// Exception for when a spec entry is not found.
   factory ContractSpecException.entryNotFound(String name) {
-    return ContractSpecException('Entry not found: $name', entryName: name);
+    return ContractSpecException(
+      'Entry not found: ${redactSecretSeeds(name)}',
+      entryName: redactSecretSeeds(name),
+    );
   }
 
   /// Exception for invalid type conversion.
   factory ContractSpecException.invalidType(String message) {
-    return ContractSpecException('Invalid type: $message');
+    return ContractSpecException('Invalid type: ${redactSecretSeeds(message)}');
   }
 
   /// Exception for conversion failures.
   factory ContractSpecException.conversionFailed(String message) {
-    return ContractSpecException('Conversion failed: $message');
+    return ContractSpecException(
+      'Conversion failed: ${redactSecretSeeds(message)}',
+    );
   }
 
   /// Exception for invalid enum values.
   factory ContractSpecException.invalidEnumValue(String message) {
-    return ContractSpecException('Invalid enum value: $message');
+    return ContractSpecException(
+      'Invalid enum value: ${redactSecretSeeds(message)}',
+    );
   }
 }
 

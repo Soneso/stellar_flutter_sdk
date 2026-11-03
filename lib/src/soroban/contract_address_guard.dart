@@ -16,9 +16,10 @@ void checkContractAddress(String address, String subject) {
           isHexString(address))) {
     return;
   }
-  if (StrKey.isValidStellarSecretSeed(address)) {
+  final display = redactSecretSeeds(address);
+  if (display != address) {
     throw ArgumentError(
-      '$subject must be a contract (C...) address, got a secret seed (S...) '
+      '$subject must be a contract (C...) address, got $display '
       'instead of an address',
     );
   }
@@ -29,12 +30,21 @@ void checkContractAddress(String address, String subject) {
           : '';
       throw ArgumentError(
         '$subject must be a contract (C...) address, got $kind address: '
-        '$address$hint',
+        '$display$hint',
       );
     }
   }
-  throw ArgumentError('$subject must be a contract (C...) address: $address');
+  throw ArgumentError('$subject must be a contract (C...) address: $display');
 }
+
+/// Replaces each valid secret seed in diagnostic text, in any letter case,
+/// with `a secret seed (S...)`.
+String redactSecretSeeds(String text) => text.replaceAllMapped(
+  RegExp(r'S[A-Z2-7]{55}', caseSensitive: false),
+  (match) => StrKey.isValidStellarSecretSeed(match[0]!.toUpperCase())
+      ? 'a secret seed (S...)'
+      : match[0]!,
+);
 
 /// Throws the rejection [checkContractAddress] gives a contract data owner
 /// as a [FormatException], the type the contract id codec throws for a

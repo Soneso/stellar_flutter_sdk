@@ -40,6 +40,236 @@ Matcher _throwsSpecMessage(List<String> fragments) => throwsA(
 );
 
 void main() {
+  group('wide integer conversion', () {
+    final spec = ContractSpec([]);
+    final types = <String, (XdrSCSpecTypeDef, int, bool)>{
+      'u64': (XdrSCSpecTypeDef.forU64(), 64, false),
+      'i64': (XdrSCSpecTypeDef.forI64(), 64, true),
+      'timepoint': (XdrSCSpecTypeDef.forTimepoint(), 64, false),
+      'duration': (XdrSCSpecTypeDef.forDuration(), 64, false),
+      'u128': (XdrSCSpecTypeDef.forU128(), 128, false),
+      'i128': (XdrSCSpecTypeDef.forI128(), 128, true),
+      'u256': (XdrSCSpecTypeDef.forU256(), 256, false),
+      'i256': (XdrSCSpecTypeDef.forI256(), 256, true),
+    };
+    test('large integral doubles convert exactly', () {
+      for (final entry in types.entries.where((e) => e.key != 'i64')) {
+        final encoded = spec
+            .nativeToXdrSCVal(1e19, entry.value.$1)
+            .toBase64EncodedXdrString();
+        expect(
+          XdrSCVal.fromBase64EncodedXdrString(encoded).toNative(),
+          BigInt.parse('10000000000000000000'),
+          reason: entry.key,
+        );
+      }
+      expect(
+        () => spec.nativeToXdrSCVal(-1e19, XdrSCSpecTypeDef.forI64()),
+        _throwsSpecMessage(['i64', 'Value ${-1e19} ']),
+      );
+    });
+    test('Val rejects an integral double outside int64', () {
+      final type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL);
+      expect(
+        () => spec.nativeToXdrSCVal(1e19, type),
+        throwsA(isA<ContractSpecException>()),
+      );
+    });
+    test('diagnostic messages redact a lowercased valid seed', () {
+      final seed = KeyPair.random().secretSeed.toLowerCase();
+      expect(
+        ContractSpecException.invalidType('prefix $seed suffix').message,
+        'Invalid type: prefix a secret seed (S...) suffix',
+      );
+    });
+    test('inferred BigInt uses the i128 range', () {
+      final type = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL);
+      for (final value in [
+        (BigInt.one << 128) - BigInt.one,
+        BigInt.one << 128,
+      ]) {
+        expect(
+          () => spec.nativeToXdrSCVal(value, type),
+          _throwsSpecMessage(['i128', 'Value $value ']),
+        );
+      }
+      final max = (BigInt.one << 127) - BigInt.one;
+      expect(spec.nativeToXdrSCVal(max, type).toNative(), max);
+    });
+    test('all input diagnostics redact valid seeds', () {
+      final seed = KeyPair.random().secretSeed;
+      final bytesN = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_BYTES_N)
+        ..bytesN = XdrSCSpecTypeBytesN(XdrUint32(4));
+      final redacted = allOf(
+        contains('a secret seed (S...)'),
+        isNot(contains(seed)),
+      );
+      for (final type in [
+        XdrSCSpecTypeDef.forU32(),
+        XdrSCSpecTypeDef.forI32(),
+        XdrSCSpecTypeDef.forBytes(),
+        bytesN,
+        XdrSCSpecTypeDef.forAddress(),
+      ]) {
+        expect(
+          () => spec.nativeToXdrSCVal(seed, type),
+          throwsA(
+            isA<ContractSpecException>().having(
+              (e) => e.message,
+              'message',
+              redacted,
+            ),
+          ),
+        );
+      }
+      for (final error in [
+        ContractSpecException.functionNotFound(seed),
+        ContractSpecException.argumentNotFound(seed, functionName: seed),
+        ContractSpecException.entryNotFound(seed),
+        ContractSpecException.invalidEnumValue('Unknown case "$seed"'),
+      ]) {
+        expect(error.message, redacted);
+        expect(error.toString(), redacted);
+      }
+      final lookalike = 'S' * 56;
+      expect(StrKey.isValidStellarSecretSeed(lookalike), isFalse);
+      expect(
+        () => spec.nativeToXdrSCVal(lookalike, XdrSCSpecTypeDef.forU64()),
+        _throwsSpecMessage([lookalike]),
+      );
+    });
+    for (final entry in types.entries) {
+      final name = entry.key;
+      final (type, bits, signed) = entry.value;
+      final limit = BigInt.one << (signed ? bits - 1 : bits);
+      final min = signed ? -limit : BigInt.zero;
+      final max = limit - BigInt.one;
+      for (final asString in [false, true]) {
+        final form = asString ? 'decimal' : 'BigInt';
+        test('$name $form boundaries round trip encoded XDR', () {
+          final values = {min, max, BigInt.zero};
+          if (!signed && bits == 64) {
+            values.addAll([(BigInt.one << 63) - BigInt.one, BigInt.one << 63]);
+          }
+          for (final value in values) {
+            final val = asString ? value.toString() : value;
+            final scv = spec.nativeToXdrSCVal(val, type);
+            final encoded = scv.toBase64EncodedXdrString();
+            final decoded = XdrSCVal.fromBase64EncodedXdrString(encoded);
+            expect(decoded.toNative(), value);
+            expect(
+              spec
+                  .nativeToXdrSCVal(decoded.toNative(), type)
+                  .toBase64EncodedXdrString(),
+              encoded,
+            );
+            final bytes = XdrDataOutputStream();
+            XdrSCVal.encode(bytes, scv);
+            final expected = List<int>.generate(
+              bits ~/ 8,
+              (i) =>
+                  ((value.toUnsigned(bits) >> ((bits ~/ 8 - i - 1) * 8)) &
+                          BigInt.from(255))
+                      .toInt(),
+            );
+            expect(bytes.bytes.sublist(4), expected);
+            expect(spec.nativeToXdrSCVal(scv, type), same(scv));
+          }
+        });
+        test('$name $form rejects one past each boundary', () {
+          for (final value in [min - BigInt.one, limit]) {
+            expect(
+              () => spec.nativeToXdrSCVal(
+                asString ? value.toString() : value,
+                type,
+              ),
+              _throwsSpecMessage(['Invalid type:', name, 'Value $value ']),
+            );
+          }
+        });
+      }
+      test('$name compatibility inputs and invalid values', () {
+        for (final hex in [
+          '0x7FFFFFFFFFFFFFFF',
+          '0x8000000000000000',
+          '0xFFFFFFFFFFFFFFFF',
+        ]) {
+          if (name == 'i64' && BigInt.parse(hex) > max) {
+            expect(
+              () => spec.nativeToXdrSCVal(hex, type),
+              _throwsSpecMessage(['i64', 'Value $hex ']),
+            );
+          } else {
+            final encoded = spec
+                .nativeToXdrSCVal(hex, type)
+                .toBase64EncodedXdrString();
+            expect(
+              XdrSCVal.fromBase64EncodedXdrString(encoded).toNative(),
+              BigInt.parse(hex),
+            );
+          }
+        }
+        for (final value in [42, 42.0, '42', ' +42 ', ' 0x2a ', '0X2A']) {
+          final encoded = spec
+              .nativeToXdrSCVal(value, type)
+              .toBase64EncodedXdrString();
+          expect(
+            XdrSCVal.fromBase64EncodedXdrString(encoded).toNative(),
+            BigInt.from(42),
+          );
+        }
+        for (final value in [-1, '-0x1', '-1', -1.0]) {
+          if (signed) {
+            final encoded = spec
+                .nativeToXdrSCVal(value, type)
+                .toBase64EncodedXdrString();
+            expect(
+              XdrSCVal.fromBase64EncodedXdrString(encoded).toNative(),
+              -BigInt.one,
+            );
+          } else {
+            expect(
+              () => spec.nativeToXdrSCVal(value, type),
+              _throwsSpecMessage([
+                'Invalid type: Value $value is not a $name integer in [$min, $max]',
+              ]),
+            );
+          }
+        }
+        for (final value in [
+          'no-number',
+          '1.5',
+          '--5',
+          '0xZZ',
+          true,
+          1.5,
+          double.nan,
+          double.infinity,
+        ]) {
+          expect(
+            () => spec.nativeToXdrSCVal(value, type),
+            _throwsSpecMessage(['Invalid type:', name, value.toString()]),
+          );
+        }
+        final seed = KeyPair.random().secretSeed;
+        expect(
+          () => spec.nativeToXdrSCVal('prefix $seed suffix', type),
+          throwsA(
+            isA<ContractSpecException>().having(
+              (e) => e.message,
+              'message',
+              allOf(
+                contains(name),
+                contains('a secret seed (S...)'),
+                isNot(contains(seed)),
+              ),
+            ),
+          ),
+        );
+      });
+    }
+  });
+
   group('ContractSpec', () {
     late ContractSpec spec;
     late List<XdrSCSpecEntry> entries;
