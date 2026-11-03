@@ -1,7 +1,175 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+Matcher badField(String field, String type) => throwsA(
+  isA<FormatException>().having(
+    (e) => e.message,
+    'message',
+    allOf(contains(field), contains(type)),
+  ),
+);
+
 void main() {
+  group('field types', () {
+    test('every typed field reports its full path', () {
+      const fields = {
+        '': 'VERSION NETWORK_PASSPHRASE FEDERATION_SERVER AUTH_SERVER TRANSFER_SERVER TRANSFER_SERVER_SEP0024 KYC_SERVER WEB_AUTH_ENDPOINT SIGNING_KEY HORIZON_URL URI_REQUEST_SIGNING_KEY DIRECT_PAYMENT_SERVER ANCHOR_QUOTE_SERVER WEB_AUTH_FOR_CONTRACTS_ENDPOINT WEB_AUTH_CONTRACT_ID',
+        'DOCUMENTATION':
+            'ORG_NAME ORG_DBA ORG_URL ORG_LOGO ORG_DESCRIPTION ORG_PHYSICAL_ADDRESS ORG_PHYSICAL_ADDRESS_ATTESTATION ORG_PHONE_NUMBER ORG_PHONE_NUMBER_ATTESTATION ORG_KEYBASE ORG_TWITTER ORG_GITHUB ORG_OFFICIAL_EMAIL ORG_SUPPORT_EMAIL ORG_LICENSING_AUTHORITY ORG_LICENSE_TYPE ORG_LICENSE_NUMBER',
+        'PRINCIPALS':
+            'name email keybase twitter telegram github id_photo_hash verification_photo_hash',
+        'CURRENCIES':
+            'toml code code_template issuer contract status display_decimals name desc conditions image fixed_number max_number is_unlimited is_asset_anchored anchor_asset_type anchor_asset attestation_of_reserve redemption_instructions regulated approval_server approval_criteria',
+        'VALIDATORS': 'ALIAS DISPLAY_NAME PUBLIC_KEY HOST HISTORY',
+      };
+      for (final entry in fields.entries) {
+        final section = entry.key;
+        final table = section.isNotEmpty && section != 'DOCUMENTATION';
+        final header = section.isEmpty
+            ? ''
+            : table
+            ? '[[$section]]\n[[$section]]\n'
+            : '[$section]\n';
+        final path = section.isEmpty
+            ? ''
+            : table
+            ? '$section[1].'
+            : '$section.';
+        for (final key in entry.value.split(' ')) {
+          expect(
+            () => StellarToml('${header}$key = 1979-05-27T07:32:00Z'),
+            badField('$path$key:', 'DateTime'),
+            reason: '$path$key',
+          );
+        }
+      }
+    });
+    final cases = <(String, String, String)>[
+      ('VERSION = 2', 'VERSION', 'int'),
+      ('[DOCUMENTATION]\nORG_NAME = 2', 'DOCUMENTATION.ORG_NAME', 'int'),
+      ('[[PRINCIPALS]]\nname = false', 'PRINCIPALS[0].name', 'bool'),
+      (
+        '[[CURRENCIES]]\ndisplay_decimals = "7"',
+        'CURRENCIES[0].display_decimals',
+        'String',
+      ),
+      ('[[CURRENCIES]]\nis_unlimited = 2', 'CURRENCIES[0].is_unlimited', 'int'),
+      ('[[VALIDATORS]]\nALIAS = 2', 'VALIDATORS[0].ALIAS', 'int'),
+    ];
+    for (final (body, field, type) in cases) {
+      test('rejects $field with $type', () {
+        expect(() => StellarToml(body), badField(field, type));
+      });
+    }
+    for (final section in [
+      'ACCOUNTS',
+      'DOCUMENTATION',
+      'PRINCIPALS',
+      'CURRENCIES',
+      'VALIDATORS',
+    ]) {
+      test('rejects scalar $section container', () {
+        expect(() => StellarToml('$section = 2'), badField(section, 'int'));
+      });
+    }
+    for (final section in ['PRINCIPALS', 'CURRENCIES', 'VALIDATORS']) {
+      test('rejects $section table element', () {
+        expect(() => StellarToml('$section = {}'), badField(section, 'Map'));
+        expect(
+          () => StellarToml('$section = [2]'),
+          badField('$section[0]', 'int'),
+        );
+      });
+    }
+    for (final field in [
+      'ACCOUNTS',
+      'collateral_addresses',
+      'collateral_address_messages',
+      'collateral_address_signatures',
+    ]) {
+      final prefix = field == 'ACCOUNTS' ? '' : '[[CURRENCIES]]\n';
+      test('rejects $field element and container', () {
+        expect(() => StellarToml('$prefix$field = {}'), badField(field, 'Map'));
+        expect(
+          () => StellarToml('$prefix$field = [2]'),
+          badField('$field[0]', 'int'),
+        );
+        expect(() => StellarToml('$prefix$field = 2'), badField(field, 'int'));
+      });
+    }
+    test('fromDomain preserves field error and request headers', () async {
+      final client = MockClient((request) async {
+        expect(
+          request.url.toString(),
+          'https://example.com/.well-known/stellar.toml',
+        );
+        expect(request.headers['x-test'], 'toml');
+        return http.Response('VERSION = 2', 200);
+      });
+      await expectLater(
+        StellarToml.fromDomain(
+          'example.com',
+          httpClient: client,
+          httpRequestHeaders: {'x-test': 'toml'},
+        ),
+        badField('VERSION', 'int'),
+      );
+    });
+    test('currencyFromUrl preserves field error and request headers', () async {
+      final client = MockClient((request) async {
+        expect(request.url.toString(), 'https://example.com/USD.toml');
+        expect(request.headers['x-test'], 'currency');
+        return http.Response('display_decimals = "7"', 200);
+      });
+      await expectLater(
+        StellarToml.currencyFromUrl(
+          'https://example.com/USD.toml',
+          httpClient: client,
+          httpRequestHeaders: {'x-test': 'currency'},
+        ),
+        badField('field display_decimals:', 'String'),
+      );
+    });
+    test('fetch methods preserve empty files and status checks', () async {
+      for (final body in ['', '# comment']) {
+        final client = MockClient((_) async => http.Response(body, 200));
+        final toml = await StellarToml.fromDomain(
+          'example.com',
+          httpClient: client,
+        );
+        expect(toml.generalInformation.version, isNull);
+        expect(toml.generalInformation.accounts, isEmpty);
+        final currency = await StellarToml.currencyFromUrl(
+          'https://example.com/USD.toml',
+          httpClient: client,
+        );
+        expect(currency.code, isNull);
+        expect(currency.displayDecimals, isNull);
+      }
+      final client = MockClient((_) async => http.Response('VERSION = 2', 404));
+      final missing = throwsA(
+        isA<Exception>().having(
+          (e) => e.toString(),
+          'message',
+          contains('status code 404'),
+        ),
+      );
+      await expectLater(
+        StellarToml.fromDomain('example.com', httpClient: client),
+        missing,
+      );
+      await expectLater(
+        StellarToml.currencyFromUrl(
+          'https://example.com/USD.toml',
+          httpClient: client,
+        ),
+        missing,
+      );
+    });
+  });
+
   group('StellarToml', () {
     group('parsing', () {
       test('parses minimal TOML with general information', () {
@@ -279,6 +447,8 @@ desc="Anchored Bitcoin on Stellar"
 conditions="Redeemable 1:1 for BTC"
 image="https://example.com/btc.png"
 fixed_number=21000000
+max_number=22000000
+is_unlimited=false
 is_asset_anchored=true
 anchor_asset_type="crypto"
 anchor_asset="BTC"
@@ -307,6 +477,8 @@ approval_criteria="KYC required"
         expect(currency.conditions, equals('Redeemable 1:1 for BTC'));
         expect(currency.image, equals('https://example.com/btc.png'));
         expect(currency.fixedNumber, equals(21000000));
+        expect(currency.maxNumber, equals(22000000));
+        expect(currency.isUnlimited, isFalse);
         expect(currency.isAssetAnchored, isTrue);
         expect(currency.anchorAssetType, equals('crypto'));
         expect(currency.anchorAsset, equals('BTC'));

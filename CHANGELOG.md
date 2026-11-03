@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TxRep rejects malformed and out-of-range integers with a `FormatException` naming the field and token.
 - `ContractSpec.nativeToXdrSCVal` accepts a `BigInt` or a decimal string for u64, i64, timepoint, duration and the 128 and 256-bit types, including the values `XdrSCVal.toNative` returns, and throws `ContractSpecException` for a value outside the type's range.
 - `ContractSpecException` messages replace a secret seed in the echoed input with `a secret seed (S...)`.
+- `StellarToml`, `StellarToml.fromDomain` and `StellarToml.currencyFromUrl` throw a `FormatException` naming the field and the type found for a field, section or list element of the wrong type.
 
 ## [3.10.0] - 2026-10-25
 
