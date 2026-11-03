@@ -93,8 +93,9 @@ class XdrTransactionExt {
   }
 
   static XdrTransactionExt fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(
+    int disc = TxRepHelper.parseInt32(
       TxRepHelper.getValue(map, '$prefix.v') ?? '0',
+      '$prefix.v',
     );
     XdrTransactionExt result = XdrTransactionExt(disc);
     switch (result.discriminant) {

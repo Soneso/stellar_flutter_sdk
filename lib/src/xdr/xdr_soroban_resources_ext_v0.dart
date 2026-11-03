@@ -74,8 +74,9 @@ class XdrSorobanResourcesExtV0 {
     Map<String, String> map,
     String prefix,
   ) {
-    int archivedSorobanEntriesLen = TxRepHelper.parseInt(
+    int archivedSorobanEntriesLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.archivedSorobanEntries.len') ?? '0',
+      '$prefix.archivedSorobanEntries.len',
     );
     List<XdrUint32> archivedSorobanEntries = [];
     for (int i = 0; i < archivedSorobanEntriesLen; i++) {

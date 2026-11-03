@@ -1,6 +1,7 @@
 require 'minitest/autorun'
 require 'fileutils'
 require 'tmpdir'
+require 'stringio'
 require_relative '../generator/generator'
 
 class GeneratorSnapshotTest < Minitest::Test
@@ -57,6 +58,21 @@ class GeneratorSnapshotTest < Minitest::Test
   end
 
   # -- Semantic checks --
+  def test_uint32_union_discriminant_uses_uint32_txrep_reader
+    top = Xdrgen::Parser.new.parse(<<~XDR)
+      typedef unsigned int uint32;
+      union TestUnion switch (uint32 v) { case 0: void; };
+    XDR
+    union = top.definitions.find { |definition| definition.is_a?(AST::Definitions::Union) }
+    generator = Generator.new(top, nil)
+    disc_info = generator.send(:resolve_discriminant_info, union)
+    arms = generator.send(:build_union_arms, union, 'XdrTestUnion', disc_info)
+    output = StringIO.new
+    generator.send(:render_union_txrep_methods, output, 'XdrTestUnion', disc_info, arms)
+    assert_includes output.string,
+      "int disc = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '$prefix.v') ?? '0', '$prefix.v');"
+  end
+
   def test_recursive_decoders_match_type_cycles
     sources = Dir.glob(File.join(@output_dir, '*.dart')).to_h do |path|
       source = File.read(path)

@@ -215,8 +215,9 @@ class XdrClaimPredicate {
       case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
-        int andPredicatesLen = TxRepHelper.parseInt(
+        int andPredicatesLen = TxRepHelper.parseUint32(
           TxRepHelper.getValue(map, '$prefix.andPredicates.len') ?? '0',
+          '$prefix.andPredicates.len',
         );
         result._andPredicates = [];
         for (int i = 0; i < andPredicatesLen; i++) {
@@ -226,8 +227,9 @@ class XdrClaimPredicate {
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
-        int orPredicatesLen = TxRepHelper.parseInt(
+        int orPredicatesLen = TxRepHelper.parseUint32(
           TxRepHelper.getValue(map, '$prefix.orPredicates.len') ?? '0',
+          '$prefix.orPredicates.len',
         );
         result._orPredicates = [];
         for (int i = 0; i < orPredicatesLen; i++) {

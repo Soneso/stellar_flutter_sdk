@@ -78,8 +78,9 @@ class XdrInvokeHostFunctionOp {
       map,
       '$prefix.hostFunction',
     );
-    int authLen = TxRepHelper.parseInt(
+    int authLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.auth.len') ?? '0',
+      '$prefix.auth.len',
     );
     List<XdrSorobanAuthorizationEntry> auth = [];
     for (int i = 0; i < authLen; i++) {

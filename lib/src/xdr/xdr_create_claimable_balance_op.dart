@@ -82,8 +82,9 @@ class XdrCreateClaimableBalanceOp {
       TxRepHelper.getValue(map, '$prefix.asset') ?? '',
     );
     XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
-    int claimantsLen = TxRepHelper.parseInt(
+    int claimantsLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.claimants.len') ?? '0',
+      '$prefix.claimants.len',
     );
     List<XdrClaimant> claimants = [];
     for (int i = 0; i < claimantsLen; i++) {

@@ -98,8 +98,9 @@ class XdrSorobanAddressCredentialsWithDelegates {
           map,
           '$prefix.addressCredentials',
         );
-    int delegatesLen = TxRepHelper.parseInt(
+    int delegatesLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.delegates.len') ?? '0',
+      '$prefix.delegates.len',
     );
     List<XdrSorobanDelegateSignature> delegates = [];
     for (int i = 0; i < delegatesLen; i++) {

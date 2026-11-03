@@ -1,8 +1,181 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
+  group('TxRep integer widths', () {
+    const account = 'GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN';
+    Matcher invalid(String key, String token) => throwsA(
+      isA<FormatException>().having(
+        (e) => e.message,
+        'message',
+        allOf(contains(key), contains(token)),
+      ),
+    );
+    String envelope(Map<String, String> fields, {bool feeBump = false}) {
+      final prefix = feeBump ? 'feeBump.tx.innerTx.tx' : 'tx';
+      final values = <String, String>{
+        'type': feeBump ? 'ENVELOPE_TYPE_TX_FEE_BUMP' : 'ENVELOPE_TYPE_TX',
+        if (feeBump) ...{
+          'feeBump.tx.feeSource': account,
+          'feeBump.tx.fee': '200',
+          'feeBump.tx.innerTx.type': 'ENVELOPE_TYPE_TX',
+        },
+        '$prefix.sourceAccount': account,
+        '$prefix.fee': '100',
+        '$prefix.seqNum': '1',
+        '$prefix.cond.type': 'PRECOND_NONE',
+        '$prefix.memo.type': 'MEMO_NONE',
+        '$prefix.operations.len': '0',
+        '$prefix.ext.v': '0',
+        ...fields,
+      };
+      return TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        values.entries.map((e) => '${e.key}: ${e.value}').join('\n'),
+      );
+    }
+
+    test('integer tokens accept plus and malformed tokens name the key', () {
+      expect(XdrInt32.fromTxRep({'value': '+0x10'}, 'value').int32, 16);
+      for (final token in ['0xZZ', '--5', '0x', '5x', '-+5', '']) {
+        expect(
+          () => XdrInt32.fromTxRep({'value': token}, 'value'),
+          invalid('value', token),
+        );
+      }
+    });
+
+    test('numeric errors redact secret seeds', () {
+      final seed = StrKey.encodeStellarSecretSeed(Uint8List(32));
+      expect(
+        () => XdrInt32.fromTxRep({'value': seed}, 'value'),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            'Invalid integer for value: [secret seed]',
+          ),
+        ),
+      );
+    });
+
+    test('generated integer fields enforce all four widths', () {
+      final readers = <String, BigInt Function(String)>{
+        'int32': (s) => BigInt.from(XdrInt32.fromTxRep({'n': s}, 'n').int32),
+        'uint32': (s) => BigInt.from(XdrUint32.fromTxRep({'n': s}, 'n').uint32),
+        'int64': (s) => XdrInt64.fromTxRep({'n': s}, 'n').int64,
+        'uint64': (s) => XdrUint64.fromTxRep({'n': s}, 'n').uint64,
+      };
+      for (final entry in readers.entries) {
+        final bits = entry.key.endsWith('32') ? 32 : 64;
+        final signed = entry.key.startsWith('int');
+        final limit = BigInt.one << (signed ? bits - 1 : bits);
+        final min = signed ? -limit : BigInt.zero;
+        final max = limit - BigInt.one;
+        for (final bound in [min, max]) {
+          expect(entry.value('$bound'), bound, reason: entry.key);
+          final hex =
+              '${bound.isNegative ? '-' : ''}0X${bound.abs().toRadixString(16)}';
+          expect(entry.value('  $hex  '), bound, reason: entry.key);
+        }
+        for (final bad in [min - BigInt.one, max + BigInt.one]) {
+          expect(() => entry.value('$bad'), invalid('n', '$bad'));
+        }
+      }
+      expect(
+        XdrUint64.fromTxRep({
+          'n': '18446744073709551615',
+        }, 'n').toBase64EncodedXdrString(),
+        '//////////8=',
+      );
+    });
+
+    test('inline uint32 and int32 discriminants enforce their widths', () {
+      XdrAllowTrustOp allow(String value) => XdrAllowTrustOp.fromTxRep({
+        'op.trustor': account,
+        'op.asset': 'USD',
+        'op.authorize': value,
+      }, 'op');
+      expect(allow('4294967295').authorize, 4294967295);
+      for (final value in ['-1', '4294967296']) {
+        expect(() => allow(value), invalid('op.authorize', value));
+      }
+      for (final value in ['-2147483648', '2147483647']) {
+        expect(
+          XdrExtensionPoint.fromTxRep({'ext.v': value}, 'ext').discriminant,
+          int.parse(value),
+        );
+      }
+      for (final value in ['-2147483649', '2147483648']) {
+        expect(
+          () => XdrExtensionPoint.fromTxRep({'ext.v': value}, 'ext'),
+          invalid('ext.v', value),
+        );
+      }
+    });
+
+    test('transaction fee enforces uint32 and preserves encoded maximum', () {
+      for (final value in ['-1', '4294967296', '0xZZ', '--5', '0x', '5x']) {
+        expect(() => envelope({'tx.fee': value}), invalid('tx.fee', value));
+      }
+      final xdr = envelope({'tx.fee': '4294967295'});
+      expect(base64Decode(xdr).sublist(40, 44), [255, 255, 255, 255]);
+      expect(
+        XdrTransactionEnvelope.fromEnvelopeXdrString(xdr).v1!.tx.fee.uint32,
+        4294967295,
+      );
+    });
+
+    test('hand-written int64 fields preserve bounds and reject overflow', () {
+      for (final key in ['tx.seqNum', 'feeBump.tx.fee']) {
+        final feeBump = key.startsWith('feeBump');
+        for (final value in ['-9223372036854775808', '9223372036854775807']) {
+          final xdr = envelope({key: value}, feeBump: feeBump);
+          final decoded = XdrTransactionEnvelope.fromEnvelopeXdrString(xdr);
+          final actual = feeBump
+              ? decoded.feeBump!.tx.fee.int64
+              : decoded.v1!.tx.seqNum.sequenceNumber;
+          expect(actual, BigInt.parse(value));
+        }
+        for (final value in [
+          '-9223372036854775809',
+          '9223372036854775808',
+          '--5',
+        ]) {
+          expect(
+            () => envelope({key: value}, feeBump: feeBump),
+            invalid(key, value),
+          );
+        }
+      }
+    });
+
+    test('generated and hand-written lengths enforce uint32', () {
+      for (final value in ['-1', '4294967296']) {
+        for (final key in ['tx.operations.len', 'signatures.len']) {
+          expect(() => envelope({key: value}), invalid(key, value));
+        }
+        expect(
+          () => XdrSCVal.fromTxRep({
+            'v.type': 'SCV_VEC',
+            'v.vec._present': 'true',
+            'v.vec.len': value,
+          }, 'v'),
+          invalid('v.vec.len', value),
+        );
+        expect(
+          () => XdrSCContractInstance.fromTxRep({
+            'c.executable.type': 'CONTRACT_EXECUTABLE_STELLAR_ASSET',
+            'c.storage._present': 'true',
+            'c.storage.len': value,
+          }, 'c'),
+          invalid('c.storage.len', value),
+        );
+      }
+    });
+  });
+
   group('TxRep Error Handling and Edge Cases', () {
     late KeyPair sourceKeyPair;
     late String sourceAccountId;

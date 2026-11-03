@@ -104,8 +104,9 @@ class XdrCreateContractArgsV2 {
       map,
       '$prefix.executable',
     );
-    int constructorArgsLen = TxRepHelper.parseInt(
+    int constructorArgsLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.constructorArgs.len') ?? '0',
+      '$prefix.constructorArgs.len',
     );
     List<XdrSCVal> constructorArgs = [];
     for (int i = 0; i < constructorArgsLen; i++) {

@@ -529,8 +529,9 @@ class XdrSCValBase {
       case XdrSCValType.SCV_VEC:
         String? vecPresent = TxRepHelper.getValue(map, '$prefix.vec._present');
         if (vecPresent != null && vecPresent == 'true') {
-          int vecLen = TxRepHelper.parseInt(
+          int vecLen = TxRepHelper.parseUint32(
             TxRepHelper.getValue(map, '$prefix.vec.len') ?? '0',
+            '$prefix.vec.len',
           );
           result._vec = [];
           for (int i = 0; i < vecLen; i++) {
@@ -541,8 +542,9 @@ class XdrSCValBase {
       case XdrSCValType.SCV_MAP:
         String? mapPresent = TxRepHelper.getValue(map, '$prefix.map._present');
         if (mapPresent != null && mapPresent == 'true') {
-          int mapLen = TxRepHelper.parseInt(
+          int mapLen = TxRepHelper.parseUint32(
             TxRepHelper.getValue(map, '$prefix.map.len') ?? '0',
+            '$prefix.map.len',
           );
           result._map = [];
           for (int i = 0; i < mapLen; i++) {

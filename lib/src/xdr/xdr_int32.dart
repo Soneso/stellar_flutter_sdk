@@ -43,7 +43,7 @@ class XdrInt32 {
   static XdrInt32 fromTxRep(Map<String, String> map, String prefix) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
-    return XdrInt32(TxRepHelper.parseInt(raw));
+    return XdrInt32(TxRepHelper.parseInt32(raw, prefix));
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

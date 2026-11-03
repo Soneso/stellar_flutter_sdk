@@ -75,15 +75,17 @@ class XdrLedgerFootprint {
   }
 
   static XdrLedgerFootprint fromTxRep(Map<String, String> map, String prefix) {
-    int readOnlyLen = TxRepHelper.parseInt(
+    int readOnlyLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.readOnly.len') ?? '0',
+      '$prefix.readOnly.len',
     );
     List<XdrLedgerKey> readOnly = [];
     for (int i = 0; i < readOnlyLen; i++) {
       readOnly.add(XdrLedgerKey.fromTxRep(map, '$prefix.readOnly[$i]'));
     }
-    int readWriteLen = TxRepHelper.parseInt(
+    int readWriteLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.readWrite.len') ?? '0',
+      '$prefix.readWrite.len',
     );
     List<XdrLedgerKey> readWrite = [];
     for (int i = 0; i < readWriteLen; i++) {

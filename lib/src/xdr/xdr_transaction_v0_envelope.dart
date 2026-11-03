@@ -76,8 +76,9 @@ class XdrTransactionV0Envelope {
     String prefix,
   ) {
     XdrTransactionV0 tx = XdrTransactionV0.fromTxRep(map, '$prefix.tx');
-    int signaturesLen = TxRepHelper.parseInt(
+    int signaturesLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.signatures.len') ?? '0',
+      '$prefix.signatures.len',
     );
     List<XdrDecoratedSignature> signatures = [];
     for (int i = 0; i < signaturesLen; i++) {

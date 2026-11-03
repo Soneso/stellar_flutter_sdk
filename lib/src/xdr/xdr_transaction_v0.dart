@@ -154,8 +154,9 @@ class XdrTransactionV0 {
       timeBounds = XdrTimeBounds.fromTxRep(map, '$prefix.timeBounds');
     }
     XdrMemo memo = XdrMemo.fromTxRep(map, '$prefix.memo');
-    int operationsLen = TxRepHelper.parseInt(
+    int operationsLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0',
+      '$prefix.operations.len',
     );
     List<XdrOperation> operations = [];
     for (int i = 0; i < operationsLen; i++) {

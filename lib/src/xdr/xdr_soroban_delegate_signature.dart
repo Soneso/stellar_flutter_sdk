@@ -107,8 +107,9 @@ class XdrSorobanDelegateSignature {
   ) {
     XdrSCAddress address = XdrSCAddress.fromTxRep(map, '$prefix.address');
     XdrSCVal signature = XdrSCVal.fromTxRep(map, '$prefix.signature');
-    int nestedDelegatesLen = TxRepHelper.parseInt(
+    int nestedDelegatesLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.nestedDelegates.len') ?? '0',
+      '$prefix.nestedDelegates.len',
     );
     List<XdrSorobanDelegateSignature> nestedDelegates = [];
     for (int i = 0; i < nestedDelegatesLen; i++) {

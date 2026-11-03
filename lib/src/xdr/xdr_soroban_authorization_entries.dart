@@ -69,8 +69,9 @@ class XdrSorobanAuthorizationEntries {
     Map<String, String> map,
     String prefix,
   ) {
-    int len = TxRepHelper.parseInt(
+    int len = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.len') ?? '0',
+      '$prefix.len',
     );
     List<XdrSorobanAuthorizationEntry> items = [];
     for (int i = 0; i < len; i++) {

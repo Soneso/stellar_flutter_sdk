@@ -340,38 +340,61 @@ class TxRepHelper {
     return buf.toString();
   }
 
-  /// Parse an integer string supporting decimal and hex (`0x` prefix) notation.
-  static int parseInt(String s) {
-    String trimmed = s.trim();
-    bool negative = false;
-    if (trimmed.startsWith('-')) {
-      negative = true;
-      trimmed = trimmed.substring(1);
-    }
-    int result;
-    if (trimmed.startsWith('0x') || trimmed.startsWith('0X')) {
-      result = int.parse(trimmed.substring(2), radix: 16);
-    } else {
-      result = int.parse(trimmed);
-    }
-    return negative ? -result : result;
-  }
+  /// Parse a signed 64-bit integer in decimal or hex (`0x`/`0X`) notation.
+  static int parseInt(String s) => parseInt64(s, 'value').toInt();
 
-  /// Parse a big integer string supporting decimal and hex (`0x` prefix) notation.
-  static BigInt parseBigInt(String s) {
-    String trimmed = s.trim();
-    bool negative = false;
-    if (trimmed.startsWith('-')) {
-      negative = true;
-      trimmed = trimmed.substring(1);
+  /// Parse a big integer in decimal or hex (`0x`/`0X`) notation.
+  static BigInt parseBigInt(String s) => _parseInteger(s, 'value');
+
+  /// Parse uint32, throwing [FormatException] with [key] and the invalid token.
+  static int parseUint32(String s, String key) =>
+      _parseInteger(s, key, bits: 32, signed: false).toInt();
+
+  /// Parse int32, throwing [FormatException] with [key] and the invalid token.
+  static int parseInt32(String s, String key) =>
+      _parseInteger(s, key, bits: 32).toInt();
+
+  /// Parse uint64, throwing [FormatException] with [key] and the invalid token.
+  static BigInt parseUint64(String s, String key) =>
+      _parseInteger(s, key, bits: 64, signed: false);
+
+  /// Parse int64, throwing [FormatException] with [key] and the invalid token.
+  static BigInt parseInt64(String s, String key) =>
+      _parseInteger(s, key, bits: 64);
+
+  static final _integerToken = RegExp(r'^[+-]?(?:[0-9]+|0[xX][0-9a-fA-F]+)$');
+
+  static BigInt _parseInteger(
+    String s,
+    String key, {
+    int? bits,
+    bool signed = true,
+  }) {
+    final token = s.trim();
+    if (!_integerToken.hasMatch(token)) {
+      final text = StrKey.isValidStellarSecretSeed(token) ? '[secret seed]' : s;
+      throw FormatException('Invalid integer for $key: $text');
     }
-    BigInt result;
-    if (trimmed.startsWith('0x') || trimmed.startsWith('0X')) {
-      result = BigInt.parse(trimmed.substring(2), radix: 16);
-    } else {
-      result = BigInt.parse(trimmed);
+    final negative = token.startsWith('-');
+    final magnitude = negative || token.startsWith('+')
+        ? token.substring(1)
+        : token;
+    final hex = magnitude.startsWith('0x') || magnitude.startsWith('0X');
+    final parsed = BigInt.parse(
+      hex ? magnitude.substring(2) : magnitude,
+      radix: hex ? 16 : 10,
+    );
+    final value = negative ? -parsed : parsed;
+    if (bits != null) {
+      final limit = BigInt.one << (signed ? bits - 1 : bits);
+      final minimum = signed ? -limit : BigInt.zero;
+      if (value < minimum || value >= limit) {
+        throw FormatException(
+          'Integer outside ${signed ? 'int' : 'uint'}$bits for $key: $s',
+        );
+      }
     }
-    return negative ? -result : result;
+    return value;
   }
 
   // ---------------------------------------------------------------------------
