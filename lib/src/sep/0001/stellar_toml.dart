@@ -139,100 +139,131 @@ class StellarToml {
     final safeToml = safeguardTomlContent(toml);
 
     var document = TomlDocument.parse(safeToml).toMap();
+    String? text(String key) => _field<String>(document, key);
 
     generalInformation = GeneralInformation();
-    generalInformation.version = document['VERSION'];
-    generalInformation.networkPassphrase = document['NETWORK_PASSPHRASE'];
-    generalInformation.federationServer = document['FEDERATION_SERVER'];
-    generalInformation.authServer = document['AUTH_SERVER'];
-    generalInformation.transferServer = document['TRANSFER_SERVER'];
-    generalInformation.transferServerSep24 =
-        document['TRANSFER_SERVER_SEP0024'];
-    generalInformation.kYCServer = document['KYC_SERVER'];
-    generalInformation.webAuthEndpoint = document['WEB_AUTH_ENDPOINT'];
-    generalInformation.signingKey = document['SIGNING_KEY'];
-    generalInformation.horizonUrl = document['HORIZON_URL'];
+    generalInformation.version = text('VERSION');
+    generalInformation.networkPassphrase = text('NETWORK_PASSPHRASE');
+    generalInformation.federationServer = text('FEDERATION_SERVER');
+    generalInformation.authServer = text('AUTH_SERVER');
+    generalInformation.transferServer = text('TRANSFER_SERVER');
+    generalInformation.transferServerSep24 = text('TRANSFER_SERVER_SEP0024');
+    generalInformation.kYCServer = text('KYC_SERVER');
+    generalInformation.webAuthEndpoint = text('WEB_AUTH_ENDPOINT');
+    generalInformation.signingKey = text('SIGNING_KEY');
+    generalInformation.horizonUrl = text('HORIZON_URL');
 
-    if (document['ACCOUNTS'] != null) {
-      document['ACCOUNTS'].forEach((var item) {
-        generalInformation.accounts.add(item);
-      });
-    }
-    generalInformation.uriRequestSigningKey =
-        document['URI_REQUEST_SIGNING_KEY'];
-    generalInformation.directPaymentServer = document['DIRECT_PAYMENT_SERVER'];
-    generalInformation.anchorQuoteServer = document['ANCHOR_QUOTE_SERVER'];
-    generalInformation.webAuthForContractsEndpoint =
-        document['WEB_AUTH_FOR_CONTRACTS_ENDPOINT'];
-    generalInformation.webAuthContractId = document['WEB_AUTH_CONTRACT_ID'];
+    generalInformation.accounts.addAll(
+      _list<String>(document, 'ACCOUNTS') ?? [],
+    );
+    generalInformation.uriRequestSigningKey = text('URI_REQUEST_SIGNING_KEY');
+    generalInformation.directPaymentServer = text('DIRECT_PAYMENT_SERVER');
+    generalInformation.anchorQuoteServer = text('ANCHOR_QUOTE_SERVER');
+    generalInformation.webAuthForContractsEndpoint = text(
+      'WEB_AUTH_FOR_CONTRACTS_ENDPOINT',
+    );
+    generalInformation.webAuthContractId = text('WEB_AUTH_CONTRACT_ID');
 
-    if (document['DOCUMENTATION'] != null) {
+    final doc = _field<Map>(document, 'DOCUMENTATION');
+    if (doc != null) {
+      String? docText(String key) => _field<String>(doc, key, 'DOCUMENTATION');
       documentation = Documentation();
-      documentation!.orgName = document['DOCUMENTATION']['ORG_NAME'];
-      documentation!.orgDBA = document['DOCUMENTATION']['ORG_DBA'];
-      documentation!.orgUrl = document['DOCUMENTATION']['ORG_URL'];
-      documentation!.orgLogo = document['DOCUMENTATION']['ORG_LOGO'];
-      documentation!.orgDescription =
-          document['DOCUMENTATION']['ORG_DESCRIPTION'];
-      documentation!.orgPhysicalAddress =
-          document['DOCUMENTATION']['ORG_PHYSICAL_ADDRESS'];
-      documentation!.orgPhysicalAddressAttestation =
-          document['DOCUMENTATION']['ORG_PHYSICAL_ADDRESS_ATTESTATION'];
-      documentation!.orgPhoneNumber =
-          document['DOCUMENTATION']['ORG_PHONE_NUMBER'];
-      documentation!.orgPhoneNumberAttestation =
-          document['DOCUMENTATION']['ORG_PHONE_NUMBER_ATTESTATION'];
-      documentation!.orgKeybase = document['DOCUMENTATION']['ORG_KEYBASE'];
-      documentation!.orgTwitter = document['DOCUMENTATION']['ORG_TWITTER'];
-      documentation!.orgGithub = document['DOCUMENTATION']['ORG_GITHUB'];
-      documentation!.orgOfficialEmail =
-          document['DOCUMENTATION']['ORG_OFFICIAL_EMAIL'];
-      documentation!.orgSupportEmail =
-          document['DOCUMENTATION']['ORG_SUPPORT_EMAIL'];
-      documentation!.orgLicensingAuthority =
-          document['DOCUMENTATION']['ORG_LICENSING_AUTHORITY'];
-      documentation!.orgLicenseType =
-          document['DOCUMENTATION']['ORG_LICENSE_TYPE'];
-      documentation!.orgLicenseNumber =
-          document['DOCUMENTATION']['ORG_LICENSE_NUMBER'];
+      documentation!.orgName = docText('ORG_NAME');
+      documentation!.orgDBA = docText('ORG_DBA');
+      documentation!.orgUrl = docText('ORG_URL');
+      documentation!.orgLogo = docText('ORG_LOGO');
+      documentation!.orgDescription = docText('ORG_DESCRIPTION');
+      documentation!.orgPhysicalAddress = docText('ORG_PHYSICAL_ADDRESS');
+      documentation!.orgPhysicalAddressAttestation = docText(
+        'ORG_PHYSICAL_ADDRESS_ATTESTATION',
+      );
+      documentation!.orgPhoneNumber = docText('ORG_PHONE_NUMBER');
+      documentation!.orgPhoneNumberAttestation = docText(
+        'ORG_PHONE_NUMBER_ATTESTATION',
+      );
+      documentation!.orgKeybase = docText('ORG_KEYBASE');
+      documentation!.orgTwitter = docText('ORG_TWITTER');
+      documentation!.orgGithub = docText('ORG_GITHUB');
+      documentation!.orgOfficialEmail = docText('ORG_OFFICIAL_EMAIL');
+      documentation!.orgSupportEmail = docText('ORG_SUPPORT_EMAIL');
+      documentation!.orgLicensingAuthority = docText('ORG_LICENSING_AUTHORITY');
+      documentation!.orgLicenseType = docText('ORG_LICENSE_TYPE');
+      documentation!.orgLicenseNumber = docText('ORG_LICENSE_NUMBER');
     }
 
-    if (document['PRINCIPALS'] != null) {
+    final principals = _list<Map>(document, 'PRINCIPALS');
+    if (principals != null) {
       pointsOfContact = List<PointOfContact>.empty(growable: true);
-      document['PRINCIPALS'].forEach((var item) {
+      for (var i = 0; i < principals.length; i++) {
+        final item = principals[i];
+        final path = 'PRINCIPALS[$i]';
+        String? text(String key) => _field<String>(item, key, path);
         PointOfContact pointOfContact = PointOfContact();
-        pointOfContact.name = item['name'];
-        pointOfContact.email = item['email'];
-        pointOfContact.keybase = item['keybase'];
-        pointOfContact.twitter = item['twitter'];
-        pointOfContact.telegram = item['telegram'];
-        pointOfContact.github = item['github'];
-        pointOfContact.idPhotoHash = item['id_photo_hash'];
-        pointOfContact.verificationPhotoHash = item['verification_photo_hash'];
+        pointOfContact.name = text('name');
+        pointOfContact.email = text('email');
+        pointOfContact.keybase = text('keybase');
+        pointOfContact.twitter = text('twitter');
+        pointOfContact.telegram = text('telegram');
+        pointOfContact.github = text('github');
+        pointOfContact.idPhotoHash = text('id_photo_hash');
+        pointOfContact.verificationPhotoHash = text('verification_photo_hash');
         pointsOfContact!.add(pointOfContact);
-      });
+      }
     }
 
-    if (document['CURRENCIES'] != null) {
+    final entries = _list<Map>(document, 'CURRENCIES');
+    if (entries != null) {
       currencies = List<Currency>.empty(growable: true);
-      document['CURRENCIES'].forEach((var item) {
-        Currency currency = _currencyFromItem(item);
+      for (var i = 0; i < entries.length; i++) {
+        final item = entries[i];
+        final path = 'CURRENCIES[$i]';
+        Currency currency = _currencyFromItem(item, path);
         currencies!.add(currency);
-      });
+      }
     }
 
-    if (document['VALIDATORS'] != null) {
+    final nodes = _list<Map>(document, 'VALIDATORS');
+    if (nodes != null) {
       validators = List<Validator>.empty(growable: true);
-      document['VALIDATORS'].forEach((var item) {
+      for (var i = 0; i < nodes.length; i++) {
+        final item = nodes[i];
+        final path = 'VALIDATORS[$i]';
+        String? text(String key) => _field<String>(item, key, path);
         Validator validator = Validator();
-        validator.alias = item['ALIAS'];
-        validator.displayName = item['DISPLAY_NAME'];
-        validator.publicKey = item['PUBLIC_KEY'];
-        validator.host = item['HOST'];
-        validator.history = item['HISTORY'];
+        validator.alias = text('ALIAS');
+        validator.displayName = text('DISPLAY_NAME');
+        validator.publicKey = text('PUBLIC_KEY');
+        validator.host = text('HOST');
+        validator.history = text('HISTORY');
         validators!.add(validator);
-      });
+      }
     }
+  }
+
+  /// Returns [value] as a [T], or throws a [FormatException] naming [path] and the type found.
+  static T _requireType<T>(dynamic value, String path) {
+    if (value is T) return value;
+    throw FormatException(
+      'Invalid stellar.toml field $path: found ${value.runtimeType}',
+    );
+  }
+
+  /// [path] names the enclosing table and is empty for the document root.
+  static T? _field<T>(Map fields, String key, [String path = '']) {
+    final value = fields[key];
+    return value == null
+        ? null
+        : _requireType<T>(value, path.isEmpty ? key : '$path.$key');
+  }
+
+  static List<T>? _list<T>(Map fields, String key, [String path = '']) {
+    final values = _field<List>(fields, key, path);
+    if (values == null) return null;
+    final name = path.isEmpty ? key : '$path.$key';
+    return [
+      for (var i = 0; i < values.length; i++)
+        _requireType<T>(values[i], '$name[$i]'),
+    ];
   }
 
   /// Corrects common formatting errors in stellar.toml content.
@@ -321,7 +352,7 @@ class StellarToml {
   ///
   /// Throws:
   /// - Exception if the stellar.toml file is not found (non-200 status code)
-  /// - FormatException if the TOML content is invalid and cannot be parsed
+  /// - FormatException if the TOML content cannot be parsed or a field, section or list element has the wrong type
   ///
   /// Example:
   /// ```dart
@@ -387,7 +418,7 @@ class StellarToml {
   ///
   /// Throws:
   /// - Exception if the currency TOML file is not found (non-200 status code)
-  /// - FormatException if the TOML content is invalid and cannot be parsed
+  /// - FormatException if the TOML content cannot be parsed or a field, section or list element has the wrong type
   ///
   /// Example:
   /// ```dart
@@ -444,55 +475,48 @@ class StellarToml {
   /// - [item] A map representing a single currency entry from parsed TOML
   ///
   /// Returns: Currency object populated with all available fields from the TOML item
-  static Currency _currencyFromItem(var item) {
+  static Currency _currencyFromItem(Map item, [String path = '']) {
+    String? text(String key) => _field<String>(item, key, path);
     Currency currency = Currency();
-    currency.toml = item['toml'];
-    currency.code = item['code'];
-    currency.codeTemplate = item['code_template'];
-    currency.issuer = item['issuer'];
-    currency.contract = item['contract'];
-    currency.status = item['status'];
-    currency.displayDecimals = item['display_decimals'];
-    currency.name = item['name'];
-    currency.desc = item['desc'];
-    currency.conditions = item['conditions'];
-    currency.image = item['image'];
-    currency.fixedNumber = item['fixed_number'];
-    currency.maxNumber = item['max_number'];
-    currency.isUnlimited = item['is_unlimited'];
-    currency.isAssetAnchored = item['is_asset_anchored'];
-    currency.anchorAssetType = item['anchor_asset_type'];
-    currency.anchorAsset = item['anchor_asset'];
-    currency.attestationOfReserve = item['attestation_of_reserve'];
-    currency.redemptionInstructions = item['redemption_instructions'];
+    currency.toml = text('toml');
+    currency.code = text('code');
+    currency.codeTemplate = text('code_template');
+    currency.issuer = text('issuer');
+    currency.contract = text('contract');
+    currency.status = text('status');
+    currency.displayDecimals = _field<int>(item, 'display_decimals', path);
+    currency.name = text('name');
+    currency.desc = text('desc');
+    currency.conditions = text('conditions');
+    currency.image = text('image');
+    currency.fixedNumber = _field<int>(item, 'fixed_number', path);
+    currency.maxNumber = _field<int>(item, 'max_number', path);
+    currency.isUnlimited = _field<bool>(item, 'is_unlimited', path);
+    currency.isAssetAnchored = _field<bool>(item, 'is_asset_anchored', path);
+    currency.anchorAssetType = text('anchor_asset_type');
+    currency.anchorAsset = text('anchor_asset');
+    currency.attestationOfReserve = text('attestation_of_reserve');
+    currency.redemptionInstructions = text('redemption_instructions');
 
-    var collateralAddresses = item['collateral_addresses'];
-    if (collateralAddresses != null) {
-      currency.collateralAddresses = List<String>.empty(growable: true);
-      collateralAddresses.forEach((var item) {
-        currency.collateralAddresses!.add(item);
-      });
-    }
+    currency.collateralAddresses = _list<String>(
+      item,
+      'collateral_addresses',
+      path,
+    );
+    currency.collateralAddressMessages = _list<String>(
+      item,
+      'collateral_address_messages',
+      path,
+    );
+    currency.collateralAddressSignatures = _list<String>(
+      item,
+      'collateral_address_signatures',
+      path,
+    );
 
-    var collateralAddressMessages = item['collateral_address_messages'];
-    if (collateralAddressMessages != null) {
-      currency.collateralAddressMessages = List<String>.empty(growable: true);
-      collateralAddressMessages.forEach((var item) {
-        currency.collateralAddressMessages?.add(item);
-      });
-    }
-
-    var collateralAddressSignatures = item['collateral_address_signatures'];
-    if (collateralAddressSignatures != null) {
-      currency.collateralAddressSignatures = List<String>.empty(growable: true);
-      collateralAddressSignatures.forEach((var item) {
-        currency.collateralAddressSignatures?.add(item);
-      });
-    }
-
-    currency.regulated = item['regulated'];
-    currency.approvalServer = item['approval_server'];
-    currency.approvalCriteria = item['approval_criteria'];
+    currency.regulated = _field<bool>(item, 'regulated', path);
+    currency.approvalServer = text('approval_server');
+    currency.approvalCriteria = text('approval_criteria');
 
     return currency;
   }
