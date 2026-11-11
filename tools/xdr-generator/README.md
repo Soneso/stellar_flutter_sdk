@@ -5,7 +5,7 @@ Generates Dart XDR types from Stellar's `.x` definition files using the [xdrgen]
 ## Prerequisites
 
 - Docker (for Makefile targets)
-- Ruby 3.x and Bundler (only if running without Docker)
+- Ruby 3.2 or later and Bundler (only if running without Docker)
 
 ## Usage
 

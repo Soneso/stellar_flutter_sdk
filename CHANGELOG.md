@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ContractSpecException` messages replace a secret seed in the echoed input with `a secret seed (S...)`.
 - `StellarToml`, `StellarToml.fromDomain` and `StellarToml.currencyFromUrl` throw a `FormatException` naming the field and the type found for a field, section or list element of the wrong type.
 
+### Security
+- The XDR generator resolves activesupport to 8.1.4.1, which fixes GHSA-8474-xrp6-wh69. Build tooling only, generated output is unchanged.
+
 ## [3.10.0] - 2026-10-25
 
 ### Added
