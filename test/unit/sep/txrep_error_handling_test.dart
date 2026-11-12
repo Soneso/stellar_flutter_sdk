@@ -54,7 +54,7 @@ void main() {
           isA<FormatException>().having(
             (e) => e.message,
             'message',
-            'Invalid integer for value: [secret seed]',
+            'Invalid integer for value: a secret seed (S...)',
           ),
         ),
       );

@@ -5,6 +5,7 @@
 import 'operation.dart';
 import 'assets.dart';
 import 'price.dart';
+import 'soroban/contract_address_guard.dart';
 import 'util.dart';
 import 'xdr/xdr.dart';
 
@@ -106,7 +107,9 @@ class ManageSellOfferOperation extends Operation {
   XdrOperationBody toOperationBody() {
     XdrInt64 amount = new XdrInt64(Util.decimalStringToStroops(this.amount));
     Price price = Price.fromString(this.price);
-    XdrUint64 offerId = XdrUint64(BigInt.parse(this.offerId));
+    XdrUint64 offerId = XdrUint64(
+      parseHidingSecretSeed(this.offerId, BigInt.parse),
+    );
 
     XdrOperationBody body = new XdrOperationBody(
       XdrOperationType.MANAGE_SELL_OFFER,

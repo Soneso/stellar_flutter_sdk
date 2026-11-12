@@ -14,6 +14,7 @@ import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'constants/bit_constants.dart';
 import 'constants/stellar_protocol_constants.dart';
 import 'requests/request_builder.dart';
+import 'soroban/contract_address_guard.dart';
 import 'soroban/soroban_auth.dart';
 import 'xdr/xdr.dart';
 import '../stub/web.dart' if (dart.library.io) '../stub/non-web.dart';
@@ -396,7 +397,9 @@ class Util {
   /// Returns: Byte array representation
   ///
   /// Throws:
-  /// - [FormatException] If the string is not valid hexadecimal
+  /// - [FormatException] If the string is not valid hexadecimal; for a
+  ///   string that starts with `S` or `s`, the first letter of a secret seed,
+  ///   the exception carries a wording in place of the string
   ///
   /// Example:
   /// ```dart
@@ -404,7 +407,7 @@ class Util {
   /// // Returns [255, 0, 128]
   /// ```
   static Uint8List hexToBytes(String s) {
-    return Uint8List.fromList(hex.decode(s));
+    return Uint8List.fromList(parseHidingSecretSeed(s, hex.decode));
   }
 
   /// Computes the SHA-256 hash of data.
@@ -702,7 +705,7 @@ class Util {
     // sees it: BigInt.parse also reads hex and honours a sign of its own, and the
     // split below reads a fraction only from a value in exactly two parts.
     if (!RegExp(r'^\d+(\.\d*)?$').hasMatch(unsigned)) {
-      throw Exception("Not a decimal amount: $value");
+      throw Exception("Not a decimal amount: ${redactSecretSeeds(value)}");
     }
 
     List<String> two = unsigned.split(".");

@@ -5,6 +5,7 @@
 import 'package:collection/collection.dart';
 import "dart:convert";
 import "dart:typed_data";
+import 'soroban/contract_address_guard.dart';
 import 'util.dart';
 import 'xdr/xdr.dart';
 import 'constants/stellar_protocol_constants.dart';
@@ -408,11 +409,13 @@ abstract class Memo {
       } else {
         String memoValue = json["memo"];
         if (memoType == "id") {
-          memo = Memo.id(BigInt.parse(memoValue));
+          memo = Memo.id(parseHidingSecretSeed(memoValue, BigInt.parse));
         } else if (memoType == "hash") {
-          memo = Memo.hash(base64.decode(memoValue));
+          memo = Memo.hash(parseRedactingSecretSeeds(memoValue, base64.decode));
         } else if (memoType == "return") {
-          memo = Memo.returnHash(base64.decode(memoValue));
+          memo = Memo.returnHash(
+            parseRedactingSecretSeeds(memoValue, base64.decode),
+          );
         } else {
           throw new Exception("Unknown memo type.");
         }

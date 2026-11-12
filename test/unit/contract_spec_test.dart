@@ -135,7 +135,13 @@ void main() {
       expect(StrKey.isValidStellarSecretSeed(lookalike), isFalse);
       expect(
         () => spec.nativeToXdrSCVal(lookalike, XdrSCSpecTypeDef.forU64()),
-        _throwsSpecMessage([lookalike]),
+        throwsA(
+          isA<ContractSpecException>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains('a secret seed (S...)'), isNot(contains(lookalike))),
+          ),
+        ),
       );
     });
     for (final entry in types.entries) {

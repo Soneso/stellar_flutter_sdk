@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 import '../responses/operations/operation_responses.dart';
 import '../responses/response.dart';
+import '../soroban/contract_address_guard.dart';
 import 'request_builder.dart';
 
 /// Builder for requests to the payments endpoint.
@@ -66,6 +67,7 @@ class PaymentsRequestBuilder extends RequestBuilder {
   /// See also:
   /// - [Stellar developer docs](https://developers.stellar.org)
   PaymentsRequestBuilder forAccount(String accountId) {
+    checkNotSecretSeed(accountId, 'accountId');
     this.setSegments(["accounts", accountId, "payments"]);
     return this;
   }
@@ -107,6 +109,7 @@ class PaymentsRequestBuilder extends RequestBuilder {
   ///     .execute();
   /// ```
   PaymentsRequestBuilder forTransaction(String transactionId) {
+    checkNotSecretSeed(transactionId, 'transactionId');
     this.setSegments(["transactions", transactionId, "payments"]);
     return this;
   }

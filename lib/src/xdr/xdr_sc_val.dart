@@ -7,6 +7,7 @@ import 'dart:typed_data';
 
 import 'package:stellar_flutter_sdk/src/constants/bit_constants.dart';
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
+import 'package:stellar_flutter_sdk/src/soroban/contract_address_guard.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_auth.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
 
@@ -269,7 +270,7 @@ class XdrSCVal extends XdrSCValBase {
     } else if (StrKey.isValidMuxedContractId(address)) {
       return XdrSCVal.forMuxedContractAddress(address);
     }
-    throw Exception("Unknown StrKey address type: $address");
+    throw Exception("Unknown StrKey address type: ${keyForMessage(address)}");
   }
 
   static XdrSCVal forNonceKey(XdrSCNonceKey nonceKey) {

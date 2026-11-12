@@ -7,6 +7,7 @@ import 'dart:typed_data';
 
 import '../key_pair.dart' show StrKey;
 import '../muxed_account.dart' show MuxedAccount;
+import '../soroban/contract_address_guard.dart' show redactSecretSeeds;
 import '../util.dart' show Util;
 import 'xdr_account_id.dart';
 import 'xdr_allow_trust_op_asset.dart';
@@ -372,8 +373,9 @@ class TxRepHelper {
   }) {
     final token = s.trim();
     if (!_integerToken.hasMatch(token)) {
-      final text = StrKey.isValidStellarSecretSeed(token) ? '[secret seed]' : s;
-      throw FormatException('Invalid integer for $key: $text');
+      throw FormatException(
+        'Invalid integer for $key: ${redactSecretSeeds(s)}',
+      );
     }
     final negative = token.startsWith('-');
     final magnitude = negative || token.startsWith('+')

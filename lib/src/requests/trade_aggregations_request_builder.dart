@@ -7,6 +7,7 @@ import 'dart:async';
 import '../assets.dart';
 import '../asset_type_credit_alphanum.dart';
 import '../responses/response.dart';
+import '../soroban/contract_address_guard.dart';
 import 'request_builder.dart';
 import '../responses/trade_aggregation_response.dart';
 
@@ -87,6 +88,7 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
   }
 
   void _baseAsset(Asset asset) {
+    checkAssetIssuerNotSecretSeed(asset, 'baseAsset');
     queryParameters.addAll({"base_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
@@ -98,6 +100,7 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
   }
 
   void _counterAsset(Asset asset) {
+    checkAssetIssuerNotSecretSeed(asset, 'counterAsset');
     queryParameters.addAll({"counter_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;

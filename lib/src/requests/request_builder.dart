@@ -17,6 +17,7 @@ import 'package:stellar_flutter_sdk/src/xdr/xdr_claimable_balance_id.dart';
 import '../assets.dart';
 import '../eventsource/eventsource.dart';
 import '../responses/response.dart';
+import '../soroban/contract_address_guard.dart';
 
 /// Exception thrown when a request returns a non-success HTTP code.
 ///
@@ -163,6 +164,14 @@ class RequestBuilderOrder {
 /// Subclasses implement specific endpoint functionality (accounts, transactions,
 /// payments, etc.) while inheriting common query capabilities.
 ///
+/// A method that puts an account id, an asset issuer, a transaction hash, or
+/// a claimable balance or liquidity pool id into the request URL throws an
+/// [ArgumentError] for a value that starts with `S` or `s`, the first letter
+/// of a secret seed, before any request is sent, so a seed passed by mistake
+/// never reaches the server. No valid value of these parameters starts with
+/// that letter. Other values, such as data entry names, asset codes and
+/// cursors, go to the server as given.
+///
 /// Example:
 /// ```dart
 /// // Request builders support method chaining
@@ -224,7 +233,8 @@ abstract class RequestBuilder {
       return XdrClaimableBalanceID.forId(claimableBalanceId).paddedBalanceIdHex;
     } on FormatException catch (e) {
       throw ArgumentError(
-        "invalid claimable balance id: $claimableBalanceId (${e.message})",
+        "invalid claimable balance id: ${keyForMessage(claimableBalanceId)} "
+        "(${e.message})",
       );
     }
   }
@@ -242,7 +252,8 @@ abstract class RequestBuilder {
       );
     } on FormatException catch (e) {
       throw ArgumentError(
-        "invalid liquidity pool id: $liquidityPoolId (${e.message})",
+        "invalid liquidity pool id: ${keyForMessage(liquidityPoolId)} "
+        "(${e.message})",
       );
     }
   }
@@ -368,6 +379,7 @@ abstract class RequestBuilder {
   ///
   /// Returns "native" for XLM or "CODE:ISSUER_ID" for credit assets.
   String encodeAsset(Asset asset) {
+    checkAssetIssuerNotSecretSeed(asset, 'asset');
     if (asset is AssetTypeNative) {
       return Asset.TYPE_NATIVE;
     } else if (asset is AssetTypeCreditAlphaNum) {

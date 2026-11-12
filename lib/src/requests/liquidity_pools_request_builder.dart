@@ -8,6 +8,7 @@ import '../assets.dart';
 import '../responses/liquidity_pool_response.dart';
 import 'dart:async';
 import '../responses/response.dart';
+import '../soroban/contract_address_guard.dart';
 import 'request_builder.dart';
 
 /// Builds requests to query liquidity pools from Horizon.
@@ -79,6 +80,8 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
     Asset reserveAssetA,
     Asset reserveAssetB,
   ) {
+    checkAssetIssuerNotSecretSeed(reserveAssetA, 'reserveAssetA');
+    checkAssetIssuerNotSecretSeed(reserveAssetB, 'reserveAssetB');
     queryParameters.addAll({
       RESERVES_PARAMETER_NAME:
           Asset.canonicalForm(reserveAssetA) +
@@ -91,6 +94,7 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
   /// Returns all liquidity pools the specified account is participating in.
   /// See [Stellar developer docs](https://developers.stellar.org)
   LiquidityPoolsRequestBuilder forAccount(String accountId) {
+    checkNotSecretSeed(accountId, 'accountId');
     queryParameters.addAll({ACCOUNT_PARAMETER_NAME: accountId});
     return this;
   }

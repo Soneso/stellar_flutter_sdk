@@ -10,6 +10,7 @@ import '../asset_type_credit_alphanum.dart';
 import '../assets.dart';
 import '../responses/offer_response.dart';
 import '../responses/response.dart';
+import '../soroban/contract_address_guard.dart';
 import 'request_builder.dart';
 import 'trades_request_builder.dart';
 
@@ -77,6 +78,7 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all offers a given account has currently open.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   OffersRequestBuilder forAccount(String accountId) {
+    checkNotSecretSeed(accountId, 'accountId');
     this.setSegments(["accounts", accountId, "offers"]);
     return this;
   }
@@ -84,6 +86,7 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all offers where the given account is the seller.
   /// See [Stellar developer docs](https://developers.stellar.org)
   OffersRequestBuilder forSeller(String seller) {
+    checkNotSecretSeed(seller, 'seller');
     queryParameters.addAll({"seller": seller});
     return this;
   }
@@ -91,6 +94,7 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all offers buying an [asset].
   /// See [Stellar developer docs](https://developers.stellar.org)
   OffersRequestBuilder forBuyingAsset(Asset asset) {
+    checkAssetIssuerNotSecretSeed(asset, 'asset');
     queryParameters.addAll({"buying_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
@@ -105,6 +109,7 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all selling buying an [asset].
   /// See [Stellar developer docs](https://developers.stellar.org)
   OffersRequestBuilder forSellingAsset(Asset asset) {
+    checkAssetIssuerNotSecretSeed(asset, 'asset');
     queryParameters.addAll({"selling_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
@@ -119,6 +124,7 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Returns all offers sponsored by a given sponsor.
   /// See [Stellar developer docs](https://developers.stellar.org)
   OffersRequestBuilder forSponsor(String sponsorAccountId) {
+    checkNotSecretSeed(sponsorAccountId, 'sponsorAccountId');
     queryParameters.addAll({"sponsor": sponsorAccountId});
     return this;
   }

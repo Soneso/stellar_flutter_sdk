@@ -5,6 +5,7 @@
 import 'dart:convert';
 
 import '../xdr/xdr.dart';
+import 'contract_address_guard.dart';
 
 /// Orders two [XdrSCVal] values the way the Soroban host does.
 ///
@@ -137,14 +138,15 @@ int compareScValHostOrder(XdrSCVal a, XdrSCVal b) {
 /// host's order ([compareScValHostOrder]).
 ///
 /// [entries] itself is left unchanged. Throws an [ArgumentError] naming the
-/// key when two keys compare equal.
+/// key when two keys compare equal, with a secret seed in the key replaced
+/// as [redactSecretSeeds] does.
 XdrSCVal sortedScMap(List<XdrSCMapEntry> entries) {
   final sorted = List<XdrSCMapEntry>.of(entries)
     ..sort((x, y) => compareScValHostOrder(x.key, y.key));
   for (var i = 1; i < sorted.length; i++) {
     if (compareScValHostOrder(sorted[i - 1].key, sorted[i].key) == 0) {
       throw ArgumentError.value(
-        sorted[i].key.toXdrJson(),
+        redactSecretSeeds(sorted[i].key.toXdrJson()),
         'entries',
         'Duplicate ScMap key',
       );

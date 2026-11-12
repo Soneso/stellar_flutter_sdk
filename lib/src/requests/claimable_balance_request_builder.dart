@@ -7,6 +7,7 @@ import '../assets.dart';
 import '../responses/claimable_balance_response.dart';
 import 'dart:async';
 import '../responses/response.dart';
+import '../soroban/contract_address_guard.dart';
 import 'request_builder.dart';
 
 /// Builds requests to query claimable balances from Horizon.
@@ -83,6 +84,7 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   /// Returns all claimable balances for the account id of the sponsor who is paying the reserves for this claimable balances.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   ClaimableBalancesRequestBuilder forSponsor(String signerAccountId) {
+    checkNotSecretSeed(signerAccountId, 'signerAccountId');
     queryParameters.addAll({SPONSOR_PARAMETER_NAME: signerAccountId});
     return this;
   }
@@ -90,6 +92,7 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   /// Returns all claimable balances for the accountId of a claimant.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   ClaimableBalancesRequestBuilder forClaimant(String claimantAccountId) {
+    checkNotSecretSeed(claimantAccountId, 'claimantAccountId');
     queryParameters.addAll({CLAIMANT_PARAMETER_NAME: claimantAccountId});
     return this;
   }
@@ -97,6 +100,7 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   /// Returns all claimable balances for an asset.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   ClaimableBalancesRequestBuilder forAsset(Asset asset) {
+    checkAssetIssuerNotSecretSeed(asset, 'asset');
     queryParameters.addAll({ASSET_PARAMETER_NAME: Asset.canonicalForm(asset)});
     return this;
   }

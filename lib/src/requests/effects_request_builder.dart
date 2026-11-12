@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 import '../responses/effects/effect_responses.dart';
 import '../responses/response.dart';
+import '../soroban/contract_address_guard.dart';
 import 'request_builder.dart';
 
 /// Builds requests to query effects from Horizon.
@@ -62,6 +63,7 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// Effects request builder of a specific account given by [accountId].
   /// See: [Stellar developer docs](https://developers.stellar.org)
   EffectsRequestBuilder forAccount(String accountId) {
+    checkNotSecretSeed(accountId, 'accountId');
     this.setSegments(["accounts", accountId, "effects"]);
     return this;
   }
@@ -76,6 +78,7 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// Effects request builder of a specific transaction given by [transactionId].
   /// See: [Stellar developer docs](https://developers.stellar.org)
   EffectsRequestBuilder forTransaction(String transactionId) {
+    checkNotSecretSeed(transactionId, 'transactionId');
     this.setSegments(["transactions", transactionId, "effects"]);
     return this;
   }

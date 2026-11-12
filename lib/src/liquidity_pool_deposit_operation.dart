@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'operation.dart';
+import 'soroban/contract_address_guard.dart';
 import 'util.dart';
 import 'xdr/xdr.dart';
 import 'price.dart';
@@ -125,7 +126,8 @@ class LiquidityPoolDepositOperation extends Operation {
       xLiquidityPoolID = Util.liquidityPoolIdToXdrHash(liquidityPoolId);
     } on FormatException catch (e) {
       throw ArgumentError(
-        "invalid liquidity pool id: $liquidityPoolId (${e.message})",
+        "invalid liquidity pool id: ${keyForMessage(liquidityPoolId)} "
+        "(${e.message})",
       );
     }
     var amountA = XdrInt64(Util.decimalStringToStroops(this.maxAmountA));

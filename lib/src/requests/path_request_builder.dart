@@ -8,6 +8,7 @@ import '../assets.dart';
 import '../asset_type_credit_alphanum.dart';
 import '../responses/response.dart';
 import '../responses/path_response.dart';
+import '../soroban/contract_address_guard.dart';
 import 'request_builder.dart';
 
 /// Builds requests connected to finding paths. Paths provide information about potential path payments. A path can be used to populate the necessary fields for a path payment operation.
@@ -28,6 +29,7 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
   /// Sets the source account. For this search, Horizon loads a list of assets available to the sender (based on source_account or source_assets) and displays the possible paths from the different source assets to the destination asset.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   StrictReceivePathsRequestBuilder sourceAccount(String accountId) {
+    checkNotSecretSeed(accountId, 'accountId');
     if (queryParameters.containsKey("source_assets")) {
       throw Exception("cannot set both source_assets and source_account");
     }
@@ -55,6 +57,7 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
   /// Sets the destination asset.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   StrictReceivePathsRequestBuilder destinationAsset(Asset asset) {
+    checkAssetIssuerNotSecretSeed(asset, 'asset');
     queryParameters.addAll({"destination_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
@@ -104,6 +107,7 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
   /// Sets the destination account.For this search, Horizon loads a list of assets that the recipient can recieve (based on destination_account or destination_assets) and displays the possible paths from the different source assets to the destination asset. Only paths that satisfy the source_amount are returned.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   StrictSendPathsRequestBuilder destinationAccount(String accountId) {
+    checkNotSecretSeed(accountId, 'accountId');
     if (queryParameters.containsKey("destination_assets")) {
       throw Exception(
         "cannot set both destination_assets and destination_account",
@@ -139,6 +143,7 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
   /// Sets the source asset.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   StrictSendPathsRequestBuilder sourceAsset(Asset asset) {
+    checkAssetIssuerNotSecretSeed(asset, 'asset');
     queryParameters.addAll({"source_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;

@@ -531,7 +531,7 @@ class SorobanClient {
     MethodOptions? methodOptions = null,
   }) async {
     if (!_methodNames.contains(name)) {
-      throw Exception("Method '$name' does not exist");
+      throw Exception("Method '${redactSecretSeeds(name)}' does not exist");
     }
     final options = AssembledTransactionOptions(
       clientOptions: _options,

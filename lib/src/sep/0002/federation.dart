@@ -7,6 +7,7 @@ import 'dart:async';
 import '../0001/stellar_toml.dart';
 import '../../responses/response.dart';
 import '../../requests/request_builder.dart';
+import '../../soroban/contract_address_guard.dart';
 
 /// Implements SEP-0002 Federation protocol for human-readable Stellar addresses.
 ///
@@ -80,7 +81,9 @@ class Federation {
     Map<String, String>? httpRequestHeaders,
   }) async {
     if (!address.contains("*")) {
-      throw Exception("invalid federation address: $address");
+      throw Exception(
+        "invalid federation address: ${redactSecretSeeds(address)}",
+      );
     }
 
     String domain = address.split("*").last;

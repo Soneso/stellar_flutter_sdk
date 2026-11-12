@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 
 import '../responses/response.dart';
+import '../soroban/contract_address_guard.dart';
 import '../responses/transaction_response.dart';
 import 'request_builder.dart';
 
@@ -72,6 +73,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// See also:
   /// - [Stellar developer docs](https://developers.stellar.org)
   Future<TransactionResponse> transaction(String transactionId) {
+    checkNotSecretSeed(transactionId, 'transactionId');
     this.setSegments(["transactions", transactionId]);
     return this.transactionURI(this.buildUri());
   }
@@ -96,6 +98,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// See also:
   /// - [Stellar developer docs](https://developers.stellar.org)
   TransactionsRequestBuilder forAccount(String accountId) {
+    checkNotSecretSeed(accountId, 'accountId');
     this.setSegments(["accounts", accountId, "transactions"]);
     return this;
   }
