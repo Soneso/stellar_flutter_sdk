@@ -10,6 +10,7 @@ import '../assets.dart';
 import '../responses/account_response.dart';
 import '../responses/account_data_response.dart';
 import '../responses/response.dart';
+import '../soroban/contract_address_guard.dart';
 import 'request_builder.dart';
 
 /// Builder for requests to the accounts endpoint.
@@ -86,6 +87,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// - [AccountResponse] for response structure
   /// - [Stellar developer docs](https://developers.stellar.org)
   Future<AccountResponse> account(String accountId) {
+    checkNotSecretSeed(accountId, 'accountId');
     this.setSegments(["accounts", accountId]);
     return this.accountURI(this.buildUri());
   }
@@ -111,6 +113,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// - [AccountDataResponse] for response structure
   /// - [Stellar developer docs](https://developers.stellar.org)
   Future<AccountDataResponse> accountData(String accountId, String key) async {
+    checkNotSecretSeed(accountId, 'accountId');
     this.setSegments(["accounts", accountId, "data", key]);
     return RequestBuilder.requestExecute<AccountDataResponse>(
       httpClient,
@@ -140,6 +143,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// See also:
   /// - [Stellar developer docs](https://developers.stellar.org)
   AccountsRequestBuilder forSigner(String signerAccountId) {
+    checkNotSecretSeed(signerAccountId, 'signerAccountId');
     if (queryParameters.containsKey(ASSET_PARAMETER_NAME)) {
       throw new Exception("cannot set both signer and asset");
     }
@@ -167,6 +171,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// See also:
   /// - [Stellar developer docs](https://developers.stellar.org)
   AccountsRequestBuilder forSponsor(String sponsorAccountId) {
+    checkNotSecretSeed(sponsorAccountId, 'sponsorAccountId');
     queryParameters.addAll({SPONSOR_PARAMETER_NAME: sponsorAccountId});
     return this;
   }

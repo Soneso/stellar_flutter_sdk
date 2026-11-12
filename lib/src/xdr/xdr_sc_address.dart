@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 import 'package:stellar_flutter_sdk/src/constants/stellar_protocol_constants.dart';
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
+import 'package:stellar_flutter_sdk/src/soroban/contract_address_guard.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
 
 import 'xdr_account_id.dart';
@@ -59,7 +60,7 @@ class XdrSCAddress extends XdrSCAddressBase {
       );
       return result;
     } else {
-      throw Exception("invalid account id: $accountId");
+      throw Exception("invalid account id: ${keyForMessage(accountId)}");
     }
   }
 

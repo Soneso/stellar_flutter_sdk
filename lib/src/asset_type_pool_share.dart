@@ -7,6 +7,7 @@ import 'key_pair.dart';
 import 'constants/stellar_protocol_constants.dart';
 import 'xdr/xdr.dart';
 import 'asset_type_credit_alphanum.dart';
+import 'soroban/contract_address_guard.dart';
 
 /// Represents a liquidity pool share asset.
 ///
@@ -145,7 +146,7 @@ class AssetTypePoolShare extends Asset {
     }
     if (sortError) {
       throw Exception(
-        "Assets are in wrong order: assetA ${Asset.canonicalForm(assetA)} sorts after assetB ${Asset.canonicalForm(assetB)}. Sort by: Native < AlphaNum4 < AlphaNum12, then by Code, then by the Issuer's raw public key bytes.",
+        "Assets are in wrong order: assetA ${redactSecretSeeds(Asset.canonicalForm(assetA))} sorts after assetB ${redactSecretSeeds(Asset.canonicalForm(assetB))}. Sort by: Native < AlphaNum4 < AlphaNum12, then by Code, then by the Issuer's raw public key bytes.",
       );
     }
   }

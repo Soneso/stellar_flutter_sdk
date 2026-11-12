@@ -12,9 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ContractSpec.nativeToXdrSCVal` accepts a `BigInt` or a decimal string for u64, i64, timepoint, duration and the 128 and 256-bit types, including the values `XdrSCVal.toNative` returns, and throws `ContractSpecException` for a value outside the type's range.
 - `ContractSpecException` messages replace a secret seed in the echoed input with `a secret seed (S...)`.
 - `StellarToml`, `StellarToml.fromDomain` and `StellarToml.currencyFromUrl` throw a `FormatException` naming the field and the type found for a field, section or list element of the wrong type.
+- Errors for an invalid strkey address, id, offer id, memo id or hex string name a value that starts with `S` or `s` as `a secret seed (S...)` or a value starting with S and leave the value out. Errors that show an amount, price, federation address, memo hash, Soroban method name, duplicate ScMap key, TxRep value or `ContractSpecException` input replace each run of 40 or more letters and digits that starts with `S` or `s`. This also covers a seed with a changed, missing or added character.
 
 ### Security
 - The XDR generator resolves activesupport to 8.1.4.1, which fixes GHSA-8474-xrp6-wh69. Build tooling only, generated output is unchanged.
+- Horizon request builders throw `ArgumentError` before any request when an account id, asset issuer or transaction hash starts with `S` or `s`, so a secret seed passed by mistake is not sent to Horizon.
 
 ## [3.10.0] - 2026-10-25
 

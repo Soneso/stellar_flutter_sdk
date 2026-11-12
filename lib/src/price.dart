@@ -2,6 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'soroban/contract_address_guard.dart';
 import 'util.dart';
 import 'xdr/xdr.dart';
 import 'constants/bit_constants.dart';
@@ -236,7 +237,7 @@ class Price {
     // the split below reads a fraction only from a value in exactly two parts.
     final String trimmed = price.trim();
     if (!RegExp(r'^[+-]?\d+(\.\d*)?$').hasMatch(trimmed)) {
-      throw Exception("Not a decimal price: $price");
+      throw Exception("Not a decimal price: ${redactSecretSeeds(price)}");
     }
 
     // The value is exactly numerator / denominator, with the sign on the

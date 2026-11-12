@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import '../responses/response.dart';
 import '../responses/asset_response.dart';
+import '../soroban/contract_address_guard.dart';
 import 'request_builder.dart';
 
 /// Builds requests to query assets from Horizon.
@@ -88,6 +89,7 @@ class AssetsRequestBuilder extends RequestBuilder {
   ///     .execute();
   /// ```
   AssetsRequestBuilder assetIssuer(String assetIssuer) {
+    checkNotSecretSeed(assetIssuer, 'assetIssuer');
     queryParameters.addAll({"asset_issuer": assetIssuer});
     return this;
   }

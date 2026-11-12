@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 import '../responses/operations/operation_responses.dart';
 import '../responses/response.dart';
+import '../soroban/contract_address_guard.dart';
 import 'request_builder.dart';
 
 /// Builds requests to query operations from Horizon.
@@ -75,6 +76,7 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Returns successful operations for a given account identified by [accountId].
   /// See: [Stellar developer docs](https://developers.stellar.org)
   OperationsRequestBuilder forAccount(String accountId) {
+    checkNotSecretSeed(accountId, 'accountId');
     this.setSegments(["accounts", accountId, "operations"]);
     return this;
   }
@@ -107,6 +109,7 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Returns successful operations for a specific transaction identiefied by [transactionId].
   /// See: [Stellar developer docs](https://developers.stellar.org)
   OperationsRequestBuilder forTransaction(String transactionId) {
+    checkNotSecretSeed(transactionId, 'transactionId');
     this.setSegments(["transactions", transactionId, "operations"]);
     return this;
   }

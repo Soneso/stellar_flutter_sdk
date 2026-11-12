@@ -9,6 +9,7 @@ import '../muxed_contract.dart';
 import '../network.dart';
 import '../util.dart';
 import '../xdr/xdr.dart';
+import 'contract_address_guard.dart';
 
 /// Represents an address in Soroban smart contracts.
 ///
@@ -1373,7 +1374,8 @@ class SorobanAuthorizationEntry {
       final matched = _routeSignatureToAddress(forAddress, inner, sig, 0);
       if (!matched) {
         throw Exception(
-          'No node with address $forAddress found in this authorization entry',
+          'No node with address ${keyForMessage(forAddress)} found in this '
+          'authorization entry',
         );
       }
     }
@@ -1644,7 +1646,8 @@ class SorobanAuthorizationEntry {
       return XdrSCAddress.forContractId(strKey);
     } else {
       throw ArgumentError(
-        'Invalid delegate address strkey (must start with G or C): $strKey',
+        'Invalid delegate address strkey (must start with G or C): '
+        '${keyForMessage(strKey)}',
       );
     }
   }

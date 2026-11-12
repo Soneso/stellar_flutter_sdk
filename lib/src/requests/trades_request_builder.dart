@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import '../asset_type_credit_alphanum.dart';
 import '../assets.dart';
 import '../responses/response.dart';
+import '../soroban/contract_address_guard.dart';
 import '../responses/trade_response.dart';
 import 'request_builder.dart';
 
@@ -84,6 +85,7 @@ class TradesRequestBuilder extends RequestBuilder {
   ///     .execute();
   /// ```
   TradesRequestBuilder baseAsset(Asset asset) {
+    checkAssetIssuerNotSecretSeed(asset, 'asset');
     queryParameters.addAll({"base_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
@@ -114,6 +116,7 @@ class TradesRequestBuilder extends RequestBuilder {
   ///     .execute();
   /// ```
   TradesRequestBuilder counterAsset(Asset asset) {
+    checkAssetIssuerNotSecretSeed(asset, 'asset');
     queryParameters.addAll({"counter_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
@@ -168,6 +171,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// See also:
   /// - [Stellar developer docs](https://developers.stellar.org)
   TradesRequestBuilder forAccount(String accountId) {
+    checkNotSecretSeed(accountId, 'accountId');
     this.setSegments(["accounts", accountId, "trades"]);
     return this;
   }

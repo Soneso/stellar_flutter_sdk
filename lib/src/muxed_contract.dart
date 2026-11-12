@@ -5,6 +5,7 @@
 import 'dart:typed_data';
 
 import 'key_pair.dart';
+import 'soroban/contract_address_guard.dart';
 import 'soroban/soroban_auth.dart';
 import 'xdr/xdr.dart';
 
@@ -48,7 +49,11 @@ class MuxedContract {
     try {
       contractHash = XdrSCAddress.forContractId(contractId).contractId!;
     } on FormatException catch (e) {
-      throw ArgumentError.value(contractId, 'contractId', e.message);
+      throw ArgumentError.value(
+        keyForMessage(contractId),
+        'contractId',
+        e.message,
+      );
     }
     return MuxedContract._(contractHash.hash, id);
   }

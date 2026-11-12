@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import '../asset_type_credit_alphanum.dart';
 import '../assets.dart';
 import '../responses/order_book_response.dart';
+import '../soroban/contract_address_guard.dart';
 import 'request_builder.dart';
 
 /// Builds requests for the order book.
@@ -95,6 +96,7 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// See also:
   /// - [Stellar developer docs](https://developers.stellar.org)
   OrderBookRequestBuilder sellingAsset(Asset asset) {
+    checkAssetIssuerNotSecretSeed(asset, 'asset');
     queryParameters.addAll({"selling_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
@@ -128,6 +130,7 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// See also:
   /// - [Stellar developer docs](https://developers.stellar.org)
   OrderBookRequestBuilder buyingAsset(Asset asset) {
+    checkAssetIssuerNotSecretSeed(asset, 'asset');
     queryParameters.addAll({"buying_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
