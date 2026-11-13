@@ -1,10 +1,13 @@
-"""Tests for stellar-rpc release selection and response struct fetching.
+"""Tests for stellar-rpc release selection, method source fetching and parsing,
+and response struct fetching.
 
-Every HTTP request goes to a fake urlopen that serves canned bodies by URL and
-answers 404 for any other URL.
+Every HTTP request goes to a fake urlopen that serves canned bodies or raises
+canned errors by URL and answers 404 for any other URL. The two jsonrpc.go
+fixtures are copies of the stellar-rpc files at v30.0.0 and v30.0.1.
 """
 
 import email.message
+import http.client
 import io
 import json
 import sys
@@ -31,6 +34,7 @@ from github_fetcher import (  # noqa: E402
     ReleaseNotFoundError,
     SourceFileNotFoundError,
     fetch_all_rpc_response_files,
+    fetch_rpc_jsonrpc_source,
     get_latest_rpc_release,
     get_rpc_release,
 )
@@ -87,10 +91,29 @@ type GetNetworkResponse struct {
 }
 
 
+FIXTURES_DIR = Path(__file__).resolve().parent / 'fixtures'
+V30_0_0_FIXTURE = FIXTURES_DIR / 'stellar-rpc-v30.0.0-jsonrpc.go'
+V30_0_1_FIXTURE = FIXTURES_DIR / 'stellar-rpc-v30.0.1-rpcv1-jsonrpc.go'
+
+# The methods stellar-rpc v30.0.0 and v30.0.1 serve
+SERVED_METHODS_V30 = [
+    'getEvents', 'getFeeStats', 'getHealth', 'getLatestLedger',
+    'getLedgerEntries', 'getLedgers', 'getNetwork', 'getTransaction',
+    'getTransactions', 'getVersionInfo', 'sendTransaction', 'simulateTransaction',
+]
+
+
 def jsonrpc_url(tag: str) -> str:
     return (
         f'https://raw.githubusercontent.com/stellar/stellar-rpc/{tag}'
         f'/cmd/stellar-rpc/internal/jsonrpc.go'
+    )
+
+
+def rpcv1_jsonrpc_url(tag: str) -> str:
+    return (
+        f'https://raw.githubusercontent.com/stellar/stellar-rpc/{tag}'
+        f'/cmd/stellar-rpc/internal/rpcv1/jsonrpc.go'
     )
 
 
@@ -139,6 +162,9 @@ class FakeResponse:
             self.headers['Link'] = link
 
     def read(self) -> bytes:
+        """Return the body, or raise it when it is an exception the read fails with."""
+        if isinstance(self._body, Exception):
+            raise self._body
         return self._body
 
     def __enter__(self) -> 'FakeResponse':
@@ -156,6 +182,7 @@ class FakeGitHub:
 
     def __init__(self):
         self.responses: Dict[str, FakeResponse] = {}
+        self.errors: Dict[str, Exception] = {}
         self.requested: List[str] = []
 
     def add(self, url: str, body, link: Optional[str] = None) -> None:
@@ -163,11 +190,16 @@ class FakeGitHub:
             body = body.encode('utf-8')
         self.responses[url] = FakeResponse(body, link)
 
+    def fail(self, url: str, error: Exception) -> None:
+        self.errors[url] = error
+
     def urlopen(self, request, timeout=None) -> FakeResponse:
         url = request.full_url
         self.requested.append(url)
         if len(self.requested) > self.MAX_REQUESTS:
             raise AssertionError(f'more than {self.MAX_REQUESTS} requests')
+        if url in self.errors:
+            raise self.errors[url]
         if url not in self.responses:
             raise urllib.error.HTTPError(
                 url, 404, 'Not Found', email.message.Message(), None
@@ -378,6 +410,156 @@ class ReleaseOverrideTest(FakeGitHubTestCase):
             "'rpcclient-v24.0.0' is not a stellar-rpc release tag"
         ):
             get_rpc_release('rpcclient-v24.0.0')
+
+
+class MethodSourceFetchTest(FakeGitHubTestCase):
+    def test_reads_the_rpcv1_file(self):
+        self.github.add(rpcv1_jsonrpc_url('v30.0.1'), 'rpcv1 source')
+        self.github.add(jsonrpc_url('v30.0.1'), 'internal source')
+
+        self.assertEqual(fetch_rpc_jsonrpc_source('v30.0.1'), 'rpcv1 source')
+        self.assertEqual(self.github.requested, [rpcv1_jsonrpc_url('v30.0.1')])
+
+    def test_falls_back_to_the_internal_file_of_the_same_tag_on_404(self):
+        self.github.add(jsonrpc_url('v30.0.0'), 'internal source')
+        self.github.add(rpcv1_jsonrpc_url('v30.0.1'), 'rpcv1 source of another tag')
+
+        self.assertEqual(fetch_rpc_jsonrpc_source('v30.0.0'), 'internal source')
+        self.assertEqual(self.github.requested,
+                         [rpcv1_jsonrpc_url('v30.0.0'), jsonrpc_url('v30.0.0')])
+
+    def test_other_failures_of_the_rpcv1_file_do_not_fall_back(self):
+        url = rpcv1_jsonrpc_url('v30.0.1')
+        self.github.add(jsonrpc_url('v30.0.1'), 'internal source')
+        failures = {
+            'HTTP 500': urllib.error.HTTPError(
+                url, 500, 'Internal Server Error', email.message.Message(), None),
+            'rate limit': urllib.error.HTTPError(
+                url, 403, 'rate limit exceeded', email.message.Message(), None),
+            'Network error': urllib.error.URLError('connection refused'),
+            "'utf-8' codec can't decode": None,
+        }
+        for expected, error in failures.items():
+            with self.subTest(failure=expected):
+                self.github.requested.clear()
+                self.github.errors.clear()
+                if error is None:
+                    self.github.add(url, b'package rpcv1 \xff')
+                else:
+                    self.github.fail(url, error)
+
+                with self.assertRaises(GitHubFetchError) as context:
+                    fetch_rpc_jsonrpc_source('v30.0.1')
+
+                self.assertNotIsInstance(context.exception, SourceFileNotFoundError)
+                for part in (expected, 'v30.0.1', url):
+                    self.assertIn(part, str(context.exception))
+                self.assertEqual(self.github.requested, [url])
+
+    def test_body_read_failure_on_either_path_raises_without_another_request(self):
+        failures = (
+            (http.client.IncompleteRead(b'package', 100),
+             'IncompleteRead(7 bytes read, 100 more expected)'),
+            (ConnectionResetError(54, 'Connection reset by peer'),
+             '[Errno 54] Connection reset by peer'),
+        )
+        paths = (
+            (rpcv1_jsonrpc_url('v30.0.1'), []),
+            (jsonrpc_url('v30.0.1'), [rpcv1_jsonrpc_url('v30.0.1')]),
+        )
+        for failing_url, earlier_requests in paths:
+            for error, cause in failures:
+                with self.subTest(url=failing_url, failure=cause):
+                    self.github.responses.clear()
+                    self.github.requested.clear()
+                    self.github.add(jsonrpc_url('v30.0.1'), 'internal source')
+                    self.github.add(failing_url, error)
+
+                    with self.assertRaises(GitHubFetchError) as context:
+                        fetch_rpc_jsonrpc_source('v30.0.1')
+
+                    self.assertNotIsInstance(context.exception, SourceFileNotFoundError)
+                    self.assertEqual(
+                        str(context.exception),
+                        f'Failed to read {failing_url} for stellar-rpc tag v30.0.1: {cause}')
+                    self.assertEqual(self.github.requested, earlier_requests + [failing_url])
+
+    def test_both_files_absent_names_both_urls(self):
+        with self.assertRaises(SourceFileNotFoundError) as context:
+            fetch_rpc_jsonrpc_source('v30.0.1')
+
+        message = str(context.exception)
+        for part in ('v30.0.1', 'HTTP 404', rpcv1_jsonrpc_url('v30.0.1'), jsonrpc_url('v30.0.1')):
+            self.assertIn(part, message)
+
+
+class MethodRegistrationParseTest(unittest.TestCase):
+    def parse(self, source: str) -> List[str]:
+        return RPCMethodParser({'version': 'v30.0.1'}).parse(source).get_method_names()
+
+    def assert_parse_fails(self, source: str, *parts: str) -> None:
+        with self.assertRaises(ValueError) as context:
+            self.parse(source)
+        for part in ('v30.0.1',) + parts:
+            self.assertIn(part, str(context.exception))
+
+    def test_both_registration_forms_yield_the_served_methods(self):
+        for fixture in (V30_0_0_FIXTURE, V30_0_1_FIXTURE):
+            with self.subTest(fixture=fixture.name):
+                self.assertEqual(self.parse(fixture.read_text(encoding='utf-8')),
+                                 SERVED_METHODS_V30)
+
+    def test_comments_and_literals_in_the_block_are_not_entries_or_brackets(self):
+        cases = {
+            V30_0_1_FIXTURE: ('\t\tprotocol.GetFeeStatsMethodName: {',
+                              '\t\t// protocol.GetFooMethodName: {},\n'
+                              '\t\t/* protocol.GetBarMethodName: {}, */ protocol.GetFeeStatsMethodName: {'),
+            V30_0_0_FIXTURE: ('longName:             toSnakeCase(protocol.GetHealthMethodName),',
+                              'longName:             "get_health) // }", // ignored },'),
+        }
+        for fixture, (old, new) in cases.items():
+            with self.subTest(fixture=fixture.name):
+                source = fixture.read_text(encoding='utf-8')
+                self.assertIn(old, source)
+                self.assertEqual(self.parse(source.replace(old, new)), SERVED_METHODS_V30)
+
+    def test_unrecognized_entry_fails_naming_it(self):
+        cases = {
+            V30_0_1_FIXTURE: ('protocol.GetFeeStatsMethodName: {', '"getFeeStats": {'),
+            V30_0_0_FIXTURE: ('methodName:           protocol.GetFeeStatsMethodName,',
+                              'methodName: "getFeeStats",'),
+        }
+        for fixture, (old, new) in cases.items():
+            with self.subTest(fixture=fixture.name):
+                source = fixture.read_text(encoding='utf-8')
+                self.assertIn(old, source)
+                self.assert_parse_fails(source.replace(old, new),
+                                        'unrecognized method registration entry', new)
+
+    def test_handler_without_exactly_one_method_name_fails_naming_it(self):
+        source = V30_0_0_FIXTURE.read_text(encoding='utf-8')
+        old = '\t\t\tmethodName: protocol.GetHealthMethodName,\n'
+        self.assertIn(old, source)
+        for count in (0, 2):
+            with self.subTest(method_names=count):
+                self.assert_parse_fails(source.replace(old, old * count),
+                                        'unrecognized method registration entry',
+                                        'methods.NewHealthCheck(')
+
+    def test_empty_block_fails(self):
+        self.assert_parse_fails('specs = jsonrpc.LimitsByMethod{\n}.Apply(specs)\n',
+                                'registration block is empty')
+
+    def test_source_without_exactly_one_block_fails(self):
+        v30_0_1 = V30_0_1_FIXTURE.read_text(encoding='utf-8')
+        for source, count in (('package rpcv1\n', '0'),
+                              (v30_0_1 + V30_0_0_FIXTURE.read_text(encoding='utf-8'), '2')):
+            with self.subTest(blocks=count):
+                self.assert_parse_fails(source, f'holds {count} method registration blocks')
+
+    def test_unclosed_block_fails(self):
+        self.assert_parse_fails('specs = jsonrpc.LimitsByMethod{\n'
+                                '\tprotocol.GetHealthMethodName: {},\n', 'is not closed')
 
 
 class ResponseFileFetchTest(unittest.TestCase):
@@ -600,6 +782,18 @@ class RpcPipelineTest(FakeGitHubTestCase):
         for method_name, method in methods.items():
             with self.subTest(method=method_name):
                 self.assertTrue(method['response_fields'])
+
+    def test_local_file_of_either_form_lists_the_served_methods(self):
+        for fixture in (V30_0_0_FIXTURE, V30_0_1_FIXTURE):
+            with self.subTest(fixture=fixture.name):
+                pipeline = self.make_pipeline(local_jsonrpc_path=str(fixture))
+                with redirect_stdout(io.StringIO()):
+                    pipeline.fetch_rpc_release()
+                    pipeline.parse_rpc_methods()
+
+                rpc_data = json.loads(pipeline.rpc_methods_file.read_text(encoding='utf-8'))
+                self.assertEqual(sorted(rpc_data['methods']), SERVED_METHODS_V30)
+                self.assertEqual(self.github.requested, [])
 
     def test_run_without_a_stable_release_fails_and_writes_nothing(self):
         self.serve_releases([release_record('v29.0.0-rc.1', prerelease=True)])

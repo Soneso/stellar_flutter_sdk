@@ -33,6 +33,7 @@ Example usage:
     jsonrpc_source = fetch_rpc_jsonrpc_source(pinned_release.version)
 """
 
+import http.client
 import json
 import os
 import re
@@ -101,6 +102,14 @@ class ReleaseNotFoundError(GitHubFetchError):
 class SourceFileNotFoundError(GitHubFetchError):
     """Raised when source file cannot be fetched."""
     pass
+
+
+class HTTPStatusError(GitHubFetchError):
+    """Raised when GitHub answers a request with an HTTP error status."""
+
+    def __init__(self, message: str, status: int):
+        super().__init__(message)
+        self.status = status
 
 
 # Cache for GitHub token
@@ -222,8 +231,8 @@ def _make_request_with_headers(
                 f"Set GITHUB_TOKEN env var for 5,000 requests/hour. "
                 f"See: https://github.com/settings/tokens"
             ) from e
-        raise GitHubFetchError(
-            f"HTTP {e.code} error fetching {url}: {e.reason}"
+        raise HTTPStatusError(
+            f"HTTP {e.code} error fetching {url}: {e.reason}", e.code
         ) from e
     except urllib.error.URLError as e:
         raise GitHubFetchError(
@@ -498,34 +507,42 @@ def get_rpc_release(tag: str) -> RPCRelease:
 
 def fetch_rpc_jsonrpc_source(tag: str) -> str:
     """
-    Fetch jsonrpc.go source code for a specific Stellar RPC release tag.
+    Fetch the Go source that registers the served JSON-RPC methods at a tag.
+
+    The file is rpcv1/jsonrpc.go from v30.0.1 on and internal/jsonrpc.go at
+    earlier tags. The second path is requested, at the same tag, only when
+    the first answers HTTP 404.
 
     Args:
-        tag: Git tag name (e.g., 'v21.5.0')
+        tag: Git tag name (e.g., 'v30.0.1')
 
     Returns:
-        Content of jsonrpc.go as string
+        Content of the first file found, as string
 
     Raises:
-        SourceFileNotFoundError: If source file cannot be fetched
-        GitHubFetchError: If request fails
+        SourceFileNotFoundError: If both paths answer HTTP 404
+        GitHubFetchError: If a request or its body read fails in any other
+            way or the file is not UTF-8; the message names the tag and the URL
     """
     if not tag:
         raise ValueError("Tag parameter cannot be empty")
 
-    # Construct raw GitHub URL for jsonrpc.go
-    source_url = (
-        f"https://raw.githubusercontent.com/stellar/stellar-rpc/"
-        f"{tag}/cmd/stellar-rpc/internal/jsonrpc.go"
-    )
+    urls = []
+    for path in ('cmd/stellar-rpc/internal/rpcv1/jsonrpc.go', 'cmd/stellar-rpc/internal/jsonrpc.go'):
+        url = f"https://raw.githubusercontent.com/stellar/stellar-rpc/{tag}/{path}"
+        urls.append(url)
+        try:
+            return _make_request(url).decode('utf-8')
+        # _make_request passes a failed body read, such as a short or reset
+        # response, through as an http.client or OSError exception.
+        except (GitHubFetchError, UnicodeDecodeError, http.client.HTTPException, OSError) as e:
+            if isinstance(e, HTTPStatusError) and e.status == 404:
+                continue
+            raise GitHubFetchError(f"Failed to read {url} for stellar-rpc tag {tag}: {e}") from e
 
-    try:
-        response_data = _make_request(source_url)
-        return response_data.decode('utf-8')
-    except GitHubFetchError as e:
-        raise SourceFileNotFoundError(
-            f"Failed to fetch jsonrpc.go for tag {tag}: {e}"
-        ) from e
+    raise SourceFileNotFoundError(
+        f"No JSON-RPC method source for stellar-rpc tag {tag}: HTTP 404 for {' and '.join(urls)}"
+    )
 
 
 # Cache of resolved go-stellar-sdk refs, keyed by the stellar-rpc tag, so the
