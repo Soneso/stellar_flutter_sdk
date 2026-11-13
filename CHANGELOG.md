@@ -12,9 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SmartAccountTransactionSimulationFailed.withSimulationData` and `SorobanSimulationException` carry immutable diagnostic-event snapshots and reported contract errors.
 - `OZContractErrorCodes.decodeFromSimulationException` maps the reported code without searching later events or message text.
 
-### Changed
-- The Soroban RPC compatibility matrix targets stellar-rpc v30.0.1 and retains its reported coverage.
-
 ### Fixed
 - Soroban and smart-account simulation failures include reported contract errors hidden by constructor or authorization failures in their messages when diagnostic events provide them.
 - Soroban client JSON-RPC simulation failures name the RPC code and message and retain the original RPC error.
