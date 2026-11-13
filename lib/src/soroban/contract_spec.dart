@@ -183,7 +183,8 @@ class ContractSpec {
   }
 
   /// Finds any spec entry by name.
-  /// Searches across functions, structs, unions, enums, and error enums.
+  /// Searches functions, structs, unions, enums, error enums, and events in
+  /// spec order and returns the first entry with that name.
   /// Returns null if the entry is not found.
   XdrSCSpecEntry? findEntry(String name) {
     for (final entry in entries) {
@@ -279,6 +280,9 @@ class ContractSpec {
   /// [Address] of either type. A `MuxedAddress` parameter accepts those and
   /// a muxed account (M...) or muxed contract (W...) strkey, or an [Address]
   /// of either muxed type.
+  ///
+  /// A user-defined type converts with the first struct, union, or enum entry
+  /// of its name and skips any function, event, or error enum of that name.
   ///
   /// Throws ContractSpecException for invalid types or conversion failures,
   /// and an ArgumentError for a map with two equal keys.
@@ -777,7 +781,7 @@ class ContractSpec {
       throw ContractSpecException.invalidType('UDT type is null');
     }
 
-    final entry = findEntry(udtType.name);
+    final entry = _findUdtEntry(udtType.name);
     if (entry == null) {
       throw ContractSpecException.entryNotFound(udtType.name);
     }
@@ -794,6 +798,26 @@ class ContractSpec {
           'Unsupported UDT type: ${entry.discriminant}',
         );
     }
+  }
+
+  /// Returns the first struct, union, or enum entry named [name]. Without one,
+  /// returns the entry [findEntry] finds, so the caller reports its kind.
+  XdrSCSpecEntry? _findUdtEntry(String name) {
+    for (final entry in entries) {
+      String? udtName;
+      switch (entry.discriminant) {
+        case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0:
+          udtName = entry.udtStructV0?.name;
+        case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0:
+          udtName = entry.udtUnionV0?.name;
+        case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0:
+          udtName = entry.udtEnumV0?.name;
+      }
+      if (udtName == name) {
+        return entry;
+      }
+    }
+    return findEntry(name);
   }
 
   /// Handle struct type conversion
