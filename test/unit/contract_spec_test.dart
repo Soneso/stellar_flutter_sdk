@@ -2406,6 +2406,120 @@ void _runRoundtripTests() {
     });
   });
 
+  group('ContractSpec - user-defined type sharing a name with other entries', () {
+    const name = 'transfer';
+    final udtType = XdrSCSpecTypeDef.forUdt(XdrSCSpecTypeUDT(name));
+    // The encoded XDR of {value: 1}, of the void case A and of the enum case A.
+    const structXdr = 'AAAAEQAAAAEAAAABAAAADwAAAAV2YWx1ZQAAAAAAAAMAAAAB';
+    const unionXdr = 'AAAAEAAAAAEAAAABAAAADwAAAAFBAAAA';
+    const enumXdr = 'AAAAAwAAAAE=';
+
+    XdrSCSpecEntry functionEntry() {
+      final entry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
+      );
+      entry.functionV0 = XdrSCSpecFunctionV0('', name, [], [udtType]);
+      return entry;
+    }
+
+    XdrSCSpecEntry structEntry() {
+      final entry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0,
+      );
+      entry.udtStructV0 = XdrSCSpecUDTStructV0('', '', name, [
+        XdrSCSpecUDTStructFieldV0('', 'value', XdrSCSpecTypeDef.forU32()),
+      ]);
+      return entry;
+    }
+
+    XdrSCSpecEntry unionEntry() {
+      final voidCase = XdrSCSpecUDTUnionCaseV0(
+        XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0,
+      );
+      voidCase.voidCase = XdrSCSpecUDTUnionCaseVoidV0('', 'A');
+      final entry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0,
+      );
+      entry.udtUnionV0 = XdrSCSpecUDTUnionV0('', '', name, [voidCase]);
+      return entry;
+    }
+
+    XdrSCSpecEntry enumEntry() {
+      final entry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0,
+      );
+      entry.udtEnumV0 = XdrSCSpecUDTEnumV0('', '', name, [
+        XdrSCSpecUDTEnumCaseV0('', 'A', XdrUint32(1)),
+      ]);
+      return entry;
+    }
+
+    XdrSCSpecEntry errorEnumEntry() {
+      final entry = XdrSCSpecEntry(
+        XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0,
+      );
+      entry.udtErrorEnumV0 = XdrSCSpecUDTErrorEnumV0('', '', name, [
+        XdrSCSpecUDTErrorEnumCaseV0('', 'A', XdrUint32(2)),
+      ]);
+      return entry;
+    }
+
+    XdrSCSpecEntry eventEntry() {
+      final entry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0);
+      entry.eventV0 = XdrSCSpecEventV0(
+        '',
+        '',
+        name,
+        [],
+        [],
+        XdrSCSpecEventDataFormat.SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE,
+      );
+      return entry;
+    }
+
+    String encode(List<XdrSCSpecEntry> entries, dynamic val) => ContractSpec(
+      entries,
+    ).nativeToXdrSCVal(val, udtType).toBase64EncodedXdrString();
+
+    test('converts a struct with a function of its name before or after', () {
+      final val = {'value': 1};
+      expect(encode([functionEntry(), structEntry()], val), structXdr);
+      expect(encode([structEntry(), functionEntry()], val), structXdr);
+    });
+
+    test('converts a union with a function of its name before or after', () {
+      const val = NativeUnionVal.voidCase('A');
+      expect(encode([functionEntry(), unionEntry()], val), unionXdr);
+      expect(encode([unionEntry(), functionEntry()], val), unionXdr);
+    });
+
+    test('converts an enum with a function of its name before or after', () {
+      expect(encode([functionEntry(), enumEntry()], 'A'), enumXdr);
+      expect(encode([enumEntry(), functionEntry()], 'A'), enumXdr);
+    });
+
+    test('converts an enum after an error enum of its name', () {
+      expect(encode([errorEnumEntry(), enumEntry()], 'A'), enumXdr);
+    });
+
+    test('converts a struct after an event of its name', () {
+      expect(encode([eventEntry(), structEntry()], {'value': 1}), structXdr);
+    });
+
+    test('reports the entry kind for a name only a function carries', () {
+      expect(
+        () => encode([functionEntry()], {'value': 1}),
+        throwsA(
+          isA<ContractSpecException>().having(
+            (e) => e.message,
+            'message',
+            'Invalid type: Unsupported UDT type: SCSpecEntryKind.0',
+          ),
+        ),
+      );
+    });
+  });
+
   group('ContractSpec - Type Inference', () {
     test('infers bool type', () {
       final spec = ContractSpec([]);
