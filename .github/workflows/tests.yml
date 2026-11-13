@@ -97,6 +97,7 @@ jobs:
         run: |
           flutter test --platform chrome \
             test/unit/contract_spec_test.dart \
+            test/unit/soroban/simulation_contract_error_browser_test.dart \
             test/unit/sep/web/ \
             test/unit/sep/sep51_canonical_envelope_test.dart \
             test/unit/sep/sep51_corpus_test.dart \

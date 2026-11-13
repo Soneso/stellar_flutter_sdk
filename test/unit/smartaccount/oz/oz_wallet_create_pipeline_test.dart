@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import '../../soroban/simulation_contract_error_fixtures.dart';
 import 'mock_oz_transaction_operations.dart';
 import 'oz_pipeline_fixtures.dart';
 
@@ -59,12 +61,6 @@ SimulateTransactionResponse _simResponseEmpty({int? minResourceFee}) {
   final r = SimulateTransactionResponse(<String, dynamic>{});
   r.results = <SimulateTransactionResult>[];
   r.minResourceFee = minResourceFee;
-  return r;
-}
-
-SimulateTransactionResponse _simResponseError(String error) {
-  final r = SimulateTransactionResponse(<String, dynamic>{});
-  r.resultError = error;
   return r;
 }
 
@@ -459,50 +455,122 @@ void main() {
       );
     });
 
-    test(
-      'createWallet_buildDeployTransactionSimulationError_throwsException',
-      () async {
-        final deployer = KeyPair.random();
-        final mock = MockSorobanServer();
-        final provider = RecordingWebAuthnProvider();
-
-        final credIdBytes = base64Url.decode(
-          base64Url.normalize(_credentialIdB64),
-        );
-        final pubKey = _validSecp256r1PublicKey();
-
-        provider.registerResponses.add(
-          WebAuthnRegistrationResult(
-            credentialId: credIdBytes,
-            publicKey: pubKey,
-            attestationObject: _bytes(37, 0xAA),
-          ),
-        );
-
-        mock.getAccountResponses.add(_deployerAccount(deployer));
-        // Simulation returns an error string.
-        mock.simulateResponses.add(_simResponseError('contract error'));
-
-        final config = OZSmartAccountConfig(
-          rpcUrl: 'https://soroban-testnet.stellar.org',
-          networkPassphrase: Network.TESTNET.networkPassphrase,
-          accountWasmHash: '0' * 64,
-          webauthnVerifierAddress: _contractA,
-          webauthnProvider: provider,
-        );
-        final kit = FakePipelineKit(
-          config: config,
-          sorobanServer: mock,
-          deployer: deployer,
-        );
-
-        final ops = OZWalletOperations(kit);
-        await expectLater(
-          () => ops.createWallet(autoSubmit: false),
-          throwsA(isA<SmartAccountException>()),
-        );
-      },
-    );
+    for (final name in ['case-a', 'case-a-rpc30.0.0', 'rpc', 'transport']) {
+      for (final pending in [false, true]) {
+        test('wallet $name pending=$pending', () async {
+          final deployer = KeyPair.random();
+          final mock = MockSorobanServer();
+          final provider = RecordingWebAuthnProvider();
+          final credentials = StubCredentialManager();
+          credentials.inject(
+            OZStoredCredential(
+              credentialId: _credentialIdB64,
+              publicKey: _validSecp256r1PublicKey(),
+              contractId: _contractA,
+            ),
+          );
+          provider.registerResponses.add(
+            WebAuthnRegistrationResult(
+              credentialId: base64Url.decode(
+                base64Url.normalize(_credentialIdB64),
+              ),
+              publicKey: _validSecp256r1PublicKey(),
+              attestationObject: _bytes(37, 0xAA),
+            ),
+          );
+          final transport = const FormatException('transport failure');
+          final response = name.startsWith('case')
+              ? SimulateTransactionResponse.fromJson(
+                  jsonDecode(
+                    File(
+                      'test/fixtures/simulation_contract_error/$name-response.json',
+                    ).readAsStringSync(),
+                  ),
+                )
+              : SimulateTransactionResponse.fromJson({
+                  'error': {
+                    'code': -32004,
+                    'message': 'queue full',
+                    'data': {'retry': true},
+                  },
+                });
+          if (name == 'rpc') response.events = [errorEvent(3201)];
+          final c = name.startsWith('case')
+              ? capturedCase(name, response)
+              : null;
+          mock.getAccountResponses.add(_deployerAccount(deployer));
+          mock.simulateResponses.add(
+            name == 'transport' ? transport : response,
+          );
+          final config = OZSmartAccountConfig(
+            rpcUrl: 'https://rpc.invalid',
+            networkPassphrase: Network.TESTNET.networkPassphrase,
+            accountWasmHash: '0' * 64,
+            webauthnVerifierAddress: _contractA,
+            webauthnProvider: provider,
+          );
+          final kit = FakePipelineKit(
+            config: config,
+            sorobanServer: mock,
+            deployer: deployer,
+            credentialManager: credentials,
+          );
+          final ops = OZWalletOperations(kit);
+          final error = await caught(
+            () => pending
+                ? ops.deployPendingCredential(
+                    credentialId: _credentialIdB64,
+                    autoSubmit: false,
+                  )
+                : ops.createWallet(autoSubmit: false),
+          );
+          expect(error, isA<SmartAccountTransactionSimulationFailed>());
+          final e = error as SmartAccountTransactionSimulationFailed;
+          if (c != null) {
+            expect(
+              OZContractErrorCodes.decodeFromMessage(e.message),
+              namedErrors[3201],
+            );
+            expectSmartFailure(
+              e,
+              c,
+              'Transaction simulation failed: Simulation error: ',
+            );
+            response.events!.clear();
+            response.events = [];
+            response.resultError = 'Error(Contract, #1)';
+            expect(() => e.diagnosticEventsXdr.clear(), throwsUnsupportedError);
+            expectSmartFailure(
+              e,
+              c,
+              'Transaction simulation failed: Simulation error: ',
+            );
+          } else {
+            final reason = name == 'rpc'
+                ? 'Simulation error: queue full'
+                : 'Failed to simulate deployment transaction: FormatException: transport failure';
+            expect(e.message, 'Transaction simulation failed: $reason');
+            expect(e.cause, name == 'transport' ? same(transport) : isNull);
+            expect(e.diagnosticEventsXdr, isEmpty);
+            expect(e.reportedContractError, isNull);
+            expect(
+              e.toString(),
+              'SmartAccountException [5001]: Transaction simulation failed: $reason${name == 'transport' ? ' (caused by: FormatException: transport failure)' : ''}',
+            );
+          }
+          if (pending) {
+            expect(credentials.markedFailures.single.error, e.message);
+            expect(
+              (await credentials.getCredential(
+                _credentialIdB64,
+              ))!.deploymentStatus,
+              OZCredentialDeploymentStatus.failed,
+            );
+          }
+          expect(mock.sendCalls, isEmpty);
+        });
+      }
+    }
 
     test('createWallet_buildDeployTransactionThrows_throwsException', () async {
       final deployer = KeyPair.random();

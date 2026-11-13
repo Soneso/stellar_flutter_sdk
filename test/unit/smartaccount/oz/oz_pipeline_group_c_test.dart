@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -13,6 +14,7 @@ import 'package:http/testing.dart' as http_testing;
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 import '../../soroban/contract_address_guard_fixtures.dart';
+import '../../soroban/simulation_contract_error_fixtures.dart';
 import 'mock_dio_adapter.dart';
 import 'oz_pipeline_fixtures.dart';
 
@@ -339,6 +341,269 @@ Future<String> _runFundWallet(OZTransactionOperations ops) {
 // ---------------------------------------------------------------------------
 
 void main() {
+  for (final kind in ['rpc', 'transport', 'no results', 'invalid decimals']) {
+    test('read $kind keeps empty data and existing cause', () async {
+      final h = await _harness();
+      h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
+      const cause = FormatException('read parser failure');
+      final response = kind == 'rpc'
+          ? SimulateTransactionResponse.fromJson({
+              'error': {
+                'code': -32004,
+                'message': 'Error(Contract, #3201)',
+                'data': {'retry': true},
+              },
+            })
+          : _simResponseEmpty();
+      response.events = [errorEvent(3201)];
+      if (kind == 'invalid decimals')
+        response.results = [
+          SimulateTransactionResult(
+            XdrSCVal.forVoid().toBase64EncodedXdrString(),
+            [],
+          ),
+        ];
+      h.soroban.simulateResponses.add(kind == 'transport' ? cause : response);
+      final e =
+          await caught(
+                () => OZTransactionOperations(
+                  h.kit,
+                ).fetchTokenDecimals(_contractB),
+              )
+              as SmartAccountTransactionSimulationFailed;
+      final reason = switch (kind) {
+        'rpc' => 'Simulation error: Error(Contract, #3201)',
+        'transport' =>
+          'Failed to simulate read-only host function: FormatException: read parser failure',
+        'no results' => 'No results returned from simulation',
+        _ =>
+          'Token contract $_contractB did not return a valid u32 decimals value',
+      };
+      expect(e.message, 'Transaction simulation failed: $reason');
+      expect(
+        e.toString(),
+        'SmartAccountException [5001]: Transaction simulation failed: $reason${kind == 'transport' ? ' (caused by: FormatException: read parser failure)' : ''}',
+      );
+      expect(e.cause, kind == 'transport' ? same(cause) : isNull);
+      expect(e.diagnosticEventsXdr, isEmpty);
+      expect(e.reportedContractError, isNull);
+      expect(h.soroban.sendCalls, isEmpty);
+    });
+  }
+  test('submit RPC failure excludes retained diagnostic events', () async {
+    final h = await _harness();
+    h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
+    h.soroban.simulateResponses.add(
+      SimulateTransactionResponse.fromJson({
+        'error': {'code': -32004, 'message': 'queue full'},
+      })..events = [errorEvent(3201)],
+    );
+    final e =
+        await caught(
+              () => OZTransactionOperations(h.kit).submit(
+                hostFunction: XdrHostFunction.forInvokingContractWithArgs(
+                  XdrInvokeContractArgs(
+                    Address.forContractId(_contractA).toXdr(),
+                    'op',
+                    [],
+                  ),
+                ),
+                auth: [],
+              ),
+            )
+            as SmartAccountTransactionSimulationFailed;
+    expect(e.diagnosticEventsXdr, isEmpty);
+    expect(e.reportedContractError, isNull);
+    expect(
+      e.message,
+      'Transaction simulation failed: Simulation error: queue full',
+    );
+    expect(h.soroban.sendCalls, isEmpty);
+  });
+  for (final name in captureNames) {
+    for (final mode in ['without events', 'unrelated event first']) {
+      test('captured $name $mode through read', () async {
+        final r = SimulateTransactionResponse.fromJson(
+          jsonDecode(
+            File(
+              'test/fixtures/simulation_contract_error/$name-rpc30.0.0-response.json',
+            ).readAsStringSync(),
+          ),
+        );
+        final original = capturedCase('$name-rpc30.0.0', r);
+        r.events = mode == 'without events'
+            ? null
+            : [errorEvent(1), ...r.events!];
+        final host = original.provenance == ContractErrorProvenance.hostError;
+        final code = host
+            ? original.code
+            : mode == 'without events'
+            ? null
+            : 1;
+        final c = SimulationErrorCase(
+          name,
+          r.resultError,
+          r.events,
+          code: code,
+          provenance: host
+              ? ContractErrorProvenance.hostError
+              : code == null
+              ? null
+              : ContractErrorProvenance.diagnosticEvents,
+          contract: host || code == null ? null : policyContract,
+        );
+        final h = await _harness();
+        h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
+        h.soroban.simulateResponses.add(r);
+        expectSmartFailure(
+          await caught(
+            () => OZTransactionOperations(h.kit).fetchTokenDecimals(_contractB),
+          ),
+          c,
+          'Transaction simulation failed: Simulation error: ',
+        );
+        expect(h.soroban.sendCalls, isEmpty);
+      });
+    }
+  }
+
+  for (final c in syntheticErrorCases()) {
+    test('${c.name} through fetchTokenDecimals', () async {
+      final h = await _harness();
+      h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
+      final response = c.response();
+      if (c.header == null || c.header!.isEmpty) {
+        response.results = [
+          SimulateTransactionResult(
+            XdrSCVal.forU32(7).toBase64EncodedXdrString(),
+            [],
+          ),
+        ];
+      }
+      h.soroban.simulateResponses.add(response);
+      final ops = OZTransactionOperations(h.kit);
+      expectReported(response.reportedContractError(), c);
+      if (c.header == null || c.header!.isEmpty) {
+        expect(await ops.fetchTokenDecimals(_contractB), 7);
+      } else {
+        final e = await caught(() => ops.fetchTokenDecimals(_contractB));
+        expectSmartFailure(
+          e,
+          c,
+          'Transaction simulation failed: Simulation error: ',
+        );
+        if (c.messageMarker)
+          expect(
+            OZContractErrorCodes.decodeFromMessage(
+              (e as SmartAccountTransactionSimulationFailed).message,
+            ),
+            namedErrors[3016],
+          );
+      }
+      expect(h.soroban.sendCalls, isEmpty);
+    });
+  }
+  for (final name in captureNames) {
+    for (final suffix in ['', '-rpc30.0.0']) {
+      for (final resimulate in [false, true]) {
+        test('submit $name$suffix resimulate=$resimulate', () async {
+          final response = SimulateTransactionResponse.fromJson(
+            jsonDecode(
+              File(
+                'test/fixtures/simulation_contract_error/$name$suffix-response.json',
+              ).readAsStringSync(),
+            ),
+          );
+          final c = capturedCase('$name$suffix', response);
+          final h = await _harness();
+          h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
+          if (resimulate) {
+            h.soroban.simulateResponses.add(
+              _simResponseWithAuthEntry(
+                entry: _makeAddressCredsEntry(contractAddress: _contractA),
+              ),
+            );
+            h.soroban.latestLedgerResponses.add(_latestLedger(1000));
+            h.provider.authenticateResponses.add(_fakeAuthResult());
+            h.soroban.getAccountResponses.add(
+              _deployerAccount(h.deployer, seq: 2),
+            );
+          }
+          h.soroban.simulateResponses.add(response);
+          final e = await caught(
+            () => OZTransactionOperations(h.kit).submit(
+              hostFunction: XdrHostFunction.forInvokingContractWithArgs(
+                XdrInvokeContractArgs(
+                  Address.forContractId(_contractA).toXdr(),
+                  'op',
+                  [],
+                ),
+              ),
+              auth: [],
+            ),
+          );
+          expectSmartFailure(
+            e,
+            c,
+            resimulate
+                ? 'Transaction simulation failed: Re-simulation error: '
+                : 'Transaction simulation failed: Simulation error: ',
+          );
+          if (suffix.isEmpty && c.code != null)
+            expect(
+              OZContractErrorCodes.decodeFromMessage(
+                (e as SmartAccountTransactionSimulationFailed).message,
+              ),
+              namedErrors[c.code],
+            );
+          expect(h.soroban.sendCalls, isEmpty);
+        });
+      }
+    }
+  }
+  test('read failure copies the retained response events', () async {
+    final c = syntheticErrorCases().first;
+    final response = c.response();
+    final h = await _harness();
+    h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
+    h.soroban.simulateResponses.add(response);
+    final e =
+        await caught(
+              () =>
+                  OZTransactionOperations(h.kit).fetchTokenDecimals(_contractB),
+            )
+            as SmartAccountTransactionSimulationFailed;
+    response.events!.clear();
+    response.events = ['replacement'];
+    response.resultError = 'Error(Contract, #1)';
+    expect(() => e.diagnosticEventsXdr.add('mutation'), throwsUnsupportedError);
+    expectSmartFailure(
+      e,
+      c,
+      'Transaction simulation failed: Simulation error: ',
+    );
+    expect(h.soroban.sendCalls, isEmpty);
+  });
+  for (final resimulate in [false, true]) {
+    test('funding failure resimulate=$resimulate', () async {
+      final c = syntheticErrorCases().first;
+      final mock = _fundWalletMock(hash: 'unused');
+      mock.simulateResponses[resimulate ? 2 : 1] = c.response();
+      final e = await caught(
+        () =>
+            _runFundWallet(OZTransactionOperations(_fundWalletKit(mock: mock))),
+      );
+      expectSmartFailure(
+        e,
+        c,
+        resimulate
+            ? 'Transaction simulation failed: Re-simulation error: '
+            : 'Transaction simulation failed: Failed to simulate funding transfer: ',
+      );
+      expect(mock.sendCalls, isEmpty);
+    });
+  }
+
   group('auth-entry signing pipeline', () {
     test('submit_signsAuthEntryForOurContract_writesAuthPayloadMap', () async {
       final h = await _harness();

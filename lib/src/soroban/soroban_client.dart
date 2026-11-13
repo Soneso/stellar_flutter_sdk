@@ -9,11 +9,11 @@ import 'package:stellar_flutter_sdk/src/account.dart';
 import 'package:stellar_flutter_sdk/src/constants/network_constants.dart';
 import 'package:stellar_flutter_sdk/src/invoke_host_function_operation.dart';
 import 'package:stellar_flutter_sdk/src/restore_footprint_operation.dart';
-import 'package:stellar_flutter_sdk/src/soroban/soroban_auth.dart';
 import 'package:stellar_flutter_sdk/src/soroban/contract_address_guard.dart';
+import 'package:stellar_flutter_sdk/src/soroban/contract_spec.dart';
+import 'package:stellar_flutter_sdk/src/soroban/soroban_auth.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_contract_parser.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_server.dart';
-import 'package:stellar_flutter_sdk/src/soroban/contract_spec.dart';
 import 'package:stellar_flutter_sdk/src/transaction.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
 import 'package:stellar_flutter_sdk/src/xdr/txrep_helper.dart';
@@ -21,6 +21,41 @@ import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 
 import '../key_pair.dart';
 import '../network.dart';
+
+/// A failed simulation observed through [AssembledTransaction.getSimulationData].
+///
+/// [reportedContractError] is a heuristic selection. Earlier caught errors,
+/// several failing contracts, or unrelated rolled-back errors can win.
+/// Without RPC debug events, only a contract-error header supplies a code.
+class SorobanSimulationException implements Exception {
+  /// The simulation failure text, with diagnostic provenance when available.
+  final String message;
+
+  /// Immutable snapshot of base64 [XdrDiagnosticEvent] strings in emission
+  /// order, including duplicates and entries that cannot be decoded.
+  final List<String> diagnosticEventsXdr;
+
+  /// The immutable selection from [SimulateTransactionResponse.reportedContractError].
+  final ReportedContractError? reportedContractError;
+
+  /// The original JSON-RPC error, retaining its code, message and data.
+  /// The referenced [SorobanRpcErrorResponse] remains mutable.
+  final SorobanRpcErrorResponse? rpcError;
+
+  /// Creates a simulation failure with a copied event snapshot.
+  /// Diagnostic provenance appends its code and optional contract ID to [message].
+  SorobanSimulationException(
+    String message, {
+    List<String> diagnosticEventsXdr = const <String>[],
+    this.reportedContractError,
+    this.rpcError,
+  }) : diagnosticEventsXdr = List<String>.unmodifiable(diagnosticEventsXdr),
+       message = reportedContractError?.appendToMessage(message) ?? message;
+
+  /// Returns the exception prefix followed by [message].
+  @override
+  String toString() => 'Exception: $message';
+}
 
 /// High-level client for interacting with deployed Soroban smart contracts.
 ///
@@ -181,6 +216,9 @@ class SorobanClient {
   /// After deploying the contract it creates and returns a new SorobanClient for the deployed contract.
   /// The contract must be installed before calling this method. You can use `SorobanClient.install`
   /// to install the contract.
+  /// Simulation failures observed during validation throw [SorobanSimulationException]
+  /// with an event snapshot and the heuristic selection described by
+  /// [SimulateTransactionResponse.reportedContractError].
   static Future<SorobanClient> deploy({
     required DeployRequest deployRequest,
   }) async {
@@ -268,6 +306,9 @@ class SorobanClient {
   /// built, so an unresolvable reference fails here with an [Exception]
   /// naming the owner and the tag. One message covers both misses: no entry
   /// under the tag, or an entry that does not hold a 32-byte wasm hash.
+  /// Simulation failures observed during validation throw [SorobanSimulationException]
+  /// with an event snapshot and the heuristic selection described by
+  /// [SimulateTransactionResponse.reportedContractError].
   static Future<SorobanClient> deployFromExternalRef({
     required DeployFromExternalRefRequest deployRequest,
   }) async {
@@ -372,6 +413,9 @@ class SorobanClient {
 
   /// Installs (uploads) the given contract code to soroban.
   /// If successfully it returns the wasm hash of the installed contract as a hex string.
+  /// Simulation failures observed during validation throw [SorobanSimulationException]
+  /// with an event snapshot and the heuristic selection described by
+  /// [SimulateTransactionResponse.reportedContractError].
   static Future<String> install({
     required InstallRequest installRequest,
     bool force = false,
@@ -482,6 +526,10 @@ class SorobanClient {
   ///   methodOptions: options,
   /// );
   /// ```
+  ///
+  /// Simulation failures observed during validation throw [SorobanSimulationException]
+  /// with an event snapshot and the heuristic selection described by
+  /// [SimulateTransactionResponse.reportedContractError].
   ///
   /// See also:
   /// - [buildInvokeMethodTx] for manual transaction control
@@ -848,6 +896,9 @@ class AssembledTransaction {
   /// Throws an [ArgumentError] before any request when the contractId of the
   /// client options is neither a contract (C...) address nor the 64-character
   /// hex of a contract id.
+  /// Failed invocation responses are retained until [getSimulationData] or
+  /// signing observes them. A failed automatic restore simulation throws
+  /// [SorobanSimulationException] before this call returns.
   static Future<AssembledTransaction> build({
     required AssembledTransactionOptions options,
   }) async {
@@ -868,6 +919,9 @@ class AssembledTransaction {
   /// contract whose id is neither a contract (C...) address nor the
   /// 64-character hex of a contract id, as a host function decoded from XDR
   /// may carry.
+  /// Failed invocation responses are retained until [getSimulationData] or
+  /// signing observes them. A failed automatic restore simulation throws
+  /// [SorobanSimulationException] before this call returns.
   static Future<AssembledTransaction> buildWithOp({
     required InvokeHostFunctionOperation operation,
     required AssembledTransactionOptions options,
@@ -898,6 +952,9 @@ class AssembledTransaction {
 
   /// Simulates the transaction and assembles the final transaction from the simulation result.
   /// To access the simulation response data call `getSimulationData()` after simulation.
+  /// Failed invocation responses are retained until [getSimulationData] or
+  /// signing observes them. A failed automatic restore simulation throws
+  /// [SorobanSimulationException] before this call returns.
   Future<void> simulate({bool? restore = null}) async {
     if (tx == null) {
       if (raw == null) {
@@ -1637,6 +1694,10 @@ class AssembledTransaction {
   }
 
   /// Simulation data collected from the transaction simulation.
+  ///
+  /// Throws [SorobanSimulationException] for a failed simulation or missing
+  /// transaction data. Its event snapshot and heuristic reported code retain
+  /// diagnostic information; see [SimulateTransactionResponse.reportedContractError].
   SimulateHostFunctionResult getSimulationData() {
     if (_simulationResult != null) {
       return _simulationResult!;
@@ -1647,8 +1708,21 @@ class AssembledTransaction {
     if (simulationResponse!.error != null ||
         simulationResponse!.resultError != null ||
         simulationResponse!.transactionData == null) {
-      throw new Exception(
-        "Transaction simulation failed: ${simulationResponse?.resultError}",
+      final response = simulationResponse!;
+      final resultError = response.resultError;
+      final rpcError = response.error;
+      final reason =
+          resultError ??
+          (rpcError == null
+              ? 'null'
+              : 'JSON-RPC error ${rpcError.code}: ${rpcError.message}');
+      throw SorobanSimulationException(
+        'Transaction simulation failed: $reason',
+        diagnosticEventsXdr: resultError == null
+            ? const <String>[]
+            : response.events ?? const <String>[],
+        reportedContractError: response.reportedContractError(),
+        rpcError: rpcError,
       );
     }
 

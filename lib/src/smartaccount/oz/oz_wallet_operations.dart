@@ -410,6 +410,9 @@ class OZWalletOperations {
   ///
   /// The optional [cancelToken] can be cancelled to abort an in-flight
   /// network request; cancellation surfaces as a [SmartAccountTransactionException].
+  /// Response failures throw [SmartAccountTransactionSimulationFailed] with
+  /// diagnostic data. Its reported code is a heuristic selection; see
+  /// [SimulateTransactionResponse.reportedContractError] for its limits.
   Future<OZCreateWalletResult> createWallet({
     String userName = 'Smart Account User',
     bool autoSubmit = false,
@@ -1057,6 +1060,9 @@ class OZWalletOperations {
   /// an empty one) to override it. At most [OZConstants.maxPolicies].
   /// Constructor arguments are not part of the contract-address preimage,
   /// so the derived address is unchanged by the policies.
+  /// Response failures throw [SmartAccountTransactionSimulationFailed] with
+  /// diagnostic data. Its reported code is a heuristic selection; see
+  /// [SimulateTransactionResponse.reportedContractError] for its limits.
   Future<OZDeployPendingResult> deployPendingCredential({
     required String credentialId,
     bool autoSubmit = true,
@@ -1606,8 +1612,9 @@ class OZWalletOperations {
 
     final simError = simulation.resultError ?? simulation.error?.message;
     if (simError != null && simError.isNotEmpty) {
-      throw SmartAccountTransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailedFor(
         'Simulation error: $simError',
+        simulation,
       );
     }
 

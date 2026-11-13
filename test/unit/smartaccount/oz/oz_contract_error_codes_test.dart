@@ -1,9 +1,38 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import '../../soroban/simulation_contract_error_fixtures.dart';
+
 /// Decoding of OZ smart-account, WebAuthn, and policy contract error codes
 /// into their defining contract and variant name.
 void main() {
+  for (final c in syntheticErrorCases().where((c) => c.decoder)) {
+    test('structured decoder ${c.name}', () {
+      final response = c.response();
+      final e = SmartAccountTransactionSimulationFailed.withSimulationData(
+        c.header ?? '',
+        diagnosticEventsXdr: response.events ?? [],
+        reportedContractError: response.reportedContractError(),
+      );
+      expect(
+        OZContractErrorCodes.decodeFromSimulationException(e),
+        namedErrors[c.code],
+      );
+      if (c.messageMarker) {
+        expect(
+          OZContractErrorCodes.decodeFromMessage(e.message),
+          namedErrors[3016],
+        );
+        expect(
+          OZContractErrorCodes.decodeFromSimulationException(
+            SmartAccountTransactionSimulationFailed(e.message),
+          ),
+          isNull,
+        );
+      }
+    });
+  }
+
   group('OZContractErrorCodes', () {
     test('contract error codes are correct', () {
       expect(OZContractErrorCodes.mathOverflow, 3012);

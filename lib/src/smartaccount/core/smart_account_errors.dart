@@ -2,6 +2,11 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'package:meta/meta.dart';
+
+import '../../soroban/soroban_transaction_responses.dart';
+import '../../xdr/xdr_diagnostic_event.dart';
+
 /// Numeric error codes for Smart Account operations.
 ///
 /// Codes are partitioned into ranges by category so a numeric value identifies
@@ -487,6 +492,19 @@ sealed class SmartAccountTransactionException extends SmartAccountException {
     cause,
   );
 
+  /// Creates a failure with the response's event snapshot and reported code.
+  @internal
+  static SmartAccountTransactionSimulationFailed simulationFailedFor(
+    String reason,
+    SimulateTransactionResponse response,
+  ) => SmartAccountTransactionSimulationFailed.withSimulationData(
+    'Transaction simulation failed: $reason',
+    diagnosticEventsXdr: response.resultError == null
+        ? const <String>[]
+        : response.events ?? const <String>[],
+    reportedContractError: response.reportedContractError(),
+  );
+
   /// Creates a transaction-signing-failed error using the message format
   /// `"Transaction signing failed: <reason>"`.
   static SmartAccountTransactionSigningFailed signingFailed(
@@ -521,8 +539,37 @@ sealed class SmartAccountTransactionException extends SmartAccountException {
 /// Transaction simulation failed.
 final class SmartAccountTransactionSimulationFailed
     extends SmartAccountTransactionException {
+  /// Immutable snapshot of base64 [XdrDiagnosticEvent] strings in emission
+  /// order, including duplicates and entries that cannot be decoded.
+  final List<String> diagnosticEventsXdr;
+
+  /// The heuristic selection from [SimulateTransactionResponse.reportedContractError].
+  /// Without RPC debug events, only a contract-error header supplies a code.
+  final ReportedContractError? reportedContractError;
+
+  /// Creates a simulation failure without diagnostic data.
   const SmartAccountTransactionSimulationFailed(String message, [Object? cause])
-    : super(SmartAccountErrorCode.transactionSimulationFailed, message, cause);
+    : diagnosticEventsXdr = const <String>[],
+      reportedContractError = null,
+      super(SmartAccountErrorCode.transactionSimulationFailed, message, cause);
+
+  /// Creates a failure with a copied event snapshot and a reported code.
+  ///
+  /// Diagnostic provenance appends the code and optional contract ID to
+  /// [message]. The inherited SDK [code] remains independent of the contract
+  /// code. See [SimulateTransactionResponse.reportedContractError] for the
+  /// heuristic's limits, including earlier caught or rolled-back errors.
+  SmartAccountTransactionSimulationFailed.withSimulationData(
+    String message, {
+    required List<String> diagnosticEventsXdr,
+    required this.reportedContractError,
+    Object? cause,
+  }) : diagnosticEventsXdr = List<String>.unmodifiable(diagnosticEventsXdr),
+       super(
+         SmartAccountErrorCode.transactionSimulationFailed,
+         reportedContractError?.appendToMessage(message) ?? message,
+         cause,
+       );
 }
 
 /// Transaction signing failed.

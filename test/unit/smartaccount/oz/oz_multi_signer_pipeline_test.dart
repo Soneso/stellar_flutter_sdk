@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import '../../soroban/simulation_contract_error_fixtures.dart';
 import 'oz_pipeline_fixtures.dart';
 
 const String _contractA =
@@ -228,6 +230,115 @@ class _AlwaysSignWallet extends OZExternalWalletAdapter {
 }
 
 void main() {
+  for (final kind in ['rpc', 'transport', 'no auth']) {
+    test('multi-signer $kind preserves empty data', () async {
+      final h = await _harness();
+      h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
+      const cause = FormatException('multi parser failure');
+      final response = kind == 'rpc'
+          ? SimulateTransactionResponse.fromJson({
+              'error': {
+                'code': -32004,
+                'message': 'queue full',
+                'data': {'retry': true},
+              },
+            })
+          : _simResponseEmpty();
+      response.events = [errorEvent(3201)];
+      h.soroban.simulateResponses.add(kind == 'transport' ? cause : response);
+      final e =
+          await caught(
+                () => OZMultiSignerManager(h.kit).submitWithMultipleSigners(
+                  hostFunction: XdrHostFunction.forInvokingContractWithArgs(
+                    XdrInvokeContractArgs(
+                      Address.forContractId(_contractB).toXdr(),
+                      'vote',
+                      [],
+                    ),
+                  ),
+                  selectedSigners: [
+                    OZSelectedSignerPasskey(keyData: _passkeyKeyData()),
+                  ],
+                ),
+              )
+              as SmartAccountTransactionSimulationFailed;
+      final reason = kind == 'rpc'
+          ? 'Simulation error: queue full'
+          : kind == 'no auth'
+          ? 'No auth entries returned from simulation'
+          : 'Failed to simulate multi-signer transaction: FormatException: multi parser failure';
+      expect(e.message, 'Transaction simulation failed: $reason');
+      expect(
+        e.toString(),
+        'SmartAccountException [5001]: Transaction simulation failed: $reason${kind == 'transport' ? ' (caused by: FormatException: multi parser failure)' : ''}',
+      );
+      expect(e.cause, kind == 'transport' ? same(cause) : isNull);
+      expect(e.diagnosticEventsXdr, isEmpty);
+      expect(e.reportedContractError, isNull);
+      expect(h.soroban.sendCalls, isEmpty);
+    });
+  }
+
+  for (final name in [...captureNames.take(4), 'rpc']) {
+    for (final resimulate in [false, true]) {
+      test('multiple signers $name resimulate=$resimulate', () async {
+        final response = SimulateTransactionResponse.fromJson(
+          name == 'rpc'
+              ? {
+                  'error': {'code': -32004, 'message': 'queue full'},
+                }
+              : jsonDecode(
+                  File(
+                    'test/fixtures/simulation_contract_error/$name-response.json',
+                  ).readAsStringSync(),
+                ),
+        );
+        if (name == 'rpc') response.events = [errorEvent(3201)];
+        final c = name == 'rpc'
+            ? SimulationErrorCase('RPC failure', 'queue full', [])
+            : capturedCase(name, response);
+        final h = await _harness();
+        h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
+        if (resimulate) {
+          h.soroban.simulateResponses.add(
+            _simResponseWithAuthEntry(
+              entry: _makeAddressCredsEntry(_contractA),
+              minResourceFee: 100,
+            ),
+          );
+          h.soroban.latestLedgerResponses.add(_latestLedger(1000));
+          h.provider.authenticateResponses.add(_fakeAuthResult());
+          h.soroban.getAccountResponses.add(
+            _deployerAccount(h.deployer, seq: 2),
+          );
+        }
+        h.soroban.simulateResponses.add(response);
+        final e = await caught(
+          () => OZMultiSignerManager(h.kit).submitWithMultipleSigners(
+            hostFunction: XdrHostFunction.forInvokingContractWithArgs(
+              XdrInvokeContractArgs(
+                Address.forContractId(_contractB).toXdr(),
+                'vote',
+                [],
+              ),
+            ),
+            selectedSigners: [
+              OZSelectedSignerPasskey(keyData: _passkeyKeyData()),
+            ],
+          ),
+        );
+        expectSmartFailure(
+          e,
+          c,
+          resimulate
+              ? 'Transaction simulation failed: Re-simulation error: '
+              : 'Transaction simulation failed: Simulation error: ',
+        );
+        expect(h.soroban.sendCalls, isEmpty);
+      });
+    }
+  }
+
   group('OZMultiSignerManager - passkey signing pipeline', () {
     test('passkey_fullPipeline_success', () async {
       final h = await _harness();
