@@ -316,8 +316,10 @@ class XdrDataInputStream extends DataInput {
   /// Maximum nested Soroban delegate signatures during binary XDR decoding.
   static const int maxRecursiveDecodeDepth = 128;
 
-  /// Maximum active recursive type decodes on one stream. The network's XDR
-  /// depth cap is 500 and counts every nested type; this counts recursive types.
+  /// Maximum active recursive type decodes on one stream. The Soroban host
+  /// limits XDR depth to 500 and stellar-core limits a transaction envelope to
+  /// 1000, both counting every nested type; this counter counts only recursive
+  /// types.
   static const int maxXdrDecodeDepth = 500;
 
   int _recursiveDecodeDepth = 0;
