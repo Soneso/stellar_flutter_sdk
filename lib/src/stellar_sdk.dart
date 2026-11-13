@@ -494,15 +494,21 @@ class StellarSDK {
   /// Runs the SEP-29 check of [checkMemoRequired] on a base64-encoded
   /// transaction envelope.
   ///
-  /// An envelope that cannot be decoded is not checked. It is submitted
-  /// unchanged, so that Horizon reports the malformed envelope in its
-  /// response.
+  /// The envelope is decoded with every `\r` and `\n` removed, because
+  /// Horizon's base64 decoder skips line breaks; no other character is
+  /// removed. Throws [FormatException] if the envelope still cannot be decoded,
+  /// so that no envelope reaches Horizon without the check.
   Future<void> _checkMemoRequiredForEnvelope(String envelope) async {
     AbstractTransaction transaction;
     try {
-      transaction = AbstractTransaction.fromEnvelopeXdrString(envelope);
+      transaction = AbstractTransaction.fromEnvelopeXdrString(
+        envelope.replaceAll('\r', '').replaceAll('\n', ''),
+      );
     } catch (_) {
-      return;
+      throw const FormatException(
+        'The transaction envelope cannot be decoded for the SEP-29 '
+        'memo-required check. Nothing was submitted.',
+      );
     }
     await checkMemoRequired(transaction);
   }
@@ -640,13 +646,15 @@ class StellarSDK {
   /// to be ingested in Horizon.
   ///
   /// Before submitting, the envelope is decoded and the transaction is checked with [checkMemoRequired] (SEP-29).
-  /// If the transaction has no memo, this costs one account lookup per distinct non-muxed destination. An envelope
-  /// that cannot be decoded is not checked and is submitted unchanged. Set [skipMemoRequiredCheck] to `true` to submit
-  /// without the SEP-29 memo-required check.
+  /// If the transaction has no memo, this costs one account lookup per distinct non-muxed destination. The check
+  /// decodes the string with its line breaks (`\r` and `\n`) removed, since Horizon's base64 decoder skips them, and
+  /// the string is submitted as passed. Set [skipMemoRequiredCheck] to `true` to submit the string without decoding it
+  /// and without the SEP-29 memo-required check.
   ///
   /// Returns [SubmitTransactionTimeoutResponseException] If the response represents a timeout (status code: 504). The exception
   /// may contain the hash of the transaction if available, so that the result can be fetched later.
   ///
+  /// Throws [FormatException] if the check cannot decode the envelope; nothing is submitted.
   /// Throws [AccountRequiresMemoException] if the transaction has no memo and a destination account requires one.
   /// Throws [ErrorResponse] or [TooManyRequestsException] if a destination account lookup of the memo-required check fails.
   /// A destination that does not exist (status code: 404) is skipped by the check.
@@ -700,9 +708,11 @@ class StellarSDK {
   /// which blocks and waits for the transaction to be ingested in Horizon, this endpoint relays the response from
   /// core directly back to the user. Returns [SubmitAsyncTransactionResponse].
   /// Before submitting, the envelope is decoded and the transaction is checked with [checkMemoRequired] (SEP-29).
-  /// If the transaction has no memo, this costs one account lookup per distinct non-muxed destination. An envelope
-  /// that cannot be decoded is not checked and is submitted unchanged. Set [skipMemoRequiredCheck] to `true` to submit
-  /// without the SEP-29 memo-required check.
+  /// If the transaction has no memo, this costs one account lookup per distinct non-muxed destination. The check
+  /// decodes the string with its line breaks (`\r` and `\n`) removed, since Horizon's base64 decoder skips them, and
+  /// the string is submitted as passed. Set [skipMemoRequiredCheck] to `true` to submit the string without decoding it
+  /// and without the SEP-29 memo-required check.
+  /// Throws [FormatException] if the check cannot decode the envelope; nothing is submitted.
   /// Throws [AccountRequiresMemoException] if the transaction has no memo and a destination account requires one.
   /// Throws [ErrorResponse] or [TooManyRequestsException] if a destination account lookup of the memo-required check fails.
   /// A destination that does not exist (status code: 404) is skipped by the check.

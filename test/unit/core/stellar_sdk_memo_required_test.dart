@@ -3,8 +3,10 @@
 // operation names a non-multiplexed destination whose `config.memo_required`
 // data entry is `1`. The check looks each distinct destination up once, in
 // operation order, stops at the first hit, skips destinations Horizon does not
-// know, and makes no request at all when the transaction carries a memo. Every
-// case asserts the exact list of HTTP requests the SDK sent.
+// know, and makes no request at all when the transaction carries a memo. The
+// envelope-string methods check an envelope with line breaks, post it as
+// passed, and throw before any request for an envelope they cannot decode.
+// Every case asserts the exact list of HTTP requests the SDK sent.
 
 import 'dart:convert';
 import 'dart:typed_data';
@@ -183,6 +185,37 @@ Matcher memoRequired(String accountId, int operationIndex) {
       );
 }
 
+final Matcher undecodableEnvelope = isA<FormatException>().having(
+  (e) => e.toString(),
+  'toString()',
+  'FormatException: The transaction envelope cannot be decoded for the '
+      'SEP-29 memo-required check. Nothing was submitted.',
+);
+
+/// Both envelope-string submit methods, keyed by the path they post to.
+final Map<String, Future<Object> Function(StellarSDK, String, bool)>
+envelopeEndpoints = {
+  '/transactions': (sdk, envelope, skip) =>
+      sdk.submitTransactionEnvelopeXdrBase64(
+        envelope,
+        skipMemoRequiredCheck: skip,
+      ),
+  '/transactions_async': (sdk, envelope, skip) =>
+      sdk.submitAsyncTransactionEnvelopeXdrBase64(
+        envelope,
+        skipMemoRequiredCheck: skip,
+      ),
+};
+
+/// Breaks [envelope] into lines of 76 characters separated by [separator].
+String wrapLines(String envelope, String separator) {
+  final lines = <String>[];
+  for (int i = 0; i < envelope.length; i += 76) {
+    lines.add(envelope.substring(i, i + 76 < envelope.length ? i + 76 : null));
+  }
+  return lines.join(separator);
+}
+
 void main() {
   late KeyPair sourceKeyPair;
   late KeyPair feeKeyPair;
@@ -225,6 +258,17 @@ void main() {
     ).setBaseFee(200).setFeeAccount(feeKeyPair.accountId).build();
     transaction.sign(feeKeyPair, Network.TESTNET);
     return transaction;
+  }
+
+  String v0Envelope(Transaction transaction) {
+    final envelope = XdrTransactionEnvelope(
+      XdrEnvelopeType.ENVELOPE_TYPE_TX_V0,
+    );
+    envelope.v0 = XdrTransactionV0Envelope(
+      transaction.toV0Xdr(),
+      transaction.signatures,
+    );
+    return envelope.toBase64EncodedXdrString();
   }
 
   Operation payment(String destination) =>
@@ -674,12 +718,6 @@ void main() {
     });
   });
 
-  final undecodableEnvelopes = <String, String Function()>{
-    'invalid base64': () => 'not*base64',
-    'unknown envelope type': () => base64Encode(utf8.encode('garbage')),
-    'truncated bytes': () => base64Encode([0, 0, 0]),
-  };
-
   group('submitTransactionEnvelopeXdrBase64', () {
     test('throws when a destination requires a memo', () async {
       final sdk = sdkWith(accounts: {dest: flagged(dest)}, requests: requests);
@@ -724,17 +762,6 @@ void main() {
       expect(response.success, isTrue);
       expect(requests, ['POST /transactions']);
     });
-
-    undecodableEnvelopes.forEach((name, envelope) {
-      test('submits an undecodable envelope unchecked: $name', () async {
-        final sdk = sdkWith(accounts: {}, requests: requests, posted: posted);
-        final original = envelope();
-        final response = await sdk.submitTransactionEnvelopeXdrBase64(original);
-        expect(response.success, isTrue);
-        expect(requests, ['POST /transactions']);
-        expect(posted, [original]);
-      });
-    });
   });
 
   group('submitAsyncTransactionEnvelopeXdrBase64', () {
@@ -769,17 +796,93 @@ void main() {
       expect(response.txStatus, 'PENDING');
       expect(requests, ['POST /transactions_async']);
     });
+  });
 
-    undecodableEnvelopes.forEach((name, envelope) {
-      test('submits an undecodable envelope unchecked: $name', () async {
+  group('envelope strings', () {
+    final envelopeKinds = <String, String Function()>{
+      'V0': () => v0Envelope(buildTx([payment(dest)])),
+      'V1': () => buildTx([payment(dest)]).toEnvelopeXdrBase64(),
+      'fee bump': () => feeBump(buildTx([payment(dest)])).toEnvelopeXdrBase64(),
+    };
+    final lineBreaks = <String, String Function(String)>{
+      'LF lines': (envelope) => wrapLines(envelope, '\n'),
+      'CRLF lines': (envelope) => wrapLines(envelope, '\r\n'),
+      'a trailing LF': (envelope) => '$envelope\n',
+      'a trailing CRLF': (envelope) => '$envelope\r\n',
+    };
+    final undecodable = <String, String Function()>{
+      'invalid base64': () => 'not*base64',
+      'unknown envelope type': () => base64Encode(utf8.encode('garbage')),
+      'truncated bytes': () => base64Encode([0, 0, 0]),
+      'a space': () {
+        final envelope = buildTx([payment(dest)]).toEnvelopeXdrBase64();
+        return '${envelope.substring(0, 76)} ${envelope.substring(76)}';
+      },
+      'a tab': () {
+        final envelope = buildTx([payment(dest)]).toEnvelopeXdrBase64();
+        return '${envelope.substring(0, 76)}\t${envelope.substring(76)}';
+      },
+      // A one-payment V1 envelope has 200 bytes and ends in one `=`, so the
+      // character before it carries two unused bits. With them set, Horizon's
+      // decoder reads the same bytes and the SDK's decoder rejects the string.
+      'nonzero unused padding bits': () {
+        final envelope = buildTx([payment(dest)]).toEnvelopeXdrBase64();
+        expect(envelope.length, 268);
+        expect(envelope, endsWith('='));
+        expect(envelope, isNot(endsWith('==')));
+        const digits =
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+        final digit = digits[digits.indexOf(envelope[266]) | 3];
+        return '${envelope.substring(0, 266)}$digit=';
+      },
+    };
+
+    envelopeEndpoints.forEach((path, submit) {
+      envelopeKinds.forEach((kind, build) {
+        lineBreaks.forEach((name, insert) {
+          test('$path checks a $kind envelope with $name', () async {
+            final sdk = sdkWith(
+              accounts: {dest: flagged(dest)},
+              requests: requests,
+            );
+            await expectLater(
+              submit(sdk, insert(build()), false),
+              throwsA(memoRequired(dest, 0)),
+            );
+            expect(requests, ['GET /accounts/$dest']);
+          });
+
+          test('$path posts a checked $kind envelope with $name', () async {
+            final sdk = sdkWith(
+              accounts: {dest: unflagged(dest)},
+              requests: requests,
+              posted: posted,
+            );
+            final input = insert(build());
+            await submit(sdk, input, false);
+            expect(requests, ['GET /accounts/$dest', 'POST $path']);
+            expect(posted, [input]);
+          });
+        });
+      });
+
+      undecodable.forEach((name, envelope) {
+        test('$path submits nothing for an envelope with $name', () async {
+          final sdk = sdkWith(accounts: {}, requests: requests);
+          await expectLater(
+            submit(sdk, envelope(), false),
+            throwsA(undecodableEnvelope),
+          );
+          expect(requests, isEmpty);
+        });
+      });
+
+      test('$path posts an undecodable envelope when asked to skip', () async {
         final sdk = sdkWith(accounts: {}, requests: requests, posted: posted);
-        final original = envelope();
-        final response = await sdk.submitAsyncTransactionEnvelopeXdrBase64(
-          original,
-        );
-        expect(response.txStatus, 'PENDING');
-        expect(requests, ['POST /transactions_async']);
-        expect(posted, [original]);
+        final input = undecodable['nonzero unused padding bits']!();
+        await submit(sdk, input, true);
+        expect(requests, ['POST $path']);
+        expect(posted, [input]);
       });
     });
   });
