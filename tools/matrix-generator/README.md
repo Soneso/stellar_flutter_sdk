@@ -15,9 +15,9 @@ It analyzes three areas:
 - Internet access (fetches specs from GitHub, including stellar-protocol via raw.githubusercontent.com)
 - Local clones of `stellar-horizon` and `stellar-rpc` as siblings of the SDK root
 
-Horizon sources are fetched from GitHub at the tag of the latest release. RPC sources are fetched at the tag of the newest stable release: the highest `vX.Y.Z` tag with `draft` and `prerelease` false, across every page of the release list. `--rpc-version` must name a non-draft `v*` server release. The local clones back the `--local` modes below, and `run_analysis.py` checks for them up front: `stellar-horizon` must carry `internal/httpx/router.go`.
+Horizon sources are fetched from GitHub at the tag of the latest release. RPC sources are fetched at the tag of the newest stable release: the highest `vX.Y.Z` tag with `draft` and `prerelease` false, across every page of the release list. `--rpc-version` must name a non-draft `v*` server release. The RPC method list comes from the `LimitsByMethod` map literal of `cmd/stellar-rpc/internal/rpcv1/jsonrpc.go` or, when GitHub answers HTTP 404 for that file at the tag, from the `methodName` handler list of `cmd/stellar-rpc/internal/jsonrpc.go`. The local clones back the `--local` modes below, and `run_analysis.py` checks for them up front: `stellar-horizon` must carry `internal/httpx/router.go`.
 
-A pipeline exits non-zero and writes no matrix when `pubspec.yaml` has no readable version or no RPC release qualifies. The RPC pipeline does the same when the response struct of a method cannot be fetched, yields no fields, or embeds a struct that no fetched go-stellar-sdk protocol file declares. The SEP-23 pipeline does the same when the specification lacks its Specification or Tests section, or when the version byte table or a test case list is missing or empty. It also stops when a file it reads is missing or unreadable, or when a key type has no entry in its name table. A class, `VersionByte` member, constant, or `StrKey` function it maps that is absent stops it too, and so does a version byte value in a form it cannot evaluate. `run_analysis.py` stops at the first failed step.
+A pipeline exits non-zero and writes no matrix when `pubspec.yaml` has no readable version or no RPC release qualifies. The RPC pipeline does the same when the method list file cannot be fetched, holds not exactly one registration block, or has an empty block. An entry of the block that names no method as a `protocol.<Name>MethodName` constant stops it too. It also stops when the response struct of a method cannot be fetched, yields no fields, or embeds a struct that no fetched go-stellar-sdk protocol file declares. The SEP-23 pipeline does the same when the specification lacks its Specification or Tests section, or when the version byte table or a test case list is missing or empty. It also stops when a file it reads is missing or unreadable, or when a key type has no entry in its name table. A class, `VersionByte` member, constant, or `StrKey` function it maps that is absent stops it too, and so does a version byte value in a form it cannot evaluate. `run_analysis.py` stops at the first failed step.
 
 The response fields of a method include the fields of the structs its response struct embeds. Fields ending in `Json` are the JSON-format variants of XDR fields and are not counted, because the SDK decodes XDR.
 
@@ -131,7 +131,7 @@ Run from the repository root:
 python3 -m unittest discover -s tools/matrix-generator/tests
 ```
 
-The tests patch every network call. The SEP fixtures in `tests/fixtures/` are copies of the upstream SEP markdown.
+The tests patch every network call. The SEP fixtures in `tests/fixtures/` are copies of the upstream SEP markdown, and the two `stellar-rpc-*.go` fixtures are copies of the stellar-rpc method list files at v30.0.0 and v30.0.1.
 
 ## Adding a New SEP
 

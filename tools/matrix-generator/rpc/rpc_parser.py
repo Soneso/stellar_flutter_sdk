@@ -25,23 +25,28 @@ class RPCMethodParser:
     """
     Parser for Soroban RPC method definitions from Go source code.
 
-    This parser extracts RPC method names from the jsonrpc.go file,
-    which contains method registrations in the form:
-    {
-        methodName: protocol.GetHealthMethodName,
-        ...
-    }
+    This parser extracts RPC method names from the one registration block of
+    a jsonrpc.go file: a LimitsByMethod map literal keyed by
+    protocol.GetHealthMethodName (the server refuses to start unless its keys
+    equal the served methods), or a handler list, a slice of structs with
+    methodName: protocol.GetHealthMethodName.
 
     Attributes:
         version_info: Version metadata for the RPC release
         methods: Dictionary of parsed method definitions
     """
 
-    # Method pattern: methodName: protocol.XxxMethodName
-    METHOD_PATTERN = re.compile(
-        r'methodName:\s*protocol\.(\w+)MethodName',
-        re.MULTILINE
-    )
+    # Go string and rune literals; parsing keeps them whole and drops comments
+    GO_LITERAL = r'"(?:\\.|[^"\\\n])*"|`[^`]*`|\'(?:\\.|[^\'\\\n])*\''
+    GO_COMMENT_OR_LITERAL = re.compile(rf'({GO_LITERAL})|//[^\n]*|/\*.*?\*/', re.DOTALL)
+    # Token of the bracket scan: a literal, which it skips, a bracket or a comma
+    GO_SCAN_TOKEN = re.compile(rf'{GO_LITERAL}|[{{}}()\[\],]')
+    # Opening brace of a registration block: the map literal or the handler list
+    REGISTRATION_BLOCK_PATTERN = re.compile(
+        r'\bLimitsByMethod\s*\{|\[\]struct\s*\{[^{}]*\bmethodName\s+string\b[^{}]*\}\s*\{')
+    # Map literal entry and handler list field that name a method
+    MAP_ENTRY_PATTERN = re.compile(r'protocol\.(\w+)MethodName\s*:\s*\{.*\}', re.DOTALL)
+    METHOD_NAME_FIELD_PATTERN = re.compile(r'methodName\s*:\s*protocol\.(\w+)MethodName')
 
     # Pattern to match response struct definition
     # Example: type GetLatestLedgerResponse struct {
@@ -142,10 +147,8 @@ class RPCMethodParser:
         """
         Parse Go source code content to extract RPC method definitions.
 
-        This method searches for method registrations in the form:
-        methodName: protocol.GetHealthMethodName
-
-        And converts them to camelCase method names:
+        Every entry of the registration block must name its method as
+        protocol.XxxMethodName, which converts to the camelCase method name:
         GetHealthMethodName -> getHealth
 
         Args:
@@ -155,23 +158,54 @@ class RPCMethodParser:
             Self for method chaining
 
         Raises:
-            ValueError: If no methods are found in the content
+            ValueError: If the content holds not exactly one registration
+                block, or the block is empty, unclosed, or has an entry that
+                names no method in that form; the message names the RPC
+                version and the entry
         """
         self.methods.clear()
-        matches = self.METHOD_PATTERN.findall(content)
-
-        if not matches:
+        version = self.version_info.get('version', 'unknown')
+        code = self.GO_COMMENT_OR_LITERAL.sub(lambda m: m.group(1) or ' ', content)
+        blocks = list(self.REGISTRATION_BLOCK_PATTERN.finditer(code))
+        if len(blocks) != 1:
             raise ValueError(
-                "No RPC method registrations found in source. "
-                "Expected pattern: methodName: protocol.XxxMethodName"
-            )
+                f"RPC source {version} holds {len(blocks)} method registration blocks, expected "
+                f"one LimitsByMethod map literal or one methodName handler list")
 
-        for match in matches:
-            method_name = self._convert_method_name(match)
-            if method_name:
-                self.methods[method_name] = self._get_method_metadata(method_name)
+        entries = self._block_entries(code, blocks[0].end(), version)
+        if not entries:
+            raise ValueError(f"RPC source {version}: the method registration block is empty")
+        names = []
+        for entry in entries:
+            if blocks[0].group(0).startswith('LimitsByMethod'):
+                match = self.MAP_ENTRY_PATTERN.fullmatch(entry)
+            else:
+                fields = self._block_entries(entry, 1, version) if entry.startswith('{') else []
+                named = [f for f in fields if re.match(r'methodName\s*:', f)]
+                match = len(named) == 1 and self.METHOD_NAME_FIELD_PATTERN.fullmatch(named[0])
+            if not match:
+                raise ValueError(f"RPC source {version}: unrecognized method registration entry: {entry}")
+            names.append(self._convert_method_name(match.group(1)))
+
+        for method_name in names:
+            self.methods[method_name] = self._get_method_metadata(method_name)
 
         return self
+
+    def _block_entries(self, code: str, start: int, version: str) -> List[str]:
+        """Top-level entries of the composite literal whose body starts at start."""
+        entries, depth, begin = [], 0, start
+        for token in self.GO_SCAN_TOKEN.finditer(code, start):
+            if token.group(0) in '{([':
+                depth += 1
+            elif token.group(0) in '})]' and depth > 0:
+                depth -= 1
+            elif token.group(0) in '})],' and depth == 0:
+                entries.append(code[begin:token.start()].strip())
+                if token.group(0) != ',':
+                    return [entry for entry in entries if entry]
+                begin = token.end()
+        raise ValueError(f"RPC source {version}: method registration block is not closed")
 
     def _convert_method_name(self, protocol_name: str) -> Optional[str]:
         """
