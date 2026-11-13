@@ -9,9 +9,12 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+import 'simulation_contract_error_fixtures.dart';
 
 class MockDioAdapter implements dio.HttpClientAdapter {
   final Function(dio.RequestOptions) onRequest;
@@ -243,6 +246,7 @@ void main() {
     bool tagEntryExists = true,
     bool firstCodeLoadParseable = true,
     bool deployReturnsContractId = true,
+    Map<String, dynamic>? simulationFailure,
   }) {
     final txData = transactionDataWithWrites(keyPair);
     final mockDio = dio.Dio();
@@ -302,6 +306,8 @@ void main() {
           requestLog.add('account');
           return ledgerEntryResponse(requestBody, accountEntry(keyPair));
         case 'simulateTransaction':
+          if (simulationFailure != null)
+            return jsonRpcResponse(requestBody['id'], simulationFailure);
           requestLog.add('simulate');
           return jsonRpcResponse(requestBody['id'], {
             'minResourceFee': '100000',
@@ -348,6 +354,36 @@ void main() {
     expect(op, isA<InvokeHostFunctionOperation>());
     return (op as InvokeHostFunctionOperation).function;
   }
+
+  test('external reference deploy retains simulation failure', () async {
+    final c = syntheticErrorCases().first;
+    final key = KeyPair.random();
+    final log = <String>[];
+    final envelopes = <String>[];
+    final server = externalRefDeployFlowMockServer(
+      key,
+      log,
+      [],
+      envelopes,
+      simulationFailure: {'error': c.header, 'events': c.events},
+    );
+    final request = DeployFromExternalRefRequest.forTagString(
+      sourceAccountKeyPair: key,
+      network: Network.TESTNET,
+      rpcUrl: rpcUrl,
+      executableOwner: Address.forContractId(ownerContractIdHex),
+      tag: executableTag,
+      server: server,
+    );
+    expectSorobanFailure(
+      await caught(
+        () => SorobanClient.deployFromExternalRef(deployRequest: request),
+      ),
+      c,
+    );
+    expect(log, isNot(contains('send')));
+    expect(envelopes, isEmpty);
+  });
 
   group('SorobanClient.deployFromExternalRef', () {
     test(

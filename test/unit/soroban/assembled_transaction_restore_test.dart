@@ -5,9 +5,12 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+import 'simulation_contract_error_fixtures.dart';
 
 class MockDioAdapter implements dio.HttpClientAdapter {
   final Function(dio.RequestOptions) onRequest;
@@ -133,6 +136,8 @@ void main() {
     XdrSorobanTransactionData txData, {
     bool restoreSucceeds = true,
     List<String>? simulateEnvelopes,
+    int? failSimulationAt,
+    List<String>? sentEnvelopes,
   }) {
     var ledgerEntriesCalls = 0;
     var simulateCalls = 0;
@@ -152,6 +157,13 @@ void main() {
           );
         case 'simulateTransaction':
           simulateCalls++;
+          if (simulateCalls == failSimulationAt) {
+            final c = syntheticErrorCases().first;
+            return jsonRpcResponse(requestBody['id'], {
+              'error': c.header,
+              'events': c.events,
+            });
+          }
           simulateEnvelopes?.add(requestBody['params']['transaction']);
           if (simulateCalls == 1) {
             // The initial simulation of the invocation: state is archived.
@@ -170,6 +182,7 @@ void main() {
             successfulSimulation(txData),
           );
         case 'sendTransaction':
+          sentEnvelopes?.add(requestBody['params']['transaction']);
           return jsonRpcResponse(requestBody['id'], {
             'status': 'PENDING',
             'hash': txHash,
@@ -220,6 +233,54 @@ void main() {
       },
     );
   });
+
+  for (final failureAt in [2, 3]) {
+    for (final explicit in [false, true]) {
+      test(
+        'restore simulation $failureAt explicit=$explicit preserves failure timing',
+        () async {
+          final key = KeyPair.random();
+          final sent = <String>[];
+          final server = restoreFlowMockServer(
+            key,
+            transactionDataWithWrites(key),
+            failSimulationAt: failureAt,
+            sentEnvelopes: sent,
+          );
+          AssembledTransaction? returned;
+          var simulationReturned = false;
+          final error = await caught(() async {
+            returned = await AssembledTransaction.buildWithOp(
+              operation: InvokeHostFuncOpBuilder(
+                UploadContractWasmHostFunction(Uint8List(1)),
+              ).build(),
+              options: buildOptions(
+                key,
+                server,
+                MethodOptions(restore: true, simulate: !explicit),
+              ),
+            );
+            if (explicit) await returned!.simulate();
+            simulationReturned = true;
+            returned!.getSimulationData();
+          });
+          expectSorobanFailure(error, syntheticErrorCases().first);
+          expect(simulationReturned, failureAt == 3);
+          expect(returned != null, explicit || failureAt == 3);
+          expect(sent, hasLength(failureAt == 3 ? 1 : 0));
+          for (final envelope in sent) {
+            expect(
+              (AbstractTransaction.fromEnvelopeXdrString(envelope)
+                      as Transaction)
+                  .operations
+                  .single,
+              isA<RestoreFootprintOperation>(),
+            );
+          }
+        },
+      );
+    }
+  }
 
   group('automatic footprint restore', () {
     test('succeeds and re-simulates the rebuilt transaction', () async {

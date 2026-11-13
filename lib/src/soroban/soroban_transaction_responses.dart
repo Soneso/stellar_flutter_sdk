@@ -4,9 +4,13 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
+
+import 'package:meta/meta.dart';
 import 'package:stellar_flutter_sdk/src/responses/response.dart';
-import '../xdr/xdr.dart';
+
+import '../key_pair.dart';
 import '../util.dart';
+import '../xdr/xdr.dart';
 import 'soroban_auth.dart';
 import 'soroban_ledger_event_responses.dart';
 import 'soroban_rpc_requests.dart';
@@ -74,6 +78,104 @@ class LedgerEntryChange {
   }
 }
 
+/// The source selected by [SimulateTransactionResponse.reportedContractError].
+enum ContractErrorProvenance {
+  /// A contract error in the leading host-error header.
+  hostError,
+
+  /// The earliest qualifying diagnostic event for a masked failure.
+  diagnosticEvents,
+}
+
+/// An immutable contract error reported by a failed simulation.
+///
+/// Selection by [SimulateTransactionResponse.reportedContractError] is a
+/// heuristic: earlier caught errors, several failing contracts, or unrelated
+/// rolled-back errors can win. This value does not establish causation.
+final class ReportedContractError {
+  /// The unsigned 32-bit contract error code, from 0 through 4294967295.
+  final int code;
+
+  /// Whether the code comes from the host header or diagnostic events.
+  final ContractErrorProvenance provenance;
+
+  /// The emitting contract's C strkey, or null for a header or absent event ID.
+  final String? contractId;
+
+  const ReportedContractError._(this.code, this.provenance, this.contractId);
+
+  @override
+  bool operator ==(Object other) =>
+      other is ReportedContractError &&
+      other.code == code &&
+      other.provenance == provenance &&
+      other.contractId == contractId;
+
+  @override
+  int get hashCode => Object.hash(code, provenance, contractId);
+
+  @override
+  String toString() =>
+      'ReportedContractError(code: $code, provenance: $provenance, contractId: $contractId)';
+
+  /// Appends diagnostic provenance to [message]; a host header adds nothing.
+  @internal
+  String appendToMessage(String message) {
+    if (provenance == ContractErrorProvenance.hostError) return message;
+    final contract = contractId == null ? '' : ', contract $contractId';
+    return '$message (contract error in diagnostic events: '
+        'Error(Contract, #$code)$contract)';
+  }
+}
+
+// Selects a reported contract error without letting malformed events throw.
+ReportedContractError? _extractReportedContractError(
+  String? resultError,
+  List<String>? events,
+) {
+  if (resultError == null) return null;
+  final header = resultError.split(RegExp(r'[\r\n]')).first;
+  final match = RegExp(
+    r'^\s*(?:HostError:\s*)?Error\(\s*([A-Za-z]+)\s*,\s*([^()]*?)\s*\)\s*$',
+  ).firstMatch(header);
+  if (match == null) return null;
+  final category = match.group(1);
+  if (category == 'Contract') {
+    final value = match.group(2)!;
+    if (!RegExp(r'^#[0-9]+$').hasMatch(value)) return null;
+    final code = int.tryParse(value.substring(1));
+    if (code == null || code > 4294967295) return null;
+    return ReportedContractError._(
+      code,
+      ContractErrorProvenance.hostError,
+      null,
+    );
+  }
+  if (category != 'Context' && category != 'Auth') return null;
+  for (final encoded in events ?? const <String>[]) {
+    try {
+      final diagnostic = XdrDiagnosticEvent.fromBase64EncodedXdrString(encoded);
+      final event = diagnostic.event;
+      if (diagnostic.inSuccessfulContractCall ||
+          event.type != XdrContractEventType.DIAGNOSTIC)
+        continue;
+      // The decoder populates only the selected union arm.
+      final topics = event.body.v0?.topics;
+      if (topics?.length != 2 || topics![0].sym != 'error') continue;
+      final code = topics[1].error?.contractCode?.uint32;
+      if (code == null) continue;
+      return ReportedContractError._(
+        code,
+        ContractErrorProvenance.diagnosticEvents,
+        event.hash == null ? null : StrKey.encodeContractId(event.hash!.hash),
+      );
+    } catch (_) {
+      // A malformed entry must not hide later events or replace the failure.
+    }
+  }
+  return null;
+}
+
 /// Response that will be received when submitting a trial contract invocation.
 /// The response will include the anticipated affects the given transaction
 /// will have on the network. Additionally, information needed to build, sign,
@@ -118,6 +220,22 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
   /// (optional) only present if the transaction failed.
   /// This field will include more details from stellar-core about why the invoke host function call failed.
   String? resultError;
+
+  /// Returns a contract error reported by this response, or null.
+  ///
+  /// A valid contract-error header on the first line of [resultError] wins.
+  /// Only Context or Auth headers permit selecting the earliest failed
+  /// diagnostic event with the symbol `error` and a typed contract error.
+  /// Malformed entries are skipped individually; event data and text logs
+  /// are not searched. Without RPC debug events, only a contract-error header
+  /// supplies a code.
+  ///
+  /// Selection is heuristic: an earlier caught error, several failing
+  /// contracts, or an unrelated rolled-back error can win. A foreign
+  /// contract's code can coincide with a code in a caller's error table.
+  /// The immutable result reflects the current [resultError] and [events].
+  ReportedContractError? reportedContractError() =>
+      _extractReportedContractError(resultError, events);
 
   factory SimulateTransactionResponse.fromJson(Map<String, dynamic> json) {
     SimulateTransactionResponse response = SimulateTransactionResponse(json);

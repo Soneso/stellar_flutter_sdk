@@ -252,6 +252,9 @@ class OZTransactionOperations {
   /// Throws [SmartAccountInvalidAddress] when [tokenContract] is not a valid
   /// contract address, and [SmartAccountTransactionException] when the
   /// simulation fails or the contract does not return a valid `u32` value.
+  /// Response failures throw [SmartAccountTransactionSimulationFailed] with
+  /// diagnostic data. Its reported code is a heuristic selection; see
+  /// [SimulateTransactionResponse.reportedContractError] for its limits.
   Future<int> fetchTokenDecimals(String tokenContract) async {
     requireContractAddress(tokenContract, fieldName: 'tokenContract');
 
@@ -399,6 +402,9 @@ class OZTransactionOperations {
   /// The optional [cancelToken] can be cancelled to abort an in-flight
   /// network request; on cancellation the method throws a
   /// [SmartAccountTransactionException] wrapping a [dio.DioExceptionType.cancel].
+  /// Response failures throw [SmartAccountTransactionSimulationFailed] with
+  /// diagnostic data. Its reported code is a heuristic selection; see
+  /// [SimulateTransactionResponse.reportedContractError] for its limits.
   Future<OZTransactionResult> submit({
     required XdrHostFunction hostFunction,
     required List<XdrSorobanAuthorizationEntry> auth,
@@ -533,8 +539,9 @@ class OZTransactionOperations {
 
     final initialError = _errorMessage(simulation);
     if (initialError != null) {
-      throw SmartAccountTransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailedFor(
         'Simulation error: $initialError',
+        simulation,
       );
     }
     return simulation;
@@ -566,8 +573,9 @@ class OZTransactionOperations {
 
     final reSimError = _errorMessage(reSimulation);
     if (reSimError != null) {
-      throw SmartAccountTransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailedFor(
         'Re-simulation error: $reSimError',
+        reSimulation,
       );
     }
     return reSimulation;
@@ -828,8 +836,9 @@ class OZTransactionOperations {
 
     final err = _errorMessage(simulation);
     if (err != null) {
-      throw SmartAccountTransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailedFor(
         'Simulation error: $err',
+        simulation,
       );
     }
 
@@ -869,6 +878,9 @@ class OZTransactionOperations {
   /// cancellation is observed before/after each major awaitable step,
   /// including the Soroban RPC account-visibility poll that follows
   /// Friendbot funding (see [waitForAccountVisibleToRpc]).
+  /// Response failures throw [SmartAccountTransactionSimulationFailed] with
+  /// diagnostic data. Its reported code is a heuristic selection; see
+  /// [SimulateTransactionResponse.reportedContractError] for its limits.
   Future<String> fundWallet({
     required String nativeTokenContract,
     OZSubmissionMethod? forceMethod,
@@ -978,8 +990,9 @@ class OZTransactionOperations {
 
     final simErr = _errorMessage(simulation);
     if (simErr != null) {
-      throw SmartAccountTransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailedFor(
         'Failed to simulate funding transfer: $simErr',
+        simulation,
       );
     }
 
@@ -1033,8 +1046,9 @@ class OZTransactionOperations {
     }
     final reSimError = _errorMessage(reSimulation);
     if (reSimError != null) {
-      throw SmartAccountTransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailedFor(
         'Re-simulation error: $reSimError',
+        reSimulation,
       );
     }
 

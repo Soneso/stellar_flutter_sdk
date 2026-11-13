@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import '../../soroban/simulation_contract_error_fixtures.dart';
+
 /// Canonical mapping of every [SmartAccountErrorCode] to its numeric value.
 const Map<SmartAccountErrorCode, int> _codeTable = {
   SmartAccountErrorCode.invalidConfig: 1001,
@@ -74,6 +76,46 @@ final Map<SmartAccountErrorCode, Type> _expectedArmType = {
 };
 
 void main() {
+  test('simulation constructors preserve snapshots and compatibility', () {
+    final c = syntheticErrorCases().first;
+    final response = c.response();
+    final cause = StateError('cause');
+    final e = SmartAccountTransactionSimulationFailed.withSimulationData(
+      'failure',
+      diagnosticEventsXdr: response.events!,
+      reportedContractError: response.reportedContractError(),
+      cause: cause,
+    );
+    final message =
+        'failure (contract error in diagnostic events: Error(Contract, #3201), contract $policyContract)';
+    expect(e.cause, same(cause));
+    expect(e.message, message);
+    expect(
+      e.toString(),
+      'SmartAccountException [5001]: $message (caused by: Bad state: cause)',
+    );
+    expect(SmartAccountException.wrapError(e), same(e));
+    response.events!.clear();
+    response.resultError = 'Error(Contract, #1)';
+    expect(e.diagnosticEventsXdr, c.events);
+    expectReported(e.reportedContractError, c);
+    expect(() => e.diagnosticEventsXdr.clear(), throwsUnsupportedError);
+    expect(e.diagnosticEventsXdr, c.events);
+    const legacy = <SmartAccountTransactionSimulationFailed>[
+      SmartAccountTransactionSimulationFailed('legacy'),
+    ];
+    final factory = SmartAccountTransactionException.simulationFailed(
+      'reason',
+      cause: cause,
+    );
+    for (final failure in [legacy.single, factory]) {
+      expect(failure.diagnosticEventsXdr, isEmpty);
+      expect(failure.reportedContractError, isNull);
+    }
+    expect(factory.message, 'Transaction simulation failed: reason');
+    expect(factory.cause, same(cause));
+  });
+
   group('SmartAccountErrorCode', () {
     test('test_smart_account_error_code_has_28_distinct_numeric_values', () {
       final allValues = SmartAccountErrorCode.values.map((c) => c.code).toSet();

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import '../core/smart_account_errors.dart';
+
 /// A decoded OpenZeppelin smart-account contract error: its numeric [code],
 /// the contract error enum it belongs to ([contract]), and the [name] of the
 /// variant, exactly as declared by the deployed contracts. Variant names
@@ -40,15 +42,15 @@ class OZContractError {
 /// Contract-level error codes from the OpenZeppelin smart account, WebAuthn
 /// verifier, and policy contracts.
 ///
-/// When a contract rejects a call, the code appears inside the message of a
-/// `SmartAccountTransactionException` (for example `Error(Contract, #3016)`).
-/// The SDK surfaces the raw error but does not parse or map contract error
-/// codes itself; callers can extract the code from the message and compare it
-/// against these constants, or resolve it with the consumer-side [decode] and
-/// [decodeFromMessage] helpers.
+/// [decodeFromSimulationException] maps the reported code on a
+/// [SmartAccountTransactionSimulationFailed]. Selection is heuristic: earlier
+/// caught errors, several failing contracts, or unrelated rolled-back errors
+/// can win, and a foreign contract's code can collide with this table.
+/// Without RPC debug events, only a contract-error header supplies a code.
+/// [decodeFromMessage] scans text for callers handling other error messages.
 ///
 /// The named constants below cover the smart account contract's own error
-/// enum — the codes a caller is most likely to branch on. [decode] resolves
+/// enum, the codes a caller is most likely to branch on. [decode] resolves
 /// any known code (smart account, WebAuthn, or a policy contract) into its
 /// contract and variant name.
 class OZContractErrorCodes {
@@ -112,15 +114,26 @@ class OZContractErrorCodes {
   /// smart-account contract error.
   static OZContractError? decode(int code) => _codeTable[code];
 
+  /// Maps only [exception]'s reported contract code to a known OZ error.
+  ///
+  /// Unknown or absent codes return null. Later events and message markers
+  /// do not participate. The reported code is a heuristic selection and can
+  /// belong to a foreign contract whose numeric codes collide with this table.
+  static OZContractError? decodeFromSimulationException(
+    SmartAccountTransactionSimulationFailed exception,
+  ) {
+    final code = exception.reportedContractError?.code;
+    return code == null ? null : decode(code);
+  }
+
   /// Extracts and decodes the first known contract error code from an error
   /// [message].
   ///
-  /// Soroban RPC surfaces contract failures as `Error(Contract, #NNNN)`
-  /// inside simulation and submission error strings (typically the message
-  /// of a thrown `SmartAccountTransactionException`). This scans the message
-  /// for such markers and returns the first one whose code is a known OZ
+  /// Scans the entire message for `Error(Contract, #NNNN)` markers, including
+  /// diagnostic suffixes and text logs. Returns the first whose code is a known OZ
   /// smart-account contract error, or `null` when the message is null,
-  /// carries no marker, or carries only unknown codes.
+  /// carries no marker, or carries only unknown codes. For a simulation failure,
+  /// [decodeFromSimulationException] uses the structured selection instead.
   static OZContractError? decodeFromMessage(String? message) {
     if (message == null) return null;
     for (final match in _contractErrorRegex.allMatches(message)) {

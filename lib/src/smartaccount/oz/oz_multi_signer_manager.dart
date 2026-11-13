@@ -270,6 +270,10 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   /// - [resolveContextRuleIds]: when supplied, this callback resolves the
   ///   context-rule ids for each auth entry; when null, the ids are
   ///   resolved automatically from [selectedSigners] and the active rules.
+  ///
+  /// Response failures throw [SmartAccountTransactionSimulationFailed] with
+  /// diagnostic data. Its reported code is a heuristic selection; see
+  /// [SimulateTransactionResponse.reportedContractError] for its limits.
   Future<OZTransactionResult> submitWithMultipleSigners({
     required XdrHostFunction hostFunction,
     required List<OZSelectedSigner> selectedSigners,
@@ -345,8 +349,9 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
     final initialError = _simulationErrorMessage(simulation);
     if (initialError != null) {
-      throw SmartAccountTransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailedFor(
         'Simulation error: $initialError',
+        simulation,
       );
     }
 
@@ -676,8 +681,9 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
     final reSimError = _simulationErrorMessage(reSimulation);
     if (reSimError != null) {
-      throw SmartAccountTransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailedFor(
         'Re-simulation error: $reSimError',
+        reSimulation,
       );
     }
 
@@ -840,9 +846,8 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   ///
   /// - `resultError`: the simulation's own error string, populated when the
   ///   RPC call succeeded at the transport level but the contract execution
-  ///   inside the simulation returned an error. With debug-enabled RPC
-  ///   servers this string contains the full host-error text and the
-  ///   diagnostic event log.
+  ///   inside the simulation returned an error. Diagnostic events, when
+  ///   supplied by the RPC, are read from the response event array.
   /// - `error`: the JSON-RPC transport error, populated only when the RPC
   ///   request itself failed (network, parse, generic JSON-RPC error).
   ///

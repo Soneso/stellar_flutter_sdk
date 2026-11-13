@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `SimulateTransactionResponse.reportedContractError()` returns an immutable code, provenance and optional emitting contract ID selected from the host header or diagnostic events.
+- `SmartAccountTransactionSimulationFailed.withSimulationData` and `SorobanSimulationException` carry immutable diagnostic-event snapshots and reported contract errors.
+- `OZContractErrorCodes.decodeFromSimulationException` maps the reported code without searching later events or message text.
+
 ### Fixed
+- Soroban and smart-account simulation failures include reported contract errors hidden by constructor or authorization failures in their messages when diagnostic events provide them.
+- Soroban client JSON-RPC simulation failures name the RPC code and message and retain the original RPC error.
 - TxRep rejects malformed and out-of-range integers with a `FormatException` naming the field and token.
 - `ContractSpec.nativeToXdrSCVal` accepts a `BigInt` or a decimal string for u64, i64, timepoint, duration and the 128 and 256-bit types, including the values `XdrSCVal.toNative` returns, and throws `ContractSpecException` for a value outside the type's range.
 - `ContractSpecException` messages replace a secret seed in the echoed input with `a secret seed (S...)`.

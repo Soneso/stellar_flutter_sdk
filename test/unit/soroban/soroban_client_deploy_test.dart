@@ -11,129 +11,18 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-class MockDioAdapter implements dio.HttpClientAdapter {
-  final Function(dio.RequestOptions) onRequest;
-
-  MockDioAdapter(this.onRequest);
-
-  @override
-  Future<dio.ResponseBody> fetch(
-    dio.RequestOptions options,
-    Stream<Uint8List>? requestStream,
-    Future<void>? cancelFuture,
-  ) async {
-    return onRequest(options);
-  }
-
-  @override
-  void close({bool force = false}) {}
-}
-
-dio.ResponseBody jsonRpcResponse(dynamic id, Map<String, dynamic> result) {
-  return dio.ResponseBody.fromString(
-    jsonEncode({'jsonrpc': '2.0', 'id': id, 'result': result}),
-    200,
-    headers: {
-      'content-type': [dio.Headers.jsonContentType],
-    },
-  );
-}
-
-dio.ResponseBody ledgerEntryResponse(
-  Map<String, dynamic> requestBody,
-  XdrLedgerEntryData entryData,
-) {
-  return jsonRpcResponse(requestBody['id'], {
-    'entries': [
-      {
-        'key': (requestBody['params']['keys'] as List)[0],
-        'xdr': entryData.toBase64EncodedXdrString(),
-        'lastModifiedLedgerSeq': 99999,
-      },
-    ],
-    'latestLedger': 100000,
-  });
-}
+import 'simulation_contract_error_fixtures.dart';
 
 dio.ResponseBody emptyLedgerEntriesResponse(Map<String, dynamic> requestBody) {
   return jsonRpcResponse(requestBody['id'], {
     'entries': [],
     'latestLedger': 100000,
   });
-}
-
-XdrLedgerEntryData accountEntry(KeyPair keyPair) {
-  final account = XdrAccountEntry(
-    XdrAccountID(keyPair.xdrPublicKey),
-    XdrInt64(BigInt.zero),
-    XdrSequenceNumber(BigInt.from(1000)),
-    XdrUint32(0),
-    null,
-    XdrUint32(0),
-    XdrString32(''),
-    XdrThresholds(Uint8List.fromList([1, 0, 0, 0])),
-    [],
-    XdrAccountEntryExt(0),
-  );
-  final entryData = XdrLedgerEntryData(XdrLedgerEntryType.ACCOUNT);
-  entryData.account = account;
-  return entryData;
-}
-
-XdrLedgerEntryData contractCodeEntry(Uint8List wasmHashBytes, Uint8List code) {
-  final entryData = XdrLedgerEntryData(XdrLedgerEntryType.CONTRACT_CODE);
-  entryData.contractCode = XdrContractCodeEntry(
-    XdrContractCodeEntryExt(0),
-    XdrHash(wasmHashBytes),
-    code,
-  );
-  return entryData;
-}
-
-XdrLedgerEntryData contractInstanceEntry(
-  Uint8List contractIdBytes,
-  Uint8List wasmHashBytes,
-) {
-  final executable = XdrContractExecutable(
-    XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
-  );
-  executable.wasmHash = XdrHash(wasmHashBytes);
-  final instance = XdrSCContractInstance(executable, null);
-  final contractAddress = XdrSCAddress(
-    XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT,
-  );
-  contractAddress.contractId = XdrHash(contractIdBytes);
-  final entryData = XdrLedgerEntryData(XdrLedgerEntryType.CONTRACT_DATA);
-  entryData.contractData = XdrContractDataEntry(
-    XdrExtensionPoint(0),
-    contractAddress,
-    XdrSCVal.forLedgerKeyContractInstance(),
-    XdrContractDataDurability.PERSISTENT,
-    XdrSCVal.forContractInstance(instance),
-  );
-  return entryData;
-}
-
-/// Transaction data with a non-empty read-write footprint, so that the
-/// deploy transaction is not considered a read call.
-XdrSorobanTransactionData transactionDataWithWrites(KeyPair keyPair) {
-  final key = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
-  key.account = XdrLedgerKeyAccount(XdrAccountID(keyPair.xdrPublicKey));
-  final resources = XdrSorobanResources(
-    XdrLedgerFootprint([], [key]),
-    XdrUint32(0),
-    XdrUint32(0),
-    XdrUint32(0),
-  );
-  return XdrSorobanTransactionData(
-    XdrSorobanTransactionDataExt(0),
-    resources,
-    XdrInt64(BigInt.zero),
-  );
 }
 
 /// A SUCCESS getTransaction result whose meta returns the created contract
@@ -192,11 +81,12 @@ void main() {
     List<Uint8List?> codeEntryAnswers,
     List<String> requestLog, {
     List<String>? capturedEnvelopes,
+    Map<String, dynamic>? simulationFailure,
   }) {
     final txData = transactionDataWithWrites(keyPair);
     var codeRequests = 0;
     final mockDio = dio.Dio();
-    mockDio.httpClientAdapter = MockDioAdapter((options) {
+    mockDio.httpClientAdapter = SimulationDioAdapter((options) {
       final requestBody = jsonDecode(options.data);
       switch (requestBody['method']) {
         case 'getLedgerEntries':
@@ -227,6 +117,14 @@ void main() {
           requestLog.add('account');
           return ledgerEntryResponse(requestBody, accountEntry(keyPair));
         case 'simulateTransaction':
+          if (simulationFailure != null)
+            return dio.ResponseBody.fromString(
+              jsonEncode(simulationFailure),
+              200,
+              headers: {
+                'content-type': [dio.Headers.jsonContentType],
+              },
+            );
           requestLog.add('simulate');
           return jsonRpcResponse(requestBody['id'], {
             'minResourceFee': '100000',
@@ -271,6 +169,34 @@ void main() {
       wasmHash: wasmHash,
       server: server,
     );
+  }
+
+  for (final name in ['case-a', 'case-a-rpc30.0.0']) {
+    test('deploy $name retains constructor diagnostics', () async {
+      final raw =
+          jsonDecode(
+                File(
+                  'test/fixtures/simulation_contract_error/$name-response.json',
+                ).readAsStringSync(),
+              )
+              as Map<String, dynamic>;
+      final c = capturedCase(name, SimulateTransactionResponse.fromJson(raw));
+      final key = KeyPair.random();
+      final log = <String>[];
+      final server = deployFlowMockServer(
+        key,
+        [helloWasm],
+        log,
+        simulationFailure: raw,
+      );
+      expectSorobanFailure(
+        await caught(
+          () => SorobanClient.deploy(deployRequest: deployRequest(key, server)),
+        ),
+        c,
+      );
+      expect(log, isNot(contains('send')));
+    });
   }
 
   group('SorobanClient.deploy spec loading', () {
