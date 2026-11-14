@@ -2178,7 +2178,7 @@ Every smart-account exception lives in `core/smart_account_errors.dart` and is s
 > | 3002 | `credentialAlreadyExists` | `UnvalidatedContext` |
 > | 3003 | `credentialInvalid` | `ExternalVerificationFailed` |
 >
-> The full catalog of these on-chain contract codes is declared in [`OZContractErrorCodes`](#oz-contract-error-codes); the SDK surfaces the raw error and callers compare the extracted code against the constants or resolve it with `OZContractErrorCodes.decode` / `decodeFromMessage`.
+> The full catalog of these on-chain contract codes is declared in [`OZContractErrorCodes`](#oz-contract-error-codes). For a simulation failure, the SDK selects the reported code and carries it as `reportedContractError` on `SmartAccountTransactionSimulationFailed`. `OZContractErrorCodes.decodeFromSimulationException` maps it to the contract enum and variant name.
 
 
 ```dart
@@ -2430,11 +2430,12 @@ class OZContractErrorCodes {
   static const int unauthorizedSigner = 3016;
 
   static OZContractError? decode(int code);
+  static OZContractError? decodeFromSimulationException(SmartAccountTransactionSimulationFailed exception);
   static OZContractError? decodeFromMessage(String? message);
 }
 ```
 
-The full catalog of the numeric error codes the OpenZeppelin smart account, WebAuthn verifier, and policy contracts return for failed on-chain calls. The raw error is surfaced in the `error` field on `OZTransactionResult`; the SDK itself does not parse or map contract codes — the helpers are consumer-side. The named constants cover the smart account contract's own error enum (the codes a caller is most likely to branch on); `decode` resolves any known code from the table below.
+The full catalog of the numeric error codes the OpenZeppelin smart account, WebAuthn verifier, and policy contracts return for failed on-chain calls. The raw error is surfaced in the `error` field on `OZTransactionResult`. The named constants cover the smart account contract's own error enum (the codes a caller is most likely to branch on); `decode` resolves any known code from the table below. `decodeFromSimulationException` resolves the code a simulation failure reports, and `decodeFromMessage` the first known code in an error message.
 
 | Contract enum | Codes | Variants |
 |---|---|---|
@@ -2457,7 +2458,7 @@ class OZContractError {
 }
 ```
 
-The decoded result type returned by `decode` and `decodeFromMessage`. Variant names repeat across the policy enums (for example `NotAllowed`), so `contract` disambiguates; `code` is globally unique. Implements value equality.
+The decoded result type returned by `decode`, `decodeFromSimulationException`, and `decodeFromMessage`. Variant names repeat across the policy enums (for example `NotAllowed`), so `contract` disambiguates; `code` is globally unique. Implements value equality.
 
 ### Cancellation semantics
 

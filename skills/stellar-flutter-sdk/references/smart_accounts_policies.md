@@ -1269,15 +1269,10 @@ await kit.signerManager.removeSigner(
 
 **Preconditions.** A call such as `kit.transactionOperations.transfer(...)`, `kit.signerManager.removeSigner(...)`, or a policy install throws `SmartAccountTransactionSimulationFailed`. The contract rejected the auth check or a policy enforcement hook.
 
-**Flow.** The simulation error message wraps the RPC simulation error, which contains the host error in the form `Error(Contract, #NNNN)`. Extract the numeric code with `RegExp(r'Error\s*\(\s*Contract\s*,\s*#(\d+)\s*\)')` (group 1 is the code) and map it to an action. There is no typed contract-error exception.
+**Flow.** The exception carries the reported contract error in `reportedContractError`, a `ReportedContractError` with an `int code`, or `null`. On stellar-rpc 30.0.1, the error of a failed `__check_auth` reads `HostError: Error(Auth, InvalidAction)`. The code then comes from the diagnostic events, and the message ends with `(contract error in diagnostic events: Error(Contract, #NNNN), contract C...)`. The `, contract C...` part appears only when the event carries a contract ID. Without diagnostic events in the response, only an `Error(Contract, #NNNN)` host error supplies a code. Selection is heuristic, so read the code as a diagnostic hint: an earlier caught error or a foreign contract's colliding code can be the one reported. Map the code to an action, or resolve it with `OZContractErrorCodes.decodeFromSimulationException(e)` to its contract enum and variant name.
 
 ```dart
 // From your app: kit (OZSmartAccountKit)
-int? parseContractErrorCode(Object e) {
-  final m = RegExp(r'Error\s*\(\s*Contract\s*,\s*#(\d+)\s*\)').firstMatch(e.toString());
-  return m == null ? null : int.tryParse(m.group(1)!);
-}
-
 try {
   await kit.transactionOperations.transfer(
     tokenContract: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
@@ -1285,13 +1280,13 @@ try {
     amount: '10',
   );
 } on SmartAccountTransactionSimulationFailed catch (e) {
-  final code = parseContractErrorCode(e);
+  final code = e.reportedContractError?.code;
   final hint = switch (code) {
     3004 => 'NoSignersAndPolicies — rule would have 0 signers and 0 policies; add one first',
     3016 => 'UnauthorizedSigner — signer not on the resolved rule; adjust selectedSigners or pass resolveContextRuleIds',
     3221 => 'SpendingLimit exceeded for the current window; only reachable if a SpendingLimit policy is installed on the active rule — wait for reset or raise the limit',
-    null => 'No contract code in message: $e',
-    _ => 'Contract error $code — see Contract Error Codes below',
+    null => 'No contract code reported: $e',
+    _ => '${OZContractErrorCodes.decodeFromSimulationException(e)?.name ?? 'Contract error $code'}: see Contract Error Codes below',
   };
   print('transfer rejected: $hint');
   if (code == OZContractErrorCodes.unauthorizedSigner) { // 3016
@@ -1303,12 +1298,12 @@ try {
 `OZContractErrorCodes` carries named constants for the smart-account
 contract's own error enum (3000, 3002-3016) and a decode table covering all
 known codes of the five contract error enums (account, WebAuthn verification,
-simple threshold, weighted threshold, spending limit). `decode(code)` and
-`decodeFromMessage(message)` resolve a code — or the first known code inside a
-failure message — to an `OZContractError` with the defining contract enum and
-variant name. The SDK never parses or maps contract codes on its own; these
-helpers are consumer-side, for use on the message of a failed transaction (as
-above).
+simple threshold, weighted threshold, spending limit). Each helper returns an
+`OZContractError` with the defining contract enum and variant name, or `null`
+when it finds no known code. `decode(code)` reads a numeric code,
+`decodeFromSimulationException(exception)` the exception's
+`reportedContractError`, and `decodeFromMessage(message)` the first known
+`Error(Contract, #NNNN)` marker in a message.
 
 ---
 
@@ -1320,7 +1315,7 @@ Signer, policy, and context-rule changes do not emit dedicated kit events; they 
 
 ## Contract Error Codes
 
-When the smart account contract rejects a call, the on-chain code is surfaced inside a `SmartAccountTransactionSimulationFailed` (simulation) or `SmartAccountTransactionSubmissionFailed` (submit/poll) message in the form `Error(Contract, #NNNN)` — extract it with the regex from the [Debugging](#debugging-failed-__check_auth-via-contract-error-codes) section above. The numeric value matches the contract's error enum.
+When the smart account contract rejects a call in simulation, `SmartAccountTransactionSimulationFailed` carries the code on `reportedContractError`, as in the [Debugging](#debugging-failed-__check_auth-via-contract-error-codes) section. A `SmartAccountTransactionSubmissionFailed` has no field for a reported contract error. Its message carries the transport error, the relayer's error text, or the base64 result XDR as received, and the SDK adds no code to it. `OZContractErrorCodes.decodeFromMessage(e.message)` finds a code there only when that text contains `Error(Contract, #NNNN)`. The numeric value matches the contract's error enum.
 
 ### Smart account errors (3000 range)
 
@@ -1387,7 +1382,7 @@ try {
   );
   if (!res.success) print('submit failed: ${res.error}');
 } on SmartAccountTransactionSimulationFailed catch (e) {
-  print('simulation failed: $e'); // message carries the contract error code
+  print('simulation failed: $e'); // message carries the contract error code when one is reported
 } on SmartAccountInvalidInput catch (e) {
   print('client-side validation: ${e.message}');
 } on SmartAccountWalletNotConnected {
