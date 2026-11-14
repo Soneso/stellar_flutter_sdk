@@ -70,8 +70,8 @@ import 'soroban_auth.dart';
 /// - Data types: bytes, bytesN, string, symbol
 /// - Address types: account, contract addresses
 /// - Collections: vec (lists), map (key-value pairs), tuple
-/// - User-defined types: struct, union, enum, error enum
-/// - Special types: option (nullable), result (success/error)
+/// - User-defined types: struct, union, enum
+/// - Special types: option (nullable)
 ///
 /// See also:
 /// - [SorobanClient] for high-level contract interaction

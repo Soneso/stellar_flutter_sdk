@@ -1575,9 +1575,9 @@ class OZTransactionOperations {
     return account;
   }
 
-  /// Applies a simulation result's soroban data, auth entries, and minimum
-  /// resource fee to the supplied transaction. Behaves like
-  /// [SorobanServer.prepareTransaction] but does not sign the envelope.
+  /// Sets the Soroban transaction data and the auth entries of [simulation]
+  /// on [transaction] and adds its minimum resource fee to the transaction
+  /// fee, each only when the simulation holds it.
   void _applySimulationToTransaction(
     Transaction transaction,
     SimulateTransactionResponse simulation,
