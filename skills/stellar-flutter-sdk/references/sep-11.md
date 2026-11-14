@@ -765,7 +765,7 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-  // throws Exception('invalid tx.sourceAccount')
+  // throws Exception('invalid muxed account: NOT_VALID')
   String xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(badTxrep);
 } catch (e) {
   print('Invalid account: $e');
@@ -773,14 +773,15 @@ signatures.len: 0
 ```
 
 Common `Exception` messages from the parser:
-- `'missing tx.fee'` / `'invalid tx.fee'`
-- `'missing tx.seqNum'` / `'invalid tx.seqNum'`
-- `'missing tx.sourceAccount'` / `'invalid tx.sourceAccount'`
+- `'missing tx.fee'` / `'Invalid integer for tx.fee: <token>'` / `'Integer outside uint32 for tx.fee: <token>'`
+- `'missing tx.seqNum'` / `'Invalid integer for tx.seqNum: <token>'` / `'Integer outside int64 for tx.seqNum: <token>'`
+- `'missing tx.sourceAccount'` / `'invalid muxed account: <value>'`
 - `'missing tx.memo.type'`
-- `'missing tx.operations.len'` / `'invalid tx.operations.len'`
+- `'missing tx.operations.len'` / `'Invalid integer for tx.operations.len: <token>'` / `'Integer outside uint32 for tx.operations.len: <token>'`
 - `'missing feeBump.tx.fee'` / `'missing feeBump.tx.feeSource'`
-- Per-field errors like `'missing tx.operations[0].body.paymentOp.destination'`
-- `'invalid or unsupported [prefix].type - UNKNOWN_OP'` for unrecognized operation types
+- Per-field errors like `'missing tx.operations[0].body.paymentOp.amount'`
+- `'invalid muxed account: '` for a missing payment destination, which reaches the parser as an empty value
+- `'Unknown enum value: <name>'` for unrecognized operation types
 
 ---
 
