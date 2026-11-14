@@ -523,6 +523,50 @@ class MethodRegistrationParseTest(unittest.TestCase):
                 self.assertIn(old, source)
                 self.assertEqual(self.parse(source.replace(old, new)), SERVED_METHODS_V30)
 
+    def test_method_name_references_before_and_after_the_block_fail(self):
+        references = (
+            ('extraLimits[protocol.GetFooMethodName] = Limit{}', 'GetFooMethodName'),
+            ('mux.Handle(protocol.GetBarMethodName, handler)', 'GetBarMethodName'),
+            ('mux.Handle(protocol.\n\t\tGetHealthMethodName, handler)', 'GetHealthMethodName'),
+        )
+        for fixture in (V30_0_0_FIXTURE, V30_0_1_FIXTURE):
+            source = fixture.read_text(encoding='utf-8')
+            for statement, constant in references:
+                addition = f'func extra() {{\n\t{statement}\n}}\n'
+                for position, modified in (
+                    ('before', source.replace('func NewJSONRPCHandler',
+                                              addition + 'func NewJSONRPCHandler')),
+                    ('after', source + addition),
+                ):
+                    with self.subTest(fixture=fixture.name, position=position, constant=constant):
+                        with self.assertRaises(ValueError) as context:
+                            self.parse(modified)
+                        self.assertEqual(
+                            str(context.exception),
+                            'RPC source v30.0.1: method name reference outside the '
+                            f'registration block: protocol.{constant}')
+
+    def test_outside_method_name_text_in_comments_and_literals_is_ignored(self):
+        statement = 'extraLimits[protocol.GetFooMethodName] = Limit{}'
+        snippets = (
+            f'// {statement}\n',
+            f'/* {statement} */\n',
+            f'var label = "{statement}"\n',
+            f'var label = `{statement}`\n',
+            'var quote = \'"\'; var label = "protocol.GetFooMethodName"\n',
+            r'var label = "\"protocol.GetFooMethodName\""' + '\n',
+        )
+        for fixture in (V30_0_0_FIXTURE, V30_0_1_FIXTURE):
+            source = fixture.read_text(encoding='utf-8')
+            for snippet in snippets:
+                for position, modified in (
+                    ('before', source.replace('func NewJSONRPCHandler',
+                                              snippet + 'func NewJSONRPCHandler')),
+                    ('after', source + snippet),
+                ):
+                    with self.subTest(fixture=fixture.name, position=position, snippet=snippet):
+                        self.assertEqual(self.parse(modified), SERVED_METHODS_V30)
+
     def test_unrecognized_entry_fails_naming_it(self):
         cases = {
             V30_0_1_FIXTURE: ('protocol.GetFeeStatsMethodName: {', '"getFeeStats": {'),
