@@ -2948,7 +2948,7 @@ void _runRoundtripTests() {
       expect(result.discriminant, equals(XdrSCValType.SCV_VOID));
     });
 
-    test('_handleUDTType with unsupported entry kind throws', () {
+    test('_handleUDTType with an unknown name throws entry not found', () {
       final spec = ContractSpec([
         XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0),
       ]);
@@ -2957,7 +2957,13 @@ void _runRoundtripTests() {
 
       expect(
         () => spec.nativeToXdrSCVal({'field': 'value'}, udtType),
-        throwsA(isA<ContractSpecException>()),
+        throwsA(
+          isA<ContractSpecException>().having(
+            (e) => e.message,
+            'message',
+            'Entry not found: TestType',
+          ),
+        ),
       );
     });
 
