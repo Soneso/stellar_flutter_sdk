@@ -18,7 +18,7 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 
 
 class RPCMethodParser:
@@ -160,8 +160,8 @@ class RPCMethodParser:
         Raises:
             ValueError: If the content holds not exactly one registration
                 block, or the block is empty, unclosed, or has an entry that
-                names no method in that form; the message names the RPC
-                version and the entry
+                names no method in that form, or code names a method outside the
+                block; the message names the RPC version and entry or constant
         """
         self.methods.clear()
         version = self.version_info.get('version', 'unknown')
@@ -172,15 +172,20 @@ class RPCMethodParser:
                 f"RPC source {version} holds {len(blocks)} method registration blocks, expected "
                 f"one LimitsByMethod map literal or one methodName handler list")
 
-        entries = self._block_entries(code, blocks[0].end(), version)
+        entries, end = self._block_entries(code, blocks[0].end(), version)
         if not entries:
             raise ValueError(f"RPC source {version}: the method registration block is empty")
+        outside = re.sub(self.GO_LITERAL, ' ', code[:blocks[0].end()] + code[end:])
+        reference = re.search(r'\bprotocol\s*\.\s*(\w+MethodName)\b', outside)
+        if reference:
+            raise ValueError(f"RPC source {version}: method name reference outside the "
+                             f"registration block: protocol.{reference.group(1)}")
         names = []
         for entry in entries:
             if blocks[0].group(0).startswith('LimitsByMethod'):
                 match = self.MAP_ENTRY_PATTERN.fullmatch(entry)
             else:
-                fields = self._block_entries(entry, 1, version) if entry.startswith('{') else []
+                fields = self._block_entries(entry, 1, version)[0] if entry.startswith('{') else []
                 named = [f for f in fields if re.match(r'methodName\s*:', f)]
                 match = len(named) == 1 and self.METHOD_NAME_FIELD_PATTERN.fullmatch(named[0])
             if not match:
@@ -192,8 +197,8 @@ class RPCMethodParser:
 
         return self
 
-    def _block_entries(self, code: str, start: int, version: str) -> List[str]:
-        """Top-level entries of the composite literal whose body starts at start."""
+    def _block_entries(self, code: str, start: int, version: str) -> Tuple[List[str], int]:
+        """Top-level entries and exclusive end of the composite literal whose body starts at start."""
         entries, depth, begin = [], 0, start
         for token in self.GO_SCAN_TOKEN.finditer(code, start):
             if token.group(0) in '{([':
@@ -203,7 +208,7 @@ class RPCMethodParser:
             elif token.group(0) in '})],' and depth == 0:
                 entries.append(code[begin:token.start()].strip())
                 if token.group(0) != ',':
-                    return [entry for entry in entries if entry]
+                    return [entry for entry in entries if entry], token.end()
                 begin = token.end()
         raise ValueError(f"RPC source {version}: method registration block is not closed")
 
