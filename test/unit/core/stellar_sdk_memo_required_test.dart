@@ -5,7 +5,7 @@
 // operation order, stops at the first hit, skips destinations Horizon does not
 // know, and makes no request at all when the transaction carries a memo. The
 // envelope-string methods check an envelope with line breaks, post it as
-// passed, and throw before any request for an envelope they cannot decode.
+// passed, and post an envelope they cannot decode unchecked.
 // Every case asserts the exact list of HTTP requests the SDK sent.
 
 import 'dart:convert';
@@ -137,18 +137,40 @@ http.Response submitAsyncPendingBody() {
   return http.Response(json.encode(asyncJson), 201);
 }
 
+/// Horizon's `/transactions_async` answer to an envelope it cannot decode. It
+/// echoes the posted [tx].
+http.Response malformedAsyncBody(String tx) {
+  final problemJson = {
+    'type': 'https://stellar.org/horizon-errors/transaction_malformed',
+    'title': 'Transaction Malformed',
+    'status': 400,
+    'detail':
+        'Horizon could not decode the transaction envelope in this request. '
+        'A transaction should be an XDR TransactionEnvelope struct encoded '
+        'using base64.  The envelope read from this request is echoed in the '
+        '`extras.envelope_xdr` field of this response for your convenience.',
+    'extras': {'envelope_xdr': tx, 'error': {}},
+  };
+  return http.Response(json.encode(problemJson), 400);
+}
+
 /// Returns an SDK whose HTTP client appends `'<METHOD> <path>'` of every
 /// request to [requests], appends the `tx` form field of every POST to
-/// [posted] when given, and answers account lookups from [accounts].
+/// [posted] when given, and answers account lookups from [accounts]. When
+/// [submitted] is given, it answers every POST from the posted `tx`.
 StellarSDK sdkWith({
   required Map<String, http.Response Function()> accounts,
   required List<String> requests,
   List<String>? posted,
+  http.Response Function(String tx)? submitted,
 }) {
   final mockClient = MockClient((request) async {
     requests.add('${request.method} ${request.url.path}');
     if (request.method == 'POST' && posted != null) {
       posted.add(request.bodyFields['tx']!);
+    }
+    if (request.method == 'POST' && submitted != null) {
+      return submitted(request.bodyFields['tx']!);
     }
     final segments = request.url.pathSegments;
     if (request.method == 'GET' &&
@@ -184,13 +206,6 @@ Matcher memoRequired(String accountId, int operationIndex) {
             'requires a memo in the transaction.',
       );
 }
-
-final Matcher undecodableEnvelope = isA<FormatException>().having(
-  (e) => e.toString(),
-  'toString()',
-  'FormatException: The transaction envelope cannot be decoded for the '
-      'SEP-29 memo-required check. Nothing was submitted.',
-);
 
 /// Both envelope-string submit methods, keyed by the path they post to.
 final Map<String, Future<Object> Function(StellarSDK, String, bool)>
@@ -822,20 +837,64 @@ void main() {
         final envelope = buildTx([payment(dest)]).toEnvelopeXdrBase64();
         return '${envelope.substring(0, 76)}\t${envelope.substring(76)}';
       },
-      // A one-payment V1 envelope has 200 bytes and ends in one `=`, so the
-      // character before it carries two unused bits. With them set, Horizon's
-      // decoder reads the same bytes and the SDK's decoder rejects the string.
-      'nonzero unused padding bits': () {
-        final envelope = buildTx([payment(dest)]).toEnvelopeXdrBase64();
-        expect(envelope.length, 268);
-        expect(envelope, endsWith('='));
-        expect(envelope, isNot(endsWith('==')));
-        const digits =
-            'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-        final digit = digits[digits.indexOf(envelope[266]) | 3];
-        return '${envelope.substring(0, 266)}$digit=';
-      },
     };
+
+    // A one-payment V1 envelope has 200 bytes and ends in one `=`, so the
+    // character before it carries two unused bits. With them set, Horizon's
+    // decoder reads the same bytes and the SDK's decoder rejects the string.
+    String nonzeroPaddingBits() {
+      final envelope = buildTx([payment(dest)]).toEnvelopeXdrBase64();
+      expect(envelope.length, 268);
+      expect(envelope, endsWith('='));
+      expect(envelope, isNot(endsWith('==')));
+      const digits =
+          'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+      final digit = digits[digits.indexOf(envelope[266]) | 3];
+      return '${envelope.substring(0, 266)}$digit=';
+    }
+
+    undecodable.forEach((name, envelope) {
+      test('/transactions posts an envelope with $name unchecked', () async {
+        final sdk = sdkWith(accounts: {}, requests: requests, posted: posted);
+        final input = envelope();
+        final response = await sdk.submitTransactionEnvelopeXdrBase64(input);
+        expect(response.success, isTrue);
+        expect(response.hash, 'abc123def456');
+        expect(requests, ['POST /transactions']);
+        expect(posted, [input]);
+      });
+
+      test(
+        '/transactions_async posts an envelope with $name unchecked',
+        () async {
+          final sdk = sdkWith(
+            accounts: {},
+            requests: requests,
+            posted: posted,
+            submitted: malformedAsyncBody,
+          );
+          final input = envelope();
+          await expectLater(
+            sdk.submitAsyncTransactionEnvelopeXdrBase64(input),
+            throwsA(
+              isA<SubmitAsyncTransactionProblem>()
+                  .having(
+                    (e) => e.type,
+                    'type',
+                    'https://stellar.org/horizon-errors/transaction_malformed',
+                  )
+                  .having((e) => e.status, 'status', 400)
+                  .having((e) => e.extras, 'extras', {
+                    'envelope_xdr': input,
+                    'error': {},
+                  }),
+            ),
+          );
+          expect(requests, ['POST /transactions_async']);
+          expect(posted, [input]);
+        },
+      );
+    });
 
     envelopeEndpoints.forEach((path, submit) {
       envelopeKinds.forEach((kind, build) {
@@ -866,20 +925,20 @@ void main() {
         });
       });
 
-      undecodable.forEach((name, envelope) {
-        test('$path submits nothing for an envelope with $name', () async {
-          final sdk = sdkWith(accounts: {}, requests: requests);
-          await expectLater(
-            submit(sdk, envelope(), false),
-            throwsA(undecodableEnvelope),
-          );
-          expect(requests, isEmpty);
-        });
-      });
+      test(
+        '$path posts an envelope with nonzero unused padding bits unchecked',
+        () async {
+          final sdk = sdkWith(accounts: {}, requests: requests, posted: posted);
+          final input = nonzeroPaddingBits();
+          await submit(sdk, input, false);
+          expect(requests, ['POST $path']);
+          expect(posted, [input]);
+        },
+      );
 
       test('$path posts an undecodable envelope when asked to skip', () async {
         final sdk = sdkWith(accounts: {}, requests: requests, posted: posted);
-        final input = undecodable['nonzero unused padding bits']!();
+        final input = nonzeroPaddingBits();
         await submit(sdk, input, true);
         expect(requests, ['POST $path']);
         expect(posted, [input]);
