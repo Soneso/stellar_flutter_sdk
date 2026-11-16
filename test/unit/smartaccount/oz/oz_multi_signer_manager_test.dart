@@ -1510,10 +1510,8 @@ void main() {
       ];
       mock.simulateDefault = simResp;
 
-      // latestLedger must succeed.
-      final ledgerResp = GetLatestLedgerResponse(<String, dynamic>{});
-      ledgerResp.sequence = 1000;
-      mock.latestLedgerDefault = ledgerResp;
+      // The instance read of the wallet must succeed.
+      mock.ledgerEntriesDefault = walletInstanceLedgerEntries(_validContractId);
 
       final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
         ..setConnected(credentialId: 'cred', contractId: _validContractId);

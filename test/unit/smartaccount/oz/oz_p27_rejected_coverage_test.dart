@@ -378,7 +378,9 @@ void main() {
               minResourceFee: 100,
             ),
           );
-          h.soroban.latestLedgerResponses.add(_latestLedger(1000));
+          h.soroban.ledgerEntriesResponses.add(
+            walletInstanceLedgerEntries(_contractA, latestLedger: 1000),
+          );
           // WebAuthn provider returns a valid signature for the passkey signer.
           h.provider.authenticateResponses.add(_fakeAuthResult());
           // Re-simulate after signing.

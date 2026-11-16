@@ -266,18 +266,24 @@ class OZSignerManager {
 
   /// Adds a delegated signer to [contextRuleId].
   ///
-  /// Builds an [OZDelegatedSigner] for [address] (validation happens in
-  /// the signer constructor) and delegates to [_addSigner].
+  /// Builds an [OZDelegatedSigner] for [address] and delegates to
+  /// [_addSigner]. The address must be a Stellar account (G-address) other
+  /// than the shared default deployer, whose secret derives from a public
+  /// string. A contract address, the wallet included, is refused, because a
+  /// contract delegate can let anyone authorize the account
+  /// (GHSA-jpg9-m7w4-c7wc).
   ///
   /// Parameters:
   ///
   /// - [contextRuleId]: on-chain id of the context rule the signer is added to.
-  /// - [address]: the delegated account or contract — a Stellar account
-  ///   G-address or a contract C-address. Muxed (M-address) inputs are
-  ///   rejected by the signer constructor.
+  /// - [address]: the Stellar account address (G-address) of the signer.
   /// - [selectedSigners]: empty routes the single-signer passkey path;
   ///   non-empty routes the multi-signer pipeline.
   /// - [forceMethod]: overrides direct-vs-relayer submission.
+  ///
+  /// Throws [SmartAccountInvalidInput] when [address] is the shared default
+  /// deployer or the wallet itself, and [SmartAccountInvalidAddress] when it
+  /// is any other address that is not a G-address.
   Future<OZTransactionResult> addDelegated({
     required int contextRuleId,
     required String address,
@@ -452,7 +458,9 @@ class OZSignerManager {
   }) async {
     final connected = await _kit.requireConnected();
 
-    requireValidSigners(<OZSmartAccountSigner>[signer]);
+    await requireValidSigners(<OZSmartAccountSigner>[
+      signer,
+    ], connected.contractId);
 
     final signerScVal = signer.toScVal();
 

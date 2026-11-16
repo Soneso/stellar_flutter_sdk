@@ -10,7 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 import '../../soroban/simulation_contract_error_fixtures.dart';
+import 'oz_auth_digest_fixtures.dart';
 import 'oz_pipeline_fixtures.dart';
+import 'oz_signing_harness.dart';
 
 const String _contractA =
     'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
@@ -306,7 +308,9 @@ void main() {
               minResourceFee: 100,
             ),
           );
-          h.soroban.latestLedgerResponses.add(_latestLedger(1000));
+          h.soroban.ledgerEntriesResponses.add(
+            walletInstanceLedgerEntries(_contractA, latestLedger: 1000),
+          );
           h.provider.authenticateResponses.add(_fakeAuthResult());
           h.soroban.getAccountResponses.add(
             _deployerAccount(h.deployer, seq: 2),
@@ -352,7 +356,9 @@ void main() {
           minResourceFee: 100,
         ),
       );
-      h.soroban.latestLedgerResponses.add(_latestLedger(1000));
+      h.soroban.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 1000),
+      );
       // WebAuthn provider returns a valid auth result.
       h.provider.authenticateResponses.add(_fakeAuthResult());
       // Re-simulate after signing.
@@ -402,7 +408,9 @@ void main() {
           minResourceFee: 100,
         ),
       );
-      h.soroban.latestLedgerResponses.add(_latestLedger(500));
+      h.soroban.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 500),
+      );
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
       h.soroban.simulateResponses.add(_simResponseEmpty(minResourceFee: 150));
@@ -445,7 +453,9 @@ void main() {
           minResourceFee: 100,
         ),
       );
-      h.soroban.latestLedgerResponses.add(_latestLedger(800));
+      h.soroban.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 800),
+      );
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
       h.soroban.simulateResponses.add(_simResponseEmpty(minResourceFee: 120));
@@ -477,7 +487,9 @@ void main() {
           minResourceFee: 100,
         ),
       );
-      h.soroban.latestLedgerResponses.add(_latestLedger(300));
+      h.soroban.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 300),
+      );
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
       h.soroban.simulateResponses.add(_simResponseEmpty(minResourceFee: 80));
@@ -593,7 +605,9 @@ void main() {
           minResourceFee: 100,
         ),
       );
-      h.soroban.latestLedgerResponses.add(_latestLedger(600));
+      h.soroban.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 600),
+      );
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
       h.soroban.simulateResponses.add(_simResponseEmpty(minResourceFee: 80));
@@ -810,7 +824,9 @@ void main() {
           minResourceFee: 100,
         ),
       );
-      mock.latestLedgerResponses.add(_latestLedger(300));
+      mock.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 300),
+      );
       // Re-simulate after signing.
       mock.getAccountResponses.add(_deployerAccount(deployer, seq: 2));
       mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 80));
@@ -1001,7 +1017,9 @@ void main() {
           minResourceFee: 100,
         ),
       );
-      mock.latestLedgerResponses.add(_latestLedger(600));
+      mock.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 600),
+      );
       mock.getAccountResponses.add(_deployerAccount(deployer, seq: 2));
       mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 80));
       mock.sendResponses.add(_sendPending(hash: 'delegated-arm-hash'));
@@ -1131,7 +1149,9 @@ void main() {
           minResourceFee: 100,
         ),
       );
-      mock.latestLedgerResponses.add(_latestLedger(600));
+      mock.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 600),
+      );
       mock.getAccountResponses.add(_deployerAccount(deployer, seq: 2));
       mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 80));
       mock.sendResponses.add(_sendPending(hash: 'simulation-arm-hash'));
@@ -1196,6 +1216,132 @@ void main() {
         }
       },
     );
+  });
+
+  group('OZMultiSignerManager - auth digest scheme', () {
+    Future<void> expectEd25519Digest(
+      XdrContractExecutable executable,
+      Uint8List Function(Uint8List payload) expectedDigest,
+    ) async {
+      final entry = harnessEntry();
+      final run = await runMultiSignerSubmit(
+        (_) => <XdrSorobanAuthorizationEntry>[entry],
+        harnessInstanceRead(executable),
+        ruleIds: const <int>[3],
+      );
+
+      expect(run.error, isNull);
+      expect(run.result!.success, isTrue);
+      expect(run.ed25519.digests, <Uint8List>[
+        expectedDigest(await harnessPayload(entry)),
+      ]);
+      expect(run.server.ledgerEntriesCalls, hasLength(1));
+      expect(
+        run.server.latestLedgerCallCount,
+        0,
+        reason: 'The instance read sets the expiration',
+      );
+    }
+
+    test('an Ed25519 signer of a 0.8.0 wallet signs the preimage digest', () {
+      return expectEd25519Digest(
+        v080Executable(),
+        (payload) => IndependentAuthDigest.preimageDigest(
+          harnessWallet,
+          payload,
+          <int>[3],
+        ),
+      );
+    });
+
+    test('an Ed25519 signer of a legacy wallet signs the 0.7 digest', () {
+      return expectEd25519Digest(
+        legacyExecutable(),
+        (payload) => IndependentAuthDigest.legacyDigest(payload, <int>[3]),
+      );
+    });
+
+    Future<List<XdrSCVal>> delegatedArgs(
+      XdrContractExecutable executable,
+      XdrSorobanAuthorizationEntry entry,
+    ) async {
+      final run = await runMultiSignerSubmit(
+        (_) => <XdrSorobanAuthorizationEntry>[entry],
+        harnessInstanceRead(executable),
+        withEd25519: false,
+        withWalletSigner: true,
+        ruleIds: const <int>[3],
+      );
+      expect(run.error, isNull);
+      expect(run.result!.success, isTrue);
+      return checkAuthArgs(run.wallet.preimages.single);
+    }
+
+    test('a wallet signer of a 0.8.0 wallet authorizes the preimage', () async {
+      final entry = harnessEntry();
+      final args = await delegatedArgs(v080Executable(), entry);
+      final expected = IndependentAuthDigest.preimage(
+        harnessWallet,
+        await harnessPayload(entry),
+        <int>[3],
+      );
+      expect(args.map(scValXdrBase64).toList(), <String>[
+        scValXdrBase64(expected),
+      ], reason: 'The 0.8 argument is the AuthDigestPreimage map');
+    });
+
+    test(
+      'a wallet signer of a legacy wallet authorizes the digest bytes',
+      () async {
+        final entry = harnessEntry();
+        final args = await delegatedArgs(legacyExecutable(), entry);
+        final expected = XdrSCVal.forBytes(
+          IndependentAuthDigest.legacyDigest(await harnessPayload(entry), <int>[
+            3,
+          ]),
+        );
+        expect(args.map(scValXdrBase64).toList(), <String>[
+          scValXdrBase64(expected),
+        ]);
+      },
+    );
+
+    test('a foreign entry first and a failed instance read: no signer is '
+        'asked', () async {
+      final run = await runMultiSignerSubmit(
+        (walletSigner) => <XdrSorobanAuthorizationEntry>[
+          harnessEntry(address: walletSigner, target: _contractB),
+          harnessEntry(),
+        ],
+        harnessInstanceReadError(),
+        withWalletSigner: true,
+      );
+
+      expect(run.error, isA<SmartAccountTransactionSubmissionFailed>());
+      expect(
+        run.wallet.preimages,
+        isEmpty,
+        reason: 'The foreign entry of the wallet signer must not be signed',
+      );
+      expect(run.ed25519.digests, isEmpty);
+      expect(run.server.sendCalls, isEmpty);
+    });
+
+    test('without a smart account entry no instance is read', () async {
+      final run = await runMultiSignerSubmit(
+        (walletSigner) => <XdrSorobanAuthorizationEntry>[
+          harnessEntry(address: walletSigner, target: _contractB),
+        ],
+        _latestLedger(harnessSigningLedger),
+        withEd25519: false,
+        withWalletSigner: true,
+      );
+
+      expect(run.result!.success, isTrue);
+      expect(run.server.ledgerEntriesCalls, isEmpty);
+      expect(run.server.latestLedgerCallCount, 1);
+      expect(run.wallet.preimages, hasLength(1));
+    });
   });
 }
 

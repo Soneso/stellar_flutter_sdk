@@ -8,7 +8,9 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'oz_auth_digest_fixtures.dart';
 import 'oz_pipeline_fixtures.dart';
+import 'oz_signing_harness.dart';
 
 const String _contractA =
     'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
@@ -908,7 +910,7 @@ void main() {
       ];
       simResp.minResourceFee = 100;
       mock.simulateResponses.add(simResp);
-      mock.latestLedgerDefault = _makeLedgerResponse(1000);
+      mock.ledgerEntriesDefault = walletInstanceLedgerEntries(_contractA);
       // Re-simulate.
       mock.simulateResponses.add(simResp);
       mock.sendDefault = Exception('send error'); // fails at send, not earlier
@@ -1010,7 +1012,7 @@ void main() {
         ];
         simResp.minResourceFee = 100;
         mock.simulateResponses.add(simResp);
-        mock.latestLedgerDefault = _makeLedgerResponse(1000);
+        mock.ledgerEntriesDefault = walletInstanceLedgerEntries(_contractA);
 
         final provider = RecordingWebAuthnProvider();
         // Return a DIFFERENT credentialId than the one stored.
@@ -1094,7 +1096,7 @@ void main() {
       ];
       simResp.minResourceFee = 100;
       mock.simulateResponses.add(simResp);
-      mock.latestLedgerDefault = _makeLedgerResponse(1000);
+      mock.ledgerEntriesDefault = walletInstanceLedgerEntries(_contractA);
 
       // No webauthnProvider configured → throws before credential lookup
       // Wait, we need webauthn to reach the credential lookup. Let me use
@@ -1146,8 +1148,9 @@ void main() {
   });
 
   group('submit pipeline: signing path validation', () {
-    test('latestLedgerNullSequence_throwsSubmissionFailed', () async {
-      // When the latest ledger returns null sequence, signing should throw.
+    test('instanceReadWithoutLatestLedger_throwsSubmissionFailed', () async {
+      // When the instance read of the wallet reports no latest ledger,
+      // signing throws before any passkey is asked.
       final deployer = KeyPair.random();
       final mock = MockSorobanServer();
       mock.getAccountResponses.add(Account(deployer.accountId, BigInt.from(1)));
@@ -1162,10 +1165,9 @@ void main() {
       simResp.minResourceFee = 100;
       mock.simulateResponses.add(simResp);
 
-      // latestLedger with null sequence.
-      final nullSeqLedger = GetLatestLedgerResponse(<String, dynamic>{});
-      // sequence is null by default.
-      mock.latestLedgerDefault = nullSeqLedger;
+      // An instance read without a latest ledger (null by default).
+      mock.ledgerEntriesDefault = GetLedgerEntriesResponse(<String, dynamic>{})
+        ..entries = <LedgerEntry>[];
 
       final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
         ..setConnected(credentialId: _credentialId, contractId: _contractA);
@@ -1178,8 +1180,16 @@ void main() {
           hostFunction: hostFn,
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
-        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
+        throwsA(
+          isA<SmartAccountTransactionSubmissionFailed>().having(
+            (e) => e.message,
+            'message',
+            'Transaction submission failed: The instance read of $_contractA '
+                'reported no latest ledger',
+          ),
+        ),
       );
+      expect(mock.latestLedgerCallCount, 0);
     });
 
     test('noWebAuthnProvider_withAuthEntry_throwsInvalidInput', () async {
@@ -1200,7 +1210,7 @@ void main() {
       ];
       simResp.minResourceFee = 100;
       mock.simulateResponses.add(simResp);
-      mock.latestLedgerDefault = _makeLedgerResponse(1000);
+      mock.ledgerEntriesDefault = walletInstanceLedgerEntries(_contractA);
 
       // No webauthnProvider in config (default null).
       final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
@@ -1216,6 +1226,82 @@ void main() {
         ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
+    });
+  });
+
+  group('submit pipeline: auth digest scheme', () {
+    test(
+      'a 0.8.0 wallet: the WebAuthn challenge is the preimage digest',
+      () async {
+        final entry = harnessEntry();
+        final run = await runSingleSignerSubmit(
+          <XdrSorobanAuthorizationEntry>[entry],
+          harnessInstanceRead(v080Executable()),
+          ruleIds: const <int>[7],
+        );
+
+        expect(run.error, isNull);
+        expect(run.result!.success, isTrue);
+        final payload = await harnessPayload(entry);
+        expect(run.challenges, <Uint8List>[
+          IndependentAuthDigest.preimageDigest(harnessWallet, payload, <int>[
+            7,
+          ]),
+        ]);
+        expect(
+          run.challenges.single,
+          isNot(IndependentAuthDigest.legacyDigest(payload, <int>[7])),
+          reason: 'A 0.8.0 wallet must not be asked to sign the legacy digest',
+        );
+        expect(run.server.ledgerEntriesCalls, hasLength(1));
+        expect(run.server.latestLedgerCallCount, 0);
+      },
+    );
+
+    test('a legacy wallet: the WebAuthn challenge is the 0.7 digest', () async {
+      final entry = harnessEntry();
+      final run = await runSingleSignerSubmit(
+        <XdrSorobanAuthorizationEntry>[entry],
+        harnessInstanceRead(legacyExecutable()),
+        ruleIds: const <int>[7],
+      );
+
+      expect(run.result!.success, isTrue);
+      expect(run.challenges, <Uint8List>[
+        IndependentAuthDigest.legacyDigest(await harnessPayload(entry), <int>[
+          7,
+        ]),
+      ]);
+    });
+
+    test('the signed entry expires from the instance read ledger', () async {
+      final run = await runSingleSignerSubmit(<XdrSorobanAuthorizationEntry>[
+        harnessEntry(),
+      ], harnessInstanceRead(v080Executable()));
+
+      expect(run.result!.success, isTrue);
+      final submitted =
+          run.server.sendCalls.single.operations.single
+              as InvokeHostFunctionOperation;
+      expect(
+        submitted
+            .auth
+            .single
+            .credentials
+            .addressCredentials!
+            .signatureExpirationLedger,
+        harnessExpiration,
+      );
+    });
+
+    test('a failed instance read asks no passkey', () async {
+      final run = await runSingleSignerSubmit(<XdrSorobanAuthorizationEntry>[
+        harnessEntry(),
+      ], harnessInstanceReadError());
+
+      expect(run.error, isA<SmartAccountTransactionSubmissionFailed>());
+      expect(run.provider.authenticateCalls, isEmpty);
+      expect(run.server.sendCalls, isEmpty);
     });
   });
 

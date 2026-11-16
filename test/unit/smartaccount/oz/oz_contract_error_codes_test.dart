@@ -69,6 +69,18 @@ void main() {
         OZContractErrorCodes.decode(3016),
         const OZContractError(3016, 'SmartAccountError', 'UnauthorizedSigner'),
       );
+      expect(
+        OZContractErrorCodes.decode(3017),
+        const OZContractError(
+          3017,
+          'SmartAccountError',
+          'DelegatedSignerIsContextContract',
+        ),
+      );
+      expect(
+        OZContractErrorCodes.decode(3018),
+        const OZContractError(3018, 'SmartAccountError', 'SelfDelegatedSigner'),
+      );
     });
 
     test('testDecode_webAuthnCode', () {
@@ -131,6 +143,7 @@ void main() {
     test('testDecode_unusedAndGapCodes_returnNull', () {
       // 3001 is unused in SmartAccountError; the policy enums have gaps.
       expect(OZContractErrorCodes.decode(3001), isNull);
+      expect(OZContractErrorCodes.decode(3019), isNull);
       expect(OZContractErrorCodes.decode(3204), isNull);
       expect(OZContractErrorCodes.decode(3215), isNull);
       expect(OZContractErrorCodes.decode(3120), isNull);
@@ -147,9 +160,23 @@ void main() {
       expect(OZContractErrorCodes.contextRuleNotFound, 3000);
       expect(OZContractErrorCodes.nameTooLong, 3015);
       expect(OZContractErrorCodes.unauthorizedSigner, 3016);
+      expect(OZContractErrorCodes.delegatedSignerIsContextContract, 3017);
+      expect(OZContractErrorCodes.selfDelegatedSigner, 3018);
       expect(
         OZContractErrorCodes.decode(OZContractErrorCodes.nameTooLong)?.name,
         'NameTooLong',
+      );
+      expect(
+        OZContractErrorCodes.decode(
+          OZContractErrorCodes.delegatedSignerIsContextContract,
+        )?.name,
+        'DelegatedSignerIsContextContract',
+      );
+      expect(
+        OZContractErrorCodes.decode(
+          OZContractErrorCodes.selfDelegatedSigner,
+        )?.name,
+        'SelfDelegatedSigner',
       );
     });
 
@@ -178,6 +205,8 @@ void main() {
         3014: ('SmartAccountError', 'ContextRuleIdsLengthMismatch'),
         3015: ('SmartAccountError', 'NameTooLong'),
         3016: ('SmartAccountError', 'UnauthorizedSigner'),
+        3017: ('SmartAccountError', 'DelegatedSignerIsContextContract'),
+        3018: ('SmartAccountError', 'SelfDelegatedSigner'),
         3110: ('WebAuthnError', 'SignaturePayloadInvalid'),
         3111: ('WebAuthnError', 'ClientDataTooLong'),
         3112: ('WebAuthnError', 'JsonParseError'),
@@ -206,7 +235,7 @@ void main() {
         3226: ('SpendingLimitError', 'LessThanZero'),
         3227: ('SpendingLimitError', 'OnlyCallContractAllowed'),
       };
-      expect(expected.length, 43);
+      expect(expected.length, 45);
       for (final entry in expected.entries) {
         final decoded = OZContractErrorCodes.decode(entry.key);
         expect(

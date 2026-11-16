@@ -289,47 +289,50 @@ void main() {
   });
 
   group('requireValidSigners', () {
-    test('testExternalSigner_at256Bytes_ok', () {
+    test('testExternalSigner_at256Bytes_ok', () async {
       final signer = OZExternalSigner(
         _kVerifierContract,
         _keyData(OZConstants.maxExternalKeySize),
       );
-      expect(
-        () => requireValidSigners(<OZSmartAccountSigner>[signer]),
-        returnsNormally,
+      await expectLater(
+        requireValidSigners(<OZSmartAccountSigner>[signer], _kValidContractId),
+        completes,
       );
     });
 
-    test('testExternalSigner_257Bytes_throws', () {
+    test('testExternalSigner_257Bytes_throws', () async {
       final signer = OZExternalSigner(
         _kVerifierContract,
         _keyData(OZConstants.maxExternalKeySize + 1),
       );
-      expect(
-        () => requireValidSigners(<OZSmartAccountSigner>[signer]),
+      await expectLater(
+        requireValidSigners(<OZSmartAccountSigner>[signer], _kValidContractId),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
-    test('testDelegatedSigner_hasNoKeyData_skipped', () {
+    test('testDelegatedSigner_hasNoKeyData_skipped', () async {
       // Delegated signers carry no key data and must never trip the
       // external-key check.
-      expect(
-        () => requireValidSigners(<OZSmartAccountSigner>[
+      await expectLater(
+        requireValidSigners(<OZSmartAccountSigner>[
           OZDelegatedSigner(_kAccountAddress),
-        ]),
-        returnsNormally,
+        ], _kValidContractId),
+        completes,
       );
     });
 
-    test('testMixedSigners_oversizedExternal_throws', () {
+    test('testMixedSigners_oversizedExternal_throws', () async {
       final delegated = OZDelegatedSigner(_kAccountAddress);
       final oversized = OZExternalSigner(
         _kVerifierContract,
         _keyData(OZConstants.maxExternalKeySize + 1),
       );
-      expect(
-        () => requireValidSigners(<OZSmartAccountSigner>[delegated, oversized]),
+      await expectLater(
+        requireValidSigners(<OZSmartAccountSigner>[
+          delegated,
+          oversized,
+        ], _kValidContractId),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });

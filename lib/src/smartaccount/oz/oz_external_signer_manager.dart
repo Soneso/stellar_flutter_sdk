@@ -61,8 +61,11 @@ abstract class OZExternalEd25519SignerAdapter {
   /// locally verifies the returned signature before incorporating it into
   /// the authorization payload.
   ///
-  /// [authDigest] is the 32-byte digest to sign, computed as
-  /// `SHA-256(signaturePayload || contextRuleIds.toXDR())`.
+  /// [authDigest] is the 32-byte digest to sign, of the scheme the wallet's
+  /// code checks ([OZAuthDigestScheme]):
+  /// `SHA-256(signaturePayload || contextRuleIds.toXDR())` for
+  /// stellar-accounts 0.7 and `SHA-256(XDR(AuthDigestPreimage))`, which also
+  /// binds the smart account address, for stellar-accounts 0.8.0.
   /// [publicKey] is the 32-byte Ed25519 public key that identifies which
   /// key to sign with.
   ///

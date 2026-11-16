@@ -16,7 +16,7 @@ import 'oz_validation.dart';
 ///
 /// Defines the matching criteria for a context rule, including default
 /// catch-all behaviour, contract-specific calls, and contract-creation
-/// patterns. Three matching types are supported:
+/// patterns. Four matching types are supported:
 ///
 /// - [OZContextRuleTypeDefault]: matches any operation that no other rule
 ///   matches.
@@ -24,6 +24,9 @@ import 'oz_validation.dart';
 ///   contract address.
 /// - [OZContextRuleTypeCreateContract]: matches contract deployments using a
 ///   specific WASM hash.
+/// - [OZContextRuleTypeCreateContractExternalRef]: matches contract
+///   deployments from the executable reference that an owner contract
+///   stores under a tag (CAP-0085).
 sealed class OZContextRuleType {
   const OZContextRuleType();
 
@@ -36,9 +39,12 @@ sealed class OZContextRuleType {
   ///   `Vec([Symbol("CallContract"), Address(contractAddress)])`
   /// - [OZContextRuleTypeCreateContract]:
   ///   `Vec([Symbol("CreateContract"), Bytes(wasmHash)])`
+  /// - [OZContextRuleTypeCreateContractExternalRef]:
+  ///   `Vec([Symbol("CreateContractExternalRef"), Address(owner), String(tag)])`
   ///
   /// Throws an [SmartAccountInvalidAddress] validation exception when the contract
-  /// address on a [OZContextRuleTypeCallContract] cannot be encoded.
+  /// address on a [OZContextRuleTypeCallContract] or the owner on a
+  /// [OZContextRuleTypeCreateContractExternalRef] cannot be encoded.
   XdrSCVal toScVal() {
     final self = this;
     if (self is OZContextRuleTypeDefault) {
@@ -62,6 +68,22 @@ sealed class OZContextRuleType {
       return XdrSCVal.forVec([
         XdrSCVal.forSymbol('CreateContract'),
         XdrSCVal.forBytes(self.wasmHash),
+      ]);
+    }
+    if (self is OZContextRuleTypeCreateContractExternalRef) {
+      final XdrSCVal owner;
+      try {
+        owner = XdrSCVal.forAddressStrKey(self.owner);
+      } catch (e) {
+        throw SmartAccountValidationException.invalidAddress(
+          self.owner,
+          cause: e,
+        );
+      }
+      return XdrSCVal.forVec([
+        XdrSCVal.forSymbol('CreateContractExternalRef'),
+        owner,
+        XdrSCVal.forString(self.tag),
       ]);
     }
     throw StateError('Unhandled OZContextRuleType: $self');
@@ -130,6 +152,40 @@ final class OZContextRuleTypeCreateContract extends OZContextRuleType {
     }
     return result;
   }
+}
+
+/// Matches contract deployments from a CAP-0085 executable reference: the
+/// WASM hash that the contract [owner] stores under [tag].
+///
+/// The hash is resolved when the contract is deployed, so the rule trusts
+/// the owner contract to keep the reference pointing at acceptable code. An
+/// account build without this rule kind, such as stellar-accounts 0.7,
+/// rejects it during simulation.
+final class OZContextRuleTypeCreateContractExternalRef
+    extends OZContextRuleType {
+  /// Constructs an external-reference rule for the reference [owner] stores
+  /// under [tag].
+  const OZContextRuleTypeCreateContractExternalRef(this.owner, this.tag);
+
+  /// Address of the contract that stores the executable reference, a
+  /// C-address for a rule built with
+  /// [OZBuilders.createCreateContractExternalRefContextType]. A rule read
+  /// from the chain keeps the stored address as its strkey.
+  final String owner;
+
+  /// The tag the reference is stored under.
+  final String tag;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is OZContextRuleTypeCreateContractExternalRef &&
+        other.owner == owner &&
+        other.tag == tag;
+  }
+
+  @override
+  int get hashCode => Object.hash(owner, tag);
 }
 
 /// Parsed representation of a context rule loaded from on-chain storage.
@@ -223,7 +279,7 @@ class OZBuilders {
   /// Creates a [OZContextRuleTypeDefault] rule.
   ///
   /// Default rules apply to any operation that does not match a more
-  /// specific call-contract or create-contract rule.
+  /// specific call-contract, create-contract or external-reference rule.
   static OZContextRuleType createDefaultContextType() {
     return const OZContextRuleTypeDefault();
   }
@@ -281,6 +337,32 @@ class OZBuilders {
       );
     }
     return OZContextRuleTypeCreateContract(wasmHash);
+  }
+
+  /// Creates a [OZContextRuleTypeCreateContractExternalRef] rule.
+  ///
+  /// The rule applies only when deploying contracts from a CAP-0085
+  /// executable reference: the WASM hash that the [owner] contract stores
+  /// under [tag]. The hash is resolved at deployment time, so the rule
+  /// trusts the owner contract to keep the reference pointing at acceptable
+  /// code. An account build without this rule kind, such as
+  /// stellar-accounts 0.7, rejects it during simulation.
+  ///
+  /// ```dart
+  /// final contextType = OZBuilders.createCreateContractExternalRefContextType(
+  ///   'CDEF5678...',
+  ///   'account-v1',
+  /// );
+  /// ```
+  ///
+  /// Throws an [SmartAccountInvalidAddress] validation exception when
+  /// [owner] is not a valid contract address.
+  static OZContextRuleType createCreateContractExternalRefContextType(
+    String owner,
+    String tag,
+  ) {
+    requireContractAddress(owner, fieldName: 'owner');
+    return OZContextRuleTypeCreateContractExternalRef(owner, tag);
   }
 
   /// Returns the unique signers from [rules], removing duplicates across

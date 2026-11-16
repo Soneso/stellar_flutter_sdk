@@ -56,7 +56,7 @@ class OZContractError {
 class OZContractErrorCodes {
   OZContractErrorCodes._(); // coverage:ignore-line
 
-  // Smart account contract (SmartAccountError, codes 3000-3016; 3001 is
+  // Smart account contract (SmartAccountError, codes 3000-3018; 3001 is
   // unused).
 
   /// The referenced context rule does not exist on the account.
@@ -109,6 +109,13 @@ class OZContractErrorCodes {
   /// The signer is not authorised to sign the given context rule.
   static const int unauthorizedSigner = 3016;
 
+  /// A Delegated signer's address is the contract of a context being
+  /// authorised.
+  static const int delegatedSignerIsContextContract = 3017;
+
+  /// A Delegated signer's address is the smart account itself.
+  static const int selfDelegatedSigner = 3018;
+
   /// Decodes a raw contract error [code] into the OZ contract and variant
   /// name that defined it, or `null` if [code] is not a known OZ
   /// smart-account contract error.
@@ -150,7 +157,7 @@ class OZContractErrorCodes {
   );
 
   static const List<OZContractError> _allErrors = <OZContractError>[
-    // SmartAccountError (3000-3016; 3001 unused)
+    // SmartAccountError (3000-3018; 3001 unused)
     OZContractError(3000, 'SmartAccountError', 'ContextRuleNotFound'),
     OZContractError(3002, 'SmartAccountError', 'UnvalidatedContext'),
     OZContractError(3003, 'SmartAccountError', 'ExternalVerificationFailed'),
@@ -167,6 +174,12 @@ class OZContractErrorCodes {
     OZContractError(3014, 'SmartAccountError', 'ContextRuleIdsLengthMismatch'),
     OZContractError(3015, 'SmartAccountError', 'NameTooLong'),
     OZContractError(3016, 'SmartAccountError', 'UnauthorizedSigner'),
+    OZContractError(
+      3017,
+      'SmartAccountError',
+      'DelegatedSignerIsContextContract',
+    ),
+    OZContractError(3018, 'SmartAccountError', 'SelfDelegatedSigner'),
     // WebAuthnError (3110-3119)
     OZContractError(3110, 'WebAuthnError', 'SignaturePayloadInvalid'),
     OZContractError(3111, 'WebAuthnError', 'ClientDataTooLong'),

@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 
 import '../../key_pair.dart';
 import '../../util.dart';
@@ -16,7 +17,21 @@ import 'oz_external_signer_manager.dart';
 import '../../soroban/soroban_server.dart';
 import 'oz_indexer_client.dart';
 import 'oz_policy_manager.dart';
+import 'oz_smart_account_auth.dart';
 import 'oz_storage_adapter.dart';
+
+/// Account WASM hashes (lowercase hex) whose digest scheme needs no
+/// configuration: the stellar-accounts 0.8.0 build of
+/// `multisig-account-example` (Stellar CLI 28.1.0).
+/// [OZSmartAccountConfig.authDigestSchemes] entries take precedence; every
+/// other hash signs with [OZAuthDigestScheme.legacyConcat].
+const Map<String, OZAuthDigestScheme> _knownAuthDigestSchemes =
+    <String, OZAuthDigestScheme>{
+      'c514d35ea67eaea9bfc1fb3327854c0c06111bc1ddebd4fe217c504c1004b9e1':
+          OZAuthDigestScheme.preimageV1,
+    };
+
+final RegExp _wasmHashPattern = RegExp(r'^[0-9a-fA-F]{64}$');
 
 /// Configuration for OpenZeppelin Smart Account operations.
 ///
@@ -49,8 +64,10 @@ import 'oz_storage_adapter.dart';
 /// ```
 ///
 /// Throws [SmartAccountConfigurationException] if required parameters are blank or
-/// invalid (e.g. `accountWasmHash` is not a 64-character hex string, or
-/// `webauthnVerifierAddress` is not a valid C-address).
+/// invalid (e.g. `accountWasmHash` or an `authDigestSchemes` key is not a
+/// 64-character hex string, two `authDigestSchemes` keys that differ only in
+/// case map to different schemes, or `webauthnVerifierAddress` is not a
+/// valid C-address).
 class OZSmartAccountConfig {
   /// Constructs a configuration for OpenZeppelin Smart Account operations.
   ///
@@ -82,7 +99,12 @@ class OZSmartAccountConfig {
     this.sorobanServer,
     this.useUpgradedAuth = true,
     this.useUpgradedAuthForWalletSigners = true,
-  }) : storage = storage ?? OZInMemoryStorageAdapter() {
+    Map<String, OZAuthDigestScheme> authDigestSchemes =
+        const <String, OZAuthDigestScheme>{},
+  }) : storage = storage ?? OZInMemoryStorageAdapter(),
+       authDigestSchemes = Map<String, OZAuthDigestScheme>.unmodifiable(
+         authDigestSchemes,
+       ) {
     if (rpcUrl.trim().isEmpty) {
       throw SmartAccountConfigurationException.missingConfig('rpcUrl');
     }
@@ -94,7 +116,7 @@ class OZSmartAccountConfig {
     if (accountWasmHash.trim().isEmpty) {
       throw SmartAccountConfigurationException.missingConfig('accountWasmHash');
     }
-    if (!RegExp(r'^[0-9a-fA-F]{64}$').hasMatch(accountWasmHash)) {
+    if (!_wasmHashPattern.hasMatch(accountWasmHash)) {
       throw SmartAccountConfigurationException.invalidConfig(
         'accountWasmHash must be a 64-character hex string '
         '(SHA-256 of WASM), got: $accountWasmHash',
@@ -135,7 +157,46 @@ class OZSmartAccountConfig {
         'got: $timeoutInSeconds',
       );
     }
+    _authDigestSchemeTable = _mergeAuthDigestSchemes(this.authDigestSchemes);
   }
+
+  /// [authDigestSchemes] with lowercase keys, merged over the built-in
+  /// table.
+  late final Map<String, OZAuthDigestScheme> _authDigestSchemeTable;
+
+  static Map<String, OZAuthDigestScheme> _mergeAuthDigestSchemes(
+    Map<String, OZAuthDigestScheme> configured,
+  ) {
+    final table = Map<String, OZAuthDigestScheme>.of(_knownAuthDigestSchemes);
+    final normalizedEntries = <String, OZAuthDigestScheme>{};
+    for (final MapEntry(key: wasmHash, value: scheme) in configured.entries) {
+      if (!_wasmHashPattern.hasMatch(wasmHash)) {
+        throw SmartAccountConfigurationException.invalidConfig(
+          'authDigestSchemes key must be a 64-character hex string '
+          '(SHA-256 of WASM), got: $wasmHash',
+        );
+      }
+      final normalizedHash = wasmHash.toLowerCase();
+      final previous = normalizedEntries[normalizedHash];
+      if (previous != null && previous != scheme) {
+        throw SmartAccountConfigurationException.invalidConfig(
+          'authDigestSchemes maps $normalizedHash to both ${previous.name} '
+          'and ${scheme.name}',
+        );
+      }
+      normalizedEntries[normalizedHash] = scheme;
+      table[normalizedHash] = scheme;
+    }
+    return table;
+  }
+
+  /// Returns the digest scheme of the account build with the WASM hash
+  /// [wasmHashHex]: the [authDigestSchemes] entry, else the built-in entry,
+  /// else [OZAuthDigestScheme.legacyConcat].
+  @internal
+  OZAuthDigestScheme authDigestSchemeFor(String wasmHashHex) =>
+      _authDigestSchemeTable[wasmHashHex.toLowerCase()] ??
+      OZAuthDigestScheme.legacyConcat;
 
   /// Soroban RPC endpoint URL. Example:
   /// `https://soroban-testnet.stellar.org`.
@@ -276,6 +337,28 @@ class OZSmartAccountConfig {
   /// address-bound preimage type. Default: `true`.
   final bool useUpgradedAuthForWalletSigners;
 
+  /// Maps account WASM hashes (64-character hex, any case) to the digest
+  /// their `__check_auth` checks.
+  ///
+  /// Before it asks the first signer of an operation, the kit reads the WASM
+  /// hash the wallet runs with one `getLedgerEntries` request, whose latest
+  /// ledger also sets the signature expiration, and signs the digest this
+  /// map gives for it. The built-in table maps the stellar-accounts 0.8.0
+  /// build `c514d35e...` to [OZAuthDigestScheme.preimageV1]. An entry here
+  /// takes precedence over it, so it can also map that build to
+  /// [OZAuthDigestScheme.legacyConcat]. Every other hash signs with
+  /// [OZAuthDigestScheme.legacyConcat], as do a wallet whose executable is
+  /// not a WASM hash, an external reference included, and a wallet whose
+  /// instance entry the RPC does not return.
+  ///
+  /// Map each own build that implements [OZAuthDigestScheme.preimageV1] to
+  /// it. Without the entry, or with an entry that names the wrong scheme, the
+  /// contract rejects the authorization after the signers have signed, the
+  /// passkey prompt included, and nothing executes. A wallet whose
+  /// executable is an external reference cannot be mapped, because this map
+  /// keys on WASM hashes. Default: empty.
+  final Map<String, OZAuthDigestScheme> authDigestSchemes;
+
   /// Creates a deterministic deployer keypair for smart account deployment.
   ///
   /// Derives an Ed25519 keypair from
@@ -388,6 +471,7 @@ class OZSmartAccountConfig {
     bool setSorobanServer = false,
     bool? useUpgradedAuth,
     bool? useUpgradedAuthForWalletSigners,
+    Map<String, OZAuthDigestScheme>? authDigestSchemes,
   }) {
     return OZSmartAccountConfig(
       rpcUrl: rpcUrl ?? this.rpcUrl,
@@ -423,6 +507,7 @@ class OZSmartAccountConfig {
       useUpgradedAuthForWalletSigners:
           useUpgradedAuthForWalletSigners ??
           this.useUpgradedAuthForWalletSigners,
+      authDigestSchemes: authDigestSchemes ?? this.authDigestSchemes,
     );
   }
 
@@ -459,6 +544,10 @@ class OZSmartAccountConfig {
         const MapEquality<String, OZPolicyInstallParams>().equals(
           defaultPolicies,
           other.defaultPolicies,
+        ) &&
+        const MapEquality<String, OZAuthDigestScheme>().equals(
+          authDigestSchemes,
+          other.authDigestSchemes,
         );
   }
 
@@ -483,6 +572,7 @@ class OZSmartAccountConfig {
     useUpgradedAuth,
     useUpgradedAuthForWalletSigners,
     const MapEquality<String, OZPolicyInstallParams>().hash(defaultPolicies),
+    const MapEquality<String, OZAuthDigestScheme>().hash(authDigestSchemes),
   ]);
 }
 
@@ -532,6 +622,8 @@ class OZSmartAccountConfigBuilder {
   SorobanServer? _sorobanServer;
   bool _useUpgradedAuth = true;
   bool _useUpgradedAuthForWalletSigners = true;
+  Map<String, OZAuthDigestScheme> _authDigestSchemes =
+      const <String, OZAuthDigestScheme>{};
 
   /// Sets the deployer keypair. Pass `null` to use the deterministic
   /// default.
@@ -640,6 +732,16 @@ class OZSmartAccountConfigBuilder {
     return this;
   }
 
+  /// Sets the digest scheme of account builds by WASM hash: account WASM
+  /// hashes (64-character hex, any case) mapped to the digest their
+  /// `__check_auth` checks; see [OZSmartAccountConfig.authDigestSchemes].
+  OZSmartAccountConfigBuilder authDigestSchemes(
+    Map<String, OZAuthDigestScheme> value,
+  ) {
+    _authDigestSchemes = value;
+    return this;
+  }
+
   /// Builds the [OZSmartAccountConfig], running constructor validation.
   ///
   /// Throws [SmartAccountConfigurationException] when validation fails.
@@ -664,6 +766,7 @@ class OZSmartAccountConfigBuilder {
       sorobanServer: _sorobanServer,
       useUpgradedAuth: _useUpgradedAuth,
       useUpgradedAuthForWalletSigners: _useUpgradedAuthForWalletSigners,
+      authDigestSchemes: _authDigestSchemes,
     );
   }
 }
