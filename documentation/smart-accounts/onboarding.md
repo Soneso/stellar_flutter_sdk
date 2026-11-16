@@ -52,7 +52,7 @@ You do not need to construct on-chain data structures manually; the SDK handles 
 
 A signer is an entity authorized to approve transactions on a smart account. The contract stores signers per context rule (explained below). There are three types:
 
-**Delegated**: A Stellar address (G-address for accounts, C-address for contracts) that authorizes using Soroban's built-in verification. For accounts, this means signing the authorization entries with the account's secret key, which Soroban verifies automatically. For contracts, Soroban invokes the contract's own `__check_auth`. No external verifier contract is needed.
+**Delegated**: A Stellar address (G-address for accounts, C-address for contracts) that authorizes using Soroban's built-in verification. For accounts, this means signing the authorization entries with the account's secret key, which Soroban verifies automatically. For contracts, Soroban invokes the contract's own `__check_auth`; the SDK adds only account delegates, because a contract delegate can let anyone authorize the account (GHSA-jpg9-m7w4-c7wc). No external verifier contract is needed.
 
 On-chain representation: `Vec([Symbol("Delegated"), Address(address)])`
 
@@ -108,15 +108,15 @@ You can add rules that apply only to specific scenarios. For example, a rule tha
 
 Each context rule stores:
 - An id (`u32`).
-- A type: `OZContextRuleTypeDefault()`, `OZContextRuleTypeCallContract(address)`, or `OZContextRuleTypeCreateContract(wasmHash)`. `wasmHash` is a 32-byte `Uint8List` containing the SHA-256 hash of a compiled smart-contract binary. `CreateContract` matches contract-creation operations targeting that specific binary.
+- A type: `OZContextRuleTypeDefault()`, `OZContextRuleTypeCallContract(address)`, `OZContextRuleTypeCreateContract(wasmHash)`, or `OZContextRuleTypeCreateContractExternalRef(owner, tag)`. `wasmHash` is a 32-byte `Uint8List` containing the SHA-256 hash of a compiled smart-contract binary. `CreateContract` matches contract-creation operations targeting that specific binary. `CreateContractExternalRef` matches deployments from the executable reference that the `owner` contract stores under `tag` (CAP-85).
 - A name (human-readable string).
 - A list of signers (up to 15).
 - A list of policies (up to 5).
-- An optional expiration ledger number. Rules with an expiration are automatically skipped after that ledger is reached, useful for temporary authorization grants.
+- An optional expiration ledger number, useful for temporary authorization grants. After that ledger the contract rejects the rule; automatic resolution ignores the expiration, so choose or create a rule that has not expired.
 
 Each context rule supports up to 15 signers and 5 policies.
 
-When a transaction requires authorization, the contract collects all non-expired rules that match the operation's context type, plus any default rules, and evaluates them in order until one satisfies the requirements. Rules for a specific context type (for example `CallContract("C...")`) are evaluated before default rules, so default acts as a fallback when no specific rule is satisfied.
+When a transaction requires authorization, the contract checks one rule per authorization context, the rule the client names. The SDK resolves the rule ids automatically or takes them from your `resolveContextRuleIds` callback, and signs them with the payload. A Default rule matches any context.
 
 SDK methods:
 ```dart

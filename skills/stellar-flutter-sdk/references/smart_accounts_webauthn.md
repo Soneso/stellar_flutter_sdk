@@ -86,7 +86,7 @@ abstract class WebAuthnProvider {
   });
 
   Future<WebAuthnAuthenticationResult> authenticate({
-    required Uint8List challenge,             // auth payload hash; passed as-is
+    required Uint8List challenge,             // passed as-is; the auth digest in the wallet's scheme when signing a transaction
     List<WebAuthnAllowCredential>? allowCredentials,  // optional credential descriptors + transport hints
   });
 }

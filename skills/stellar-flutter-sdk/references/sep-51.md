@@ -3,7 +3,7 @@
 **Purpose:** Render any XDR value as a canonical JSON document and read it back to the same bytes.
 **Prerequisites:** None
 **SDK Class:** every generated `Xdr*` type, over the shared runtime `XdrJsonHelper`
-**Specification:** written against SEP-0051 v2.0.1
+**Specification:** written against SEP-0051 v2.1.0
 
 ## Overview
 
