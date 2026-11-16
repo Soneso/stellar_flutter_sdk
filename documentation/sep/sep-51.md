@@ -8,7 +8,7 @@ See the [SEP-51 specification](https://github.com/stellar/stellar-protocol/blob/
 
 ## Overview
 
-> **Note:** SEP-51 is in Draft status (v2.0.1). The document shape follows the Stellar XDR definitions, so a protocol upgrade can change key names and structure. See [Limitations](#limitations).
+> **Note:** SEP-51 is in Draft status (v2.1.0). The document shape follows the Stellar XDR definitions, so a protocol upgrade can change key names and structure. See [Limitations](#limitations).
 
 Every generated XDR type in `lib/src/xdr/` carries four members:
 

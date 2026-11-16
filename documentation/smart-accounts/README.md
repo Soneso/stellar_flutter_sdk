@@ -452,6 +452,7 @@ the rest have defaults. The constructor validates inputs and throws
 | `externalWallet` | `OZExternalWalletAdapter?` | `null` | Wallet adapter (e.g., Freighter, Lobstr) backing the adapter custody model for `OZSelectedSignerWallet` signers. The kit injects it into `kit.externalSigners`. |
 | `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `null` | Ed25519 adapter (hardware wallet, HSM, remote signing service) backing the adapter custody model for `OZSelectedSignerEd25519` signers. The kit injects it into `kit.externalSigners`. |
 | `maxContextRuleScanId` | `int` | `50` | Upper bound on the context-rule IDs scanned when listing rules without an explicit scan limit. Must be `>= 0`. |
+| `authDigestSchemes` | `Map<String, OZAuthDigestScheme>` | `{}` | Account WASM hashes (64 hex characters) mapped to the digest their `__check_auth` checks. Built in, the stellar-accounts 0.8.0 build `c514d35e...` maps to `OZAuthDigestScheme.preimageV1`; an entry here takes precedence, and every other hash signs `OZAuthDigestScheme.legacyConcat`. See [Uploading your own WASM](#uploading-your-own-wasm). |
 
 ### Builder Pattern
 
@@ -503,7 +504,7 @@ stellar contract upload \
   --wasm target/wasm32v1-none/release/multisig_account_example.wasm
 ```
 
-The command prints a hex string. Use it as `accountWasmHash` in your `OZSmartAccountConfig`.
+The command prints a hex string. Use it as `accountWasmHash` in your `OZSmartAccountConfig`. A stellar-accounts 0.8 build whose hash is not `c514d35e...` also needs that hash mapped to `OZAuthDigestScheme.preimageV1` in `authDigestSchemes`, or the contract rejects every authorization after the signers have signed.
 
 ## How wallet deployment works
 

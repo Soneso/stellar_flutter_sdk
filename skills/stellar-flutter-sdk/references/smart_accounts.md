@@ -42,7 +42,7 @@ A smart account is a Soroban contract whose authorization logic lives on-chain. 
 Supported signer types:
 
 - WebAuthn passkey (secp256r1) via an on-chain verifier contract.
-- Delegated Stellar account (G-address) or contract (C-address) using native `require_auth`.
+- Delegated Stellar account (G-address) using native `require_auth` (see [OZDelegatedSigner](#ozdelegatedsigner)).
 - Ed25519 external signer via a verifier contract.
 
 `OZSmartAccountKit.create(config: config)` is the single entry point. The kit exposes managers as properties: `walletOperations`, `transactionOperations`, `signerManager`, `contextRuleManager`, `policyManager`, `credentialManager`, `multiSignerManager`, plus `externalSigners` and `events`. Internally the kit owns a `SorobanServer` (RPC), an optional `OZRelayerClient` (fee-bump), and an optional `OZIndexerClient` (credential lookup). The indexer client is reachable as a public nullable accessor `kit.indexerClient` (guard with `?.`), so direct credential/contract lookups are supported API.
@@ -58,7 +58,7 @@ Smart accounts are part of the main SDK package. Add the dependency:
 ```yaml
 # pubspec.yaml
 dependencies:
-  stellar_flutter_sdk: ^3.11.0   # check pub.dev for the current version
+  stellar_flutter_sdk: ^3.12.0   # check pub.dev for the current version
 ```
 
 ---
@@ -97,6 +97,7 @@ The constructor throws `SmartAccountConfigurationException` when `accountWasmHas
 | `sorobanServer` | `SorobanServer?` | `null` | Preconfigured RPC server (custom Dio httpClient, proxies); when omitted the kit builds one from `rpcUrl` |
 | `useUpgradedAuth` | `bool` | `true` | Credential arm of the kit's simulations and the `fundWallet` source-account conversion: `ADDRESS_V2` by default; `false` keeps the authorization XDR within the pre-protocol-27 schema for relayers that cannot parse protocol 27 XDR |
 | `useUpgradedAuthForWalletSigners` | `bool` | `true` | Credential arm of delegated external-wallet auth entries: `ADDRESS_V2` (address-bound preimage) by default; `false` builds the legacy `ADDRESS` arm for wallet software that cannot sign the address-bound preimage type |
+| `authDigestSchemes` | `Map<String, OZAuthDigestScheme>` | `{}` | Account WASM hash (64 hex chars, any case) to the digest its `__check_auth` checks. Built in: `c514d35e...` (stellar-accounts 0.8.0) to `preimageV1`, which an entry overrides; other hashes sign `legacyConcat` (0.7). Throws `SmartAccountConfigurationException` for a key that is not 64 hex chars, or for two case variants of one key with different schemes |
 
 > DANGER: the default `OZInMemoryStorageAdapter` is non-persistent and tests-only. Omit `storage` in production and the stored credential metadata (credential id, cached contract id, session) is lost when the process exits. The passkey stays on the device, and `connectWallet` finds the contract again through address derivation or the indexer, but pending deployments and silent reconnects are lost. Always pass a platform-backed adapter. See [WebAuthn Setup](./smart_accounts_webauthn.md).
 
@@ -545,13 +546,11 @@ sealed class OZSmartAccountSigner {
 
 ### OZDelegatedSigner
 
-A Stellar address (G or C) that authorizes via native `require_auth`. No verifier contract.
+A Stellar address that authorizes through native `require_auth`. No verifier contract. The type holds a G or C address, so a contract delegate already on a wallet is read as stored. The kit adds only G addresses: `addDelegated`, `addContextRule` and the signing pipelines refuse a contract, because a contract delegate can let anyone authorize the account (GHSA-jpg9-m7w4-c7wc).
 
 ```dart
 final accountSigner =
     OZDelegatedSigner('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ');
-final contractSigner =
-    OZDelegatedSigner('CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY');
 ```
 
 On-chain SCVal: `Vec([Symbol('Delegated'), Address(address)])`. The constructor throws `SmartAccountValidationException` (invalid address) when `address` is neither a valid Ed25519 account ID nor a valid contract address.
