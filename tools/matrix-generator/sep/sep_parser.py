@@ -3583,8 +3583,8 @@ class SEPParser:
         # Stellar-specific renderings (SEP-51 Stellar-Specific Types).
         xdr_json_features['stellar_specific_types'] = [
             spec_item(
-                'sc_address', 'ScAddress renders as a G, C, M, B or L strkey by arm', required=True,
-                category='Stellar-Specific Types'),
+                'sc_address', 'ScAddress renders as a G, C, M, B, L or W strkey by arm',
+                required=True, category='Stellar-Specific Types'),
             spec_item(
                 'account_id', 'AccountID renders as a G strkey', required=True,
                 category='Stellar-Specific Types'),
@@ -3601,6 +3601,9 @@ class SEPParser:
             spec_item(
                 'muxed_ed25519_account', 'MuxedEd25519Account renders as an M strkey',
                 required=True, category='Stellar-Specific Types'),
+            spec_item(
+                'muxed_contract', 'MuxedContract renders as a W strkey', required=True,
+                category='Stellar-Specific Types'),
             spec_item(
                 'pool_id', 'PoolID renders as an L strkey', required=True,
                 category='Stellar-Specific Types'),
