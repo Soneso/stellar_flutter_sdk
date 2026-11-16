@@ -12,12 +12,14 @@
 // build configuration so the plugin builds with whatever toolchain the
 // consumer already uses. The serialization plugin is pinned below.
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    // Pinned to match the Kotlin version range supported by the kotlin.android
-    // plugin in current Flutter project templates (Kotlin 2.x). Consumers using
-    // a wildly different Kotlin major version may need to override.
+    // An explicit version is required because Flutter templates do not declare
+    // the serialization plugin. The serialization compiler artifact follows the
+    // host Kotlin plugin version.
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
 }
 
@@ -26,7 +28,7 @@ version = "3.0.5"
 
 android {
     namespace = "com.soneso.stellar_flutter_sdk"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         // minSdk 24 is required by androidx.security:security-crypto:1.1.0.
@@ -41,12 +43,14 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     testOptions {
         unitTests.isReturnDefaultValues = true
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 

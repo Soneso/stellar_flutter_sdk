@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Apps on Android Gradle Plugin 8.13 and later pass the AAR metadata check of the SDK's Android plugin, which compiles against API level 35.
+
 ## [3.11.0] - 2026-11-14
 
 ### Added
