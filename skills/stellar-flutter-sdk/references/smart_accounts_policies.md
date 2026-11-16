@@ -69,7 +69,7 @@ Context-rule IDs and on-chain signer/policy IDs are plain Dart `int` (the contra
 
 ## Signer Management
 
-`kit.signerManager` (type `OZSignerManager`) adds or removes signers on a specific context rule. Three signer kinds exist: WebAuthn passkeys, delegated Stellar accounts/contracts, and Ed25519 external signers.
+`kit.signerManager` (type `OZSignerManager`) adds or removes signers on a specific context rule. Three signer kinds exist: WebAuthn passkeys, delegated Stellar accounts, and Ed25519 external signers.
 
 ### addNewPasskeySigner — register and add in one step
 
@@ -135,12 +135,12 @@ final result = await kit.signerManager.addPasskey(
 if (!result.success) print('Failed: ${result.error}');
 ```
 
-### addDelegated — add a Stellar account or contract signer
+### addDelegated: add a Stellar account signer
 
 ```dart
 Future<OZTransactionResult> addDelegated({
   required int contextRuleId,
-  required String address, // G-address (account) or C-address (contract)
+  required String address, // G-address of an account; a C-address is refused
   List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
   OZSubmissionMethod? forceMethod,
 });
@@ -153,14 +153,9 @@ await kit.signerManager.addDelegated(
   contextRuleId: 0,
   address: 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ',
 );
-// Add another contract as a signer (custom account contract)
-await kit.signerManager.addDelegated(
-  contextRuleId: 0,
-  address: 'CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY',
-);
 ```
 
-The underlying `OZDelegatedSigner(address)` constructor throws `SmartAccountInvalidAddress` if `address` is neither a valid G-address nor a valid C-address.
+`addDelegated` refuses a contract address, because a contract delegate can let anyone authorize the account (GHSA-jpg9-m7w4-c7wc). It throws `SmartAccountInvalidInput` for the wallet itself and the shared default deployer, and `SmartAccountInvalidAddress` for any other address that is not a G-address.
 
 ### addEd25519 — add an Ed25519 external signer
 
@@ -307,7 +302,7 @@ Every smart account is deployed with one rule at `id = 0`: context type `OZConte
 
 ### OZContextRuleType
 
-A sealed hierarchy with three variants that determine which invocations a rule applies to:
+A sealed hierarchy with four variants that determine which invocations a rule applies to:
 
 ```dart
 import 'dart:typed_data';
@@ -325,6 +320,11 @@ final class OZContextRuleTypeCreateContract extends OZContextRuleType {
   OZContextRuleTypeCreateContract(Uint8List wasmHash); // copies; 32 bytes
   final Uint8List wasmHash;
 }
+final class OZContextRuleTypeCreateContractExternalRef extends OZContextRuleType {
+  const OZContextRuleTypeCreateContractExternalRef(this.owner, this.tag); // owner C-address, tag String
+  final String owner;
+  final String tag;
+}
 ```
 
 On-chain encoding:
@@ -333,23 +333,26 @@ On-chain encoding:
 Default         ->  Vec([Symbol("Default")])
 CallContract    ->  Vec([Symbol("CallContract"), Address(contractAddress)])
 CreateContract  ->  Vec([Symbol("CreateContract"), Bytes(wasmHash)])
+CreateContractExternalRef  ->  Vec([Symbol("CreateContractExternalRef"), Address(owner), String(tag)])
 ```
 
-CreateContract rules identify a deployment by its 32-byte wasm hash only. A
-create-contract invocation whose executable is a CAP-85 external reference (or a
-Stellar Asset Contract) carries no wasm hash, so rule resolution rejects it with
-`SmartAccountValidationException` during signing.
+Automatic rule resolution matches a create-contract invocation whose executable
+is a CAP-85 external reference to an `OZContextRuleTypeCreateContractExternalRef`
+rule with the same owner and tag, or to a Default rule. For a Stellar Asset
+Contract executable, which carries neither a wasm hash nor a reference, it
+throws `SmartAccountInvalidInput` during signing.
 
 The `OZBuilders` static helpers wrap construction with validation:
 
 ```dart
 import 'dart:typed_data';
 
-// From your app: wasmHash32Bytes (Uint8List), wasmHashHex (String)
+// From your app: factoryContractId (String, C-address), factoryTag (String), wasmHash32Bytes (Uint8List), wasmHashHex (String)
 final defaultCtx = OZBuilders.createDefaultContextType();
 final callCtx    = OZBuilders.createCallContractContextType('CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY'); // validates C-address
 final createCtx1 = OZBuilders.createCreateContractContextTypeFromHex(wasmHashHex); // 64 hex chars, 0x prefix ok
 final createCtx2 = OZBuilders.createCreateContractContextTypeFromBytes(wasmHash32Bytes); // 32 bytes
+final refCtx     = OZBuilders.createCreateContractExternalRefContextType(factoryContractId, factoryTag); // owner C-address, tag of its executable reference
 ```
 
 ### addContextRule
@@ -1296,7 +1299,7 @@ try {
 ```
 
 `OZContractErrorCodes` carries named constants for the smart-account
-contract's own error enum (3000, 3002-3016) and a decode table covering all
+contract's own error enum (3000, 3002-3018) and a decode table covering all
 known codes of the five contract error enums (account, WebAuthn verification,
 simple threshold, weighted threshold, spending limit). Each helper returns an
 `OZContractError` with the defining contract enum and variant name, or `null`
@@ -1337,6 +1340,8 @@ When the smart account contract rejects a call in simulation, `SmartAccountTrans
 | 3014 | ContextRuleIdsLengthMismatch | `context_rule_ids` length mismatch | Normally resolved by the auto-resolver; seeing it means a manual `resolveContextRuleIds` output was malformed. |
 | 3015 | NameTooLong | Rule name > 20 UTF-8 bytes | Shorten the name. |
 | 3016 | UnauthorizedSigner | A signer in the auth payload is not on the selected rule | Adjust `selectedSigners`, or pass `resolveContextRuleIds`. |
+| 3017 | DelegatedSignerIsContextContract | A Delegated signer's address is the contract of a context being authorized | Remove that signer (`removeSigner`). |
+| 3018 | SelfDelegatedSigner | A Delegated signer's address is the smart account itself | Delegate to a G-address; the kit refuses the wallet as its own delegate before signing. |
 
 ### SimpleThreshold policy errors (3200 range)
 
