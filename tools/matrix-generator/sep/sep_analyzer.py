@@ -2200,7 +2200,10 @@ class SEPAnalyzer:
                 'lib/src/xdr/xdr_sc_address_base.dart',
                 ('StrKey.encodeContractId(_contractId!.hash)',
                  'StrKey.encodeLiquidityPoolId(_liquidityPoolId!.hash)',
-                 "XdrJsonHelper.readStrKeyPrefix(value, type: 'XdrSCAddress')"),
+                 '_muxedContract!.toXdrJsonValue()',
+                 "XdrJsonHelper.readStrKeyPrefix(value, type: 'XdrSCAddress')",
+                 "case 'W':",
+                 'XdrMuxedContract.fromXdrJsonValue(value)'),
                 'XdrSCAddress.toXdrJsonValue / fromXdrJsonValueAs',
             ),
             'account_id': (
@@ -2233,6 +2236,12 @@ class SEPAnalyzer:
                 ('_muxedAccount!.toXdrJsonValue()',
                  'XdrMuxedAccountMed25519.fromXdrJsonValue('),
                 'XdrSCAddress muxed arm (XdrMuxedAccountMed25519)',
+            ),
+            'muxed_contract': (
+                'lib/src/xdr/xdr_muxed_contract_base.dart',
+                ('StrKey.encodeMuxedContractId(',
+                 'decode: StrKey.decodeMuxedContractId,'),
+                'XdrMuxedContract.toXdrJsonValue / fromXdrJsonValue',
             ),
             'pool_id': (
                 'lib/src/xdr/xdr_trustline_asset_base.dart',

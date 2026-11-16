@@ -1,8 +1,8 @@
 # SEP-0051 (XDR-JSON) Compatibility Matrix
 
-**Generated:** 2026-11-14 19:59:49  
+**Generated:** 2026-11-16 14:29:52  
 **SDK Version:** 3.11.0  
-**SEP Version:** 2.0.1  
+**SEP Version:** 2.1.0  
 **SEP Status:** Draft  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md
 
@@ -13,12 +13,12 @@ This proposal defines XDR-JSON, a standard mapping between Stellar's XDR
 
 ## Overall Coverage
 
-**Total Coverage:** 100.0% (39/39 fields)
+**Total Coverage:** 100.0% (40/40 fields)
 
-- ✅ **Implemented:** 39/39
-- ❌ **Not Implemented:** 0/39
+- ✅ **Implemented:** 40/40
+- ❌ **Not Implemented:** 0/40
 
-**Required Fields:** 100.0% (36/36)
+**Required Fields:** 100.0% (37/37)
 
 **Optional Fields:** 100.0% (3/3)
 
@@ -46,6 +46,7 @@ This proposal defines XDR-JSON, a standard mapping between Stellar's XDR
 - `lib/src/xdr/xdr_ledger_header.dart`
 - `lib/src/xdr/xdr_muxed_account.dart`
 - `lib/src/xdr/xdr_muxed_account_med25519_base.dart`
+- `lib/src/xdr/xdr_muxed_contract_base.dart`
 - `lib/src/xdr/xdr_node_id.dart`
 - `lib/src/xdr/xdr_public_key_base.dart`
 - `lib/src/xdr/xdr_sc_address_base.dart`
@@ -68,7 +69,7 @@ This proposal defines XDR-JSON, a standard mapping between Stellar's XDR
 | Section | Coverage | Required Coverage | Implemented | Not Implemented | Total |
 |---------|----------|-------------------|-------------|-----------------|-------|
 | JSON Schema | 100.0% | 100% | 1 | 0 | 1 |
-| Stellar-Specific Types | 100.0% | 100.0% | 19 | 0 | 19 |
+| Stellar-Specific Types | 100.0% | 100.0% | 20 | 0 | 20 |
 | XDR Data Types | 100.0% | 100.0% | 19 | 0 | 19 |
 
 ## Detailed Field Comparison
@@ -93,11 +94,12 @@ This proposal defines XDR-JSON, a standard mapping between Stellar's XDR
 | `int256_parts` | ✓ | ✅ | `XdrInt256Parts.toXdrJsonValue / fromXdrJsonValue` | Int256Parts renders as one base-10 string of the reassembled integer |
 | `muxed_account` | ✓ | ✅ | `XdrMuxedAccount.toXdrJsonValue / fromXdrJsonValue` | MuxedAccount renders as a G strkey (ed25519) or an M strkey (muxed ed25519) |
 | `muxed_account_med25519` | ✓ | ✅ | `XdrMuxedAccountMed25519.toXdrJsonValue / fromXdrJsonValue` | MuxedAccountMed25519 renders as an M strkey |
+| `muxed_contract` | ✓ | ✅ | `XdrMuxedContract.toXdrJsonValue / fromXdrJsonValue` | MuxedContract renders as a W strkey |
 | `muxed_ed25519_account` | ✓ | ✅ | `XdrSCAddress muxed arm (XdrMuxedAccountMed25519)` | MuxedEd25519Account renders as an M strkey |
 | `node_id` | ✓ | ✅ | `XdrNodeID (delegates to XdrPublicKey)` | NodeID renders as a G strkey |
 | `pool_id` | ✓ | ✅ | `XdrTrustlineAsset pool_share arm (L strkey)` | PoolID renders as an L strkey |
 | `public_key` | ✓ | ✅ | `XdrPublicKey.toXdrJsonValue / fromXdrJsonValueAs` | PublicKey renders as a G strkey |
-| `sc_address` | ✓ | ✅ | `XdrSCAddress.toXdrJsonValue / fromXdrJsonValueAs` | ScAddress renders as a G, C, M, B or L strkey by arm |
+| `sc_address` | ✓ | ✅ | `XdrSCAddress.toXdrJsonValue / fromXdrJsonValueAs` | ScAddress renders as a G, C, M, B, L or W strkey by arm |
 | `signer_key` | ✓ | ✅ | `XdrSignerKey.toXdrJsonValue / fromXdrJsonValue` | SignerKey renders as a G, T, X or P strkey by arm |
 | `signer_key_ed25519_signed_payload` | ✓ | ✅ | `XdrSignedPayload.toXdrJsonValue / fromXdrJsonValue` | SignerKeyEd25519SignedPayload renders as a P strkey |
 | `uint128_parts` | ✓ | ✅ | `XdrUInt128Parts.toXdrJsonValue / fromXdrJsonValue` | UInt128Parts renders as one base-10 string of the reassembled integer |
