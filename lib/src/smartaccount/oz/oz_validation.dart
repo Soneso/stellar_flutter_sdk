@@ -2,11 +2,16 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:collection';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import '../../key_pair.dart';
+import '../../xdr/xdr.dart';
 import '../core/smart_account_errors.dart';
+import 'oz_address_strkey.dart';
 import 'oz_constants.dart';
+import 'oz_smart_account_config.dart';
 import 'oz_smart_account_types.dart';
 
 /// Validates that [address] is a Stellar contract address (C-address).
@@ -141,21 +146,224 @@ void requireValidPolicies<V>(Map<String, V> policies) {
   }
 }
 
-/// Validates that no external signer's key data exceeds the OpenZeppelin
-/// contract's [OZConstants.maxExternalKeySize]-byte limit. Delegated signers
-/// carry no key data and are skipped.
+/// Validates signers that are about to be added to the smart account
+/// [walletContractId].
 ///
-/// Throws a [SmartAccountValidationException] (`invalidInput`) on `keyData`
-/// when any external signer's key data is too large.
-void requireValidSigners(List<OZSmartAccountSigner> signers) {
+/// A Delegated signer must be a Stellar account (G-address) other than the
+/// shared default deployer ([OZSmartAccountConfig.createDefaultDeployer]). A
+/// contract delegate can let anyone authorize the account without a key
+/// (GHSA-jpg9-m7w4-c7wc), the wallet itself included, and the default
+/// deployer's secret derives from a public string. An External signer's key
+/// data must not exceed the OpenZeppelin contract's
+/// [OZConstants.maxExternalKeySize]-byte limit.
+///
+/// Signers already on a wallet are not checked here; reading them never
+/// fails on these rules.
+///
+/// Throws a [SmartAccountValidationException] (`invalidInput`) when a
+/// Delegated signer is the default deployer or the wallet itself, or when an
+/// External signer's key data is too large, and a
+/// [SmartAccountInvalidAddress] validation exception when a Delegated signer
+/// is not a G-address.
+Future<void> requireValidSigners(
+  List<OZSmartAccountSigner> signers,
+  String walletContractId,
+) async {
+  final rules = _AddedSignerRules(walletContractId);
   for (final signer in signers) {
-    if (signer is OZExternalSigner &&
-        signer.keyData.length > OZConstants.maxExternalKeySize) {
+    switch (signer) {
+      case OZDelegatedSigner():
+        await rules.requireValidDelegate(signer.address);
+      case OZExternalSigner():
+        _requireExternalKeySize(signer.keyData);
+    }
+  }
+}
+
+/// Wallet functions that add signers, with the index of the argument that
+/// holds them and whether that argument is a `Vec` of signers
+/// (stellar-accounts 0.8.0 signatures: `add_signer(context_rule_id,
+/// signer)`, `batch_add_signer(context_rule_id, signers)`,
+/// `add_context_rule(context_type, name, valid_until, signers, policies)`).
+const Map<String, ({int index, bool isList})> _signerAddingFunctions =
+    <String, ({int index, bool isList})>{
+      'add_signer': (index: 1, isList: false),
+      'batch_add_signer': (index: 1, isList: true),
+      'add_context_rule': (index: 3, isList: true),
+    };
+
+/// Validates, with the rules of [requireValidSigners], every signer that an
+/// `add_signer`, `batch_add_signer` or `add_context_rule` call on the smart
+/// account [walletContractId] adds, anywhere in the invocation tree of
+/// [entry].
+///
+/// The signing pipelines run this over each smart account entry before they
+/// ask any signer, so a transaction built from raw contract calls cannot add
+/// a Delegated signer that `OZSignerManager.addDelegated` or
+/// `OZContextRuleManager.addContextRule` refuses. The rules apply to the
+/// fields of each signer value as the contract stores them, without the
+/// checks of [OZDelegatedSigner] and [OZExternalSigner]: an External signer
+/// with empty key data or with a verifier that is no contract passes, as the
+/// contract and the smart-account-kit accept it, while a muxed contract
+/// address (W...) as a Delegated address or an External verifier fails, as
+/// the kit refuses it. A call without the signer argument is left to the
+/// contract, which rejects it.
+///
+/// Throws a [SmartAccountValidationException] when an added signer fails
+/// the rules, or when the signer list argument of `batch_add_signer` or
+/// `add_context_rule` is not a `Vec`, and a
+/// [SmartAccountTransactionSigningFailed] when an added signer is not a
+/// signer value.
+Future<void> requireValidAddedSigners(
+  XdrSorobanAuthorizationEntry entry,
+  String walletContractId,
+) async {
+  final rules = _AddedSignerRules(walletContractId);
+  final pending = Queue<XdrSorobanAuthorizedInvocation>()
+    ..add(entry.rootInvocation);
+  while (pending.isNotEmpty) {
+    final invocation = pending.removeFirst();
+    pending.addAll(invocation.subInvocations);
+
+    final call = invocation.function.contractFn;
+    if (invocation.function.discriminant !=
+            XdrSorobanAuthorizedFunctionType
+                .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN ||
+        call == null) {
+      continue;
+    }
+    final position = _signerAddingFunctions[call.functionName];
+    if (position == null ||
+        OZAddressStrKey.fromXdr(call.contractAddress) != walletContractId ||
+        call.args.length <= position.index) {
+      continue;
+    }
+
+    final argument = call.args[position.index];
+    final List<XdrSCVal> signerValues;
+    if (!position.isList) {
+      signerValues = <XdrSCVal>[argument];
+    } else if (argument.discriminant == XdrSCValType.SCV_VEC) {
+      signerValues = argument.vec ?? const <XdrSCVal>[];
+    } else {
       throw SmartAccountValidationException.invalidInput(
-        'keyData',
-        'External signer key data cannot exceed '
-            '${OZConstants.maxExternalKeySize} bytes, '
-            'got: ${signer.keyData.length}',
+        'signers',
+        '${call.functionName} on $walletContractId carries '
+            '${argument.discriminant.enumName()} at argument '
+            '${position.index}, where a Vec of signers is expected',
+      );
+    }
+    for (final value in signerValues) {
+      await _requireValidAddedSignerValue(value, rules);
+    }
+  }
+}
+
+/// Applies the rules of [requireValidSigners] to one raw signer [value],
+/// read field by field as the contract stores it.
+Future<void> _requireValidAddedSignerValue(
+  XdrSCVal value,
+  _AddedSignerRules rules,
+) async {
+  final elements = value.discriminant == XdrSCValType.SCV_VEC
+      ? value.vec
+      : null;
+  if (elements == null || elements.isEmpty) {
+    throw SmartAccountTransactionException.signingFailed(
+      'Signer ScVal is not a non-empty Vec',
+    );
+  }
+  final tag = elements[0].discriminant == XdrSCValType.SCV_SYMBOL
+      ? elements[0].sym
+      : null;
+  switch (tag) {
+    case null:
+      throw SmartAccountTransactionException.signingFailed(
+        'First element of signer Vec is not a Symbol',
+      );
+    case 'Delegated':
+      final address = elements.length >= 2 ? elements[1].address : null;
+      if (address == null) {
+        throw SmartAccountTransactionException.signingFailed(
+          'Delegated signer second element is not an Address',
+        );
+      }
+      _refuseMuxedContract(address, 'Delegated signer address');
+      await rules.requireValidDelegate(address.toStrKey());
+    case 'External':
+      final verifier = elements.length >= 3 ? elements[1].address : null;
+      final keyData = elements.length >= 3 ? elements[2].bytes : null;
+      if (verifier == null || keyData == null) {
+        throw SmartAccountTransactionException.signingFailed(
+          'External signer Vec must hold an Address and Bytes',
+        );
+      }
+      _refuseMuxedContract(verifier, 'External signer verifier address');
+      _requireExternalKeySize(keyData.sCBytes);
+    default:
+      throw SmartAccountTransactionException.signingFailed(
+        "Unknown signer type tag: '$tag'",
+      );
+  }
+}
+
+/// Refuses a signer [address] of the muxed contract type (W...), which the
+/// smart-account-kit cannot convert to a strkey and refuses; every other
+/// address type passes.
+void _refuseMuxedContract(XdrSCAddress address, String field) {
+  if (address.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT) {
+    throw SmartAccountValidationException.invalidInput(
+      'signer',
+      '$field has an unsupported address type: '
+          '${address.discriminant.enumName()}, got: ${address.toStrKey()}',
+    );
+  }
+}
+
+void _requireExternalKeySize(Uint8List keyData) {
+  if (keyData.length > OZConstants.maxExternalKeySize) {
+    throw SmartAccountValidationException.invalidInput(
+      'keyData',
+      'External signer key data cannot exceed '
+          '${OZConstants.maxExternalKeySize} bytes, '
+          'got: ${keyData.length}',
+    );
+  }
+}
+
+/// The Delegated signer rules for one validation pass over signers added to
+/// the smart account [walletContractId]; the shared default deployer's
+/// address is derived once per pass.
+final class _AddedSignerRules {
+  _AddedSignerRules(this.walletContractId);
+
+  final String walletContractId;
+
+  String? _defaultDeployerAddress;
+
+  Future<void> requireValidDelegate(String address) async {
+    final defaultDeployer = _defaultDeployerAddress ??=
+        (await OZSmartAccountConfig.createDefaultDeployer()).accountId;
+    if (address == defaultDeployer) {
+      throw SmartAccountValidationException.invalidInput(
+        'signer',
+        'The shared default deployer $address cannot be a delegated signer: '
+            'its secret derives from a public string, so anyone could '
+            'authorize the account through it',
+      );
+    }
+    if (address == walletContractId) {
+      throw SmartAccountValidationException.invalidInput(
+        'signer',
+        'The smart account $walletContractId cannot be its own delegated '
+            'signer',
+      );
+    }
+    if (!StrKey.isValidStellarAccountId(address)) {
+      throw SmartAccountInvalidAddress(
+        'A delegated signer must be a Stellar account (G-address), got: '
+        '$address. Delegating to a contract can let anyone authorize the '
+        'account.',
       );
     }
   }

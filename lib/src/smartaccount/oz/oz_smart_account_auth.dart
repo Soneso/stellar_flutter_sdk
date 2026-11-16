@@ -10,9 +10,52 @@ import '../../network.dart';
 import '../../soroban/soroban_auth.dart';
 import '../../xdr/xdr.dart';
 import '../core/smart_account_errors.dart';
+import 'oz_auth_digest_scheme.dart';
 import 'oz_smart_account_auth_payload.dart';
 import 'oz_smart_account_types.dart';
 import 'oz_smart_account_signatures.dart';
+
+/// The digest that the `__check_auth` of an OpenZeppelin smart account build
+/// checks.
+///
+/// Every signer of one auth entry commits to the same digest. Its form
+/// depends on the code the smart account runs, so the kit reads the wallet's
+/// WASM hash before each signing operation and selects the scheme through
+/// [OZSmartAccountConfig.authDigestSchemes].
+enum OZAuthDigestScheme {
+  /// The digest of stellar-accounts 0.7:
+  /// `auth_digest = SHA-256(signature_payload || XDR(ScVal::Vec([ScVal::U32(id), ...])))`.
+  /// Delegated signers authorize `__check_auth(Bytes(auth_digest))`.
+  legacyConcat,
+
+  /// The digest of stellar-accounts 0.8.0:
+  /// `auth_digest = SHA-256(XDR(AuthDigestPreimage))`, where
+  /// `AuthDigestPreimage` is the `ScVal::Map` with the Symbol keys `account`
+  /// (the smart account address), `context_rule_ids` (`Vec` of `U32`) and
+  /// `signature_payload` (32 `Bytes`). Delegated signers authorize
+  /// `__check_auth(AuthDigestPreimage)`.
+  preimageV1,
+}
+
+/// The digest material every signer of one smart account auth entry commits
+/// to, as [OZSmartAccountAuth.computeEntryAuthDigest] returns it.
+class OZEntryAuthDigest {
+  /// Constructs the digest material of one auth entry.
+  const OZEntryAuthDigest({
+    required this.signaturePayload,
+    required this.authDigest,
+    required this.delegatedAuthArgs,
+  });
+
+  /// The 32-byte payload the host passes to `__check_auth`.
+  final Uint8List signaturePayload;
+
+  /// The 32-byte digest that External signers (passkeys, Ed25519 keys) sign.
+  final Uint8List authDigest;
+
+  /// The `__check_auth` arguments that Delegated signers authorize.
+  final List<XdrSCVal> delegatedAuthArgs;
+}
 
 /// Authentication helpers for OpenZeppelin Smart Account authorization entries.
 ///
@@ -24,7 +67,10 @@ import 'oz_smart_account_signatures.dart';
 /// Responsibilities include:
 ///
 /// - Computing the auth digest that binds context rule IDs to the signature
-///   payload: `SHA-256(signaturePayload || contextRuleIds.toXDR())`.
+///   payload, in the [OZAuthDigestScheme] of the code the smart account
+///   runs: `SHA-256(signaturePayload || contextRuleIds.toXDR())` for
+///   stellar-accounts 0.7 and `SHA-256(XDR(AuthDigestPreimage))` for
+///   stellar-accounts 0.8.0 ([computeEntryAuthDigest]).
 /// - Building Soroban authorisation payload hashes for WebAuthn challenges.
 /// - Attaching pre-computed signatures to authorisation entries.
 /// - Managing signature expiration and map-entry ordering.
@@ -49,36 +95,134 @@ abstract class OZSmartAccountAuth {
 
   // Payload hash building
 
-  /// Computes the auth digest that binds context rule IDs to the signature
-  /// payload.
+  /// Computes the stellar-accounts 0.7 auth digest,
+  /// [OZAuthDigestScheme.legacyConcat] only.
   ///
   /// The digest is `SHA-256(signaturePayload || contextRuleIds.toXDR())`
   /// where `contextRuleIds.toXDR()` is the XDR encoding of
   /// `ScVal::Vec([ScVal::U32(id), ...])`. The OpenZeppelin Smart Account
   /// contract requires this binding so signers cannot be replayed against a
-  /// different rule set.
+  /// different rule set. A wallet on stellar-accounts 0.8.0 checks the
+  /// [OZAuthDigestScheme.preimageV1] digest instead, which this function
+  /// cannot produce.
   ///
   /// Throws [SmartAccountTransactionSigningFailed] when XDR encoding of the rule-IDs
   /// vector fails.
+  @Deprecated(
+    'Computes the stellar-accounts 0.7 digest only. Use computeEntryAuthDigest '
+    'with the OZAuthDigestScheme of the code the wallet runs.',
+  )
   static Future<Uint8List> buildAuthDigest(
     Uint8List signaturePayload,
     List<int> contextRuleIds,
+  ) async => _legacyAuthDigest(signaturePayload, contextRuleIds);
+
+  /// Computes the signature payload, the auth digest and the delegated
+  /// `__check_auth` arguments of a smart account auth [entry] for [scheme].
+  ///
+  /// The signature payload is [buildAuthPayloadHash] of the entry. With
+  /// [OZAuthDigestScheme.legacyConcat] the digest is
+  /// `SHA-256(signature_payload || XDR(ScVal::Vec([ScVal::U32(id), ...])))`
+  /// and Delegated signers authorize `Bytes(auth_digest)`. With
+  /// [OZAuthDigestScheme.preimageV1] the digest is
+  /// `SHA-256(XDR(AuthDigestPreimage))`, the preimage binding the entry's
+  /// credential address as the smart account, and Delegated signers
+  /// authorize the preimage itself.
+  ///
+  /// The scheme must be the one the wallet's `__check_auth` checks. A
+  /// signature over the other digest is rejected by the contract when the
+  /// transaction is simulated or submitted, after every signer has signed,
+  /// and nothing executes.
+  ///
+  /// ```dart
+  /// final digest = await OZSmartAccountAuth.computeEntryAuthDigest(
+  ///   authEntry,
+  ///   latestLedger + 100,
+  ///   Network.TESTNET.networkPassphrase,
+  ///   <int>[0],
+  ///   OZAuthDigestScheme.preimageV1,
+  /// );
+  /// // digest.authDigest is the WebAuthn challenge and the message an
+  /// // Ed25519 signer signs.
+  /// ```
+  ///
+  /// Parameters:
+  ///
+  /// - [entry]: the smart account authorization entry, with ADDRESS or
+  ///   ADDRESS_V2 credentials.
+  /// - [expirationLedger]: the ledger at which the signatures expire, a u32
+  ///   value.
+  /// - [networkPassphrase]: the network passphrase.
+  /// - [contextRuleIds]: the context rule IDs the signatures satisfy, one
+  ///   per auth context, each a u32 value.
+  /// - [scheme]: the digest scheme of the code the smart account runs.
+  ///
+  /// Throws [SmartAccountInvalidInput] when [expirationLedger] or a context
+  /// rule ID lies outside 0 to 4294967295, and
+  /// [SmartAccountTransactionSigningFailed] when the credentials are not
+  /// ADDRESS or ADDRESS_V2 or XDR encoding fails.
+  static Future<OZEntryAuthDigest> computeEntryAuthDigest(
+    XdrSorobanAuthorizationEntry entry,
+    int expirationLedger,
+    String networkPassphrase,
+    List<int> contextRuleIds,
+    OZAuthDigestScheme scheme,
   ) async {
+    _requireUint32('expirationLedger', expirationLedger);
+    for (final id in contextRuleIds) {
+      _requireUint32('contextRuleIds', id);
+    }
+
+    final signaturePayload = await buildAuthPayloadHash(
+      entry,
+      expirationLedger,
+      networkPassphrase,
+    );
+    switch (scheme) {
+      case OZAuthDigestScheme.legacyConcat:
+        final authDigest = _legacyAuthDigest(signaturePayload, contextRuleIds);
+        return OZEntryAuthDigest(
+          signaturePayload: signaturePayload,
+          authDigest: authDigest,
+          delegatedAuthArgs: <XdrSCVal>[XdrSCVal.forBytes(authDigest)],
+        );
+      case OZAuthDigestScheme.preimageV1:
+        // buildAuthPayloadHash has already refused credentials without an
+        // address.
+        final account = _innerAddressCredentials(entry.credentials)!.address;
+        final preimage = ozBuildAuthDigestPreimage(
+          account,
+          signaturePayload,
+          contextRuleIds,
+        );
+        return OZEntryAuthDigest(
+          signaturePayload: signaturePayload,
+          authDigest: _sha256(_encodeScVal(preimage, 'AuthDigestPreimage')),
+          delegatedAuthArgs: <XdrSCVal>[preimage],
+        );
+    }
+  }
+
+  static const int _uint32Max = 0xFFFFFFFF;
+
+  /// Refuses a [value] that the XDR u32 encoding would wrap.
+  static void _requireUint32(String field, int value) {
+    if (value < 0 || value > _uint32Max) {
+      throw SmartAccountValidationException.invalidInput(
+        field,
+        'must be a u32 value (0 to $_uint32Max), got: $value',
+      );
+    }
+  }
+
+  static Uint8List _legacyAuthDigest(
+    Uint8List signaturePayload,
+    List<int> contextRuleIds,
+  ) {
     final ruleIdsScVal = XdrSCVal.forVec(
       contextRuleIds.map((id) => XdrSCVal.forU32(id)).toList(growable: false),
     );
-
-    Uint8List ruleIdsXdr;
-    try {
-      final stream = XdrDataOutputStream();
-      XdrSCVal.encode(stream, ruleIdsScVal);
-      ruleIdsXdr = Uint8List.fromList(stream.bytes);
-    } catch (e) {
-      throw SmartAccountTransactionException.signingFailed(
-        'Failed to XDR encode context rule IDs ScVal',
-        cause: e,
-      );
-    }
+    final ruleIdsXdr = _encodeScVal(ruleIdsScVal, 'context rule IDs ScVal');
 
     final concatenated = Uint8List(signaturePayload.length + ruleIdsXdr.length)
       ..setRange(0, signaturePayload.length, signaturePayload)
@@ -87,8 +231,28 @@ abstract class OZSmartAccountAuth {
         signaturePayload.length + ruleIdsXdr.length,
         ruleIdsXdr,
       );
-    return Uint8List.fromList(crypto.sha256.convert(concatenated).bytes);
+    return _sha256(concatenated);
   }
+
+  /// XDR-encodes [value].
+  ///
+  /// Throws [SmartAccountTransactionSigningFailed] naming [description] when
+  /// XDR encoding fails.
+  static Uint8List _encodeScVal(XdrSCVal value, String description) {
+    try {
+      final stream = XdrDataOutputStream();
+      XdrSCVal.encode(stream, value);
+      return Uint8List.fromList(stream.bytes);
+    } catch (e) {
+      throw SmartAccountTransactionException.signingFailed(
+        'Failed to XDR encode $description',
+        cause: e,
+      );
+    }
+  }
+
+  static Uint8List _sha256(Uint8List bytes) =>
+      Uint8List.fromList(crypto.sha256.convert(bytes).bytes);
 
   /// Builds the authorisation payload hash for signing.
   ///

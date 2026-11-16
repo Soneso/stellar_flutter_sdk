@@ -22,6 +22,7 @@ import '../core/smart_account_errors.dart';
 import '../core/smart_account_utils.dart';
 import '../core/web_authn_provider.dart';
 import 'oz_address_strkey.dart';
+import 'oz_auth_digest_scheme.dart';
 import 'oz_external_signer_manager.dart' show OZExternalSignerManager;
 import 'oz_internal_pipeline_interfaces.dart';
 import 'oz_secure_nonce.dart';
@@ -261,6 +262,18 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   /// [OZTransactionOperations.submitMultiSignerTransaction] for the
   /// final relayer-or-RPC submission.
   ///
+  /// Before the first signer is asked, foreign entries included, it
+  /// validates the signers that the smart account entries add to the wallet
+  /// through `add_signer`, `batch_add_signer` or `add_context_rule`, and
+  /// reads the wallet's WASM hash once to select its [OZAuthDigestScheme]
+  /// (`OZSmartAccountConfig.authDigestSchemes`); the same response sets the
+  /// signature expiration. Passkey and Ed25519 signers sign the scheme's
+  /// digest and wallet signers authorize its `__check_auth` arguments. A
+  /// Delegated signer that `OZSignerManager.addDelegated` or
+  /// `OZContextRuleManager.addContextRule` refuses, and a muxed contract
+  /// address (W...) as a Delegated address or an External verifier, throw a
+  /// [SmartAccountValidationException] before any signer is asked.
+  ///
   /// Parameters:
   ///
   /// - [hostFunction]: the raw [XdrHostFunction] to authorise and submit;
@@ -366,17 +379,15 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         .map((e) => e.toXdr())
         .toList(growable: false);
 
-    // Step 2: latest ledger.
-    final latestLedger = await _kit.sorobanServer.getLatestLedger();
-    final ledgerSeq = latestLedger.sequence;
-    if (ledgerSeq == null) {
-      throw SmartAccountTransactionException.submissionFailed(
-        'Failed to fetch latest ledger sequence',
-      );
-    }
-
-    // Step 3: expiration.
-    final expirationLedger = ledgerSeq + _kit.config.signatureExpirationLedgers;
+    // Steps 2 and 3: validate the signers the smart account entries add,
+    // select the digest scheme and set the expiration once, before any
+    // signer is asked, wallet signers of foreign entries included.
+    final signingState = await ozPrepareSigningOperation(
+      _kit,
+      connected.contractId,
+      authEntries,
+    );
+    final expirationLedger = signingState.expirationLedger;
 
     // Step 3b: pre-fetch context rules ONCE for every entry.
     final contextRules = await _kit.contextRuleManager.listContextRules();
@@ -492,16 +503,16 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
             );
       }
 
-      final payloadHash = await OZSmartAccountAuth.buildAuthPayloadHash(
+      // ozPrepareSigningOperation reads the scheme whenever an entry belongs
+      // to the wallet.
+      final entryDigest = await OZSmartAccountAuth.computeEntryAuthDigest(
         signedEntry,
         expirationLedger,
         _kit.config.networkPassphrase,
-      );
-
-      final authDigest = await OZSmartAccountAuth.buildAuthDigest(
-        payloadHash,
         resolvedContextRuleIds,
+        signingState.authDigestScheme!,
       );
+      final authDigest = entryDigest.authDigest;
 
       // Step 4a: per-passkey WebAuthn signing.
       for (
@@ -574,12 +585,14 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       for (final selectedSigner in selectedSigners) {
         if (selectedSigner is! OZSelectedSignerWallet) continue;
 
+        // The delegated signer authorizes `__check_auth` with the arguments
+        // of the wallet's digest scheme.
         final checkAuthInvocation = XdrSorobanAuthorizedInvocation(
           XdrSorobanAuthorizedFunction.forInvokeContractArgs(
             XdrInvokeContractArgs(
               Address.forContractId(connected.contractId).toXdr(),
               '__check_auth',
-              <XdrSCVal>[XdrSCVal.forBytes(authDigest)],
+              entryDigest.delegatedAuthArgs,
             ),
           ),
           <XdrSorobanAuthorizedInvocation>[],

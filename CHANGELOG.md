@@ -7,8 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Smart accounts on OpenZeppelin stellar-accounts 0.8. Before it asks the first signer of an operation, the kit reads the WASM hash the wallet runs, with one `getLedgerEntries` request that also sets the signature expiration in place of `getLatestLedger`. It signs the 0.8 digest, `sha256` of the `AuthDigestPreimage` XDR that binds the account address, for the 0.8.0 build `c514d35e...` and for every hash that `OZSmartAccountConfig.authDigestSchemes` maps to `OZAuthDigestScheme.preimageV1`; the map can also map `c514d35e...` to `OZAuthDigestScheme.legacyConcat`. Every other wallet signs the 0.7 digest as before. On 0.8 wallets a Delegated signer authorizes the preimage. Map each own build that implements `preimageV1`: without the entry the contract rejects the authorization after the signers have signed, and nothing executes.
+- `OZSmartAccountAuth.computeEntryAuthDigest` returns the signature payload, the digest and the delegated `__check_auth` arguments of an auth entry for an `OZAuthDigestScheme`, as `OZEntryAuthDigest`.
+- `OZBuilders.createCreateContractExternalRefContextType(owner, tag)` builds a rule for contracts deployed from an executable reference (CAP-0085).
+- `OZContractErrorCodes` decodes 3017 `DelegatedSignerIsContextContract` and 3018 `SelfDelegatedSigner`.
+
+### Changed
+- Breaking: `OZContextRuleType` has the subclass `OZContextRuleTypeCreateContractExternalRef(owner, tag)`. `listContextRules` returns such rules, where it threw "Unknown context_type discriminant", and the kit signs for wallets that hold one. A `switch` over `OZContextRuleType` that lists its subclasses needs a case for it.
+- Breaking: `OZSignerManager.addDelegated` and `OZContextRuleManager.addContextRule` refuse a Delegated signer with a contract (`C...`) address, the wallet included, because a contract delegate can let anyone authorize the account (GHSA-jpg9-m7w4-c7wc). `OZTransactionOperations.submit` and `OZMultiSignerManager.submitWithMultipleSigners` refuse the same signers, and a muxed contract address (`W...`) as a Delegated address or an External verifier, in `add_signer`, `batch_add_signer` and `add_context_rule` calls on the wallet before they ask any signer. Contract delegates already on a wallet are read as before; to close the gap, remove such a signer, or upgrade the wallet and every smart account it delegates to.
+
+### Deprecated
+- `OZSmartAccountAuth.buildAuthDigest` computes the 0.7 digest only; use `computeEntryAuthDigest` with the wallet's scheme.
+
 ### Fixed
 - Apps on Android Gradle Plugin 8.13 and later pass the AAR metadata check of the SDK's Android plugin, which compiles against API level 35.
+
+### Security
+- `addDelegated`, `addContextRule` and the signing pipelines refuse the shared default deployer as a Delegated signer. Its secret derives from a public string, so anyone could authorize the account through it.
 
 ## [3.11.0] - 2026-11-14
 

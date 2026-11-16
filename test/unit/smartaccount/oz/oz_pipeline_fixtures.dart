@@ -524,6 +524,20 @@ class MockSorobanServer extends SorobanServer {
   /// Fallback `getLatestLedger` outcome.
   Object? latestLedgerDefault;
 
+  /// Number of `getLatestLedger` invocations.
+  int latestLedgerCallCount = 0;
+
+  /// Queue of `getLedgerEntries` outcomes; a signing operation with a wallet
+  /// entry reads the wallet's instance through it (see
+  /// [walletInstanceLedgerEntries]).
+  final List<Object> ledgerEntriesResponses = <Object>[];
+
+  /// Fallback `getLedgerEntries` outcome.
+  Object? ledgerEntriesDefault;
+
+  /// Captures the base64 ledger keys of every `getLedgerEntries` invocation.
+  final List<List<String>> ledgerEntriesCalls = <List<String>>[];
+
   /// Queue of `getAccount` outcomes.
   final List<Object> getAccountResponses = <Object>[];
 
@@ -624,10 +638,23 @@ class MockSorobanServer extends SorobanServer {
 
   @override
   Future<GetLatestLedgerResponse> getLatestLedger() async {
+    latestLedgerCallCount++;
     return _next<GetLatestLedgerResponse>(
       latestLedgerResponses,
       latestLedgerDefault,
       'getLatestLedger',
+    );
+  }
+
+  @override
+  Future<GetLedgerEntriesResponse> getLedgerEntries(
+    List<String> base64EncodedKeys,
+  ) async {
+    ledgerEntriesCalls.add(List<String>.of(base64EncodedKeys));
+    return _next<GetLedgerEntriesResponse>(
+      ledgerEntriesResponses,
+      ledgerEntriesDefault,
+      'getLedgerEntries',
     );
   }
 
@@ -688,6 +715,53 @@ class MockSorobanServer extends SorobanServer {
       'pollTransaction',
     );
   }
+}
+
+/// The WASM hash of the stellar-accounts 0.8.0 build, which signs the
+/// preimage digest.
+const String v080AccountWasmHash =
+    'c514d35ea67eaea9bfc1fb3327854c0c06111bc1ddebd4fe217c504c1004b9e1';
+
+/// The answer to the instance read a signing operation makes for the wallet
+/// [contractId]: its persistent instance entry running [executable] (by
+/// default the all-zero WASM hash, which no table maps, so the wallet signs
+/// the legacy digest), reported at [latestLedger].
+GetLedgerEntriesResponse walletInstanceLedgerEntries(
+  String contractId, {
+  XdrContractExecutable? executable,
+  int latestLedger = 1000,
+}) {
+  final contract = XdrSCAddress.forContractId(contractId);
+  final instanceKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA)
+    ..contractData = XdrLedgerKeyContractData(
+      contract,
+      XdrSCVal.forLedgerKeyContractInstance(),
+      XdrContractDataDurability.PERSISTENT,
+    );
+  final data = XdrLedgerEntryData(XdrLedgerEntryType.CONTRACT_DATA)
+    ..contractData = XdrContractDataEntry(
+      XdrExtensionPoint(0),
+      contract,
+      XdrSCVal.forLedgerKeyContractInstance(),
+      XdrContractDataDurability.PERSISTENT,
+      XdrSCVal.forContractInstance(
+        XdrSCContractInstance(
+          executable ?? XdrContractExecutable.forWasm(Uint8List(32)),
+          null,
+        ),
+      ),
+    );
+  return GetLedgerEntriesResponse(<String, dynamic>{})
+    ..entries = <LedgerEntry>[
+      LedgerEntry(
+        instanceKey.toBase64EncodedXdrString(),
+        data.toBase64EncodedXdrString(),
+        latestLedger,
+        latestLedger + 1000,
+        null,
+      ),
+    ]
+    ..latestLedger = latestLedger;
 }
 
 // ---------------------------------------------------------------------------

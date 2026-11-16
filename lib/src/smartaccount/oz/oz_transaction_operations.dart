@@ -21,6 +21,7 @@ import '../core/allow_credential.dart';
 import '../core/smart_account_errors.dart';
 import '../core/smart_account_utils.dart';
 import 'oz_address_strkey.dart';
+import 'oz_auth_digest_scheme.dart';
 import 'oz_base64url.dart';
 import 'oz_constants.dart';
 import 'oz_internal_pipeline_interfaces.dart';
@@ -394,6 +395,17 @@ class OZTransactionOperations {
   /// accurate resource fees, then submits and polls for on-chain
   /// confirmation.
   ///
+  /// Before the first ceremony it validates the signers that the smart
+  /// account entries add to the wallet through `add_signer`,
+  /// `batch_add_signer` or `add_context_rule`, and reads the wallet's WASM
+  /// hash once to select its [OZAuthDigestScheme]
+  /// ([OZSmartAccountConfig.authDigestSchemes]); the same response sets the
+  /// signature expiration. A Delegated signer that
+  /// `OZSignerManager.addDelegated` or `OZContextRuleManager.addContextRule`
+  /// refuses, and a muxed contract address (W...) as a Delegated address or
+  /// an External verifier, throw a [SmartAccountValidationException] before
+  /// any passkey is asked.
+  ///
   /// The deployer keypair signs the transaction for direct RPC submissions
   /// and for relayer Mode 2 (source-account auth present). It is not used
   /// for relayer Mode 1, which lets the relayer supply its own channel
@@ -585,9 +597,11 @@ class OZTransactionOperations {
   /// contract. Source-account, void, or non-matching entries pass through
   /// unchanged.
   ///
-  /// why: fetches the latest ledger and the active context-rule list once
-  /// before the loop. Per-entry round-trips would be wasteful and could
-  /// observe slightly different ledger sequences between entries.
+  /// why: validates the signers the smart account entries add, reads the
+  /// wallet's code and the latest ledger, and fetches the active
+  /// context-rule list once before the loop, so no passkey is asked before
+  /// a refusal or a failed read. Per-entry round-trips would be wasteful and
+  /// could observe slightly different ledger sequences between entries.
   Future<List<XdrSorobanAuthorizationEntry>> _signSimulationAuthEntries({
     required List<XdrSorobanAuthorizationEntry> simulatedAuthEntries,
     required String contractId,
@@ -599,14 +613,12 @@ class OZTransactionOperations {
       return const <XdrSorobanAuthorizationEntry>[];
     }
 
-    final latestLedger = await _kit.sorobanServer.getLatestLedger();
-    final ledgerSeq = latestLedger.sequence;
-    if (ledgerSeq == null) {
-      throw SmartAccountTransactionException.submissionFailed(
-        'Failed to fetch latest ledger sequence',
-      );
-    }
-    final expiration = ledgerSeq + _kit.config.signatureExpirationLedgers;
+    final signingState = await ozPrepareSigningOperation(
+      _kit,
+      contractId,
+      simulatedAuthEntries,
+    );
+    final expiration = signingState.expirationLedger;
 
     final contextRules = await _kit.contextRuleManager.listContextRules();
 
@@ -657,12 +669,6 @@ class OZTransactionOperations {
         continue;
       }
 
-      final payloadHash = await OZSmartAccountAuth.buildAuthPayloadHash(
-        entry,
-        expiration,
-        _kit.config.networkPassphrase,
-      );
-
       final webauthnProvider = _kit.config.webauthnProvider;
       if (webauthnProvider == null) {
         throw SmartAccountValidationException.invalidInput(
@@ -711,10 +717,15 @@ class OZTransactionOperations {
             ], contextRules);
       }
 
-      final authDigest = await OZSmartAccountAuth.buildAuthDigest(
-        payloadHash,
+      // ozPrepareSigningOperation reads the scheme whenever an entry belongs
+      // to the wallet.
+      final authDigest = (await OZSmartAccountAuth.computeEntryAuthDigest(
+        entry,
+        expiration,
+        _kit.config.networkPassphrase,
         resolvedContextRuleIds,
-      );
+        signingState.authDigestScheme!,
+      )).authDigest;
 
       final authResult = await webauthnProvider.authenticate(
         challenge: authDigest,

@@ -18,7 +18,7 @@ import '../core/smart_account_utils.dart';
 /// OpenZeppelin Smart Account signers define who can authorise transactions
 /// on a smart account. Two concrete forms exist:
 ///
-/// - [OZDelegatedSigner]: a Soroban address (G or C) using the built-in
+/// - [OZDelegatedSigner]: a Soroban address using the built-in
 ///   `require_auth` verification mechanism.
 /// - [OZExternalSigner]: a verifier contract plus public-key bytes that
 ///   delegate signature validation to a Soroban contract — used to support
@@ -61,19 +61,23 @@ sealed class OZSmartAccountSigner {
 /// A delegated signer using a Soroban address with built-in `require_auth`
 /// verification.
 ///
-/// Delegated signers are Stellar accounts (G-address) or smart contracts
-/// (C-address) that use the native Soroban authorization mechanism. The
+/// Delegated signers use the native Soroban authorization mechanism. The
 /// OpenZeppelin Smart Account contract calls `require_auth_for_args()` on the
 /// address to verify authorisation.
+///
+/// The type holds a Stellar account (G-address) or a contract (C-address),
+/// so signers already on a wallet are read as stored. The kit adds only
+/// G-addresses: `OZSignerManager.addDelegated`,
+/// `OZContextRuleManager.addContextRule` and the signing pipelines refuse a
+/// contract, the wallet itself and the shared default deployer, because a
+/// contract delegate can let anyone authorize the account without a key
+/// (GHSA-jpg9-m7w4-c7wc) and the default deployer's secret derives from a
+/// public string.
 ///
 /// Example:
 ///
 /// ```dart
-/// // Account signer
 /// final account = OZDelegatedSigner('GA7QYNF7SOWQ...');
-///
-/// // Contract signer
-/// final contract = OZDelegatedSigner('CBCD1234...');
 /// ```
 final class OZDelegatedSigner extends OZSmartAccountSigner {
   /// Constructs a delegated signer for the given Stellar [address].

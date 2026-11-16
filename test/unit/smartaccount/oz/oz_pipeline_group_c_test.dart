@@ -523,7 +523,9 @@ void main() {
                 entry: _makeAddressCredsEntry(contractAddress: _contractA),
               ),
             );
-            h.soroban.latestLedgerResponses.add(_latestLedger(1000));
+            h.soroban.ledgerEntriesResponses.add(
+              walletInstanceLedgerEntries(_contractA, latestLedger: 1000),
+            );
             h.provider.authenticateResponses.add(_fakeAuthResult());
             h.soroban.getAccountResponses.add(
               _deployerAccount(h.deployer, seq: 2),
@@ -615,7 +617,9 @@ void main() {
           minResourceFee: 100,
         ),
       );
-      h.soroban.latestLedgerResponses.add(_latestLedger(1000));
+      h.soroban.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 1000),
+      );
       // Provider returns matching credentialId.
       h.provider.authenticateResponses.add(_fakeAuthResult());
       // Re-simulate after signing.
@@ -700,7 +704,9 @@ void main() {
           entry: _makeAddressCredsEntry(contractAddress: _contractA),
         ),
       );
-      h.soroban.latestLedgerResponses.add(_latestLedger(2000));
+      h.soroban.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 2000),
+      );
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
       h.soroban.simulateResponses.add(_simResponseEmpty());
@@ -756,7 +762,9 @@ void main() {
           entry: _makeAddressCredsEntry(contractAddress: _contractA),
         ),
       );
-      h.soroban.latestLedgerResponses.add(_latestLedger(5000));
+      h.soroban.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 5000),
+      );
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
       h.soroban.simulateResponses.add(_simResponseEmpty());
@@ -805,7 +813,9 @@ void main() {
           minResourceFee: 100000,
         ),
       );
-      h.soroban.latestLedgerResponses.add(_latestLedger(1000));
+      h.soroban.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 1000),
+      );
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
       // Re-simulation returns a much larger resource fee.
@@ -845,7 +855,9 @@ void main() {
           entry: _makeAddressCredsEntry(contractAddress: _contractA),
         ),
       );
-      h.soroban.latestLedgerResponses.add(_latestLedger(1000));
+      h.soroban.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 1000),
+      );
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
       // Re-simulation reports error.
@@ -1474,7 +1486,9 @@ void main() {
           entry: _makeAddressCredsEntry(contractAddress: _contractA),
         ),
       );
-      h.soroban.latestLedgerResponses.add(_latestLedger(5000));
+      h.soroban.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 5000),
+      );
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
       h.soroban.simulateResponses.add(_simResponseEmpty());
@@ -1687,7 +1701,9 @@ void main() {
           entry: _makeAddressCredsEntry(contractAddress: _contractA),
         ),
       );
-      h.soroban.latestLedgerResponses.add(_latestLedger(1000));
+      h.soroban.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 1000),
+      );
       h.provider.authenticateResponses.add(
         WebAuthnException.authenticationFailed('user cancelled'),
       );
@@ -1827,7 +1843,9 @@ void main() {
           entry: _makeAddressCredsEntry(contractAddress: _contractA),
         ),
       );
-      soroban.latestLedgerResponses.add(_latestLedger(1000));
+      soroban.ledgerEntriesResponses.add(
+        walletInstanceLedgerEntries(_contractA, latestLedger: 1000),
+      );
       final config = OZSmartAccountConfig(
         rpcUrl: 'https://soroban-testnet.stellar.org',
         networkPassphrase: Network.TESTNET.networkPassphrase,

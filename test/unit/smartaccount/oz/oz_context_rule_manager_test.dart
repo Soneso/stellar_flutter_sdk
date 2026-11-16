@@ -1084,50 +1084,62 @@ void main() {
       );
     });
 
+    // The binary tag of the two entries, read as UTF-8 with each malformed
+    // sequence replaced by U+FFFD.
+    const binaryTagText = '�\u0000��';
+
     test(
-      'V1 create-contract entry referencing an external executable throws',
+      'V1 create-contract entry referencing an external executable matches its external-reference rule',
       () {
-        // Covers _extractWasmHash CONTRACT_EXECUTABLE_EXTERNAL_REF branch: an
-        // external reference names no wasm hash, so no CreateContract rule can
-        // match it.
         final h = _buildHarness();
         final mgr = OZContextRuleManager(h.kit);
-        expect(
-          () => mgr.resolveContextRuleIdsForEntryWithRules(
-            _makeCreateExternalRefEntry(),
-            const <OZSmartAccountSigner>[],
-            <OZParsedContextRule>[_rule(id: 12)],
-          ),
-          throwsA(
-            isA<SmartAccountInvalidInput>().having(
-              (e) => e.message,
-              'message',
-              contains('external executable'),
+        final ids = mgr.resolveContextRuleIdsForEntryWithRules(
+          _makeCreateExternalRefEntry(),
+          const <OZSmartAccountSigner>[],
+          <OZParsedContextRule>[
+            _rule(
+              id: 11,
+              contextType: const OZContextRuleTypeCreateContractExternalRef(
+                _verifierContract,
+                'other-tag',
+              ),
             ),
-          ),
+            _rule(
+              id: 12,
+              contextType: const OZContextRuleTypeCreateContractExternalRef(
+                _verifierContract,
+                binaryTagText,
+              ),
+            ),
+          ],
         );
+        expect(ids, <int>[12]);
       },
     );
 
     test(
-      'V2 create-contract entry referencing an external executable throws',
+      'V2 create-contract entry referencing an external executable matches its external-reference rule',
       () {
         final h = _buildHarness();
         final mgr = OZContextRuleManager(h.kit);
-        expect(
-          () => mgr.resolveContextRuleIdsForEntryWithRules(
-            _makeCreateExternalRefV2Entry(),
-            const <OZSmartAccountSigner>[],
-            <OZParsedContextRule>[_rule(id: 13)],
-          ),
-          throwsA(
-            isA<SmartAccountInvalidInput>().having(
-              (e) => e.message,
-              'message',
-              contains('external executable'),
+        final ids = mgr.resolveContextRuleIdsForEntryWithRules(
+          _makeCreateExternalRefV2Entry(),
+          const <OZSmartAccountSigner>[],
+          <OZParsedContextRule>[
+            _rule(
+              id: 13,
+              contextType: const OZContextRuleTypeCreateContractExternalRef(
+                _verifierContract,
+                binaryTagText,
+              ),
             ),
-          ),
+            _rule(
+              id: 14,
+              contextType: OZContextRuleTypeCreateContract(_wasmHash(1)),
+            ),
+          ],
         );
+        expect(ids, <int>[13]);
       },
     );
 

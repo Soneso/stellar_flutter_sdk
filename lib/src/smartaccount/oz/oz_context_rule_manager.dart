@@ -2,6 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
@@ -26,7 +27,8 @@ import 'oz_validation.dart';
 ///
 /// Context rules define the authorisation requirements for different
 /// transaction shapes. A rule pairs a [OZContextRuleType] match (default,
-/// call-contract, or create-contract) with a signer list and a policy
+/// call-contract, create-contract, or create-contract from an executable
+/// reference) with a signer list and a policy
 /// list. When a transaction matches a rule, the smart account
 /// authorises it only if the rule's signer and policy requirements
 /// are met.
@@ -68,7 +70,11 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// - [validUntil]: optional expiry as the ledger sequence number at
   ///   which the rule stops applying; null means the rule never expires.
   /// - [signers]: rule signers, at most [OZConstants.maxSigners]. May be
-  ///   empty only when [policies] is non-empty.
+  ///   empty only when [policies] is non-empty. A Delegated signer must be
+  ///   a Stellar account (G-address) other than the shared default
+  ///   deployer; a contract address, the wallet included, is refused,
+  ///   because a contract delegate can let anyone authorize the account
+  ///   (GHSA-jpg9-m7w4-c7wc).
   /// - [policies]: policies keyed by the policy contract C-address. Each
   ///   value is that policy's install parameters as an
   ///   [OZPolicyInstallParams] — use a typed subclass such as
@@ -95,8 +101,10 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// [OZConstants.maxNameSize] UTF-8 bytes, when [signers] and [policies]
   /// are both empty, when [signers] exceeds [OZConstants.maxSigners], when
   /// an external signer's key data exceeds [OZConstants.maxExternalKeySize]
-  /// bytes, when [policies] exceeds [OZConstants.maxPolicies], or when any
-  /// policy address is invalid.
+  /// bytes, when a Delegated signer is the shared default deployer or the
+  /// wallet itself, when [policies] exceeds [OZConstants.maxPolicies], or
+  /// when any policy address is invalid. Throws [SmartAccountInvalidAddress]
+  /// when a Delegated signer is not a G-address.
   Future<OZTransactionResult> addContextRule({
     required OZContextRuleType contextType,
     required String name,
@@ -126,7 +134,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       );
     }
 
-    requireValidSigners(signers);
+    await requireValidSigners(signers, connected.contractId);
 
     requireValidPolicies(policies);
 
@@ -435,6 +443,32 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
         }
         return OZContextRuleTypeCreateContract(
           Uint8List.fromList(bytes.sCBytes),
+        );
+      case 'CreateContractExternalRef':
+        if (vec.length < 3) {
+          throw SmartAccountValidationException.invalidInput(
+            'context_type',
+            'CreateContractExternalRef context_type needs an owner and a tag '
+                'element, got ${vec.length - 1} element(s)',
+          );
+        }
+        final ownerXdr = vec[1].address;
+        if (ownerXdr == null) {
+          throw SmartAccountValidationException.invalidInput(
+            'context_type',
+            'Expected Address for CreateContractExternalRef owner',
+          );
+        }
+        final tag = vec[2].str;
+        if (tag == null) {
+          throw SmartAccountValidationException.invalidInput(
+            'context_type',
+            'Expected String for CreateContractExternalRef tag',
+          );
+        }
+        return OZContextRuleTypeCreateContractExternalRef(
+          ownerXdr.toStrKey(),
+          tag,
         );
       default:
         throw SmartAccountValidationException.invalidInput(
@@ -941,15 +975,13 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
           .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
         final createFn = function.createContractHostFn;
         if (createFn == null) return;
-        final wasmHash = _extractWasmHash(createFn.executable);
-        result.add(OZContextRuleTypeCreateContract(wasmHash));
+        result.add(_createContractContextType(createFn.executable));
         break;
       case XdrSorobanAuthorizedFunctionType
           .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
         final createV2Fn = function.createContractV2HostFn;
         if (createV2Fn == null) return;
-        final wasmHash = _extractWasmHash(createV2Fn.executable);
-        result.add(OZContextRuleTypeCreateContract(wasmHash));
+        result.add(_createContractContextType(createV2Fn.executable));
         break;
     }
   }
@@ -964,7 +996,14 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     }
   }
 
-  Uint8List _extractWasmHash(XdrContractExecutable executable) {
+  /// Maps the [executable] of a create-contract invocation to the context
+  /// type the contract matches: [OZContextRuleTypeCreateContract] for a
+  /// WASM hash, [OZContextRuleTypeCreateContractExternalRef] for an
+  /// executable reference. The reference's tag bytes are read as UTF-8,
+  /// with malformed sequences replaced by U+FFFD.
+  OZContextRuleType _createContractContextType(
+    XdrContractExecutable executable,
+  ) {
     final type = executable.type;
     switch (type) {
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:
@@ -975,7 +1014,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
             'WASM contract executable is missing its hash',
           );
         }
-        return Uint8List.fromList(hash.hash);
+        return OZContextRuleTypeCreateContract(Uint8List.fromList(hash.hash));
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET:
         throw SmartAccountValidationException.invalidInput(
           'executable',
@@ -983,10 +1022,17 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
               'Contract, not a WASM contract',
         );
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF:
-        throw SmartAccountValidationException.invalidInput(
-          'executable',
-          'CreateContract invocation references an external executable, '
-              'not a WASM contract',
+        final reference = executable.externalRef;
+        if (reference == null) {
+          throw SmartAccountValidationException.invalidInput(
+            'executable',
+            'External reference contract executable is missing its '
+                'reference',
+          );
+        }
+        return OZContextRuleTypeCreateContractExternalRef(
+          reference.executableOwner.toStrKey(),
+          utf8.decode(reference.tag, allowMalformed: true),
         );
       default:
         throw SmartAccountValidationException.invalidInput(
