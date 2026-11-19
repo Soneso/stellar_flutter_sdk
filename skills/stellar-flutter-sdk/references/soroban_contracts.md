@@ -292,6 +292,74 @@ delegated.sign(delegateKeyPair, Network.TESTNET,
 
 Delegates share one payload bound to the top-level address; they carry no nonce/expiration. Multiple G-address signatures on one node must be added in ascending public-key order (the SDK appends in call order, no sorting). After `tx.setSorobanAuth([delegated])`, re-simulate in enforcing mode (`SimulateTransactionRequest(tx, authMode: 'enforce')`) and apply the returned resources (`sorobanTransactionData`, `addResourceFee`) before submitting: the recording simulation does not run `__check_auth`, so for a custom (contract) account it omits the footprint its authorization reads (and understates the delegate fee). `XdrSorobanCredentialsType` and `XdrEnvelopeType` are classes of constants; give every switch on them a `default` arm.
 
+### Stellar Asset Contracts: SACClient
+
+`SACClient` opens the Stellar Asset Contract of a classic asset, XLM included, from an `Asset` (`SACClient.forAsset`, `readOnlyForAsset`) or from a `C...` contract id (`forContractId`, `readOnlyForContractId`). Opening a client sends no request. Amounts are `BigInt` base units with seven decimals: convert decimal input with `SACClient.toBaseUnits` (`'12.5'` gives `125000000`), and never pass a whole token count as base units. A read-only client needs no keypair. Transactions built by a read-only client allow `signAuthEntries()` with an authorizing account's keypair, but refuse envelope signing, submission, and restoration. Their `sign()`, `signAndSend()`, and `send()` throw, and `transferAndSend` throws before any request. Reads never restore archived state, so a read that needs archived entries throws.
+
+```dart
+// From your app: keyPair (KeyPair, funded on testnet), receiverAccountId (String), muxedReceiverId (String), fromAddress (Address), toAddress (Address)
+// Read-only XLM client: no keypair, reads only
+SACClient xlm = SACClient.readOnlyForAsset(
+  asset: Asset.NATIVE,
+  network: Network.TESTNET,
+  rpcUrl: 'https://soroban-testnet.stellar.org:443',
+);
+int decimals = await xlm.decimals(); // 7
+String symbol = await xlm.symbol(); // 'native'
+BigInt holderBalance =
+    await xlm.balance(Address.forAccountId(keyPair.accountId)); // base units
+
+// Keyed client: its keypair signs and pays the fees of its transactions
+SACClient sender = SACClient.forAsset(
+  asset: Asset.NATIVE,
+  sourceAccountKeyPair: keyPair,
+  network: Network.TESTNET,
+  rpcUrl: 'https://soroban-testnet.stellar.org:443',
+);
+
+// 12.5 tokens are 125000000 base units
+GetTransactionResponse response = await sender.transferAndSend(
+  to: Address.forAccountId(receiverAccountId),
+  amount: SACClient.toBaseUnits('12.5'),
+);
+
+// A muxed destination (M...) credits its base account
+AssembledTransaction tx = await sender.transfer(
+  from: Address.forAccountId(keyPair.accountId),
+  to: Address.forMuxedAccountId(muxedReceiverId),
+  amount: SACClient.toBaseUnits('2.5'),
+);
+GetTransactionResponse muxedResponse = await tx.signAndSend();
+```
+
+```dart
+// From your app: fromAddress (Address), toAddress (Address), receiverAccountId (String), muxedReceiverId (String); sender and xlm are the clients of the example above
+// WRONG: 12 is a whole token count, but transfer takes base units, so this sends 0.0000012 XLM
+// await sender.transfer(from: fromAddress, to: toAddress, amount: BigInt.from(12));
+// CORRECT: convert the decimal amount with toBaseUnits, which gives 120000000 for 12
+// await sender.transfer(from: fromAddress, to: toAddress, amount: SACClient.toBaseUnits('12'));
+
+// WRONG: an M... holder throws ArgumentError before any request
+// await xlm.balance(Address.forMuxedAccountId(muxedReceiverId));
+// CORRECT: query the base G... account, which the ArgumentError message names
+// await xlm.balance(Address.forAccountId(receiverAccountId));
+```
+
+```dart
+// From your app: issuedSac (SACClient for a deployed issued asset on testnet), newAccountId (String, funded account without that asset's trustline)
+// WRONG: a missing account (error 6) or trustline (error 13) throws, so an unguarded read stops the program
+// BigInt newBalance = await issuedSac.balance(Address.forAccountId(newAccountId));
+
+// CORRECT: catch the exception. reportedContractError is nullable, so read its code with ?.
+try {
+  BigInt newBalance = await issuedSac.balance(Address.forAccountId(newAccountId));
+  print(newBalance);
+} on SorobanSimulationException catch (e) {
+  int? code = e.reportedContractError?.code; // 6 missing account, 13 missing trustline
+  print('Balance read failed with contract error $code');
+}
+```
+
 ---
 
 ## Low-Level: SorobanServer
@@ -761,6 +829,8 @@ InvokeHostFunctionOperation sacOp = InvokeHostFuncOpBuilder(sacFn).build();
 DeploySACWithAssetHostFunction xlmSacFn =
     DeploySACWithAssetHostFunction(AssetTypeNative());
 ```
+
+The deployed SAC opens with `SACClient.forAsset`, and `asset.contractId(network)` gives its id.
 
 ---
 

@@ -359,6 +359,206 @@ XdrSCVal result2 = await client.invokeMethod(
 
 Polling counts status-request time toward `timeoutInSeconds` and stops when a terminal transaction status arrives. If the transaction is unresolved at the deadline, one final status request can take up to three seconds. Failed status requests are retried. A timeout throws `Exception`, naming the last status-request error if any.
 
+## Stellar Asset Contracts (SAC)
+
+Every classic asset has a Stellar Asset Contract (SAC), the token contract the network provides for it. XLM has one too. Liquidity pool shares have no SAC. The contract id depends only on the asset and the network, so the SDK derives it without a request. `SACClient` wraps a SAC with typed calls (`balance`, `transfer`, `transferAndSend`, `decimals`, `name`, and `symbol`) and takes amounts as `BigInt` base units with seven decimals. `SorobanClient.forClientOptions` opens a SAC too, with the spec embedded in the SDK.
+
+### Opening a SAC Client
+
+Opening a client sends no request. `SACClient.forAsset` takes an `Asset`, and `SACClient.forContractId` takes the `C...` id of the contract. The keypair is the account that signs the transactions of a keyed client and pays their fees. The testnet XLM SAC has the id `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+// The account that signs and pays the fees of its transactions
+KeyPair senderKeyPair = KeyPair.random();
+
+// The XLM SAC on testnet, derived from the native asset
+SACClient xlmClient = SACClient.forAsset(
+  asset: Asset.NATIVE,
+  sourceAccountKeyPair: senderKeyPair,
+  network: Network.TESTNET,
+  rpcUrl: 'https://soroban-testnet.stellar.org:443',
+);
+
+// The same contract, opened by its id
+SACClient client = SACClient.forContractId(
+  contractId: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+  sourceAccountKeyPair: senderKeyPair,
+  network: Network.TESTNET,
+  rpcUrl: 'https://soroban-testnet.stellar.org:443',
+);
+
+// The id that forAsset derives, computed locally from the asset and the network
+String contractId = Asset.NATIVE.contractId(Network.TESTNET);
+print(contractId); // CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
+```
+
+### Read-Only Client
+
+A read-only client has no keypair. `SACClient.readOnlyForAsset` and `SACClient.readOnlyForContractId` use a placeholder source account, so reads need no account of yours.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+// No source keypair: reads simulate without signing or sending a transaction
+SACClient xlm = SACClient.readOnlyForAsset(
+  asset: Asset.NATIVE,
+  network: Network.TESTNET,
+  rpcUrl: 'https://soroban-testnet.stellar.org:443',
+);
+
+int decimals = await xlm.decimals(); // 7
+String name = await xlm.name(); // 'native'
+String symbol = await xlm.symbol(); // 'native'
+
+// The XLM balance of a funded account, in base units
+KeyPair holderKeyPair = KeyPair.random();
+await FriendBot.fundTestAccount(holderKeyPair.accountId);
+BigInt balance =
+    await xlm.balance(Address.forAccountId(holderKeyPair.accountId));
+```
+
+Transactions built by a read-only client allow `signAuthEntries()` with an authorizing account's keypair, but refuse envelope signing, submission, and restoration. `sign()`, `signAndSend()`, and `send()` throw for such a transaction, and `transferAndSend` throws before any request. Reads never restore archived state: a read that needs archived ledger entries throws, and the message says to restore them from a client opened with a funded account's keypair.
+
+### Reading a Balance
+
+`balance` takes an `Address`. It accepts a `G...` account and a `C...` contract. A contract with no balance reads 0. An account that does not exist on the network throws a `SorobanSimulationException`, with contract error 6 when the simulation reports one. For an issued asset, a missing trustline gives error 13. The `reportedContractError` of the exception is nullable, so read its `code` with `?.`.
+
+A muxed (`M...`) holder throws an `ArgumentError` before any request. The message names the base account to query. A muxed contract (`W...`) holder also throws an `ArgumentError`; query its base `C...` address.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+SACClient client = SACClient.readOnlyForContractId(
+  contractId: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+  network: Network.TESTNET,
+  rpcUrl: 'https://soroban-testnet.stellar.org:443',
+);
+
+// A funded account holds XLM, so its balance is positive
+KeyPair holderKeyPair = KeyPair.random();
+await FriendBot.fundTestAccount(holderKeyPair.accountId);
+BigInt accountBalance =
+    await client.balance(Address.forAccountId(holderKeyPair.accountId));
+
+// A contract holder with no balance reads 0
+String emptyHolderId = StrKey.encodeContractId(KeyPair.random().publicKey);
+BigInt contractBalance =
+    await client.balance(Address.forContractId(emptyHolderId));
+
+// An account that was never funded does not exist on the network
+KeyPair unfundedKeyPair = KeyPair.random();
+int? missingAccountCode;
+try {
+  await client.balance(Address.forAccountId(unfundedKeyPair.accountId));
+} on SorobanSimulationException catch (e) {
+  // Code 6 means the account does not exist
+  missingAccountCode = e.reportedContractError?.code;
+}
+print('Missing account code: $missingAccountCode');
+
+// A muxed holder throws an ArgumentError before any request
+String muxedHolder = MuxedAccount(
+  holderKeyPair.accountId,
+  BigInt.from(7),
+).accountId;
+try {
+  await client.balance(Address.forMuxedAccountId(muxedHolder));
+} on ArgumentError catch (e) {
+  print(e.message);
+}
+```
+
+### Sending a Transfer
+
+`SACClient.toBaseUnits` converts a decimal string to base units, so `'12.5'` gives `125000000`. It accepts at most seven fractional digits, and it throws an `ArgumentError` for any other input or for an amount above 17014118346046923173168730371588.4105727, the largest i128 amount.
+
+`transferAndSend` simulates the transfer, signs it with the client's keypair, submits it, and waits for the result. It throws when the final status is `FAILED`. If the transaction is still unconfirmed at the timeout, it throws with the transaction hash. Poll that hash again with `SorobanServer.pollTransaction`, which returns `NOT_FOUND` while the transaction is unconfirmed.
+
+`transfer` returns an `AssembledTransaction`, and `signAndSend()` submits it. A `to` address of `M...` credits the base account, and the transfer event's data then holds `amount` and `to_muxed_id`. The `methodOptions` argument sets the fee and the timeout. With `simulate: false`, `transfer` returns an unsimulated transaction; call `simulate()` on it before you inspect its authorization entries, and `transferAndSend` throws. Other contract functions go through `buildInvokeMethodTx`.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+// Both accounts are funded by Friendbot on testnet
+KeyPair senderKeyPair = KeyPair.random();
+KeyPair receiverKeyPair = KeyPair.random();
+await FriendBot.fundTestAccount(senderKeyPair.accountId);
+await FriendBot.fundTestAccount(receiverKeyPair.accountId);
+
+SACClient client = SACClient.forAsset(
+  asset: Asset.NATIVE,
+  sourceAccountKeyPair: senderKeyPair,
+  network: Network.TESTNET,
+  rpcUrl: 'https://soroban-testnet.stellar.org:443',
+);
+
+// Amounts are base units with 7 decimals: 12.5 XLM is 125000000
+BigInt amount = SACClient.toBaseUnits('12.5');
+GetTransactionResponse response = await client.transferAndSend(
+  to: Address.forAccountId(receiverKeyPair.accountId),
+  amount: amount,
+);
+
+// A muxed destination credits the receiver's account and records the id 4242
+String muxedReceiver =
+    MuxedAccount(receiverKeyPair.accountId, BigInt.from(4242)).accountId;
+AssembledTransaction tx = await client.transfer(
+  from: Address.forAccountId(senderKeyPair.accountId),
+  to: Address.forMuxedAccountId(muxedReceiver),
+  amount: SACClient.toBaseUnits('2.5'),
+);
+GetTransactionResponse muxedResponse = await tx.signAndSend();
+```
+
+### Transfers Authorized by Another Account
+
+A transfer whose `from` is not the source account needs that account's authorization. For a `G...` account, `needsNonInvokerSigningBy` lists it, and `signAuthEntries` signs its entry with the account's keypair before `signAndSend`.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+// Pays the fee and signs the transaction envelope
+KeyPair sourceKeyPair = KeyPair.random();
+// Owns the XLM that is sent, so it signs its own authorization entry
+KeyPair ownerKeyPair = KeyPair.random();
+KeyPair receiverKeyPair = KeyPair.random();
+await FriendBot.fundTestAccount(sourceKeyPair.accountId);
+await FriendBot.fundTestAccount(ownerKeyPair.accountId);
+await FriendBot.fundTestAccount(receiverKeyPair.accountId);
+
+SACClient client = SACClient.forAsset(
+  asset: Asset.NATIVE,
+  sourceAccountKeyPair: sourceKeyPair,
+  network: Network.TESTNET,
+  rpcUrl: 'https://soroban-testnet.stellar.org:443',
+);
+
+// The transfer is simulated when it is built
+AssembledTransaction tx = await client.transfer(
+  from: Address.forAccountId(ownerKeyPair.accountId),
+  to: Address.forAccountId(receiverKeyPair.accountId),
+  amount: SACClient.toBaseUnits('10.5'),
+);
+
+// The owner's account is not the source, so it must authorize the transfer
+List<String> needed = tx.needsNonInvokerSigningBy(); // [ownerKeyPair.accountId]
+await tx.signAuthEntries(signerKeyPair: ownerKeyPair);
+GetTransactionResponse response = await tx.signAndSend();
+```
+
+A `C...` address authorizes through its own `__check_auth`, so `signAuthEntries` cannot sign its entry for it. Complete that entry with these steps, and submit only with the signatures the contract verifies:
+
+1. Set `signatureExpirationLedger` on the entry's `credentials.innerAddressCredentials` before computing the payload. The signatures commit to this value.
+2. Compute the value the contract's `__check_auth` verifies. `entry.buildPreimage(network)` gives the preimage whose SHA-256 the signers sign. `entry.sign(keyPair, network)` writes the signature in the account format, a vector of public key and signature maps. Other signature formats go into `innerAddressCredentials.signature`.
+3. Attach the entries with `tx.tx!.setSorobanAuth(entries)` on the `AssembledTransaction` that `transfer` returned. Do not call `simulate()` on it again. That replaces the entries with the simulation's and adds a second resource fee.
+4. Simulate in enforcing mode with `SorobanServer.simulateTransaction(SimulateTransactionRequest(tx.tx!, authMode: 'enforce'))`, and check the response's `error` and `resultError`.
+5. Assign the response's `transactionData` to `tx.tx!.sorobanTransactionData`, and set `tx.tx!.fee` to the inclusion fee, which is `MethodOptions.fee` (100 by default), plus its `minResourceFee`. `addResourceFee` adds to a fee that already holds the first simulation's resource fee. The signed entries stay.
+6. Sign and submit with `tx.signAndSend()`. `sign()` clones the current transaction. Delegated signatures are covered in [Delegated Authorization](#delegated-authorization).
+
+An issued asset's SAC is deployed once per network, and its id equals `asset.contractId(network)`. The deployment is described in [Deploy Stellar Asset Contract (SAC)](#deploy-stellar-asset-contract-sac).
+
 ## Installing and Deploying
 
 Put your contract on the network. Install uploads the WASM bytecode once; deploy creates contract instances from that code.
