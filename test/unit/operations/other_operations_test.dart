@@ -1202,6 +1202,63 @@ void main() {
     });
   });
 
+  group('InflationOperation', () {
+    Uint8List encode(void Function(XdrDataOutputStream stream) write) {
+      final stream = XdrDataOutputStream();
+      write(stream);
+      return Uint8List.fromList(stream.bytes);
+    }
+
+    final ed25519Source = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)
+      ..ed25519 = XdrUint256(
+        Uint8List.fromList(List<int>.generate(32, (i) => i + 1)),
+      );
+    final med25519Source =
+        XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519)
+          ..med25519 = XdrMuxedAccountMed25519(
+            XdrUint64(BigInt.parse('18446744073709551615')),
+            XdrUint256(
+              Uint8List.fromList(List<int>.generate(32, (i) => 255 - i)),
+            ),
+          );
+    final sources = <String, XdrMuxedAccount?>{
+      'without a source account': null,
+      'with an ed25519 source account': ed25519Source,
+      'with a med25519 source account': med25519Source,
+    };
+
+    sources.forEach((name, source) {
+      test('fromXdr reads it $name and encodes the same bytes', () {
+        final input = XdrOperation(
+          source,
+          XdrOperationBody(XdrOperationType.INFLATION),
+        );
+        final inputBytes = encode((s) => XdrOperation.encode(s, input));
+
+        final operation = Operation.fromXdr(
+          XdrOperation.decode(XdrDataInputStream(inputBytes)),
+        );
+
+        expect(operation, isA<InflationOperation>());
+        if (source == null) {
+          expect(operation.sourceAccount, isNull);
+        } else {
+          expect(
+            encode(
+              (s) =>
+                  XdrMuxedAccount.encode(s, operation.sourceAccount!.toXdr()),
+            ),
+            equals(encode((s) => XdrMuxedAccount.encode(s, source))),
+          );
+        }
+        expect(
+          encode((s) => XdrOperation.encode(s, operation.toXdr())),
+          equals(inputBytes),
+        );
+      });
+    });
+  });
+
   group('RevokeSponsorshipOperation', () {
     late KeyPair sponsorKeyPair;
     late KeyPair accountKeyPair;

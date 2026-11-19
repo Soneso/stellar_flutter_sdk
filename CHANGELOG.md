@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - `SorobanClient.forClientOptions` opens Stellar Asset Contracts with the embedded spec.
 
+### Fixed
+- `AbstractTransaction.fromEnvelopeXdr()`, `fromEnvelopeXdrString()` and `Operation.fromXdr()` read an inflation operation as the new `InflationOperation`, which encodes it unchanged. Before this change, they threw an exception, so a transaction with inflation could not be read or hashed.
+
 ## [3.12.0] - 2026-11-16
 
 Migration guide: [documentation/migration/3.12.0.md](documentation/migration/3.12.0.md)

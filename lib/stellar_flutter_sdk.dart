@@ -37,6 +37,7 @@ export 'src/set_options_operation.dart';
 export 'src/change_trust_operation.dart';
 export 'src/allow_trust_operation.dart';
 export 'src/account_merge_operation.dart';
+export 'src/inflation_operation.dart';
 export 'src/manage_data_operation.dart';
 export 'src/bump_sequence_operation.dart';
 export 'src/create_claimable_balance_operation.dart';

@@ -18,6 +18,7 @@ import 'set_options_operation.dart';
 import 'change_trust_operation.dart';
 import 'allow_trust_operation.dart';
 import 'account_merge_operation.dart';
+import 'inflation_operation.dart';
 import 'manage_data_operation.dart';
 import 'bump_sequence_operation.dart';
 import 'begin_sponsoring_future_reserves_operation.dart';
@@ -174,6 +175,9 @@ abstract class Operation {
         break;
       case XdrOperationType.ACCOUNT_MERGE:
         operation = AccountMergeOperation.builder(body).build();
+        break;
+      case XdrOperationType.INFLATION:
+        operation = InflationOperation();
         break;
       case XdrOperationType.MANAGE_DATA:
         operation = ManageDataOperation.builder(body.manageDataOp!).build();

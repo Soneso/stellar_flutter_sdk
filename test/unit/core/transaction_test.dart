@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:collection/collection.dart';
+import 'package:crypto/crypto.dart' as crypto;
 
 void main() {
   group('Transaction', () {
@@ -2221,6 +2223,154 @@ void main() {
         // Different values should not be equal
         expect(ledgerBounds1.minLedger == ledgerBounds3.minLedger, false);
       });
+    });
+  });
+
+  group('Envelopes with an inflation operation', () {
+    final networkId = crypto.sha256
+        .convert(utf8.encode('Public Global Stellar Network ; September 2015'))
+        .bytes;
+    // Big-endian int32 values of the XDR enum members they are named after.
+    const envelopeTypeTx = [0, 0, 0, 2];
+    const envelopeTypeTxFeeBump = [0, 0, 0, 5];
+    const keyTypeEd25519 = [0, 0, 0, 0];
+
+    XdrUint256 key(int first) => XdrUint256(
+      Uint8List.fromList(List<int>.generate(32, (i) => (first + i) % 256)),
+    );
+    XdrMuxedAccount account(int first) =>
+        XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)
+          ..ed25519 = key(first);
+    List<XdrOperation> operations() => [
+      XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION)),
+      XdrOperation(
+        account(40),
+        XdrOperationBody(XdrOperationType.PAYMENT)
+          ..paymentOp = XdrPaymentOp(
+            account(80),
+            XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
+            XdrInt64(BigInt.from(1000000000)),
+          ),
+      ),
+    ];
+    List<XdrDecoratedSignature> signatures() => [
+      XdrDecoratedSignature(
+        XdrSignatureHint(Uint8List.fromList([1, 2, 3, 4])),
+        XdrSignature(Uint8List.fromList(List<int>.filled(64, 7))),
+      ),
+    ];
+    XdrTimeBounds timeBounds() => XdrTimeBounds(
+      XdrUint64(BigInt.from(1500000000)),
+      XdrUint64(BigInt.zero),
+    );
+    XdrTransaction v1Transaction() => XdrTransaction(
+      account(1),
+      XdrUint32(200),
+      XdrSequenceNumber(BigInt.parse('81604378625')),
+      XdrPreconditions(XdrPreconditionType.PRECOND_TIME)
+        ..timeBounds = timeBounds(),
+      XdrMemo(XdrMemoType.MEMO_NONE),
+      operations(),
+      XdrTransactionExt(0),
+    );
+    List<int> encode(void Function(XdrDataOutputStream stream) write) {
+      final stream = XdrDataOutputStream();
+      write(stream);
+      return stream.bytes;
+    }
+
+    Uint8List payloadHash(List<int> taggedTransaction) => Uint8List.fromList(
+      crypto.sha256.convert([...networkId, ...taggedTransaction]).bytes,
+    );
+    Transaction expectInflationThenPayment(
+      AbstractTransaction transaction,
+      Uint8List expectedHash,
+    ) {
+      final inner = transaction is FeeBumpTransaction
+          ? transaction.innerTransaction
+          : transaction as Transaction;
+      expect(inner.operations, hasLength(2));
+      expect(inner.operations[0], isA<InflationOperation>());
+      expect(
+        encode((s) => XdrOperation.encode(s, inner.operations[0].toXdr())),
+        equals(encode((s) => XdrOperation.encode(s, operations().first))),
+      );
+      expect(inner.operations[1], isA<PaymentOperation>());
+      expect(transaction.hash(Network.PUBLIC), equals(expectedHash));
+      return inner;
+    }
+
+    test('a V1 envelope is read, re-encoded and hashed unchanged', () {
+      final tx = v1Transaction();
+      final envelope = XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX)
+        ..v1 = XdrTransactionV1Envelope(tx, signatures());
+      final input = envelope.toEnvelopeXdrBase64();
+      final txBytes = encode((s) => XdrTransaction.encode(s, tx));
+
+      final transaction = AbstractTransaction.fromEnvelopeXdrString(input);
+
+      expectInflationThenPayment(
+        transaction,
+        payloadHash([...envelopeTypeTx, ...txBytes]),
+      );
+      expect(transaction.toEnvelopeXdrBase64(), equals(input));
+    });
+
+    test('a V0 envelope is read and hashed, its body encodes unchanged', () {
+      final tx = XdrTransactionV0(
+        key(1),
+        XdrUint32(200),
+        XdrSequenceNumber(BigInt.parse('81604378625')),
+        timeBounds(),
+        XdrMemo(XdrMemoType.MEMO_NONE),
+        operations(),
+        XdrTransactionV0Ext(0),
+      );
+      final envelope = XdrTransactionEnvelope(
+        XdrEnvelopeType.ENVELOPE_TYPE_TX_V0,
+      )..v0 = XdrTransactionV0Envelope(tx, signatures());
+      final input = envelope.toEnvelopeXdrBase64();
+      final txBytes = encode((s) => XdrTransactionV0.encode(s, tx));
+
+      final transaction = AbstractTransaction.fromEnvelopeXdrString(input);
+
+      // The V0 body hashes as a V1 body whose source is a KEY_TYPE_ED25519
+      // muxed account.
+      final inner = expectInflationThenPayment(
+        transaction,
+        payloadHash([...envelopeTypeTx, ...keyTypeEd25519, ...txBytes]),
+      );
+      expect(
+        encode((s) => XdrMuxedAccount.encode(s, inner.sourceAccount.toXdr())),
+        equals([...keyTypeEd25519, ...key(1).uint256]),
+      );
+      expect(
+        encode((s) => XdrTransactionV0.encode(s, inner.toV0Xdr())),
+        equals(txBytes),
+      );
+    });
+
+    test('a fee bump envelope is read, re-encoded and hashed unchanged', () {
+      final feeBump = XdrFeeBumpTransaction(
+        account(120),
+        XdrInt64(BigInt.from(600)),
+        XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX)
+          ..v1 = XdrTransactionV1Envelope(v1Transaction(), signatures()),
+        XdrFeeBumpTransactionExt(0),
+      );
+      final envelope = XdrTransactionEnvelope(
+        XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP,
+      )..feeBump = XdrFeeBumpTransactionEnvelope(feeBump, []);
+      final input = envelope.toEnvelopeXdrBase64();
+      final txBytes = encode((s) => XdrFeeBumpTransaction.encode(s, feeBump));
+
+      final transaction = AbstractTransaction.fromEnvelopeXdrString(input);
+
+      expectInflationThenPayment(
+        transaction,
+        payloadHash([...envelopeTypeTxFeeBump, ...txBytes]),
+      );
+      expect(transaction.toEnvelopeXdrBase64(), equals(input));
     });
   });
 }
