@@ -69,6 +69,9 @@ class ManageBuyOfferOperation extends Operation {
   String _amount;
   String _price;
   String _offerId;
+  // A price read from XDR, which [price] holds in decimal form. It encodes
+  // as sent, because [Price.fromString] returns lowest terms.
+  Price? _exactPrice;
 
   /// Creates a ManageBuyOffer operation.
   ///
@@ -107,7 +110,7 @@ class ManageBuyOfferOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     XdrInt64 amount = new XdrInt64(Util.decimalStringToStroops(this.amount));
-    Price price = Price.fromString(this.price);
+    Price price = _exactPrice ?? Price.fromString(this.price);
     XdrUint64 offerId = XdrUint64(
       parseHidingSecretSeed(this.offerId, BigInt.parse),
     );
@@ -136,13 +139,14 @@ class ManageBuyOfferOperation extends Operation {
   static ManageBuyOfferOperationBuilder builder(XdrManageBuyOfferOp op) {
     int n = op.price.n.int32.toInt();
     int d = op.price.d.int32.toInt();
+    Price price = Price(n, d);
 
     return ManageBuyOfferOperationBuilder(
       Asset.fromXdr(op.selling),
       Asset.fromXdr(op.buying),
       Util.stroopsToDecimalString(op.amount.int64),
-      Price(n, d).toDecimalString(),
-    ).setOfferId(op.offerID.uint64.toString());
+      price.toDecimalString(),
+    ).setOfferId(op.offerID.uint64.toString()).._exactPrice = price;
   }
 }
 
@@ -176,6 +180,8 @@ class ManageBuyOfferOperationBuilder
   String _amount;
   String _price;
   String _offerId = "0";
+  // A price read from XDR, handed to the built operation.
+  Price? _exactPrice;
 
   /// Creates a ManageBuyOffer operation builder.
   ///
@@ -215,6 +221,7 @@ class ManageBuyOfferOperationBuilder
       _price,
       _offerId,
     );
+    operation._exactPrice = _exactPrice;
     return applySourceAccount(operation);
   }
 }

@@ -1945,4 +1945,124 @@ void main() {
       });
     }
   });
+
+  group('LiquidityPoolDeposit prices read from XDR encode as sent', () {
+    const poolId =
+        'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
+    final source = MuxedAccount.fromAccountId(
+      'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+    )!.toXdr();
+
+    XdrPrice xdrPrice(List<int> pair) =>
+        XdrPrice(XdrInt32(pair[0]), XdrInt32(pair[1]));
+
+    XdrOperationBody body(XdrPrice min, XdrPrice max) =>
+        XdrOperationBody(XdrOperationType.LIQUIDITY_POOL_DEPOSIT)
+          ..liquidityPoolDepositOp = XdrLiquidityPoolDepositOp(
+            XdrHash(Util.hexToBytes(poolId)),
+            XdrInt64(BigInt.from(1000000000)),
+            XdrInt64(BigInt.from(500000000)),
+            min,
+            max,
+          );
+
+    String encode(XdrOperationBody body, {XdrMuxedAccount? source}) =>
+        XdrOperation(source, body).toBase64EncodedXdrString();
+
+    LiquidityPoolDepositOperation import(String input) =>
+        Operation.fromXdr(XdrOperation.fromBase64EncodedXdrString(input))
+            as LiquidityPoolDepositOperation;
+
+    // The encoded bounds as min n, min d, max n, max d.
+    List<int> bounds(Operation operation) {
+      final op = operation.toOperationBody().liquidityPoolDepositOp!;
+      return [
+        for (final p in [op.minPrice, op.maxPrice]) ...[p.n.int32, p.d.int32],
+      ];
+    }
+
+    test('min 2/4 and max 6/8 with and without a source account', () {
+      final imported = body(xdrPrice([2, 4]), xdrPrice([6, 8]));
+      final inputs = [encode(imported), encode(imported, source: source)];
+      for (final input in inputs) {
+        final operation = import(input);
+
+        expect(operation.minPrice, equals('0.5'));
+        expect(operation.maxPrice, equals('0.75'));
+        expect(operation.toXdrBase64(), equals(input));
+      }
+    });
+
+    test('3/7 and 2147483646/2147483647 round trip', () {
+      final input = encode(
+        body(xdrPrice([3, 7]), xdrPrice([2147483646, 2147483647])),
+      );
+
+      expect(import(input).toXdrBase64(), equals(input));
+    });
+
+    test('the public builder at "0.5" and "0.75" encodes 1/2 and 3/4', () {
+      final operation = LiquidityPoolDepositOperationBuilder(
+        liquidityPoolId: poolId,
+        maxAmountA: '100',
+        maxAmountB: '50',
+        minPrice: '0.5',
+        maxPrice: '0.75',
+      ).build();
+
+      expect(bounds(operation), equals([1, 2, 3, 4]));
+    });
+
+    test('shares no price object with its input or output', () {
+      final min = xdrPrice([2, 4]);
+      final max = xdrPrice([6, 8]);
+      final input = encode(body(min, max));
+      final operation = Operation.fromXdr(XdrOperation(null, body(min, max)));
+
+      min.n.int32 = 7;
+      max.d = XdrInt32(9);
+      expect(operation.toXdrBase64(), equals(input));
+
+      final first = operation.toXdr().body.liquidityPoolDepositOp!;
+      first.minPrice.n.int32 = 5;
+      first.maxPrice.n.int32 = 5;
+      expect(operation.toXdrBase64(), equals(input));
+    });
+
+    // A bound set to another string encodes that string; set back to the
+    // imported string, it encodes the imported fraction again.
+    for (final onBuilder in [true, false]) {
+      for (final isMin in [true, false]) {
+        final where = onBuilder ? 'the builder' : 'the operation';
+        test('${isMin ? 'min' : 'max'} price set on $where', () {
+          final builder = LiquidityPoolDepositOperation.builder(
+            body(xdrPrice([2, 4]), xdrPrice([6, 8])).liquidityPoolDepositOp!,
+          );
+          final operation = builder.build();
+          void set(String value) {
+            if (onBuilder && isMin) builder.minPrice = value;
+            if (onBuilder && !isMin) builder.maxPrice = value;
+            if (!onBuilder && isMin) operation.minPrice = value;
+            if (!onBuilder && !isMin) operation.maxPrice = value;
+          }
+
+          List<int> encoded() =>
+              bounds(onBuilder ? builder.build() : operation);
+          // The imported bounds, with this test's bound replaced by [pair].
+          List<int> imported([List<int>? pair]) {
+            final all = [2, 4, 6, 8];
+            if (pair != null) all.setAll(isMin ? 0 : 2, pair);
+            return all;
+          }
+
+          set(isMin ? '0.7' : '0.8');
+          expect(encoded(), equals(imported(isMin ? [7, 10] : [4, 5])));
+          set(isMin ? '0.5' : '0.75');
+          expect(encoded(), equals(imported()));
+          set(isMin ? '0.50' : '0.750');
+          expect(encoded(), equals(imported(isMin ? [1, 2] : [3, 4])));
+        });
+      }
+    }
+  });
 }
