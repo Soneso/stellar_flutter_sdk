@@ -188,6 +188,8 @@ export 'src/soroban/soroban_contract_parser.dart';
 export 'src/soroban/soroban_passkey.dart';
 export 'src/soroban/contract_spec.dart';
 export 'src/soroban/sc_val_host_order.dart';
+export 'src/soroban/sac_spec.dart';
+export 'src/soroban/sac_client.dart';
 
 // Smart Accounts — core
 export 'src/smartaccount/core/allow_credential.dart';

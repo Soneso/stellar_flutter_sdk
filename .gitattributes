@@ -3,3 +3,5 @@
 lib/src/xdr/*_base.dart linguist-generated=true
 tools/xdr-generator/test/snapshots/*.dart linguist-generated=true
 test/unit/xdr/generated/*.dart linguist-generated=true
+# Generated SAC spec, collapsed in diffs by default; the pin and the template stay unmarked
+lib/src/soroban/sac_spec.dart linguist-generated=true
