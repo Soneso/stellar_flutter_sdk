@@ -11,6 +11,7 @@ import 'package:stellar_flutter_sdk/src/invoke_host_function_operation.dart';
 import 'package:stellar_flutter_sdk/src/restore_footprint_operation.dart';
 import 'package:stellar_flutter_sdk/src/soroban/contract_address_guard.dart';
 import 'package:stellar_flutter_sdk/src/soroban/contract_spec.dart';
+import 'package:stellar_flutter_sdk/src/soroban/sac_client.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_auth.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_contract_parser.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_server.dart';
@@ -165,6 +166,10 @@ class SorobanClient {
   /// Contract specification utility
   late final ContractSpec _contractSpec;
 
+  /// Whether transactions built by this client are read-only, see
+  /// [AssembledTransactionOptions.readOnly].
+  final bool _readOnly;
+
   /// Private constructor that requires pre-loaded contract specification entries.
   ///
   /// This constructor is private to ensure proper contract initialization.
@@ -173,7 +178,7 @@ class SorobanClient {
   /// - [SorobanClient.deploy] - Deploys a new contract and returns initialized client
   ///
   /// Factory methods handle contract spec loading and validation automatically.
-  SorobanClient._(this._specEntries, this._options) {
+  SorobanClient._(this._specEntries, this._options, [this._readOnly = false]) {
     _contractSpec = ContractSpec(_specEntries);
     for (XdrSCSpecEntry entry in _specEntries) {
       if (entry.discriminant == XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0) {
@@ -188,6 +193,10 @@ class SorobanClient {
 
   /// Loads the contract info for the contractId provided by the [options],
   /// and then constructs a SorobanClient by using the loaded contract info.
+  ///
+  /// A Stellar Asset Contract has no wasm and no contract info. For it the
+  /// client opens with the spec embedded in the SDK, after one more read of
+  /// the contract instance; see [SACClient].
   ///
   /// Throws an [ArgumentError] before any request when the contractId is
   /// neither a contract (C...) address nor the 64-character hex of a contract
@@ -206,11 +215,37 @@ class SorobanClient {
     final info = await server.loadContractInfoForContractId(options.contractId);
     if (info != null) {
       return SorobanClient._(info.specEntries, options);
-    } else {
-      throw new Exception(
-        "Could not load contract info for the contract: ${options.contractId}",
-      );
     }
+    final instance = await server.getContractData(
+      options.contractId,
+      XdrSCVal.forLedgerKeyContractInstance(),
+      XdrContractDataDurability.PERSISTENT,
+    );
+    final executable =
+        instance?.ledgerEntryDataXdr.contractData?.val.instance?.executable;
+    if (executable?.discriminant ==
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET) {
+      return SorobanClient._(SACClient.specEntries(), options);
+    }
+    throw Exception(
+      "Could not load contract info for the contract: ${options.contractId}",
+    );
+  }
+
+  /// Creates a SorobanClient from [specEntries] without sending a request.
+  ///
+  /// The contract id of [options] is checked as an address (`C...`) or as
+  /// the 64-character hex of a contract id; a `G...` or other address throws
+  /// an [ArgumentError] before any request. The client keeps the given
+  /// [specEntries] as they are. With [readOnly] set, the transactions this
+  /// client builds follow [AssembledTransactionOptions.readOnly].
+  static SorobanClient forSpecEntries({
+    required List<XdrSCSpecEntry> specEntries,
+    required ClientOptions options,
+    bool readOnly = false,
+  }) {
+    checkContractAddress(options.contractId, 'The contract to invoke');
+    return SorobanClient._(specEntries, options, readOnly);
   }
 
   /// After deploying the contract it creates and returns a new SorobanClient for the deployed contract.
@@ -587,6 +622,7 @@ class SorobanClient {
       method: name,
       arguments: args,
       enableSorobanServerLogging: _options.enableServerLogging,
+      readOnly: _readOnly,
     );
     return await AssembledTransaction.build(options: options);
   }
@@ -863,6 +899,11 @@ class AssembledTransaction {
   /// The options for constructing and managing this AssembledTransaction.
   AssembledTransactionOptions options;
 
+  /// Copied from [AssembledTransactionOptions.readOnly] when this transaction
+  /// is created. Every read-only rule keys on this field, so replacing
+  /// [options] does not change it.
+  final bool _readOnly;
+
   /// The operation this transaction was built with. Reused when the
   /// transaction is rebuilt after an automatic footprint restore, so that
   /// transactions built via `buildWithOp` keep their original operation.
@@ -873,7 +914,7 @@ class AssembledTransaction {
 
   /// Private constructor. Use `AssembledTransaction.build` or `AssembledTransaction.buildWithOp`
   /// to construct an AssembledTransaction.
-  AssembledTransaction._(this.options) {
+  AssembledTransaction._(this.options) : _readOnly = options.readOnly {
     final providedServer = this.options.clientOptions.server;
     if (providedServer != null) {
       this.server = providedServer;
@@ -955,6 +996,9 @@ class AssembledTransaction {
   /// Failed invocation responses are retained until [getSimulationData] or
   /// signing observes them. A failed automatic restore simulation throws
   /// [SorobanSimulationException] before this call returns.
+  ///
+  /// On a read-only transaction, a simulation that needs an automatic restore
+  /// throws the refusal of [AssembledTransactionOptions.readOnly].
   Future<void> simulate({bool? restore = null}) async {
     if (tx == null) {
       if (raw == null) {
@@ -974,6 +1018,9 @@ class AssembledTransaction {
       ),
     );
     if (shouldRestore && simulationResponse!.restorePreamble != null) {
+      if (_readOnly) {
+        throw _readOnlyRefusal();
+      }
       if (options.clientOptions.sourceAccountKeyPair.privateKey == null) {
         throw new Exception(
           'Source account keypair has no private key, but needed for automatic restore.',
@@ -1020,6 +1067,10 @@ class AssembledTransaction {
   /// If the transaction has not completed by then, it throws an exception. Otherwise, it returns the `GetTransactionResponse`.
   /// With [force] you can force signing and sending even if it is a read call. Default false.
   /// Returns the get transaction response received after sending and waiting for the transaction to complete.
+  ///
+  /// On a read-only transaction this throws the refusal of
+  /// [AssembledTransactionOptions.readOnly], also with [force]; a signed
+  /// transaction throws it from `send()`.
   Future<GetTransactionResponse> signAndSend({
     KeyPair? sourceAccountKeyPair = null,
     bool force = false,
@@ -1031,7 +1082,13 @@ class AssembledTransaction {
   }
 
   /// Sends the transaction and waits until completed. Returns `GetTransactionResponse`.
+  ///
+  /// On a read-only transaction this throws the refusal of
+  /// [AssembledTransactionOptions.readOnly] before any request.
   Future<GetTransactionResponse> send() async {
+    if (_readOnly) {
+      throw _readOnlyRefusal();
+    }
     if (signed == null) {
       throw Exception(
         "The transaction has not yet been signed. Run `sign` first, or use `signAndSend` instead.",
@@ -1120,6 +1177,9 @@ class AssembledTransaction {
   /// Sign the transaction with the private key of the `sourceAccountKeyPair` provided with the options previously.
   /// If you did not previously provide one that has a private key, you need to include one now.
   /// With [force] you can force signing and sending even if it is a read call. Default false.
+  ///
+  /// On a read-only transaction this throws the refusal of
+  /// [AssembledTransactionOptions.readOnly].
   void sign({KeyPair? sourceAccountKeyPair = null, bool force = false}) {
     if (tx == null) {
       throw Exception("Transaction has not yet been simulated");
@@ -1130,6 +1190,9 @@ class AssembledTransaction {
         "This is a read call. It requires no signature or sending. " +
             "Use `force: true` to sign and send anyway.",
       );
+    }
+    if (_readOnly) {
+      throw _readOnlyRefusal();
     }
     final signerKp =
         sourceAccountKeyPair ?? options.clientOptions.sourceAccountKeyPair;
@@ -1322,9 +1385,10 @@ class AssembledTransaction {
   /// ADDRESS_WITH_DELEGATES entry when it carries no signature, whatever the
   /// delegate nodes of the entry carry, and every unsigned account delegate
   /// node at any depth. The host authenticates an account with its own
-  /// signatures. Contract addresses are never listed, at either level: a
-  /// contract authenticates through its `__check_auth`, which may accept a
-  /// void or empty signature when only its delegated signers sign (CAP-71).
+  /// signatures. Contract addresses that [needsNonInvokerSigningBy] reports
+  /// are left out here, so they never block a send: a contract authenticates
+  /// through its `__check_auth`, which may accept a void or empty signature
+  /// when only its delegated signers sign (CAP-71).
   List<String> _neededSignersForSend() {
     if (tx == null) {
       return [];
@@ -1681,10 +1745,15 @@ class AssembledTransaction {
   ///
   /// Preconditions:
   /// - A `sourceAccountKeyPair` with private key must be provided during the Client initialization.
+  /// - On a read-only transaction this throws the refusal of
+  ///   [AssembledTransactionOptions.readOnly] before any request.
   ///
   Future<GetTransactionResponse> restoreFootprint({
     required RestorePreamble restorePreamble,
   }) async {
+    if (_readOnly) {
+      throw _readOnlyRefusal();
+    }
     final restoreTx = await _buildFootprintRestoreTransaction(
       options,
       restorePreamble.transactionData,
@@ -1774,7 +1843,27 @@ class AssembledTransaction {
     return restoreTx;
   }
 
+  /// The refusal of the write-side rules of
+  /// [AssembledTransactionOptions.readOnly], naming the source account and the
+  /// read-only client.
+  Exception _readOnlyRefusal() {
+    return Exception(
+      "This transaction was built by a read-only client for source account "
+      "${options.clientOptions.sourceAccountKeyPair.accountId}"
+      ", which has no keypair to sign with; build it from a client opened "
+      "with the submitting account's keypair",
+    );
+  }
+
+  /// Returns the source account of this transaction; a read-only transaction
+  /// takes its zero placeholder, see [AssembledTransactionOptions.readOnly].
   Future<Account> _getSourceAccount() async {
+    if (_readOnly) {
+      return Account(
+        options.clientOptions.sourceAccountKeyPair.accountId,
+        BigInt.zero,
+      );
+    }
     var account = await server.getAccount(
       options.clientOptions.sourceAccountKeyPair.accountId,
     );
@@ -2135,6 +2224,24 @@ class AssembledTransactionOptions {
   /// [ClientOptions.server] reports through its own [SorobanServer.logger].
   bool enableSorobanServerLogging = false;
 
+  /// Builds a read-only transaction: the transaction envelope is never signed,
+  /// submitted, or restored, and `signAuthEntries` still signs authorization
+  /// entries with a supplied `signerKeyPair`. A transaction that is not
+  /// simulated throws "Transaction has not yet been simulated". Without
+  /// `force`, `sign()` then throws its read-call message when `isReadCall()` is
+  /// true; `isReadCall()` throws from `getSimulationData()` for a failed
+  /// simulation or a restore preamble. With `force`, the read-call check and
+  /// `isReadCall()` are skipped, so the read-only refusal is thrown instead of
+  /// the `getSimulationData()` error. The read-only refusal is also thrown with
+  /// `force` and with a `sourceAccountKeyPair`.
+  ///
+  /// Simulation takes its source account from a zero sequence number instead
+  /// of a request, so the account needs no entry. The write rules of
+  /// [AssembledTransaction] (`simulate` with a restore, `sign`, `signAndSend`,
+  /// `send`, and `restoreFootprint`) throw an exception that names the source
+  /// account and the read-only client. Default false.
+  final bool readOnly;
+
   /// Creates configuration options for assembling a Soroban contract method call transaction.
   ///
   /// Parameters:
@@ -2143,6 +2250,8 @@ class AssembledTransactionOptions {
   /// - [method] Name of the contract method to invoke
   /// - [arguments] Arguments to pass to the contract method call
   /// - [enableSorobanServerLogging] Enable server-side logging for debugging
+  /// - [readOnly] Build a read-only transaction; see
+  ///   [AssembledTransactionOptions.readOnly].
   ///
   /// Example:
   /// ```dart
@@ -2159,6 +2268,7 @@ class AssembledTransactionOptions {
     required this.method,
     this.arguments = null,
     this.enableSorobanServerLogging = false,
+    this.readOnly = false,
   });
 }
 

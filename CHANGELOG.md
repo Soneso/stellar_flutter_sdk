@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `SACClient` opens a Stellar Asset Contract from an `Asset` or a contract id without an RPC request. It has typed `balance`, `transfer`, `transferAndSend`, `decimals`, `name`, and `symbol`, `toBaseUnits()` for decimal amounts, and a read-only mode without a keypair.
+- `Asset.contractId(network)` derives the id of the asset's Stellar Asset Contract.
+- `SACSpec` embeds the Stellar Asset Contract spec at upstream commit 4f08d14.
+- `SorobanClient.forSpecEntries()` builds a client from spec entries without an RPC request. With `readOnly: true`, its transactions simulate without loading the source account and refuse to sign, send, or restore.
+
+### Changed
+- `SorobanClient.forClientOptions` opens Stellar Asset Contracts with the embedded spec.
+
 ## [3.12.0] - 2026-11-16
 
 Migration guide: [documentation/migration/3.12.0.md](documentation/migration/3.12.0.md)

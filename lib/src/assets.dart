@@ -2,8 +2,11 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:typed_data';
+
 import 'xdr/xdr.dart';
 import 'key_pair.dart';
+import 'network.dart';
 import 'util.dart';
 import 'asset_type_native.dart';
 import 'asset_type_credit_alphanum.dart';
@@ -398,6 +401,41 @@ abstract class Asset {
   XdrChangeTrustAsset toXdrChangeTrustAsset();
 
   XdrTrustlineAsset toXdrTrustLineAsset();
+
+  /// Returns the contract id of this asset's Stellar Asset Contract on
+  /// [network], as a `C...` strkey.
+  ///
+  /// The id is the one that [DeploySACWithAssetHostFunction] creates for this
+  /// asset on [network], derived from the asset and the network's id, so each
+  /// network has its own id for the same asset. The native asset gives
+  /// `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` on testnet and
+  /// `CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA` on the public
+  /// network.
+  ///
+  /// Throws an [UnsupportedError] for a liquidity pool share, which has no
+  /// Stellar Asset Contract. The derivation is local and sends no request.
+  ///
+  /// Example:
+  /// ```dart
+  /// String id = Asset.NATIVE.contractId(Network.TESTNET);
+  /// ```
+  String contractId(Network network) {
+    if (this is AssetTypePoolShare) {
+      throw UnsupportedError(
+        'A liquidity pool share has no Stellar Asset Contract; contractId() takes the native asset or an issued asset',
+      );
+    }
+    final preimage = XdrHashIDPreimage(
+      XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID,
+    );
+    preimage.contractID = XdrHashIDPreimageContractID(
+      XdrHash(network.networkId),
+      XdrContractIDPreimage.forAsset(toXdr()),
+    );
+    final stream = XdrDataOutputStream();
+    XdrHashIDPreimage.encode(stream, preimage);
+    return StrKey.encodeContractId(Util.hash(Uint8List.fromList(stream.bytes)));
+  }
 
   /// Creates an Asset from a JSON map representation.
   ///
