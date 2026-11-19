@@ -444,6 +444,168 @@ void main() {
     });
   });
 
+  group('Stellar Asset Contracts (SAC)', () {
+    final String xlmContractId =
+        'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC';
+
+    test('soroban: Opening a SAC Client', () async {
+      // Snippet from soroban.md "Opening a SAC Client"
+      KeyPair senderKeyPair = KeyPair.random();
+
+      SACClient xlmClient = SACClient.forAsset(
+        asset: Asset.NATIVE,
+        sourceAccountKeyPair: senderKeyPair,
+        network: network,
+        rpcUrl: rpcUrl,
+      );
+
+      SACClient client = SACClient.forContractId(
+        contractId: xlmContractId,
+        sourceAccountKeyPair: senderKeyPair,
+        network: network,
+        rpcUrl: rpcUrl,
+      );
+
+      expect(xlmClient.contractId, xlmContractId);
+      expect(client.contractId, xlmContractId);
+    });
+
+    test('soroban: Read-Only Client', () async {
+      // Snippet from soroban.md "Read-Only Client"
+      KeyPair holderKeyPair = KeyPair.random();
+      await FriendBot.fundTestAccount(holderKeyPair.accountId);
+
+      SACClient xlm = SACClient.readOnlyForAsset(
+        asset: Asset.NATIVE,
+        network: network,
+        rpcUrl: rpcUrl,
+      );
+
+      int decimals = await xlm.decimals();
+      String name = await xlm.name();
+      String symbol = await xlm.symbol();
+      BigInt balance = await xlm.balance(
+        Address.forAccountId(holderKeyPair.accountId),
+      );
+
+      expect(decimals, 7);
+      expect(name, 'native');
+      expect(symbol, 'native');
+      expect(balance, greaterThan(BigInt.zero));
+    });
+
+    test('soroban: Reading a Balance', () async {
+      // Snippet from soroban.md "Reading a Balance"
+      KeyPair holderKeyPair = KeyPair.random();
+      await FriendBot.fundTestAccount(holderKeyPair.accountId);
+
+      SACClient client = SACClient.readOnlyForContractId(
+        contractId: xlmContractId,
+        network: network,
+        rpcUrl: rpcUrl,
+      );
+
+      BigInt accountBalance = await client.balance(
+        Address.forAccountId(holderKeyPair.accountId),
+      );
+      expect(accountBalance, greaterThan(BigInt.zero));
+
+      BigInt contractBalance = await client.balance(
+        Address.forContractId(xlmContractId),
+      );
+      expect(contractBalance, greaterThanOrEqualTo(BigInt.zero));
+
+      KeyPair unfundedKeyPair = KeyPair.random();
+      int? missingAccountCode;
+      try {
+        await client.balance(Address.forAccountId(unfundedKeyPair.accountId));
+      } on SorobanSimulationException catch (e) {
+        missingAccountCode = e.reportedContractError?.code;
+      }
+      expect(missingAccountCode, 6);
+
+      String muxedHolder = MuxedAccount(
+        holderKeyPair.accountId,
+        BigInt.from(7),
+      ).accountId;
+      ArgumentError? muxedError;
+      try {
+        await client.balance(Address.forMuxedAccountId(muxedHolder));
+      } on ArgumentError catch (e) {
+        muxedError = e;
+      }
+      expect(muxedError, isNotNull);
+      expect(
+        muxedError!.message,
+        'The balance holder must be an account (G...) or contract (C...) address, got a muxed account (M...) address: $muxedHolder; query its base account ${holderKeyPair.accountId}',
+      );
+    });
+
+    test('soroban: Sending a Transfer', () async {
+      // Snippet from soroban.md "Sending a Transfer"
+      KeyPair senderKeyPair = KeyPair.random();
+      KeyPair receiverKeyPair = KeyPair.random();
+      await FriendBot.fundTestAccount(senderKeyPair.accountId);
+      await FriendBot.fundTestAccount(receiverKeyPair.accountId);
+
+      SACClient client = SACClient.forAsset(
+        asset: Asset.NATIVE,
+        sourceAccountKeyPair: senderKeyPair,
+        network: network,
+        rpcUrl: rpcUrl,
+      );
+
+      BigInt amount = SACClient.toBaseUnits('12.5');
+      GetTransactionResponse response = await client.transferAndSend(
+        to: Address.forAccountId(receiverKeyPair.accountId),
+        amount: amount,
+      );
+      expect(response.status, GetTransactionResponse.STATUS_SUCCESS);
+
+      String muxedReceiver = MuxedAccount(
+        receiverKeyPair.accountId,
+        BigInt.from(4242),
+      ).accountId;
+      AssembledTransaction tx = await client.transfer(
+        from: Address.forAccountId(senderKeyPair.accountId),
+        to: Address.forMuxedAccountId(muxedReceiver),
+        amount: SACClient.toBaseUnits('2.5'),
+      );
+      GetTransactionResponse muxedResponse = await tx.signAndSend();
+      expect(muxedResponse.status, GetTransactionResponse.STATUS_SUCCESS);
+    });
+
+    test('soroban: Transfers Authorized by Another Account', () async {
+      // Snippet from soroban.md "Transfers Authorized by Another Account"
+      KeyPair sourceKeyPair = KeyPair.random();
+      KeyPair ownerKeyPair = KeyPair.random();
+      KeyPair receiverKeyPair = KeyPair.random();
+      await FriendBot.fundTestAccount(sourceKeyPair.accountId);
+      await FriendBot.fundTestAccount(ownerKeyPair.accountId);
+      await FriendBot.fundTestAccount(receiverKeyPair.accountId);
+
+      SACClient client = SACClient.forAsset(
+        asset: Asset.NATIVE,
+        sourceAccountKeyPair: sourceKeyPair,
+        network: network,
+        rpcUrl: rpcUrl,
+      );
+
+      AssembledTransaction tx = await client.transfer(
+        from: Address.forAccountId(ownerKeyPair.accountId),
+        to: Address.forAccountId(receiverKeyPair.accountId),
+        amount: SACClient.toBaseUnits('10.5'),
+      );
+
+      List<String> needed = tx.needsNonInvokerSigningBy();
+      expect(needed, [ownerKeyPair.accountId]);
+
+      await tx.signAuthEntries(signerKeyPair: ownerKeyPair);
+      GetTransactionResponse response = await tx.signAndSend();
+      expect(response.status, GetTransactionResponse.STATUS_SUCCESS);
+    });
+  });
+
   group('Type Conversions', () {
     test('soroban: Primitives', () {
       // Snippet from soroban.md "Primitives"
