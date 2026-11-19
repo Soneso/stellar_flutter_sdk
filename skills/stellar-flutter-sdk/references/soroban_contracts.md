@@ -294,7 +294,7 @@ Delegates share one payload bound to the top-level address; they carry no nonce/
 
 ### Stellar Asset Contracts: SACClient
 
-`SACClient` opens the Stellar Asset Contract of a classic asset, XLM included, from an `Asset` (`SACClient.forAsset`, `readOnlyForAsset`) or from a `C...` contract id (`forContractId`, `readOnlyForContractId`). Opening a client sends no request. Amounts are `BigInt` base units with seven decimals: convert decimal input with `SACClient.toBaseUnits` (`'12.5'` gives `125000000`), and never pass a whole token count as base units. A read-only client needs no keypair; its `sign()`, `signAndSend()`, and `send()` throw, and `transferAndSend` throws before any request. Reads never restore archived state, so a read that needs archived entries throws.
+`SACClient` opens the Stellar Asset Contract of a classic asset, XLM included, from an `Asset` (`SACClient.forAsset`, `readOnlyForAsset`) or from a `C...` contract id (`forContractId`, `readOnlyForContractId`). Opening a client sends no request. Amounts are `BigInt` base units with seven decimals: convert decimal input with `SACClient.toBaseUnits` (`'12.5'` gives `125000000`), and never pass a whole token count as base units. A read-only client needs no keypair. Transactions built by a read-only client allow `signAuthEntries()` with an authorizing account's keypair, but refuse envelope signing, submission, and restoration. Their `sign()`, `signAndSend()`, and `send()` throw, and `transferAndSend` throws before any request. Reads never restore archived state, so a read that needs archived entries throws.
 
 ```dart
 // From your app: keyPair (KeyPair, funded on testnet), receiverAccountId (String), muxedReceiverId (String), fromAddress (Address), toAddress (Address)
@@ -346,13 +346,13 @@ GetTransactionResponse muxedResponse = await tx.signAndSend();
 ```
 
 ```dart
-// From your app: newAccountId (String); xlm is the read-only client of the example above
+// From your app: issuedSac (SACClient for a deployed issued asset on testnet), newAccountId (String, funded account without that asset's trustline)
 // WRONG: a missing account (error 6) or trustline (error 13) throws, so an unguarded read stops the program
-// BigInt newBalance = await xlm.balance(Address.forAccountId(newAccountId));
+// BigInt newBalance = await issuedSac.balance(Address.forAccountId(newAccountId));
 
 // CORRECT: catch the exception. reportedContractError is nullable, so read its code with ?.
 try {
-  BigInt newBalance = await xlm.balance(Address.forAccountId(newAccountId));
+  BigInt newBalance = await issuedSac.balance(Address.forAccountId(newAccountId));
   print(newBalance);
 } on SorobanSimulationException catch (e) {
   int? code = e.reportedContractError?.code; // 6 missing account, 13 missing trustline

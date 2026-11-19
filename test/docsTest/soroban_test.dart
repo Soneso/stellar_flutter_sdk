@@ -466,8 +466,14 @@ void main() {
         rpcUrl: rpcUrl,
       );
 
+      String contractId = Asset.NATIVE.contractId(network);
+
       expect(xlmClient.contractId, xlmContractId);
       expect(client.contractId, xlmContractId);
+      expect(
+        contractId,
+        'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+      );
     });
 
     test('soroban: Read-Only Client', () async {
@@ -510,10 +516,13 @@ void main() {
       );
       expect(accountBalance, greaterThan(BigInt.zero));
 
-      BigInt contractBalance = await client.balance(
-        Address.forContractId(xlmContractId),
+      String emptyHolderId = StrKey.encodeContractId(
+        KeyPair.random().publicKey,
       );
-      expect(contractBalance, greaterThanOrEqualTo(BigInt.zero));
+      BigInt contractBalance = await client.balance(
+        Address.forContractId(emptyHolderId),
+      );
+      expect(contractBalance, BigInt.zero);
 
       KeyPair unfundedKeyPair = KeyPair.random();
       int? missingAccountCode;
@@ -555,17 +564,26 @@ void main() {
         rpcUrl: rpcUrl,
       );
 
+      Address receiver = Address.forAccountId(receiverKeyPair.accountId);
+
       BigInt amount = SACClient.toBaseUnits('12.5');
+      expect(amount, BigInt.from(125000000));
+      BigInt receiverBefore = await client.balance(receiver);
       GetTransactionResponse response = await client.transferAndSend(
         to: Address.forAccountId(receiverKeyPair.accountId),
         amount: amount,
       );
       expect(response.status, GetTransactionResponse.STATUS_SUCCESS);
+      expect(
+        await client.balance(receiver) - receiverBefore,
+        BigInt.from(125000000),
+      );
 
       String muxedReceiver = MuxedAccount(
         receiverKeyPair.accountId,
         BigInt.from(4242),
       ).accountId;
+      BigInt receiverBeforeMuxed = await client.balance(receiver);
       AssembledTransaction tx = await client.transfer(
         from: Address.forAccountId(senderKeyPair.accountId),
         to: Address.forMuxedAccountId(muxedReceiver),
@@ -573,6 +591,14 @@ void main() {
       );
       GetTransactionResponse muxedResponse = await tx.signAndSend();
       expect(muxedResponse.status, GetTransactionResponse.STATUS_SUCCESS);
+      expect(
+        await client.balance(receiver) - receiverBeforeMuxed,
+        BigInt.from(25000000),
+      );
+
+      final data = eventDataMap(transferEvent(muxedResponse));
+      expect(data['amount']!.toBigInt(), BigInt.from(25000000));
+      expect(data['to_muxed_id']!.u64!.uint64, BigInt.from(4242));
     });
 
     test('soroban: Transfers Authorized by Another Account', () async {

@@ -388,6 +388,10 @@ SACClient client = SACClient.forContractId(
   network: Network.TESTNET,
   rpcUrl: 'https://soroban-testnet.stellar.org:443',
 );
+
+// The id that forAsset derives, computed locally from the asset and the network
+String contractId = Asset.NATIVE.contractId(Network.TESTNET);
+print(contractId); // CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
 ```
 
 ### Read-Only Client
@@ -397,7 +401,7 @@ A read-only client has no keypair. `SACClient.readOnlyForAsset` and `SACClient.r
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-// No keypair: the client reads state and cannot sign or send
+// No source keypair: reads simulate without signing or sending a transaction
 SACClient xlm = SACClient.readOnlyForAsset(
   asset: Asset.NATIVE,
   network: Network.TESTNET,
@@ -415,13 +419,13 @@ BigInt balance =
     await xlm.balance(Address.forAccountId(holderKeyPair.accountId));
 ```
 
-A read-only client refuses to sign, send, or restore. `sign()`, `signAndSend()`, and `send()` throw for a transaction it built, and `transferAndSend` throws before any request. Reads never restore archived state: a read that needs archived ledger entries throws, and the message says to restore them from a client opened with a funded account's keypair.
+Transactions built by a read-only client allow `signAuthEntries()` with an authorizing account's keypair, but refuse envelope signing, submission, and restoration. `sign()`, `signAndSend()`, and `send()` throw for such a transaction, and `transferAndSend` throws before any request. Reads never restore archived state: a read that needs archived ledger entries throws, and the message says to restore them from a client opened with a funded account's keypair.
 
 ### Reading a Balance
 
 `balance` takes an `Address`. It accepts a `G...` account and a `C...` contract. A contract with no balance reads 0. An account that does not exist on the network throws a `SorobanSimulationException`, with contract error 6 when the simulation reports one. For an issued asset, a missing trustline gives error 13. The `reportedContractError` of the exception is nullable, so read its `code` with `?.`.
 
-A muxed (`M...`) holder throws an `ArgumentError` before any request. The message names the base account to query.
+A muxed (`M...`) holder throws an `ArgumentError` before any request. The message names the base account to query. A muxed contract (`W...`) holder also throws an `ArgumentError`; query its base `C...` address.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -439,8 +443,9 @@ BigInt accountBalance =
     await client.balance(Address.forAccountId(holderKeyPair.accountId));
 
 // A contract holder with no balance reads 0
-BigInt contractBalance = await client.balance(Address.forContractId(
-    'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC'));
+String emptyHolderId = StrKey.encodeContractId(KeyPair.random().publicKey);
+BigInt contractBalance =
+    await client.balance(Address.forContractId(emptyHolderId));
 
 // An account that was never funded does not exist on the network
 KeyPair unfundedKeyPair = KeyPair.random();
