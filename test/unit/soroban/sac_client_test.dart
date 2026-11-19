@@ -11,8 +11,10 @@
 // The writes also assert the envelope fee, the time bound against the clock
 // before and after the call, and the upgraded-auth flag. The double records
 // each request it does not expect as a violation and answers it with a
-// JSON-RPC error; each double registers its violation check with addTearDown
-// where it is built. Each test asserts the exact request log of its double.
+// JSON-RPC error; a submitted envelope other than the simulated transaction
+// signed by the source, or a polled hash other than that envelope's, is such a
+// request. Each double registers its violation check with addTearDown where it
+// is built. Each test asserts the exact request log of its double.
 //
 // This file imports no dart:io and runs on the VM and the web.
 
@@ -44,9 +46,6 @@ const String _claimableBalance =
     'BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU';
 const String _liquidityPool =
     'LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN';
-
-const String _txHash =
-    'a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2';
 
 /// The result XDR that a FAILED transaction reports in these tests.
 const String _failedResultXdr = 'AAAAAAAAAAAAAAAAAAAAAA==';
@@ -102,6 +101,17 @@ String _argumentMessage(Object? Function() call) {
     return error.message as String;
   }
   fail('the call did not throw an ArgumentError');
+}
+
+/// The string form of the [Exception] that [future] completes with; fails the
+/// test when [future] completes with a value.
+Future<String> _exceptionText(Future<Object?> future) async {
+  try {
+    await future;
+  } on Exception catch (error) {
+    return error.toString();
+  }
+  fail('the call did not throw an Exception');
 }
 
 /// Fails when [message] holds an 8-character window of [seed], in its case or
@@ -184,9 +194,15 @@ RpcAnswer _simulationError(String resultError) {
   return rpcResult((_) => {'latestLedger': 100000, 'error': resultError});
 }
 
-/// A sendTransaction answer with [status] for the transaction [_txHash].
+/// A sendTransaction answer with [status] that reports the testnet hash of the
+/// submitted envelope.
 RpcAnswer _sendStatus(String status) {
-  return rpcResult((_) => {'status': status, 'hash': _txHash});
+  return rpcResult(
+    (request) => {
+      'status': status,
+      'hash': sentEnvelopeHash(request, Network.TESTNET),
+    },
+  );
 }
 
 /// A getTransaction answer with [status].
@@ -203,13 +219,16 @@ RpcAnswer _txStatus(String status) {
   );
 }
 
-/// The double of a keyed client for [keyPair]. Its account answer is the
-/// account entry; [answers] serve the other requests.
+/// The double of a keyed client for [keyPair] on testnet. Its account answer is
+/// the account entry; [answers] serve the other requests. It checks that each
+/// submitted envelope carries the signature of [keyPair].
 SacRpcDouble _keyedDouble(KeyPair keyPair, Map<String, RpcAnswer> answers) {
   final rpc = SacRpcDouble(
     rpcUrl: _rpcUrl,
     expectedKeys: {'account': accountLedgerKey(keyPair)},
     answers: {'account': ledgerEntry(accountEntry(keyPair)), ...answers},
+    signer: keyPair,
+    network: Network.TESTNET,
   );
   addTearDown(rpc.expectNoViolations);
   return rpc;
@@ -241,18 +260,29 @@ Map<String, dynamic> _simulateBody(SacRpcDouble rpc) {
   );
 }
 
+/// The transaction of each request with [method] that [rpc] received, in
+/// order.
+List<Transaction> _envelopes(SacRpcDouble rpc, String method) => [
+  for (final body in rpc.bodies)
+    if (body['method'] == method)
+      AbstractTransaction.fromEnvelopeXdrString(
+            (body['params'] as Map<String, dynamic>)['transaction'] as String,
+          )
+          as Transaction,
+];
+
 Transaction _simulatedTx(SacRpcDouble rpc) {
-  final params = _simulateBody(rpc)['params'] as Map<String, dynamic>;
-  return AbstractTransaction.fromEnvelopeXdrString(
-        params['transaction'] as String,
-      )
-      as Transaction;
+  return _envelopes(rpc, 'simulateTransaction').last;
+}
+
+/// The contract invocation of [tx], which holds one invoke operation.
+InvokeContractHostFunction _invocationOf(Transaction tx) {
+  final operation = tx.operations.single as InvokeHostFunctionOperation;
+  return operation.function as InvokeContractHostFunction;
 }
 
 InvokeContractHostFunction _invocation(SacRpcDouble rpc) {
-  final operation =
-      _simulatedTx(rpc).operations.single as InvokeHostFunctionOperation;
-  return operation.function as InvokeContractHostFunction;
+  return _invocationOf(_simulatedTx(rpc));
 }
 
 /// The argument list of the last simulated invocation, in order.
@@ -260,13 +290,19 @@ List<XdrSCVal> _invokedArgs(SacRpcDouble rpc) {
   return _invocation(rpc).arguments ?? <XdrSCVal>[];
 }
 
-/// Asserts the simulated invocation: the SAC id, the function name, and the
-/// full argument list in order, empty lists included.
-void _expectInvocation(SacRpcDouble rpc, String function, List<XdrSCVal> args) {
-  final call = _invocation(rpc);
+/// Asserts the invocation of [tx]: the SAC id, the function name, and the full
+/// argument list in order, empty lists included.
+void _expectInvocationOf(Transaction tx, String function, List<XdrSCVal> args) {
+  final call = _invocationOf(tx);
   expect(call.contractID, _sac);
   expect(call.functionName, function);
-  expect(_encoded(_invokedArgs(rpc)), _encoded(args));
+  expect(_encoded(call.arguments ?? <XdrSCVal>[]), _encoded(args));
+}
+
+/// Asserts the invocation of the last simulation, as [_expectInvocationOf]
+/// does.
+void _expectInvocation(SacRpcDouble rpc, String function, List<XdrSCVal> args) {
+  _expectInvocationOf(_simulatedTx(rpc), function, args);
 }
 
 /// Asserts the envelope fee, the time bound against the clock before and after
@@ -430,6 +466,144 @@ void main() {
       }
       expect(rpc.log, isEmpty);
     });
+
+    // The public network and an RPC URL other than testnet's tell the values a
+    // factory keeps from the testnet defaults of the other tests.
+    const factoryRpcUrl = 'https://soroban-rpc.example.org:443';
+    const publicXlm =
+        'CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA';
+    final factories =
+        <(String, SACClient Function(KeyPair, SorobanServer), String, bool)>[
+          (
+            'forAsset',
+            (keyPair, server) => SACClient.forAsset(
+              asset: Asset.NATIVE,
+              sourceAccountKeyPair: keyPair,
+              network: Network.PUBLIC,
+              rpcUrl: factoryRpcUrl,
+              server: server,
+            ),
+            publicXlm,
+            false,
+          ),
+          (
+            'forContractId',
+            (keyPair, server) => SACClient.forContractId(
+              contractId: _holderC,
+              sourceAccountKeyPair: keyPair,
+              network: Network.PUBLIC,
+              rpcUrl: factoryRpcUrl,
+              server: server,
+            ),
+            _holderC,
+            false,
+          ),
+          (
+            'readOnlyForAsset',
+            (_, server) => SACClient.readOnlyForAsset(
+              asset: Asset.NATIVE,
+              network: Network.PUBLIC,
+              rpcUrl: factoryRpcUrl,
+              server: server,
+            ),
+            publicXlm,
+            true,
+          ),
+          (
+            'readOnlyForContractId',
+            (_, server) => SACClient.readOnlyForContractId(
+              contractId: _holderC,
+              network: Network.PUBLIC,
+              rpcUrl: factoryRpcUrl,
+              server: server,
+            ),
+            _holderC,
+            true,
+          ),
+        ];
+    for (final (name, open, contractId, readOnly) in factories) {
+      test(
+        '$name keeps the contract id, the ${readOnly ? 'placeholder' : 'given'} source, the network, the RPC URL and the server, and its transfer ${readOnly ? 'refuses to sign' : 'signs for that network'}',
+        () async {
+          final keyPair = KeyPair.random();
+          final rpc = SacRpcDouble(
+            rpcUrl: factoryRpcUrl,
+            expectedKeys: {'account': accountLedgerKey(keyPair)},
+            answers: {
+              'account': ledgerEntry(accountEntry(keyPair)),
+              'simulate': _simulation(writes: true),
+            },
+          );
+          addTearDown(rpc.expectNoViolations);
+          final client = open(keyPair, rpc.server);
+          expect(rpc.log, isEmpty);
+
+          final options = client.sorobanClient.getOptions();
+          expect(client.contractId, contractId);
+          expect(client.sorobanClient.getContractId(), contractId);
+          expect(options.contractId, contractId);
+          if (readOnly) {
+            expect(options.sourceAccountKeyPair.accountId, _readOnlyAccount);
+            expect(options.sourceAccountKeyPair.privateKey, isNull);
+          } else {
+            expect(options.sourceAccountKeyPair, same(keyPair));
+          }
+          expect(
+            options.network.networkPassphrase,
+            Network.PUBLIC.networkPassphrase,
+          );
+          expect(options.rpcUrl, factoryRpcUrl);
+          expect(options.server, same(rpc.server));
+
+          final source = readOnly ? _readOnlyAccount : keyPair.accountId;
+          final from = Address.forAccountId(source);
+          final tx = await client.transfer(
+            from: from,
+            to: _recipient,
+            amount: _amount,
+          );
+          final log = readOnly ? ['simulate'] : ['account', 'simulate'];
+          expect(rpc.log, log);
+          final simulated = _simulatedTx(rpc);
+          expect(simulated.sourceAccount.accountId, source);
+          final call = _invocationOf(simulated);
+          expect(call.contractID, contractId);
+          expect(call.functionName, 'transfer');
+          expect(
+            _encoded(call.arguments!),
+            _encoded(_transferArgs(from, _recipient, _amount)),
+          );
+
+          if (readOnly) {
+            expect(
+              () => tx.sign(),
+              _exception(
+                "This transaction was built by a read-only client for source account GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF, which has no keypair to sign with; build it from a client opened with the submitting account's keypair",
+              ),
+            );
+            expect(tx.signed, isNull);
+            await expectLater(
+              client.transferAndSend(to: _recipient, amount: _amount),
+              _exception(
+                "transferAndSend needs the sending account's keypair, and this SACClient is read-only; open the client with SACClient.forAsset() or SACClient.forContractId()",
+              ),
+            );
+          } else {
+            tx.sign();
+            final signed = tx.signed!;
+            expect(signed.signatures, hasLength(1));
+            expect(
+              keyPair.verify(
+                signed.hash(Network.PUBLIC),
+                signed.signatures.single.signature.signature,
+              ),
+              isTrue,
+            );
+          }
+          expect(rpc.log, log);
+        },
+      );
+    }
 
     test('forAsset gives the contract id of the asset on each network', () {
       const usdcIssuer =
@@ -799,6 +973,9 @@ void main() {
           ),
         );
         expect(rpc.log, ['simulate']);
+        _expectInvocation(rpc, 'balance', [
+          Address.forAccountId(holder).toXdrSCVal(),
+        ]);
       },
     );
 
@@ -1688,15 +1865,16 @@ void main() {
           'send': _sendStatus('PENDING'),
           'getTx': _txStatus('NOT_FOUND'),
         });
-        await expectLater(
+        final message = await _exceptionText(
           _keyedClient(rpc, source).transferAndSend(
             to: _recipient,
             amount: _amount,
             methodOptions: MethodOptions(timeoutInSeconds: 3),
           ),
-          _exception(
-            'Interrupted after waiting 3 seconds (options.methodOptions.timeoutInSeconds) for the transaction a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2 to complete.',
-          ),
+        );
+        expect(
+          message,
+          'Exception: Interrupted after waiting 3 seconds (options.methodOptions.timeoutInSeconds) for the transaction ${rpc.sentHashes.single} to complete.',
         );
         expect(rpc.log, ['account', 'simulate', 'send', 'getTx']);
         _expectWrite(
@@ -1935,15 +2113,16 @@ void main() {
           'send': _sendStatus('PENDING'),
           'getTx': rpcError('status unavailable'),
         });
-        await expectLater(
+        final message = await _exceptionText(
           _keyedClient(rpc, source).transferAndSend(
             to: _recipient,
             amount: _amount,
             methodOptions: MethodOptions(timeoutInSeconds: 3),
           ),
-          _exception(
-            'Interrupted after waiting 3 seconds (options.methodOptions.timeoutInSeconds) for the transaction a7d8f6c5e9b1a3d2f4c8e7b9a5c3d1f2e8b6c4d7a9e1f3b5c2d8e6a4b7c9d1e2 to complete. Last status request error: RPC error code: -32600, message: status unavailable',
-          ),
+        );
+        expect(
+          message,
+          'Exception: Interrupted after waiting 3 seconds (options.methodOptions.timeoutInSeconds) for the transaction ${rpc.sentHashes.single} to complete. Last status request error: RPC error code: -32600, message: status unavailable',
         );
         expect(rpc.log, ['account', 'simulate', 'send', 'getTx']);
         _expectWrite(
@@ -2093,18 +2272,12 @@ void main() {
           'account',
           'simulate',
         ]);
-        _expectInvocation(rpc, 'transfer', args);
+        final simulatedTxs = _envelopes(rpc, 'simulateTransaction');
+        expect(simulatedTxs, hasLength(3));
+        _expectInvocationOf(simulatedTxs[0], 'transfer', args);
+        _expectInvocationOf(simulatedTxs[2], 'transfer', args);
 
-        final restoreSimulation = rpc.bodies
-            .where((b) => b['method'] == 'simulateTransaction')
-            .toList()[1];
-        final restoreEnvelope =
-            AbstractTransaction.fromEnvelopeXdrString(
-                  (restoreSimulation['params']
-                          as Map<String, dynamic>)['transaction']
-                      as String,
-                )
-                as Transaction;
+        final restoreEnvelope = simulatedTxs[1];
         expect(restoreEnvelope.sourceAccount.accountId, source.accountId);
         expect(
           restoreEnvelope.operations.single,
@@ -2126,6 +2299,8 @@ void main() {
           'send',
           'getTx',
         ]);
+        final sentTransfer = _envelopes(rpc, 'sendTransaction').last;
+        _expectInvocationOf(sentTransfer, 'transfer', args);
         _expectWriteOptions(
           rpc,
           fee: 100,
@@ -2136,56 +2311,6 @@ void main() {
         );
       },
       timeout: const Timeout(Duration(seconds: 20)),
-    );
-  });
-
-  group('SACClient messages', () {
-    test(
-      'the invalid amount, grammar, range, and seed messages match their literal text',
-      () async {
-        final rpc = SacRpcDouble(rpcUrl: _rpcUrl);
-        addTearDown(rpc.expectNoViolations);
-        expect(
-          () => SACClient.toBaseUnits('1.12345678'),
-          throwsA(
-            isA<ArgumentError>().having(
-              (e) => e.message,
-              'message',
-              'Invalid amount "1.12345678": expected decimal digits with at most 7 fractional digits, such as 12.5',
-            ),
-          ),
-        );
-        expect(
-          () => SACClient.readOnlyForContractId(
-            contractId: KeyPair.random().secretSeed,
-            network: Network.TESTNET,
-            rpcUrl: _rpcUrl,
-            server: rpc.server,
-          ),
-          throwsA(
-            isA<ArgumentError>().having(
-              (e) => e.message,
-              'message',
-              'The contract to invoke must be a contract (C...) address, got a secret seed (S...) instead of an address',
-            ),
-          ),
-        );
-        await expectLater(
-          _keyedClient(rpc, KeyPair.random()).transfer(
-            from: Address.forAccountId(_readOnlyAccount),
-            to: Address.forAccountId(_readOnlyAccount),
-            amount: BigInt.from(-1),
-          ),
-          throwsA(
-            isA<ArgumentError>().having(
-              (e) => e.message,
-              'message',
-              'The transfer amount must be from 0 to 170141183460469231731687303715884105727 base units, got -1',
-            ),
-          ),
-        );
-        expect(rpc.log, isEmpty);
-      },
     );
   });
 }

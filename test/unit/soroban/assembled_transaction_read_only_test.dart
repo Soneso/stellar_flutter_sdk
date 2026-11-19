@@ -76,13 +76,17 @@ RpcAnswer _simulation({
   );
 }
 
-/// A client for the SAC with the read-only placeholder source. [readOnly] sets
-/// the flag.
-SorobanClient _client(SacRpcDouble rpc, {bool readOnly = true}) {
+/// A client for the SAC with [source] as its source, the read-only placeholder
+/// by default. [readOnly] sets the flag.
+SorobanClient _client(
+  SacRpcDouble rpc, {
+  bool readOnly = true,
+  KeyPair? source,
+}) {
   return SorobanClient.forSpecEntries(
     specEntries: SACClient.specEntries(),
     options: ClientOptions(
-      sourceAccountKeyPair: KeyPair.fromAccountId(_readOnlyAccount),
+      sourceAccountKeyPair: source ?? KeyPair.fromAccountId(_readOnlyAccount),
       contractId: _sac,
       network: Network.TESTNET,
       rpcUrl: _rpcUrl,
@@ -110,17 +114,44 @@ Future<AssembledTransaction> _transfer(
 }
 
 /// A read-only transfer simulated with a write, so that it is not a read call.
+/// [source] is the source of its client, the placeholder by default.
 Future<(SacRpcDouble, AssembledTransaction)> _writeSimulated({
   List<XdrSorobanAuthorizationEntry> auth = const [],
+  KeyPair? source,
 }) async {
   final rpc = SacRpcDouble(
     rpcUrl: _rpcUrl,
     answers: {'simulate': _simulation(writes: true, auth: auth)},
   );
   addTearDown(rpc.expectNoViolations);
-  final tx = await _transfer(_client(rpc));
+  final tx = await _transfer(_client(rpc, source: source));
   return (rpc, tx);
 }
+
+/// The source account and the sequence number of each simulated envelope that
+/// [rpc] received, in order.
+List<(String, BigInt)> _simulatedSources(SacRpcDouble rpc) {
+  final sources = <(String, BigInt)>[];
+  for (final body in rpc.bodies) {
+    if (body['method'] != 'simulateTransaction') {
+      continue;
+    }
+    final params = body['params'] as Map<String, dynamic>;
+    final envelope =
+        AbstractTransaction.fromEnvelopeXdrString(
+              params['transaction'] as String,
+            )
+            as Transaction;
+    sources.add((envelope.sourceAccount.accountId, envelope.sequenceNumber));
+  }
+  return sources;
+}
+
+/// The refusal of a read-only transaction whose source is [accountId].
+String _refusal(String accountId) =>
+    "This transaction was built by a read-only client for source account "
+    "$accountId, which has no keypair to sign with; build it from a client "
+    "opened with the submitting account's keypair";
 
 /// An unsigned address-credential auth entry of the account [accountId] for
 /// the transfer of the SAC.
@@ -169,11 +200,77 @@ void main() {
       },
     );
 
-    test('a second simulate sends only simulateTransaction', () async {
-      final (rpc, tx) = await _writeSimulated();
-      await tx.simulate();
-      expect(rpc.log, ['simulate', 'simulate']);
-    });
+    test(
+      'a second simulate sends only simulateTransaction, again with the source at sequence 1',
+      () async {
+        final (rpc, tx) = await _writeSimulated();
+        await tx.simulate();
+        expect(rpc.log, ['simulate', 'simulate']);
+        expect(_simulatedSources(rpc), [
+          (_readOnlyAccount, BigInt.one),
+          (_readOnlyAccount, BigInt.one),
+        ]);
+      },
+    );
+  });
+
+  group('a flagged build with a random keypair as source', () {
+    test(
+      'sends no account request and refuses sign, signAndSend, send, and restoreFootprint',
+      () async {
+        final source = KeyPair.random();
+        final (rpc, tx) = await _writeSimulated(source: source);
+        expect(rpc.log, ['simulate']);
+        expect(_simulatedSources(rpc), [(source.accountId, BigInt.one)]);
+
+        final refusal = _exception(_refusal(source.accountId));
+        expect(() => tx.sign(), refusal);
+        expect(() => tx.sign(force: true), refusal);
+        expect(() => tx.sign(sourceAccountKeyPair: source), refusal);
+        expect(tx.signed, isNull);
+        await expectLater(tx.signAndSend(), refusal);
+        expect(tx.signed, isNull);
+        await expectLater(
+          tx.restoreFootprint(
+            restorePreamble: RestorePreamble(_txData(writes: true), 100),
+          ),
+          refusal,
+        );
+
+        tx.signed = tx.tx;
+        await expectLater(tx.send(), refusal);
+        await expectLater(tx.signAndSend(), refusal);
+        expect(rpc.log, ['simulate']);
+      },
+    );
+
+    test(
+      'a preamble with restore true throws the refusal before any account request, with or without the secret key',
+      () async {
+        final keyPair = KeyPair.random();
+        for (final source in [
+          keyPair,
+          KeyPair.fromAccountId(keyPair.accountId),
+        ]) {
+          final rpc = SacRpcDouble(
+            rpcUrl: _rpcUrl,
+            answers: {
+              'simulate': _simulation(writes: true, restorePreamble: true),
+            },
+          );
+          addTearDown(rpc.expectNoViolations);
+          await expectLater(
+            _transfer(
+              _client(rpc, source: source),
+              methodOptions: MethodOptions(restore: true),
+            ),
+            _exception(_refusal(keyPair.accountId)),
+          );
+          expect(rpc.log, ['simulate']);
+          expect(_simulatedSources(rpc), [(keyPair.accountId, BigInt.one)]);
+        }
+      },
+    );
   });
 
   group('the refusal after a write simulation', () {
@@ -416,44 +513,5 @@ void main() {
       expect(tx.signed, isNull);
       expect(rpc.log, ['simulate']);
     });
-  });
-
-  group('read-only messages as literal text', () {
-    test(
-      'the refusal and the read-call message match their literal text',
-      () async {
-        final rpc = SacRpcDouble(
-          rpcUrl: _rpcUrl,
-          answers: {'simulate': _simulation(returns: XdrSCVal.forU32(7))},
-        );
-        addTearDown(rpc.expectNoViolations);
-        final readTx = await _client(rpc).buildInvokeMethodTx(name: 'decimals');
-        expect(
-          () => readTx.sign(),
-          throwsA(
-            isA<Exception>().having(
-              (e) => e.toString(),
-              'toString',
-              'Exception: This is a read call. It requires no signature or sending. Use `force: true` to sign and send anyway.',
-            ),
-          ),
-        );
-
-        expect(rpc.log, ['simulate']);
-
-        final (writeRpc, writeTx) = await _writeSimulated();
-        expect(
-          () => writeTx.sign(),
-          throwsA(
-            isA<Exception>().having(
-              (e) => e.toString(),
-              'toString',
-              "Exception: This transaction was built by a read-only client for source account GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF, which has no keypair to sign with; build it from a client opened with the submitting account's keypair",
-            ),
-          ),
-        );
-        expect(writeRpc.log, ['simulate']);
-      },
-    );
   });
 }

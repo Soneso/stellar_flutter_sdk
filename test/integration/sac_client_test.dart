@@ -142,36 +142,6 @@ Future<void> _prepareSac(
   await Future.delayed(const Duration(seconds: 5));
 }
 
-/// Decodes the contract events of a transaction response, in emission order.
-List<XdrContractEvent> _contractEvents(GetTransactionResponse response) {
-  final groups = response.events?.contractEventsXdr;
-  expect(groups, isNotNull);
-  return [
-    for (final group in groups!)
-      for (final encoded in group)
-        XdrContractEvent.fromBase64EncodedXdrString(encoded),
-  ];
-}
-
-/// The single transfer event of a response: its first topic is the symbol
-/// `transfer`.
-XdrContractEvent _transferEvent(GetTransactionResponse response) {
-  final transfers = _contractEvents(response).where((event) {
-    final topics = event.body.v0?.topics;
-    return topics != null &&
-        topics.isNotEmpty &&
-        topics.first.sym == 'transfer';
-  }).toList();
-  expect(transfers, hasLength(1));
-  return transfers.single;
-}
-
-/// The data map of an event, keyed by its symbol keys.
-Map<String, XdrSCVal> _eventDataMap(XdrContractEvent event) {
-  final entries = event.body.v0!.data.map ?? const <XdrSCMapEntry>[];
-  return {for (final entry in entries) entry.key.sym!: entry.val};
-}
-
 /// Whether the protocol of the network behind [server] is at least [version].
 ///
 /// A JSON-RPC error or an answer without a protocol version throws an
@@ -312,10 +282,10 @@ void main() {
       );
       final muxedResponse = await muxedTx.signAndSend();
       expect(muxedResponse.status, GetTransactionResponse.STATUS_SUCCESS);
-      final muxedEvent = _transferEvent(muxedResponse);
+      final muxedEvent = transferEvent(muxedResponse);
       final muxedTopics = muxedEvent.body.v0!.topics;
       expect(Address.fromXdrSCVal(muxedTopics[2]).accountId, bId);
-      final muxedData = _eventDataMap(muxedEvent);
+      final muxedData = eventDataMap(muxedEvent);
       expect(muxedData['amount']!.toBigInt(), BigInt.from(250000000));
       expect(muxedData['to_muxed_id']!.u64!.uint64, BigInt.from(4242));
       expect(
@@ -397,8 +367,8 @@ void main() {
       final response = await tx.signAndSend();
       expect(response.status, GetTransactionResponse.STATUS_SUCCESS);
 
-      final event = _transferEvent(response);
-      expect(_eventDataMap(event)['to_muxed_id']!.u64!.uint64, BigInt.from(7));
+      final event = transferEvent(response);
+      expect(eventDataMap(event)['to_muxed_id']!.u64!.uint64, BigInt.from(7));
 
       final readOnly = SACClient.readOnlyForAsset(
         asset: c.asset,

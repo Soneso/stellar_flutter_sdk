@@ -55,6 +55,6 @@ dart format --output=none --set-exit-if-changed lib/src/soroban/sac_spec.dart
    new pin.
 4. Run the format check on the output. If it reports a difference, apply the layout change to the
    template, then regenerate and check again. A second run must leave the tree unchanged.
-5. Run the unit suite of the generator, then the SAC spec unit tests of the SDK. A changed function
-   or event set, or a new pin, fails `sac_spec_test.dart` until the same commit updates its
+5. Run the unit suite of the generator, then `flutter test test/unit/`. A changed function or
+   event set, or a new pin, fails `sac_spec_test.dart` until the same commit updates its
    expectations.

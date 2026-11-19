@@ -42,11 +42,11 @@ import 'soroban_server.dart';
 /// carries only the fee, the timeout, and the simulation, restore, and
 /// upgraded-auth flags; a read-only client's writes follow
 /// [AssembledTransactionOptions.readOnly].
-/// With `simulate: false` the transaction is returned unsimulated, and the
-/// caller runs `simulate()` before inspecting or completing its authorization
-/// entries. Authorization entries of a contract address are completed as the
-/// contract's `__check_auth` describes; see
-/// [AssembledTransaction.signAuthEntries].
+/// With `simulate: false`, [transfer] returns an unsimulated transaction and
+/// [transferAndSend] throws; call `simulate()` on the returned transaction
+/// before inspecting or completing authorization entries. Authorization
+/// entries of a contract address are completed as the contract's
+/// `__check_auth` describes; see [AssembledTransaction.signAuthEntries].
 ///
 /// Amounts are i128 base units of 7 decimals, as [BigInt]. [toBaseUnits]
 /// converts a decimal string such as `"12.5"`.

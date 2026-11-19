@@ -35,22 +35,34 @@ String _ledgerKeyName(XdrLedgerKey key) {
 }
 
 /// A SorobanServer whose HTTP adapter answers the JSON-RPC requests of one
-/// test, logs each answered request by name, and checks each ledger key.
+/// test, logs each answered request by name, and checks each ledger key, each
+/// submitted envelope, and each polled hash.
 ///
 /// Every request is logged by name (`account`, `instance`, `code`, `tag`,
 /// `simulate`, `send`, `getTx`), and its decoded body is kept in [bodies]. A
 /// request with an unexpected ledger key, an unexpected JSON-RPC method, or no
 /// configured answer is recorded in [violations] and answered with a JSON-RPC
-/// error, so the client returns or throws without a hidden retry. Each test
-/// asserts [violations] is empty through [expectNoViolations], because the
-/// client may catch the failure. The double reaches no network.
+/// error, so the client returns or throws without a hidden retry.
+///
+/// A sendTransaction envelope must be the transaction of the last
+/// simulateTransaction request with the answer of that simulation applied
+/// (its transaction data, its minimum resource fee added to the fee, and its
+/// authorization entries), signed once by [signer] for [network]. A
+/// getTransaction request must ask for the hash of the last accepted
+/// envelope. A mismatch is a violation that names the field.
+///
+/// Each test asserts [violations] is empty through [expectNoViolations],
+/// because the client may catch the failure. The double reaches no network.
 class SacRpcDouble {
   /// Creates a double for the RPC endpoint [rpcUrl], with the expected keys
-  /// and the answers of the test.
+  /// and the answers of the test. A test that sends a transaction passes the
+  /// [signer] and the [network] of its client.
   SacRpcDouble({
     required this.rpcUrl,
     this.expectedKeys = const {},
     this.answers = const {},
+    this.signer,
+    this.network,
   }) {
     _httpClient.httpClientAdapter = _Adapter(_handle);
     server = SorobanServer(rpcUrl, httpClient: _httpClient);
@@ -65,15 +77,33 @@ class SacRpcDouble {
   /// The answer to each request name.
   final Map<String, RpcAnswer> answers;
 
+  /// The keypair whose signature a sendTransaction envelope carries. A
+  /// sendTransaction request without a [signer] and a [network] is a
+  /// violation.
+  final KeyPair? signer;
+
+  /// The network the sendTransaction envelope is signed for.
+  final Network? network;
+
   /// The name of each answered request, in the order the server received it.
   final List<String> log = [];
 
   /// The decoded body of each request, in the order the server received it.
   final List<Map<String, dynamic>> bodies = [];
 
+  /// The lowercase hex hash of each accepted sendTransaction envelope, in the
+  /// order the server received it.
+  final List<String> sentHashes = [];
+
   /// Each request that broke the contract of this double: an unexpected
-  /// ledger key, an unexpected method, or a request with no answer.
+  /// ledger key, an unexpected method, a request with no answer, a submitted
+  /// envelope other than the signed simulated transaction, or a polled hash
+  /// other than the hash of the last accepted envelope.
   final List<String> violations = [];
+
+  /// The envelope of the last simulateTransaction request and the result of
+  /// its answer, which is null for an answer without one.
+  (String, Map<String, dynamic>?)? _lastSimulation;
 
   /// The server to pass as `ClientOptions.server`.
   late final SorobanServer server;
@@ -89,7 +119,7 @@ class SacRpcDouble {
     expect(violations, isEmpty, reason: 'unexpected requests');
   }
 
-  dio.ResponseBody _handle(dio.RequestOptions options) {
+  Future<dio.ResponseBody> _handle(dio.RequestOptions options) async {
     final request = jsonDecode(options.data as String) as Map<String, dynamic>;
     bodies.add(request);
     final method = request['method'];
@@ -114,15 +144,123 @@ class SacRpcDouble {
       return _answer(name, request);
     }
     if (method == 'simulateTransaction') {
-      return _answer('simulate', request);
+      return _recordSimulation(request, _answer('simulate', request));
     }
     if (method == 'sendTransaction') {
+      final mismatch = _envelopeMismatch(request);
+      if (mismatch != null) {
+        return _violation(request, mismatch);
+      }
       return _answer('send', request);
     }
     if (method == 'getTransaction') {
+      final hash = (request['params'] as Map)['hash'];
+      if (sentHashes.isEmpty) {
+        return _violation(
+          request,
+          'getTransaction asked for the hash $hash before any accepted '
+          'sendTransaction envelope',
+        );
+      }
+      if (hash != sentHashes.last) {
+        return _violation(
+          request,
+          'getTransaction asked for the hash $hash, expected the hash '
+          '${sentHashes.last} of the last sent envelope',
+        );
+      }
       return _answer('getTx', request);
     }
     return _violation(request, 'Unexpected RPC method: $method');
+  }
+
+  /// Keeps the envelope of the simulateTransaction [request] and the result of
+  /// [response], and returns [response] with its body intact.
+  Future<dio.ResponseBody> _recordSimulation(
+    Map<String, dynamic> request,
+    dio.ResponseBody response,
+  ) async {
+    final bytes = <int>[];
+    await for (final chunk in response.stream) {
+      bytes.addAll(chunk);
+    }
+    response.stream = Stream.value(Uint8List.fromList(bytes));
+    final answer = jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>;
+    _lastSimulation = (
+      (request['params'] as Map)['transaction'] as String,
+      answer['result'] as Map<String, dynamic>?,
+    );
+    return response;
+  }
+
+  /// Returns the first field in which the sendTransaction envelope of
+  /// [request] differs from the signed simulated transaction, as the message
+  /// of a violation, or null when the envelope matches. A matching envelope
+  /// adds its hash to [sentHashes].
+  String? _envelopeMismatch(Map<String, dynamic> request) {
+    final signer = this.signer;
+    final network = this.network;
+    if (signer == null || network == null) {
+      return 'A sendTransaction request arrived, but the double has no signer '
+          'and network to check its envelope';
+    }
+    final simulation = _lastSimulation;
+    if (simulation == null) {
+      return 'A sendTransaction request arrived before any simulateTransaction '
+          'request';
+    }
+    final envelope = (request['params'] as Map)['transaction'] as String;
+    final sent = AbstractTransaction.fromEnvelopeXdrString(envelope);
+    if (sent is! Transaction) {
+      return 'The sendTransaction envelope is not a transaction envelope: '
+          '$envelope';
+    }
+    final expected = _signedSimulation(simulation, signer, network);
+    final sentXdr = sent.toXdr();
+    final expectedXdr = expected.toXdr();
+    final fields = <(String, String, String)>[
+      (
+        'source account',
+        sent.sourceAccount.accountId,
+        expected.sourceAccount.accountId,
+      ),
+      ('fee', '${sent.fee}', '${expected.fee}'),
+      (
+        'sequence number',
+        '${sent.sequenceNumber}',
+        '${expected.sequenceNumber}',
+      ),
+      (
+        'preconditions',
+        sentXdr.cond.toBase64EncodedXdrString(),
+        expectedXdr.cond.toBase64EncodedXdrString(),
+      ),
+      (
+        'memo',
+        sentXdr.memo.toBase64EncodedXdrString(),
+        expectedXdr.memo.toBase64EncodedXdrString(),
+      ),
+      ('operations', _operations(sentXdr), _operations(expectedXdr)),
+      (
+        'soroban transaction data',
+        sentXdr.ext.toBase64EncodedXdrString(),
+        expectedXdr.ext.toBase64EncodedXdrString(),
+      ),
+      ('signatures', _signatures(sent), _signatures(expected)),
+    ];
+    for (final (field, got, want) in fields) {
+      if (got != want) {
+        return 'The sendTransaction envelope differs in its $field: got $got, '
+            'expected $want';
+      }
+    }
+    final expectedEnvelope = expected.toEnvelopeXdrBase64();
+    if (envelope != expectedEnvelope) {
+      return 'The sendTransaction envelope differs: got $envelope, expected '
+          '$expectedEnvelope';
+    }
+    sentHashes.add(Util.bytesToHex(sent.hash(network)));
+    return null;
   }
 
   dio.ResponseBody _answer(String name, Map<String, dynamic> request) {
@@ -140,10 +278,63 @@ class SacRpcDouble {
   }
 }
 
+/// The transaction of [simulation] with the result of its answer applied,
+/// signed by [signer] for [network].
+Transaction _signedSimulation(
+  (String, Map<String, dynamic>?) simulation,
+  KeyPair signer,
+  Network network,
+) {
+  final (envelope, result) = simulation;
+  final transaction =
+      AbstractTransaction.fromEnvelopeXdrString(envelope) as Transaction;
+  final transactionData = result?['transactionData'];
+  if (transactionData is String) {
+    transaction.sorobanTransactionData =
+        XdrSorobanTransactionData.fromBase64EncodedXdrString(transactionData);
+    final minResourceFee = result!['minResourceFee'];
+    transaction.addResourceFee(
+      minResourceFee == null ? 0 : int.parse('$minResourceFee'),
+    );
+    final results = result['results'] as List?;
+    final auth = results == null || results.isEmpty
+        ? const <dynamic>[]
+        : (results.first as Map)['auth'] as List? ?? const <dynamic>[];
+    transaction.setSorobanAuth([
+      for (final entry in auth)
+        SorobanAuthorizationEntry.fromBase64EncodedXdr(entry as String),
+    ]);
+  }
+  transaction.sign(signer, network);
+  return transaction;
+}
+
+/// The operations of [transaction] as base64 XDR, separated by commas.
+String _operations(XdrTransaction transaction) => [
+  for (final operation in transaction.operations)
+    operation.toBase64EncodedXdrString(),
+].join(', ');
+
+/// The decorated signatures of [transaction] as base64 XDR, separated by
+/// commas.
+String _signatures(Transaction transaction) => [
+  for (final signature in transaction.signatures)
+    signature.toBase64EncodedXdrString(),
+].join(', ');
+
+/// The lowercase hex hash for [network] of the envelope that the
+/// sendTransaction [request] submits, the hash a send answer reports.
+String sentEnvelopeHash(Map<String, dynamic> request, Network network) {
+  final envelope = (request['params'] as Map)['transaction'] as String;
+  return Util.bytesToHex(
+    AbstractTransaction.fromEnvelopeXdrString(envelope).hash(network),
+  );
+}
+
 class _Adapter implements dio.HttpClientAdapter {
   _Adapter(this._onRequest);
 
-  final dio.ResponseBody Function(dio.RequestOptions) _onRequest;
+  final Future<dio.ResponseBody> Function(dio.RequestOptions) _onRequest;
 
   @override
   Future<dio.ResponseBody> fetch(

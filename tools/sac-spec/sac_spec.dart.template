@@ -7,7 +7,7 @@
 /// The embedded spec of the Stellar Asset Contract, the built-in token contract
 /// of every classic asset.
 ///
-/// `SACClient.specEntries` decodes [XDR_BASE64] and verifies the decoded bytes
+/// [SACClient.specEntries] decodes [XDR_BASE64] and verifies the decoded bytes
 /// against [SHA256].
 abstract final class SACSpec {
   /// The commit of the upstream spec repository that the constants were taken from.
