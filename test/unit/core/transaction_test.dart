@@ -5,6 +5,17 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart' as crypto;
 
+void _expectSignatures(
+  List<XdrDecoratedSignature> actual,
+  List<XdrDecoratedSignature> expected,
+) {
+  expect(actual.length, expected.length);
+  for (var i = 0; i < expected.length; i++) {
+    expect(actual[i].hint.signatureHint, expected[i].hint.signatureHint);
+    expect(actual[i].signature.signature, expected[i].signature.signature);
+  }
+}
+
 void main() {
   group('Transaction', () {
     late KeyPair sourceKeyPair;
@@ -758,10 +769,73 @@ void main() {
 
         expect(parsed, isA<FeeBumpTransaction>());
         final parsedFeeBump = parsed as FeeBumpTransaction;
+        expect(parsedFeeBump.signatures.length, 1);
+        _expectSignatures(parsedFeeBump.signatures, feeBumpTx.signatures);
+        expect(parsedFeeBump.toEnvelopeXdrBase64(), xdrBase64);
         expect(
           parsedFeeBump.feeAccount.ed25519AccountId,
           equals(feeAccount.accountId),
         );
+      });
+
+      test('pubnet fee bump preserves outer and inner signatures', () {
+        const xdrBase64 =
+            'AAAABQAAAABUBHORC+f3jADZQhru3jYxfSaTxjqXU8ckOHWA5NnKVgAAAAAAAYagAAAAAgAAAAB5hARY7qEOi72+I+T0ZzCQasTD9QawKBk2clAF7wDrSgAAAG4D3COQAAAAAgAAAAEAAAAAAAAAAAAAAABq+TiaAAAAAAAAAAEAAAAAAAAAAQAAAQAFHyABifkSWShEFCztAl8+nLogu9LkT7yeDUhww6rYIoR8vO5Rl55qAAAAAAAAAAAEQoqQAAAAAAAAAAHvAOtKAAAAQIS+M6f2STQ6JUR5jrOJiFqPkj6q7K+cUhuHkh7BXzOMGw8+mWkhoaYNqnzheOEYZJ1vlvMe/7AuGiXtFC2HagMAAAAAAAAAAeTZylYAAABAV+9/NGjQeP5GvF4QNmGl4sOWfVy8ijw8roBnFsCtpFxuXGtrR6jAfyYRIY+EoxU5Uz0CM+zogESxhI8tPBAZDw==';
+        final envelope = XdrTransactionEnvelope.fromEnvelopeXdrString(
+          xdrBase64,
+        );
+        final parsed = AbstractTransaction.fromEnvelopeXdrString(xdrBase64);
+
+        expect(parsed, isA<FeeBumpTransaction>());
+        final feeBump = parsed as FeeBumpTransaction;
+        expect(feeBump.signatures.length, 1);
+        _expectSignatures(feeBump.signatures, envelope.feeBump!.signatures);
+        expect(feeBump.innerTransaction.signatures.length, 1);
+        _expectSignatures(
+          feeBump.innerTransaction.signatures,
+          envelope.feeBump!.tx.innerTx.v1!.signatures,
+        );
+        expect(feeBump.toEnvelopeXdrBase64(), xdrBase64);
+        expect(
+          Util.bytesToHex(feeBump.hash(Network.PUBLIC)),
+          '34b6b29f3ea2ab77ace0b0a244b297cdcedd5434d1bd1b356636d7c54c2070cc',
+        );
+      });
+
+      test('fee bump imports preserve two signatures in signing order', () {
+        final source = KeyPair.random();
+        final firstSigner = KeyPair.random();
+        final secondSigner = KeyPair.random();
+        final inner = TransactionBuilder(Account(source.accountId, BigInt.one))
+            .addOperation(
+              PaymentOperationBuilder(
+                source.accountId,
+                Asset.NATIVE,
+                '1',
+              ).build(),
+            )
+            .build();
+        inner.sign(source, Network.TESTNET);
+        final original = FeeBumpTransactionBuilder(
+          inner,
+        ).setBaseFee(200).setFeeAccount(firstSigner.accountId).build();
+        original.sign(firstSigner, Network.TESTNET);
+        original.sign(secondSigner, Network.TESTNET);
+        final xdrBase64 = original.toEnvelopeXdrBase64();
+        final envelope = XdrTransactionEnvelope.fromEnvelopeXdrString(
+          xdrBase64,
+        );
+
+        for (final parsed in [
+          AbstractTransaction.fromEnvelopeXdr(envelope),
+          FeeBumpTransaction.fromFeeBumpTransactionEnvelope(envelope.feeBump!),
+        ]) {
+          expect(parsed, isA<FeeBumpTransaction>());
+          expect(parsed.signatures.length, 2);
+          _expectSignatures(parsed.signatures, envelope.feeBump!.signatures);
+          _expectSignatures(parsed.signatures, original.signatures);
+          expect(parsed.toEnvelopeXdrBase64(), xdrBase64);
+        }
       });
 
       test('fee bump requires base fee to be set', () {
@@ -1484,6 +1558,9 @@ void main() {
           AbstractTransaction.fromEnvelopeXdrString(xdrBase64)
               as FeeBumpTransaction;
 
+      expect(decoded.signatures.length, 1);
+      _expectSignatures(decoded.signatures, original.signatures);
+      expect(decoded.toEnvelopeXdrBase64(), xdrBase64);
       expect(
         decoded.feeAccount.ed25519AccountId,
         equals(original.feeAccount.ed25519AccountId),
