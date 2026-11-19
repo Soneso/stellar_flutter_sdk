@@ -1531,4 +1531,123 @@ void main() {
       });
     }
   });
+
+  group('Offer prices read from XDR encode as sent', () {
+    final usd = AssetTypeCreditAlphaNum4(
+      'USD',
+      'GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ',
+    );
+    final source = MuxedAccount.fromAccountId(
+      'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+    )!.toXdr();
+    final xlm = Asset.NATIVE;
+    final amount = XdrInt64(BigInt.from(1000000000));
+    final offerId = XdrUint64(BigInt.from(12345));
+
+    XdrPrice xdrPrice(int n, int d) => XdrPrice(XdrInt32(n), XdrInt32(d));
+
+    // Per offer type: the XDR body for a price, the price in a body, the
+    // decimal price of an operation, and an operation from the public builder.
+    final types =
+        <
+          String,
+          ({
+            XdrOperationBody Function(XdrPrice) body,
+            XdrPrice Function(XdrOperationBody) price,
+            String Function(Operation) decimal,
+            Operation Function(String) build,
+          })
+        >{
+          'ManageSellOffer': (
+            body: (p) => XdrOperationBody(XdrOperationType.MANAGE_SELL_OFFER)
+              ..manageSellOfferOp = XdrManageSellOfferOp(
+                xlm.toXdr(),
+                usd.toXdr(),
+                amount,
+                p,
+                offerId,
+              ),
+            price: (b) => b.manageSellOfferOp!.price,
+            decimal: (o) => (o as ManageSellOfferOperation).price,
+            build: (s) =>
+                ManageSellOfferOperationBuilder(xlm, usd, '1', s).build(),
+          ),
+          'ManageBuyOffer': (
+            body: (p) => XdrOperationBody(XdrOperationType.MANAGE_BUY_OFFER)
+              ..manageBuyOfferOp = XdrManageBuyOfferOp(
+                xlm.toXdr(),
+                usd.toXdr(),
+                amount,
+                p,
+                offerId,
+              ),
+            price: (b) => b.manageBuyOfferOp!.price,
+            decimal: (o) => (o as ManageBuyOfferOperation).price,
+            build: (s) =>
+                ManageBuyOfferOperationBuilder(xlm, usd, '1', s).build(),
+          ),
+          'CreatePassiveSellOffer': (
+            body: (p) =>
+                XdrOperationBody(XdrOperationType.CREATE_PASSIVE_SELL_OFFER)
+                  ..createPassiveSellOfferOp = XdrCreatePassiveSellOfferOp(
+                    xlm.toXdr(),
+                    usd.toXdr(),
+                    amount,
+                    p,
+                  ),
+            price: (b) => b.createPassiveSellOfferOp!.price,
+            decimal: (o) => (o as CreatePassiveSellOfferOperation).price,
+            build: (s) => CreatePassiveSellOfferOperationBuilder(
+              xlm,
+              usd,
+              '1',
+              s,
+            ).build(),
+          ),
+        };
+
+    types.forEach((name, type) {
+      String encoded(int n, int d, [XdrMuxedAccount? source]) => XdrOperation(
+        source,
+        type.body(xdrPrice(n, d)),
+      ).toBase64EncodedXdrString();
+      Operation imported(String input) =>
+          Operation.fromXdr(XdrOperation.fromBase64EncodedXdrString(input));
+
+      test('$name 2/4 with and without a source account', () {
+        for (final input in [encoded(2, 4), encoded(2, 4, source)]) {
+          final operation = imported(input);
+
+          expect(type.decimal(operation), equals('0.5'));
+          expect(operation.toXdrBase64(), equals(input));
+        }
+      });
+
+      test('$name 3/7 and 2147483646/2147483647 round trip', () {
+        for (final input in [encoded(3, 7), encoded(2147483646, 2147483647)]) {
+          expect(imported(input).toXdrBase64(), equals(input));
+        }
+      });
+
+      test('$name from the public builder at "0.5" encodes 1/2', () {
+        final price = type.price(type.build('0.5').toOperationBody());
+
+        expect([price.n.int32, price.d.int32], equals([1, 2]));
+      });
+
+      test('$name shares no price object with its input or output', () {
+        final price = xdrPrice(2, 4);
+        final body = type.body(price);
+        final input = XdrOperation(null, body).toBase64EncodedXdrString();
+        final operation = Operation.fromXdr(XdrOperation(null, body));
+
+        price.n.int32 = 7;
+        price.d = XdrInt32(9);
+        expect(operation.toXdrBase64(), equals(input));
+
+        type.price(operation.toXdr().body).n.int32 = 5;
+        expect(operation.toXdrBase64(), equals(input));
+      });
+    });
+  });
 }

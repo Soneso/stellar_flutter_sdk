@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - `AbstractTransaction.fromEnvelopeXdr()`, `fromEnvelopeXdrString()` and `Operation.fromXdr()` read an inflation operation as the new `InflationOperation`, which encodes it unchanged. Before this change, they threw an exception, so a transaction with inflation could not be read or hashed.
+- `AbstractTransaction.fromEnvelopeXdr()`, `fromEnvelopeXdrString()` and `Operation.fromXdr()` keep the price of a manage sell offer, manage buy offer, create passive sell offer or liquidity pool deposit operation exactly as the XDR holds it. Before this change, a price not in lowest terms was reduced, so the transaction got a hash that does not exist on the network.
 
 ## [3.12.0] - 2026-11-16
 

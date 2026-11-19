@@ -2373,4 +2373,122 @@ void main() {
       expect(transaction.toEnvelopeXdrBase64(), equals(input));
     });
   });
+
+  group('Envelopes with prices not in lowest terms', () {
+    final networkId = crypto.sha256
+        .convert(utf8.encode('Public Global Stellar Network ; September 2015'))
+        .bytes;
+    // Big-endian int32 values of the XDR enum members they are named after.
+    const envelopeTypeTx = [0, 0, 0, 2];
+    const envelopeTypeTxFeeBump = [0, 0, 0, 5];
+
+    XdrMuxedAccount account(int first) =>
+        XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)
+          ..ed25519 = XdrUint256(
+            Uint8List.fromList(
+              List<int>.generate(32, (i) => (first + i) % 256),
+            ),
+          );
+    XdrPrice price(int n, int d) => XdrPrice(XdrInt32(n), XdrInt32(d));
+    final usd = AssetTypeCreditAlphaNum4(
+      'USD',
+      'GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ',
+    ).toXdr();
+    List<XdrDecoratedSignature> signatures() => [
+      XdrDecoratedSignature(
+        XdrSignatureHint(Uint8List.fromList([1, 2, 3, 4])),
+        XdrSignature(Uint8List.fromList(List<int>.filled(64, 7))),
+      ),
+    ];
+    // A manage sell offer at 2/4 and a liquidity pool deposit between 2/4
+    // and 6/8.
+    XdrTransaction transaction() => XdrTransaction(
+      account(1),
+      XdrUint32(200),
+      XdrSequenceNumber(BigInt.parse('81604378625')),
+      XdrPreconditions(XdrPreconditionType.PRECOND_NONE),
+      XdrMemo(XdrMemoType.MEMO_NONE),
+      [
+        XdrOperation(
+          null,
+          XdrOperationBody(XdrOperationType.MANAGE_SELL_OFFER)
+            ..manageSellOfferOp = XdrManageSellOfferOp(
+              XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
+              usd,
+              XdrInt64(BigInt.from(1000000000)),
+              price(2, 4),
+              XdrUint64(BigInt.zero),
+            ),
+        ),
+        XdrOperation(
+          account(40),
+          XdrOperationBody(XdrOperationType.LIQUIDITY_POOL_DEPOSIT)
+            ..liquidityPoolDepositOp = XdrLiquidityPoolDepositOp(
+              XdrHash(Uint8List.fromList(List<int>.filled(32, 9))),
+              XdrInt64(BigInt.from(1000000000)),
+              XdrInt64(BigInt.from(500000000)),
+              price(2, 4),
+              price(6, 8),
+            ),
+        ),
+      ],
+      XdrTransactionExt(0),
+    );
+    List<int> encode(void Function(XdrDataOutputStream stream) write) {
+      final stream = XdrDataOutputStream();
+      write(stream);
+      return stream.bytes;
+    }
+
+    Uint8List payloadHash(List<int> taggedTransaction) => Uint8List.fromList(
+      crypto.sha256.convert([...networkId, ...taggedTransaction]).bytes,
+    );
+    final txBytes = encode((s) => XdrTransaction.encode(s, transaction()));
+
+    test('a V1 envelope is re-encoded and hashed unchanged', () {
+      final input =
+          (XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX)
+                ..v1 = XdrTransactionV1Envelope(transaction(), signatures()))
+              .toEnvelopeXdrBase64();
+
+      final parsed = AbstractTransaction.fromEnvelopeXdrString(input);
+
+      expect(parsed.toEnvelopeXdrBase64(), equals(input));
+      expect(
+        parsed.hash(Network.PUBLIC),
+        equals(payloadHash([...envelopeTypeTx, ...txBytes])),
+      );
+    });
+
+    test('a fee bump envelope hashes its inner and outer transaction', () {
+      final feeBump = XdrFeeBumpTransaction(
+        account(120),
+        XdrInt64(BigInt.from(600)),
+        XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX)
+          ..v1 = XdrTransactionV1Envelope(transaction(), signatures()),
+        XdrFeeBumpTransactionExt(0),
+      );
+      final input =
+          (XdrTransactionEnvelope(
+                XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP,
+              )..feeBump = XdrFeeBumpTransactionEnvelope(feeBump, signatures()))
+              .toEnvelopeXdrBase64();
+      final feeBumpBytes = encode(
+        (s) => XdrFeeBumpTransaction.encode(s, feeBump),
+      );
+
+      final parsed =
+          AbstractTransaction.fromEnvelopeXdrString(input)
+              as FeeBumpTransaction;
+
+      expect(
+        parsed.innerTransaction.hash(Network.PUBLIC),
+        equals(payloadHash([...envelopeTypeTx, ...txBytes])),
+      );
+      expect(
+        parsed.hash(Network.PUBLIC),
+        equals(payloadHash([...envelopeTypeTxFeeBump, ...feeBumpBytes])),
+      );
+    });
+  });
 }
