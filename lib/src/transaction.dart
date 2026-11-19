@@ -753,7 +753,7 @@ class FeeBumpTransaction extends AbstractTransaction {
 
   /// Creates a fee bump transaction from its XDR envelope representation.
   ///
-  /// Parses the XDR envelope and extracts the inner transaction and fee bump details.
+  /// Parses the XDR envelope and extracts the inner transaction, the fee bump details and the envelope's signatures.
   static FeeBumpTransaction fromFeeBumpTransactionEnvelope(
     XdrFeeBumpTransactionEnvelope envelope,
   ) {
@@ -764,6 +764,7 @@ class FeeBumpTransaction extends AbstractTransaction {
       fee,
       inner,
     );
+    feeBump._mSignatures.addAll(envelope.signatures);
     return feeBump;
   }
 

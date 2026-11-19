@@ -2252,6 +2252,62 @@ void main() {
         expect(result.response!.statusCode, 200);
       });
 
+      test(
+        'callback preserves fee bump signatures before adding a signer',
+        () async {
+          final source = KeyPair.random();
+          final feeAccount = KeyPair.random();
+          final newSigner = KeyPair.random();
+          final inner =
+              TransactionBuilder(Account(source.accountId, BigInt.one))
+                  .addOperation(
+                    PaymentOperationBuilder(
+                      source.accountId,
+                      Asset.NATIVE,
+                      '1',
+                    ).build(),
+                  )
+                  .build();
+          inner.sign(source, Network.TESTNET);
+          final feeBump = FeeBumpTransactionBuilder(
+            inner,
+          ).setBaseFee(200).setFeeAccount(feeAccount.accountId).build();
+          feeBump.sign(feeAccount, Network.TESTNET);
+          final expected = FeeBumpTransactionBuilder(
+            inner,
+          ).setBaseFee(200).setFeeAccount(feeAccount.accountId).build();
+          expected.sign(feeAccount, Network.TESTNET);
+          expected.sign(newSigner, Network.TESTNET);
+
+          String? posted;
+          final client = MockClient((request) async {
+            expect(request.method, 'POST');
+            expect(request.url.toString(), 'https://example.com/callback');
+            posted = Uri.splitQueryString(request.body)['xdr'];
+            return http.Response('ok', 200);
+          });
+          addTearDown(client.close);
+          final scheme = URIScheme(httpClient: client);
+          final uri = scheme.generateSignTransactionURI(
+            feeBump.toEnvelopeXdrBase64(),
+            callback: 'url:https://example.com/callback',
+          );
+          final result = await scheme.signAndSubmitTransaction(
+            uri,
+            newSigner,
+            network: Network.TESTNET,
+          );
+
+          expect(result.response!.statusCode, 200);
+          final envelope = XdrTransactionEnvelope.fromEnvelopeXdrString(
+            posted!,
+          );
+          final signatures = envelope.feeBump!.signatures;
+          expect(signatures.length, 2);
+          expect(posted, expected.toEnvelopeXdrBase64());
+        },
+      );
+
       test('submits transaction to network when no callback', () async {
         final localSourceAccount = Account(
           testKeyPair.accountId,
