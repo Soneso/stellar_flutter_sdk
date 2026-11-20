@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Asset.contractId(network)` derives the id of the asset's Stellar Asset Contract.
 - `SACSpec` embeds the Stellar Asset Contract spec at upstream commit 4f08d14.
 - `SorobanClient.forSpecEntries()` builds a client from spec entries without an RPC request. With `readOnly: true`, its transactions simulate without loading the source account and refuse to sign, send, or restore.
+- `DeploySACWithAssetHostFunction` takes optional constructor arguments; with an argument list, including an empty one, it writes `HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2`.
 
 ### Changed
 - `SorobanClient.forClientOptions` opens Stellar Asset Contracts with the embedded spec.
@@ -20,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AbstractTransaction.fromEnvelopeXdr()`, `fromEnvelopeXdrString()` and `Operation.fromXdr()` read an inflation operation as the new `InflationOperation`, which encodes it unchanged. Before this change, they threw an exception, so a transaction with inflation could not be read or hashed.
 - `AbstractTransaction.fromEnvelopeXdr()`, `fromEnvelopeXdrString()` and `Operation.fromXdr()` keep the price of a manage sell offer, manage buy offer, create passive sell offer or liquidity pool deposit operation exactly as the XDR holds it. Before this change, a price not in lowest terms was reduced, so the transaction got a hash that does not exist on the network.
 - `AbstractTransaction.fromEnvelopeXdr()`, `fromEnvelopeXdrString()` and `FeeBumpTransaction.fromFeeBumpTransactionEnvelope()` keep the signatures of a fee bump envelope. Before this change, they were dropped, so a parsed fee bump was written back without its fee-account signatures, and SEP-7 `signAndSubmitTransaction()` kept only its own.
+- `DeploySACWithAssetHostFunction` keeps a `HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2` host function with its constructor arguments when it reads one. Before this change, it wrote it back as `HOST_FUNCTION_TYPE_CREATE_CONTRACT`, so an imported transaction that deploys a Stellar Asset Contract this way got another hash.
 
 ## [3.12.0] - 2026-11-16
 

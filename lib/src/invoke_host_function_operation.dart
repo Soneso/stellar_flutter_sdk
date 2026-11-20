@@ -147,6 +147,7 @@ abstract class HostFunction {
               Asset.fromXdr(
                 xdr.createContractV2!.contractIDPreimage.fromAsset!,
               ),
+              constructorArgs: xdr.createContractV2!.constructorArgs,
             );
           }
         }
@@ -784,18 +785,41 @@ class DeploySACWithAssetHostFunction extends HostFunction {
   Asset get asset => this._asset;
   set asset(Asset value) => this._asset = value;
 
+  List<XdrSCVal>? _constructorArgs;
+
+  /// The constructor arguments, or `null` for
+  /// `HOST_FUNCTION_TYPE_CREATE_CONTRACT`.
+  ///
+  /// A list, including an empty one, makes [toXdr] write
+  /// `HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2` with exactly these arguments.
+  List<XdrSCVal>? get constructorArgs => this._constructorArgs;
+  set constructorArgs(List<XdrSCVal>? value) => this._constructorArgs = value;
+
   /// Creates a DeploySACWithAssetHostFunction.
   ///
   /// Parameters:
   /// - [_asset]: Classic Stellar asset (native or issued) to wrap.
-  DeploySACWithAssetHostFunction(this._asset);
+  /// - [constructorArgs]: Arguments for `HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2`;
+  ///   without them the host function is `HOST_FUNCTION_TYPE_CREATE_CONTRACT`.
+  DeploySACWithAssetHostFunction(this._asset, {List<XdrSCVal>? constructorArgs})
+    : _constructorArgs = constructorArgs;
 
   /// Converts this host function to its XDR representation.
   ///
   /// Returns: XDR host function for SAC deployment from asset.
   @override
   XdrHostFunction toXdr() {
-    return XdrHostFunction.forDeploySACWithAsset(asset.toXdr());
+    final List<XdrSCVal>? args = constructorArgs;
+    if (args == null) {
+      return XdrHostFunction.forDeploySACWithAsset(asset.toXdr());
+    }
+    return XdrHostFunction.forCreatingContractV2WithArgs(
+      XdrCreateContractArgsV2(
+        XdrContractIDPreimage.forAsset(asset.toXdr()),
+        XdrContractExecutable.forAsset(),
+        args,
+      ),
+    );
   }
 }
 
