@@ -21,7 +21,7 @@ void main() {
 
         var offerEntry = XdrOfferEntry(
           sellerId,
-          XdrUint64(BigInt.from(12345)),
+          XdrInt64(BigInt.from(12345)),
           selling,
           buying,
           XdrInt64(BigInt.from(1000000)),
@@ -60,7 +60,7 @@ void main() {
         );
         expect(decoded.success!.offer.offer, isNotNull);
         expect(
-          decoded.success!.offer.offer!.offerID.uint64,
+          decoded.success!.offer.offer!.offerID.int64,
           equals(BigInt.from(12345)),
         );
       },
@@ -79,7 +79,7 @@ void main() {
 
         var offerEntry = XdrOfferEntry(
           sellerId,
-          XdrUint64(BigInt.from(99999)),
+          XdrInt64(BigInt.from(99999)),
           selling,
           buying,
           XdrInt64(BigInt.from(2000000)),
@@ -118,7 +118,7 @@ void main() {
         );
         expect(decoded.success!.offer.offer, isNotNull);
         expect(
-          decoded.success!.offer.offer!.offerID.uint64,
+          decoded.success!.offer.offer!.offerID.int64,
           equals(BigInt.from(99999)),
         );
       },

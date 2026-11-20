@@ -367,7 +367,11 @@ void main() {
             () => build(value).toOperationBody(),
             throwsA(
               isA<FormatException>()
-                  .having((e) => e.message, 'message', 'Could not parse BigInt')
+                  .having(
+                    (e) => e.message,
+                    'message',
+                    'An offer id is decimal int64 text',
+                  )
                   .having((e) => e.source, 'source', variants.keyWording(value))
                   .having((e) => e.toString(), 'text', leavesOut(value)),
             ),
@@ -650,7 +654,7 @@ void main() {
             .toOperationBody()
             .manageBuyOfferOp!
             .offerID
-            .uint64,
+            .int64,
         BigInt.from(12345),
       );
     });

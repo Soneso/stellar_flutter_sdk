@@ -267,7 +267,7 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    return manageResult!.success!.offer.offer!.offerID.uint64.toInt();
+    return manageResult!.success!.offer.offer!.offerID.int64.toInt();
   }
 
   /// Helper method that returns Claimable Balance ID for CreateClaimableBalance from TransactionResult XDR.

@@ -73,18 +73,6 @@ FIELD_OVERRIDES = {
 # FIELD_OVERRIDES renaming.
 
 FIELD_TYPE_OVERRIDES = {
-  # -----------------------------------------------------------------------
-  # int64 offerID fields using XdrUint64 (SDK uses unsigned for IDs).
-  # The XDR spec declares these as int64 (signed) but offer IDs are
-  # always positive, and the SDK historically uses unsigned decode.
-  # -----------------------------------------------------------------------
-  "XdrManageBuyOfferOp" => { "offerID" => "XdrUint64" },
-  "XdrManageSellOfferOp" => { "offerID" => "XdrUint64" },
-  "XdrOfferEntry" => { "offerID" => "XdrUint64" },
-  "XdrLedgerKeyOffer" => { "offerID" => "XdrUint64" },
-  "XdrClaimOfferAtom" => { "offerID" => "XdrUint64" },
-  "XdrClaimOfferAtomV0" => { "offerID" => "XdrUint64" },
-
   # uint32 field using int instead of XdrUint32
   "XdrAllowTrustOp" => { "authorize" => "int" },
 

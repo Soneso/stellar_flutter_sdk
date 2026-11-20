@@ -2494,7 +2494,7 @@ void main() {
               usd,
               XdrInt64(BigInt.from(1000000000)),
               price(2, 4),
-              XdrUint64(BigInt.zero),
+              XdrInt64(BigInt.zero),
             ),
         ),
         XdrOperation(

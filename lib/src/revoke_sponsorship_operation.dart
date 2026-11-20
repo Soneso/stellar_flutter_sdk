@@ -297,7 +297,7 @@ class RevokeSponsorshipOperationBuilder
     XdrAccountID sellerID = XdrAccountID(
       KeyPair.fromAccountId(accountId).xdrPublicKey,
     );
-    XdrUint64 offId = XdrUint64(BigInt.from(offerId));
+    XdrInt64 offId = XdrInt64(BigInt.from(offerId));
     _ledgerKey!.offer = XdrLedgerKeyOffer(sellerID, offId);
     return this;
   }

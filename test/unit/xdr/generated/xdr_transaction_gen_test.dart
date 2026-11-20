@@ -290,7 +290,7 @@ void main() {
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrPrice(XdrInt32(1), XdrInt32(2)),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrManageSellOfferOp.encode(output, original);
@@ -298,12 +298,12 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrManageSellOfferOp.decode(input);
       expect(decoded.amount.int64, equals(original.amount.int64));
-      expect(decoded.offerID.uint64, equals(original.offerID.uint64));
+      expect(decoded.offerID.int64, equals(original.offerID.int64));
       var base64Decoded = XdrManageSellOfferOp.fromBase64EncodedXdrString(
         original.toBase64EncodedXdrString(),
       );
       expect(base64Decoded.amount.int64, equals(original.amount.int64));
-      expect(base64Decoded.offerID.uint64, equals(original.offerID.uint64));
+      expect(base64Decoded.offerID.int64, equals(original.offerID.int64));
     });
 
     test('XdrManageBuyOfferOp struct roundtrip', () {
@@ -312,7 +312,7 @@ void main() {
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrPrice(XdrInt32(1), XdrInt32(2)),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrManageBuyOfferOp.encode(output, original);
@@ -320,12 +320,12 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrManageBuyOfferOp.decode(input);
       expect(decoded.amount.int64, equals(original.amount.int64));
-      expect(decoded.offerID.uint64, equals(original.offerID.uint64));
+      expect(decoded.offerID.int64, equals(original.offerID.int64));
       var base64Decoded = XdrManageBuyOfferOp.fromBase64EncodedXdrString(
         original.toBase64EncodedXdrString(),
       );
       expect(base64Decoded.amount.int64, equals(original.amount.int64));
-      expect(base64Decoded.offerID.uint64, equals(original.offerID.uint64));
+      expect(base64Decoded.offerID.int64, equals(original.offerID.int64));
     });
 
     test('XdrCreatePassiveSellOfferOp struct roundtrip', () {
@@ -2047,7 +2047,7 @@ void main() {
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
           XdrInt64(BigInt.from(654321)),
           XdrPrice(XdrInt32(1), XdrInt32(2)),
-          XdrUint64(BigInt.from(123456)),
+          XdrInt64(BigInt.from(654321)),
         );
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
@@ -2285,7 +2285,7 @@ void main() {
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
           XdrInt64(BigInt.from(654321)),
           XdrPrice(XdrInt32(1), XdrInt32(2)),
-          XdrUint64(BigInt.from(123456)),
+          XdrInt64(BigInt.from(654321)),
         );
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrOperationBody.encode(output, original);
@@ -4569,7 +4569,7 @@ void main() {
     test('XdrClaimOfferAtomV0 struct roundtrip', () {
       var original = XdrClaimOfferAtomV0(
         XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -4580,13 +4580,13 @@ void main() {
       Uint8List encoded = Uint8List.fromList(output.bytes);
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrClaimOfferAtomV0.decode(input);
-      expect(decoded.offerID.uint64, equals(original.offerID.uint64));
+      expect(decoded.offerID.int64, equals(original.offerID.int64));
       expect(decoded.amountSold.int64, equals(original.amountSold.int64));
       expect(decoded.amountBought.int64, equals(original.amountBought.int64));
       var base64Decoded = XdrClaimOfferAtomV0.fromBase64EncodedXdrString(
         original.toBase64EncodedXdrString(),
       );
-      expect(base64Decoded.offerID.uint64, equals(original.offerID.uint64));
+      expect(base64Decoded.offerID.int64, equals(original.offerID.int64));
       expect(base64Decoded.amountSold.int64, equals(original.amountSold.int64));
       expect(
         base64Decoded.amountBought.int64,
@@ -4602,7 +4602,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -4613,13 +4613,13 @@ void main() {
       Uint8List encoded = Uint8List.fromList(output.bytes);
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrClaimOfferAtom.decode(input);
-      expect(decoded.offerID.uint64, equals(original.offerID.uint64));
+      expect(decoded.offerID.int64, equals(original.offerID.int64));
       expect(decoded.amountSold.int64, equals(original.amountSold.int64));
       expect(decoded.amountBought.int64, equals(original.amountBought.int64));
       var base64Decoded = XdrClaimOfferAtom.fromBase64EncodedXdrString(
         original.toBase64EncodedXdrString(),
       );
-      expect(base64Decoded.offerID.uint64, equals(original.offerID.uint64));
+      expect(base64Decoded.offerID.int64, equals(original.offerID.int64));
       expect(base64Decoded.amountSold.int64, equals(original.amountSold.int64));
       expect(
         base64Decoded.amountBought.int64,
@@ -4664,7 +4664,7 @@ void main() {
       var original = XdrClaimAtom(XdrClaimAtomType.CLAIM_ATOM_TYPE_V0);
       original.v0 = XdrClaimOfferAtomV0(
         XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -4702,7 +4702,7 @@ void main() {
                 Uint8List.fromList(List<int>.filled(32, 0xAB)),
               ),
           ),
-          XdrUint64(BigInt.from(123456)),
+          XdrInt64(BigInt.from(654321)),
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
           XdrInt64(BigInt.from(654321)),
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -5043,7 +5043,7 @@ void main() {
           (XdrClaimAtom(XdrClaimAtomType.CLAIM_ATOM_TYPE_V0)
             ..v0 = XdrClaimOfferAtomV0(
               XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
-              XdrUint64(BigInt.from(123456)),
+              XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
               XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -5544,7 +5544,7 @@ void main() {
                 Uint8List.fromList(List<int>.filled(32, 0xAB)),
               ),
           ),
-          XdrUint64(BigInt.from(123456)),
+          XdrInt64(BigInt.from(654321)),
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
           XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
           XdrInt64(BigInt.from(654321)),
@@ -5602,7 +5602,7 @@ void main() {
           (XdrClaimAtom(XdrClaimAtomType.CLAIM_ATOM_TYPE_V0)
             ..v0 = XdrClaimOfferAtomV0(
               XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
-              XdrUint64(BigInt.from(123456)),
+              XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
               XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -9612,7 +9612,7 @@ void main() {
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrPrice(XdrInt32(1), XdrInt32(2)),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       List<String> lines = [];
       original.toTxRep('tx', lines);
@@ -9631,7 +9631,7 @@ void main() {
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrPrice(XdrInt32(1), XdrInt32(2)),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       List<String> lines = [];
       original.toTxRep('tx', lines);
@@ -11248,7 +11248,7 @@ void main() {
             XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
             XdrInt64(BigInt.from(654321)),
             XdrPrice(XdrInt32(1), XdrInt32(2)),
-            XdrUint64(BigInt.from(123456)),
+            XdrInt64(BigInt.from(654321)),
           ));
         List<String> lines = [];
         original.toTxRep('tx', lines);
@@ -11428,7 +11428,7 @@ void main() {
             XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
             XdrInt64(BigInt.from(654321)),
             XdrPrice(XdrInt32(1), XdrInt32(2)),
-            XdrUint64(BigInt.from(123456)),
+            XdrInt64(BigInt.from(654321)),
           ));
         List<String> lines = [];
         original.toTxRep('tx', lines);
