@@ -1492,7 +1492,7 @@ void main() {
           usd.toXdr(),
           amount,
           xdrPrice(pair),
-          XdrUint64(BigInt.zero),
+          XdrInt64(BigInt.zero),
         );
 
         final operation = ManageBuyOfferOperation.builder(op).build();
@@ -1506,7 +1506,7 @@ void main() {
           usd.toXdr(),
           amount,
           xdrPrice(pair),
-          XdrUint64(BigInt.zero),
+          XdrInt64(BigInt.zero),
         );
 
         final operation = ManageSellOfferOperation.builder(op).build();
@@ -1542,7 +1542,7 @@ void main() {
     )!.toXdr();
     final xlm = Asset.NATIVE;
     final amount = XdrInt64(BigInt.from(1000000000));
-    final offerId = XdrUint64(BigInt.from(12345));
+    final offerId = XdrInt64(BigInt.from(12345));
 
     XdrPrice xdrPrice(int n, int d) => XdrPrice(XdrInt32(n), XdrInt32(d));
 

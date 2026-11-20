@@ -14,16 +14,15 @@ import 'xdr_json_helper.dart';
 import 'xdr_offer_entry_ext.dart';
 import 'xdr_price.dart';
 import 'xdr_uint32.dart';
-import 'xdr_uint64.dart';
 
 class XdrOfferEntry {
   XdrAccountID _sellerID;
   XdrAccountID get sellerID => this._sellerID;
   set sellerID(XdrAccountID value) => this._sellerID = value;
 
-  XdrUint64 _offerID;
-  XdrUint64 get offerID => this._offerID;
-  set offerID(XdrUint64 value) => this._offerID = value;
+  XdrInt64 _offerID;
+  XdrInt64 get offerID => this._offerID;
+  set offerID(XdrInt64 value) => this._offerID = value;
 
   XdrAsset _selling;
   XdrAsset get selling => this._selling;
@@ -65,7 +64,7 @@ class XdrOfferEntry {
     XdrOfferEntry encodedOfferEntry,
   ) {
     XdrAccountID.encode(stream, encodedOfferEntry.sellerID);
-    XdrUint64.encode(stream, encodedOfferEntry.offerID);
+    XdrInt64.encode(stream, encodedOfferEntry.offerID);
     XdrAsset.encode(stream, encodedOfferEntry.selling);
     XdrAsset.encode(stream, encodedOfferEntry.buying);
     XdrInt64.encode(stream, encodedOfferEntry.amount);
@@ -76,7 +75,7 @@ class XdrOfferEntry {
 
   static XdrOfferEntry decode(XdrDataInputStream stream) {
     XdrAccountID sellerID = XdrAccountID.decode(stream);
-    XdrUint64 offerID = XdrUint64.decode(stream);
+    XdrInt64 offerID = XdrInt64.decode(stream);
     XdrAsset selling = XdrAsset.decode(stream);
     XdrAsset buying = XdrAsset.decode(stream);
     XdrInt64 amount = XdrInt64.decode(stream);
@@ -188,7 +187,7 @@ class XdrOfferEntry {
     );
     return XdrOfferEntry(
       XdrAccountID.fromXdrJsonValue(jsonSellerID),
-      XdrUint64.fromXdrJsonValue(jsonOfferID),
+      XdrInt64.fromXdrJsonValue(jsonOfferID),
       XdrAsset.fromXdrJsonValue(jsonSelling),
       XdrAsset.fromXdrJsonValue(jsonBuying),
       XdrInt64.fromXdrJsonValue(jsonAmount),

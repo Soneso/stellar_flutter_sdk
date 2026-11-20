@@ -12,7 +12,6 @@ import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_json_helper.dart';
 import 'xdr_price.dart';
-import 'xdr_uint64.dart';
 
 class XdrManageSellOfferOp {
   XdrAsset _selling;
@@ -31,9 +30,9 @@ class XdrManageSellOfferOp {
   XdrPrice get price => this._price;
   set price(XdrPrice value) => this._price = value;
 
-  XdrUint64 _offerID;
-  XdrUint64 get offerID => this._offerID;
-  set offerID(XdrUint64 value) => this._offerID = value;
+  XdrInt64 _offerID;
+  XdrInt64 get offerID => this._offerID;
+  set offerID(XdrInt64 value) => this._offerID = value;
 
   XdrManageSellOfferOp(
     this._selling,
@@ -51,7 +50,7 @@ class XdrManageSellOfferOp {
     XdrAsset.encode(stream, encodedManageSellOfferOp.buying);
     XdrInt64.encode(stream, encodedManageSellOfferOp.amount);
     XdrPrice.encode(stream, encodedManageSellOfferOp.price);
-    XdrUint64.encode(stream, encodedManageSellOfferOp.offerID);
+    XdrInt64.encode(stream, encodedManageSellOfferOp.offerID);
   }
 
   static XdrManageSellOfferOp decode(XdrDataInputStream stream) {
@@ -59,7 +58,7 @@ class XdrManageSellOfferOp {
     XdrAsset buying = XdrAsset.decode(stream);
     XdrInt64 amount = XdrInt64.decode(stream);
     XdrPrice price = XdrPrice.decode(stream);
-    XdrUint64 offerID = XdrUint64.decode(stream);
+    XdrInt64 offerID = XdrInt64.decode(stream);
     return XdrManageSellOfferOp(selling, buying, amount, price, offerID);
   }
 
@@ -97,7 +96,7 @@ class XdrManageSellOfferOp {
     );
     XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
     XdrPrice price = XdrPrice.fromTxRep(map, '$prefix.price');
-    XdrUint64 offerID = XdrUint64.fromTxRep(map, '$prefix.offerID');
+    XdrInt64 offerID = XdrInt64.fromTxRep(map, '$prefix.offerID');
     return XdrManageSellOfferOp(selling, buying, amount, price, offerID);
   }
 
@@ -164,7 +163,7 @@ class XdrManageSellOfferOp {
       XdrAsset.fromXdrJsonValue(jsonBuying),
       XdrInt64.fromXdrJsonValue(jsonAmount),
       XdrPrice.fromXdrJsonValue(jsonPrice),
-      XdrUint64.fromXdrJsonValue(jsonOfferID),
+      XdrInt64.fromXdrJsonValue(jsonOfferID),
     );
   }
 }

@@ -120,7 +120,7 @@ class XdrLedgerKey extends XdrLedgerKeyBase {
 
   int? getOfferOfferId() {
     if (offer != null) {
-      return offer!.offerID.uint64.toInt();
+      return offer!.offerID.int64.toInt();
     }
     return null;
   }

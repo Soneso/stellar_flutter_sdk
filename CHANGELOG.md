@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - `SorobanClient.forClientOptions` opens Stellar Asset Contracts with the embedded spec.
 - `TimeBounds.minTime`, `TimeBounds.maxTime` and `TransactionPreconditions.minSeqAge` throw a `StateError` for a value that the platform `int` cannot hold, and `minSeqAge` refuses a negative value. Before this change, they returned a clamped or rounded number, and a negative age wrapped modulo 2^64 when another field selected V2 and was dropped otherwise.
+- Breaking: XDR-JSON and TxRep write and read an offer id as a signed 64-bit integer, as the XDR schema defines it. Offer id -16 is written as `"-16"`. The `offerID` field of `XdrManageSellOfferOp`, `XdrManageBuyOfferOp`, `XdrOfferEntry`, `XdrLedgerKeyOffer`, `XdrClaimOfferAtom` and `XdrClaimOfferAtomV0` is an `XdrInt64`; read its value with `.int64`. An offer id outside the int64 range is refused when read. Before this change, a negative offer id was written as a number above 2^63-1, and reading its signed form failed.
 
 ### Fixed
 - `AbstractTransaction.fromEnvelopeXdr()`, `fromEnvelopeXdrString()` and `Operation.fromXdr()` read an inflation operation as the new `InflationOperation`, which encodes it unchanged. Before this change, they threw an exception, so a transaction with inflation could not be read or hashed.
@@ -31,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AbstractTransaction.fromEnvelopeXdr()`, `fromEnvelopeXdrString()` and `TransactionPreconditions.fromXdr()` keep a `PRECOND_V2` precondition as V2, and `TransactionPreconditions` with a minimum sequence number of 0 or less write `PRECOND_V2`. Before this change, a V2 precondition without ledger bounds, extra signers, or a positive sequence condition was written back as `PRECOND_TIME` or `PRECOND_NONE`, and such a minimum sequence number was dropped. The transaction then had a different hash.
 - Reading a transaction keeps large time bounds and minimum sequence ages exactly, so its hash and its envelope match the input. This covers values over 2^63-1 on the Dart VM and over 2^53 in the browser. Before this change, the values were clamped or rounded, and in the browser a value of 2^64-1 made `hash()` throw.
 - `TimeBounds` has a `hashCode` that agrees with `==`, so equal time bounds match in sets and maps.
+- `ManageSellOfferOperation` and `ManageBuyOfferOperation` refuse an offer id that is not plain decimal text in the int64 range, such as `"0x10"`, `" 16 "`, `"+16"` or `"016"`. `toXdr()` throws a `FormatException` for it, also when a transaction that holds the operation is written to XDR. Before this change, the SDK wrote such text as a different offer id or failed later in the encoder.
+- `XdrLedgerKey.getOfferOfferId()` and `SubmitTransactionResponse.getOfferIdFromResult()` read the offer id as a signed value and return a negative offer id as a negative number. Before this change, they returned 9223372036854775807 for it.
 
 ## [3.12.0] - 2026-11-16
 

@@ -205,7 +205,7 @@ void main() {
       var ledgerKey = XdrLedgerKey(XdrLedgerEntryType.OFFER);
       ledgerKey.offer = XdrLedgerKeyOffer(
         accountId,
-        XdrUint64(BigInt.from(12345)),
+        XdrInt64(BigInt.from(12345)),
       );
 
       var original = XdrBucketEntry(XdrBucketEntryType.DEADENTRY);
@@ -228,7 +228,7 @@ void main() {
         equals(XdrLedgerEntryType.OFFER.value),
       );
       expect(
-        decoded.deadEntry!.offer!.offerID.uint64,
+        decoded.deadEntry!.offer!.offerID.int64,
         equals(BigInt.from(12345)),
       );
     });

@@ -1291,7 +1291,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
@@ -1304,13 +1304,13 @@ void main() {
       Uint8List encoded = Uint8List.fromList(output.bytes);
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrOfferEntry.decode(input);
-      expect(decoded.offerID.uint64, equals(original.offerID.uint64));
+      expect(decoded.offerID.int64, equals(original.offerID.int64));
       expect(decoded.amount.int64, equals(original.amount.int64));
       expect(decoded.flags.uint32, equals(original.flags.uint32));
       var base64Decoded = XdrOfferEntry.fromBase64EncodedXdrString(
         original.toBase64EncodedXdrString(),
       );
-      expect(base64Decoded.offerID.uint64, equals(original.offerID.uint64));
+      expect(base64Decoded.offerID.int64, equals(original.offerID.int64));
       expect(base64Decoded.amount.int64, equals(original.amount.int64));
       expect(base64Decoded.flags.uint32, equals(original.flags.uint32));
     });
@@ -2386,7 +2386,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
@@ -2752,18 +2752,18 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrLedgerKeyOfferBase.encode(output, original);
       Uint8List encoded = Uint8List.fromList(output.bytes);
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrLedgerKeyOfferBase.decode(input);
-      expect(decoded.offerID.uint64, equals(original.offerID.uint64));
+      expect(decoded.offerID.int64, equals(original.offerID.int64));
       var base64Decoded = XdrLedgerKeyOfferBase.fromBase64EncodedXdrString(
         original.toBase64EncodedXdrString(),
       );
-      expect(base64Decoded.offerID.uint64, equals(original.offerID.uint64));
+      expect(base64Decoded.offerID.int64, equals(original.offerID.int64));
     });
 
     test('XdrLedgerKeyData struct roundtrip', () {
@@ -2960,7 +2960,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       ));
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrLedgerKeyBase.encode(output, original);
@@ -4393,7 +4393,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       List<String> lines = [];
       original.toTxRep('tx', lines);
@@ -4581,7 +4581,7 @@ void main() {
                 Uint8List.fromList(List<int>.filled(32, 0xAB)),
               ),
           ),
-          XdrUint64(BigInt.from(123456)),
+          XdrInt64(BigInt.from(654321)),
         )));
       List<String> lines = [];
       original.toTxRep('tx', lines);

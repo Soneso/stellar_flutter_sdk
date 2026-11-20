@@ -798,7 +798,7 @@ void main() {
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrPrice(XdrInt32(1), XdrInt32(2)),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       var json = original.toXdrJson();
       var fromDocument = XdrManageSellOfferOp.fromXdrJson(json);
@@ -822,7 +822,7 @@ void main() {
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrPrice(XdrInt32(1), XdrInt32(2)),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       var object = <String, Object?>{
         ...(original.toXdrJsonValue() as Map<String, Object?>),
@@ -839,7 +839,7 @@ void main() {
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrPrice(XdrInt32(1), XdrInt32(2)),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       var json = original.toXdrJson();
       var fromDocument = XdrManageBuyOfferOp.fromXdrJson(json);
@@ -863,7 +863,7 @@ void main() {
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrPrice(XdrInt32(1), XdrInt32(2)),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       var object = <String, Object?>{
         ...(original.toXdrJsonValue() as Map<String, Object?>),
@@ -4014,7 +4014,7 @@ void main() {
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrPrice(XdrInt32(1), XdrInt32(2)),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       expect(
         (original.toXdrJsonValue() as Map<String, Object?>).keys.single,
@@ -4256,7 +4256,7 @@ void main() {
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrPrice(XdrInt32(1), XdrInt32(2)),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       expect(
         (original.toXdrJsonValue() as Map<String, Object?>).keys.single,
@@ -7469,7 +7469,7 @@ void main() {
     test('XdrClaimOfferAtomV0 round trip', () {
       var original = XdrClaimOfferAtomV0(
         XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -7494,7 +7494,7 @@ void main() {
     test('XdrClaimOfferAtomV0 rejects an undeclared key', () {
       var original = XdrClaimOfferAtomV0(
         XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -7517,7 +7517,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -7547,7 +7547,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -7607,7 +7607,7 @@ void main() {
       var original = XdrClaimAtom(XdrClaimAtomType.CLAIM_ATOM_TYPE_V0);
       original.v0 = XdrClaimOfferAtomV0(
         XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -7640,7 +7640,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -8700,7 +8700,7 @@ void main() {
           (XdrClaimAtom(XdrClaimAtomType.CLAIM_ATOM_TYPE_V0)
             ..v0 = XdrClaimOfferAtomV0(
               XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
-              XdrUint64(BigInt.from(123456)),
+              XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
               XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -8738,7 +8738,7 @@ void main() {
           (XdrClaimAtom(XdrClaimAtomType.CLAIM_ATOM_TYPE_V0)
             ..v0 = XdrClaimOfferAtomV0(
               XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
-              XdrUint64(BigInt.from(123456)),
+              XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
               XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -10085,7 +10085,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
@@ -10124,7 +10124,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
@@ -10206,7 +10206,7 @@ void main() {
           (XdrClaimAtom(XdrClaimAtomType.CLAIM_ATOM_TYPE_V0)
             ..v0 = XdrClaimOfferAtomV0(
               XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
-              XdrUint64(BigInt.from(123456)),
+              XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
               XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -10239,7 +10239,7 @@ void main() {
           (XdrClaimAtom(XdrClaimAtomType.CLAIM_ATOM_TYPE_V0)
             ..v0 = XdrClaimOfferAtomV0(
               XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
-              XdrUint64(BigInt.from(123456)),
+              XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
               XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -10268,7 +10268,7 @@ void main() {
           (XdrClaimAtom(XdrClaimAtomType.CLAIM_ATOM_TYPE_V0)
             ..v0 = XdrClaimOfferAtomV0(
               XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
-              XdrUint64(BigInt.from(123456)),
+              XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
               XdrInt64(BigInt.from(654321)),
               XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),

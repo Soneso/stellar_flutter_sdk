@@ -11,16 +11,15 @@ import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_json_helper.dart';
-import 'xdr_uint64.dart';
 
 class XdrClaimOfferAtom {
   XdrAccountID _sellerID;
   XdrAccountID get sellerID => this._sellerID;
   set sellerID(XdrAccountID value) => this._sellerID = value;
 
-  XdrUint64 _offerID;
-  XdrUint64 get offerID => this._offerID;
-  set offerID(XdrUint64 value) => this._offerID = value;
+  XdrInt64 _offerID;
+  XdrInt64 get offerID => this._offerID;
+  set offerID(XdrInt64 value) => this._offerID = value;
 
   XdrAsset _assetSold;
   XdrAsset get assetSold => this._assetSold;
@@ -52,7 +51,7 @@ class XdrClaimOfferAtom {
     XdrClaimOfferAtom encodedClaimOfferAtom,
   ) {
     XdrAccountID.encode(stream, encodedClaimOfferAtom.sellerID);
-    XdrUint64.encode(stream, encodedClaimOfferAtom.offerID);
+    XdrInt64.encode(stream, encodedClaimOfferAtom.offerID);
     XdrAsset.encode(stream, encodedClaimOfferAtom.assetSold);
     XdrInt64.encode(stream, encodedClaimOfferAtom.amountSold);
     XdrAsset.encode(stream, encodedClaimOfferAtom.assetBought);
@@ -61,7 +60,7 @@ class XdrClaimOfferAtom {
 
   static XdrClaimOfferAtom decode(XdrDataInputStream stream) {
     XdrAccountID sellerID = XdrAccountID.decode(stream);
-    XdrUint64 offerID = XdrUint64.decode(stream);
+    XdrInt64 offerID = XdrInt64.decode(stream);
     XdrAsset assetSold = XdrAsset.decode(stream);
     XdrInt64 amountSold = XdrInt64.decode(stream);
     XdrAsset assetBought = XdrAsset.decode(stream);
@@ -155,7 +154,7 @@ class XdrClaimOfferAtom {
     );
     return XdrClaimOfferAtom(
       XdrAccountID.fromXdrJsonValue(jsonSellerID),
-      XdrUint64.fromXdrJsonValue(jsonOfferID),
+      XdrInt64.fromXdrJsonValue(jsonOfferID),
       XdrAsset.fromXdrJsonValue(jsonAssetSold),
       XdrInt64.fromXdrJsonValue(jsonAmountSold),
       XdrAsset.fromXdrJsonValue(jsonAssetBought),

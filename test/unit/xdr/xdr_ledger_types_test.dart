@@ -143,7 +143,7 @@ void main() {
         );
         sellerId.accountID.setEd25519(XdrUint256(sellerIdBytes));
 
-        var offerId = XdrUint64(BigInt.from(1));
+        var offerId = XdrInt64(BigInt.from(1));
         var selling = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
         var buying = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
         var amount = XdrInt64(BigInt.from(1000));
@@ -326,7 +326,7 @@ void main() {
       );
       sellerId.accountID.setEd25519(XdrUint256(sellerIdBytes));
 
-      var offerId = XdrUint64(BigInt.from(1));
+      var offerId = XdrInt64(BigInt.from(1));
       var selling = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
       var buying = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
       var amount = XdrInt64(BigInt.zero);
@@ -407,7 +407,7 @@ void main() {
       );
       sellerId.accountID.setEd25519(XdrUint256(sellerIdBytes));
 
-      var offerId = XdrUint64(BigInt.parse('18446744073709551615'));
+      var offerId = XdrInt64(BigInt.parse('9223372036854775807'));
       var selling = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
       var buying = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
       var amount = XdrInt64(BigInt.from(1000));
@@ -434,8 +434,8 @@ void main() {
       var decoded = XdrOfferEntry.decode(input);
 
       expect(
-        decoded.offerID.uint64,
-        equals(BigInt.parse('18446744073709551615')),
+        decoded.offerID.int64,
+        equals(BigInt.parse('9223372036854775807')),
       );
     });
 
@@ -492,7 +492,7 @@ void main() {
       );
       sellerId.accountID.setEd25519(XdrUint256(sellerIdBytes));
 
-      var offerId = XdrUint64(BigInt.from(100));
+      var offerId = XdrInt64(BigInt.from(100));
       var selling = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
       var buying = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
       var amount = XdrInt64(BigInt.from(1000));

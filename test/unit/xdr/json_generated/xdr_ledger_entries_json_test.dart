@@ -1894,7 +1894,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
@@ -1924,7 +1924,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
@@ -3447,7 +3447,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
         XdrInt64(BigInt.from(654321)),
@@ -3961,7 +3961,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       var json = original.toXdrJson();
       var fromDocument = XdrLedgerKeyOffer.fromXdrJson(json);
@@ -3987,7 +3987,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       );
       var object = <String, Object?>{
         ...(original.toXdrJsonValue() as Map<String, Object?>),
@@ -4327,7 +4327,7 @@ void main() {
               Uint8List.fromList(List<int>.filled(32, 0xAB)),
             ),
         ),
-        XdrUint64(BigInt.from(123456)),
+        XdrInt64(BigInt.from(654321)),
       ));
       expect(
         (original.toXdrJsonValue() as Map<String, Object?>).keys.single,
