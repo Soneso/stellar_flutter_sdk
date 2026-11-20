@@ -67,7 +67,7 @@ class XdrClaimPredicate {
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
         int andPredicatessize = encodedClaimPredicate._andPredicates!.length;
-        stream.writeInt(andPredicatessize);
+        stream.writeBoundedLength(andPredicatessize, 2);
         for (int i = 0; i < andPredicatessize; i++) {
           XdrClaimPredicate.encode(
             stream,
@@ -77,7 +77,7 @@ class XdrClaimPredicate {
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
         int orPredicatessize = encodedClaimPredicate._orPredicates!.length;
-        stream.writeInt(orPredicatessize);
+        stream.writeBoundedLength(orPredicatessize, 2);
         for (int i = 0; i < orPredicatessize; i++) {
           XdrClaimPredicate.encode(
             stream,
@@ -117,7 +117,7 @@ class XdrClaimPredicate {
         case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
           break;
         case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
-          int andPredicatessize = stream.readArrayLength();
+          int andPredicatessize = stream.readArrayLength(2);
           decodedClaimPredicate._andPredicates = List<XdrClaimPredicate>.empty(
             growable: true,
           );
@@ -128,7 +128,7 @@ class XdrClaimPredicate {
           }
           break;
         case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
-          int orPredicatessize = stream.readArrayLength();
+          int orPredicatessize = stream.readArrayLength(2);
           decodedClaimPredicate._orPredicates = List<XdrClaimPredicate>.empty(
             growable: true,
           );
@@ -139,8 +139,7 @@ class XdrClaimPredicate {
           }
           break;
         case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
-          int notPredicatePresent = stream.readInt();
-          if (notPredicatePresent != 0) {
+          if (stream.readOptionalPresence()) {
             decodedClaimPredicate._notPredicate = XdrClaimPredicate.decode(
               stream,
             );
@@ -167,7 +166,10 @@ class XdrClaimPredicate {
 
   static XdrClaimPredicate fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrClaimPredicate.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrClaimPredicate decoded = XdrClaimPredicate.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -219,6 +221,11 @@ class XdrClaimPredicate {
           TxRepHelper.getValue(map, '$prefix.andPredicates.len') ?? '0',
           '$prefix.andPredicates.len',
         );
+        TxRepHelper.checkMaxLength(
+          andPredicatesLen,
+          2,
+          '$prefix.andPredicates.len',
+        );
         result._andPredicates = [];
         for (int i = 0; i < andPredicatesLen; i++) {
           result._andPredicates!.add(
@@ -229,6 +236,11 @@ class XdrClaimPredicate {
       case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
         int orPredicatesLen = TxRepHelper.parseUint32(
           TxRepHelper.getValue(map, '$prefix.orPredicates.len') ?? '0',
+          '$prefix.orPredicates.len',
+        );
+        TxRepHelper.checkMaxLength(
+          orPredicatesLen,
+          2,
           '$prefix.orPredicates.len',
         );
         result._orPredicates = [];

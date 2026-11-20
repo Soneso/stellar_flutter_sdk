@@ -125,48 +125,39 @@ class XdrSetOptionsOp {
 
   static XdrSetOptionsOp decode(XdrDataInputStream stream) {
     XdrAccountID? inflationDest;
-    int inflationDestPresent = stream.readInt();
-    if (inflationDestPresent != 0) {
+    if (stream.readOptionalPresence()) {
       inflationDest = XdrAccountID.decode(stream);
     }
     XdrUint32? clearFlags;
-    int clearFlagsPresent = stream.readInt();
-    if (clearFlagsPresent != 0) {
+    if (stream.readOptionalPresence()) {
       clearFlags = XdrUint32.decode(stream);
     }
     XdrUint32? setFlags;
-    int setFlagsPresent = stream.readInt();
-    if (setFlagsPresent != 0) {
+    if (stream.readOptionalPresence()) {
       setFlags = XdrUint32.decode(stream);
     }
     XdrUint32? masterWeight;
-    int masterWeightPresent = stream.readInt();
-    if (masterWeightPresent != 0) {
+    if (stream.readOptionalPresence()) {
       masterWeight = XdrUint32.decode(stream);
     }
     XdrUint32? lowThreshold;
-    int lowThresholdPresent = stream.readInt();
-    if (lowThresholdPresent != 0) {
+    if (stream.readOptionalPresence()) {
       lowThreshold = XdrUint32.decode(stream);
     }
     XdrUint32? medThreshold;
-    int medThresholdPresent = stream.readInt();
-    if (medThresholdPresent != 0) {
+    if (stream.readOptionalPresence()) {
       medThreshold = XdrUint32.decode(stream);
     }
     XdrUint32? highThreshold;
-    int highThresholdPresent = stream.readInt();
-    if (highThresholdPresent != 0) {
+    if (stream.readOptionalPresence()) {
       highThreshold = XdrUint32.decode(stream);
     }
     XdrString32? homeDomain;
-    int homeDomainPresent = stream.readInt();
-    if (homeDomainPresent != 0) {
+    if (stream.readOptionalPresence()) {
       homeDomain = XdrString32.decode(stream);
     }
     XdrSigner? signer;
-    int signerPresent = stream.readInt();
-    if (signerPresent != 0) {
+    if (stream.readOptionalPresence()) {
       signer = XdrSigner.decode(stream);
     }
     return XdrSetOptionsOp(
@@ -190,7 +181,10 @@ class XdrSetOptionsOp {
 
   static XdrSetOptionsOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSetOptionsOp.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSetOptionsOp decoded = XdrSetOptionsOp.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

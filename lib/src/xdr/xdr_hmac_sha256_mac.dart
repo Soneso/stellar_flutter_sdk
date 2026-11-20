@@ -36,7 +36,10 @@ class XdrHmacSha256Mac {
 
   static XdrHmacSha256Mac fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrHmacSha256Mac.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrHmacSha256Mac decoded = XdrHmacSha256Mac.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

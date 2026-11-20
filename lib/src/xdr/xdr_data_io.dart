@@ -60,7 +60,8 @@ class DataInput {
     );
   }
 
-  // add xdr
+  /// Reads the zero padding to the next multiple of four bytes; throws an
+  /// [Exception] for a non-zero byte or when the input ends inside it.
   void pad() {
     int pad = 0;
     int mod = _offset! % StellarProtocolConstants.XDR_ALIGNMENT_BYTES;
@@ -71,7 +72,7 @@ class DataInput {
     while (pad-- > 0) {
       int b = readByte(false);
       if (b == -129) {
-        break;
+        throw Exception("XDR input ends inside padding at offset $_offset");
       }
       if (b != 0) {
         throw Exception("non-zero padding");
@@ -351,19 +352,53 @@ class XdrDataInputStream extends DataInput {
     return readByte();
   }
 
+  /// Reads the length prefix of an XDR array, string or opaque value whose
+  /// definition declares the maximum [maxLength]; throws a [RangeError] above
+  /// it. A negative length is left to [readBytes] and [readArrayLength].
+  int readBoundedLength(int maxLength) {
+    int length = readInt();
+    if (length > maxLength) {
+      throw RangeError(
+        "XDR length $length exceeds the declared maximum of $maxLength",
+      );
+    }
+    return length;
+  }
+
+  /// Reads an optional's presence flag: true for 1, false for 0, and an
+  /// [Exception] for any other value.
+  bool readOptionalPresence() {
+    int flag = readInt();
+    if (flag != 0 && flag != 1) {
+      throw Exception("XDR optional presence flag must be 0 or 1, got $flag");
+    }
+    return flag == 1;
+  }
+
+  /// Throws an [Exception] when bytes remain after the single value decoded
+  /// from the input.
+  void checkFullyConsumed() {
+    int remaining = fileLength! - offset!;
+    if (remaining != 0) {
+      throw Exception(
+        "$remaining of $fileLength bytes remain after the decoded XDR value",
+      );
+    }
+  }
+
   /// Reads an XDR `string` and returns its raw bytes.
   ///
   /// An XDR `string` carries arbitrary bytes, so the payload is returned
   /// unexamined; only a caller that wants text applies an encoding to it.
-  /// Throws a [RangeError] if the length prefix is negative or exceeds the
-  /// remaining bytes (see [readBytes]).
-  Uint8List readStringBytes() {
-    int length = readInt();
+  /// Throws a [RangeError] if the length prefix is negative, exceeds the
+  /// declared [maxLength] or exceeds the remaining bytes (see [readBytes]).
+  Uint8List readStringBytes([int? maxLength]) {
+    int length = maxLength == null ? readInt() : readBoundedLength(maxLength);
     return readBytes(length);
   }
 
-  String readString() {
-    return utf8.decode(readStringBytes());
+  String readString([int? maxLength]) {
+    return utf8.decode(readStringBytes(maxLength));
   }
 
   /// Reads the element count of a variable-length XDR array and checks it
@@ -375,10 +410,11 @@ class XdrDataInputStream extends DataInput {
   /// remaining bytes cannot be satisfied by the input.
   ///
   /// Returns the count, between 0 and a quarter of the remaining bytes
-  /// (inclusive). Throws a [RangeError] if the count is negative, exceeds a
-  /// quarter of the remaining bytes or fewer than 4 bytes remain.
-  int readArrayLength() {
-    int count = readInt();
+  /// (inclusive). Throws a [RangeError] if the count is negative, exceeds the
+  /// declared [maxLength], exceeds a quarter of the remaining bytes or fewer
+  /// than 4 bytes remain.
+  int readArrayLength([int? maxLength]) {
+    int count = maxLength == null ? readInt() : readBoundedLength(maxLength);
     if (count < 0) {
       throw RangeError("XDR array count cannot be negative, got $count");
     }
@@ -425,18 +461,31 @@ class XdrDataInputStream extends DataInput {
 }
 
 class XdrDataOutputStream extends DataOutput {
+  /// Writes the length prefix of an XDR array, string or opaque value whose
+  /// definition declares the maximum [maxLength]; throws a [RangeError] and
+  /// writes nothing above it.
+  void writeBoundedLength(int length, int maxLength) {
+    if (length > maxLength) {
+      throw RangeError(
+        "XDR length $length exceeds the declared maximum of $maxLength",
+      );
+    }
+    writeInt(length);
+  }
+
   /// Writes [bytes] in the XDR `string` wire form: a four-byte length,
   /// the bytes themselves, and padding to the next multiple of four.
   ///
-  /// The length an XDR `string` may declare is bounded by its own four-byte
-  /// length prefix, so no further limit applies here.
-  void writeStringBytes(Uint8List bytes) {
-    writeInt(bytes.length);
+  /// Throws a [RangeError] when the declared [maxLength] is exceeded.
+  void writeStringBytes(Uint8List bytes, [int? maxLength]) {
+    maxLength == null
+        ? writeInt(bytes.length)
+        : writeBoundedLength(bytes.length, maxLength);
     write(bytes);
   }
 
-  writeString(String s) {
-    writeStringBytes(utf8.encode(s));
+  writeString(String s, [int? maxLength]) {
+    writeStringBytes(utf8.encode(s), maxLength);
   }
 
   writeIntArray(List<int> a) {

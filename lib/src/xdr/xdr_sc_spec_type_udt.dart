@@ -20,11 +20,11 @@ class XdrSCSpecTypeUDT {
     XdrDataOutputStream stream,
     XdrSCSpecTypeUDT encodedSCSpecTypeUDT,
   ) {
-    stream.writeString(encodedSCSpecTypeUDT.name);
+    stream.writeString(encodedSCSpecTypeUDT.name, 1024);
   }
 
   static XdrSCSpecTypeUDT decode(XdrDataInputStream stream) {
-    String name = stream.readString();
+    String name = stream.readString(1024);
     return XdrSCSpecTypeUDT(name);
   }
 
@@ -36,7 +36,10 @@ class XdrSCSpecTypeUDT {
 
   static XdrSCSpecTypeUDT fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCSpecTypeUDT.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCSpecTypeUDT decoded = XdrSCSpecTypeUDT.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

@@ -44,7 +44,10 @@ class XdrDiagnosticEvent {
 
   static XdrDiagnosticEvent fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrDiagnosticEvent.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrDiagnosticEvent decoded = XdrDiagnosticEvent.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

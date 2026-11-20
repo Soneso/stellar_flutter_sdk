@@ -206,7 +206,7 @@ void main() {
       expect(decoded.dataValue.dataValue.length, equals(0));
     });
 
-    test('XdrDataEntry with large data value', () {
+    test('XdrDataEntry with the largest data value', () {
       var accountIdBytes = Uint8List.fromList(List<int>.filled(32, 0x0E));
       var accountId = XdrAccountID(
         XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
@@ -215,7 +215,7 @@ void main() {
 
       var dataName = XdrString64('large_data');
       var largeData = Uint8List.fromList(
-        List<int>.generate(100, (i) => i % 256),
+        List<int>.generate(64, (i) => i % 256),
       );
       var dataValue = XdrDataValue(largeData);
       var ext = XdrDataEntryExt(0);

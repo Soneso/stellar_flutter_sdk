@@ -33,9 +33,9 @@ class XdrSCSpecUDTEnumV0 {
     XdrDataOutputStream stream,
     XdrSCSpecUDTEnumV0 encodedSCSpecUDTEnumV0,
   ) {
-    stream.writeString(encodedSCSpecUDTEnumV0.doc);
-    stream.writeString(encodedSCSpecUDTEnumV0.lib);
-    stream.writeString(encodedSCSpecUDTEnumV0.name);
+    stream.writeString(encodedSCSpecUDTEnumV0.doc, 1024);
+    stream.writeString(encodedSCSpecUDTEnumV0.lib, 80);
+    stream.writeString(encodedSCSpecUDTEnumV0.name, 1024);
     int casessize = encodedSCSpecUDTEnumV0.cases.length;
     stream.writeInt(casessize);
     for (int i = 0; i < casessize; i++) {
@@ -44,9 +44,9 @@ class XdrSCSpecUDTEnumV0 {
   }
 
   static XdrSCSpecUDTEnumV0 decode(XdrDataInputStream stream) {
-    String doc = stream.readString();
-    String lib = stream.readString();
-    String name = stream.readString();
+    String doc = stream.readString(1024);
+    String lib = stream.readString(80);
+    String name = stream.readString(1024);
     int casessize = stream.readArrayLength();
     List<XdrSCSpecUDTEnumCaseV0> cases = List<XdrSCSpecUDTEnumCaseV0>.empty(
       growable: true,
@@ -65,7 +65,10 @@ class XdrSCSpecUDTEnumV0 {
 
   static XdrSCSpecUDTEnumV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCSpecUDTEnumV0.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCSpecUDTEnumV0 decoded = XdrSCSpecUDTEnumV0.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

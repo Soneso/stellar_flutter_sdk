@@ -56,7 +56,7 @@ class XdrMemo {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        stream.writeString(encodedMemo._text!);
+        stream.writeString(encodedMemo._text!, 28);
         break;
       case XdrMemoType.MEMO_ID:
         XdrUint64.encode(stream, encodedMemo._id!);
@@ -78,7 +78,7 @@ class XdrMemo {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        decodedMemo._text = stream.readString();
+        decodedMemo._text = stream.readString(28);
         break;
       case XdrMemoType.MEMO_ID:
         decodedMemo._id = XdrUint64.decode(stream);
@@ -101,7 +101,10 @@ class XdrMemo {
 
   static XdrMemo fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrMemo.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrMemo decoded = XdrMemo.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -133,7 +136,7 @@ class XdrMemo {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        result._text = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.text') ?? '');
+        result._text = TxRepHelper.checkStringMaxLength(TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.text') ?? ''), 28, '$prefix.text');
         break;
       case XdrMemoType.MEMO_ID:
         result._id = XdrUint64.fromTxRep(map, '$prefix.id');

@@ -39,7 +39,7 @@ class XdrStellarValue {
     XdrHash.encode(stream, encodedStellarValue.txSetHash);
     XdrUint64.encode(stream, encodedStellarValue.closeTime);
     int upgradessize = encodedStellarValue.upgrades.length;
-    stream.writeInt(upgradessize);
+    stream.writeBoundedLength(upgradessize, 6);
     for (int i = 0; i < upgradessize; i++) {
       XdrUpgradeType.encode(stream, encodedStellarValue.upgrades[i]);
     }
@@ -49,7 +49,7 @@ class XdrStellarValue {
   static XdrStellarValue decode(XdrDataInputStream stream) {
     XdrHash txSetHash = XdrHash.decode(stream);
     XdrUint64 closeTime = XdrUint64.decode(stream);
-    int upgradessize = stream.readArrayLength();
+    int upgradessize = stream.readArrayLength(6);
     List<XdrUpgradeType> upgrades = List<XdrUpgradeType>.empty(growable: true);
     for (int i = 0; i < upgradessize; i++) {
       upgrades.add(XdrUpgradeType.decode(stream));
@@ -66,7 +66,10 @@ class XdrStellarValue {
 
   static XdrStellarValue fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrStellarValue.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrStellarValue decoded = XdrStellarValue.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

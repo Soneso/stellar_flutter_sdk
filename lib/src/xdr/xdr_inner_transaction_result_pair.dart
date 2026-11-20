@@ -49,7 +49,11 @@ class XdrInnerTransactionResultPair {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrInnerTransactionResultPair.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrInnerTransactionResultPair decoded =
+        XdrInnerTransactionResultPair.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

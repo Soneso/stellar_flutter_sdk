@@ -74,7 +74,9 @@ class XdrHostFunctionBase {
         );
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
-        XdrDataValue.encode(stream, encodedHostFunction._wasm!);
+        int wasmsize = encodedHostFunction._wasm!.dataValue.length;
+        stream.writeInt(wasmsize);
+        stream.write(encodedHostFunction._wasm!.dataValue);
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
         XdrCreateContractArgsV2.encode(
@@ -104,7 +106,8 @@ class XdrHostFunctionBase {
         decoded._createContract = XdrCreateContractArgs.decode(stream);
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
-        decoded._wasm = XdrDataValue.decode(stream);
+        int wasmsize = stream.readInt();
+        decoded._wasm = XdrDataValue(stream.readBytes(wasmsize));
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
         decoded._createContractV2 = XdrCreateContractArgsV2.decode(stream);
@@ -121,7 +124,10 @@ class XdrHostFunctionBase {
 
   static XdrHostFunctionBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrHostFunctionBase.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrHostFunctionBase decoded = XdrHostFunctionBase.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -163,7 +169,9 @@ class XdrHostFunctionBase {
         );
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
-        result._wasm = XdrDataValue.fromTxRep(map, '$prefix.wasm');
+        String? wasmRaw = TxRepHelper.getValue(map, '$prefix.wasm');
+        if (wasmRaw == null) throw Exception('missing $prefix.wasm');
+        result._wasm = XdrDataValue(TxRepHelper.hexToBytes(wasmRaw));
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
         result._createContractV2 = XdrCreateContractArgsV2.fromTxRep(

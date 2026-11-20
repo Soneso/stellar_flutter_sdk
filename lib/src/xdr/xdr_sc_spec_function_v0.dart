@@ -34,8 +34,8 @@ class XdrSCSpecFunctionV0 {
     XdrDataOutputStream stream,
     XdrSCSpecFunctionV0 encodedSCSpecFunctionV0,
   ) {
-    stream.writeString(encodedSCSpecFunctionV0.doc);
-    stream.writeString(encodedSCSpecFunctionV0.name);
+    stream.writeString(encodedSCSpecFunctionV0.doc, 1024);
+    stream.writeString(encodedSCSpecFunctionV0.name, 32);
     int inputssize = encodedSCSpecFunctionV0.inputs.length;
     stream.writeInt(inputssize);
     for (int i = 0; i < inputssize; i++) {
@@ -45,22 +45,22 @@ class XdrSCSpecFunctionV0 {
       );
     }
     int outputssize = encodedSCSpecFunctionV0.outputs.length;
-    stream.writeInt(outputssize);
+    stream.writeBoundedLength(outputssize, 1);
     for (int i = 0; i < outputssize; i++) {
       XdrSCSpecTypeDef.encode(stream, encodedSCSpecFunctionV0.outputs[i]);
     }
   }
 
   static XdrSCSpecFunctionV0 decode(XdrDataInputStream stream) {
-    String doc = stream.readString();
-    String name = stream.readString();
+    String doc = stream.readString(1024);
+    String name = stream.readString(32);
     int inputssize = stream.readArrayLength();
     List<XdrSCSpecFunctionInputV0> inputs =
         List<XdrSCSpecFunctionInputV0>.empty(growable: true);
     for (int i = 0; i < inputssize; i++) {
       inputs.add(XdrSCSpecFunctionInputV0.decode(stream));
     }
-    int outputssize = stream.readArrayLength();
+    int outputssize = stream.readArrayLength(1);
     List<XdrSCSpecTypeDef> outputs = List<XdrSCSpecTypeDef>.empty(
       growable: true,
     );
@@ -78,7 +78,10 @@ class XdrSCSpecFunctionV0 {
 
   static XdrSCSpecFunctionV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCSpecFunctionV0.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCSpecFunctionV0 decoded = XdrSCSpecFunctionV0.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.
@@ -104,6 +107,7 @@ class XdrSCSpecFunctionV0 {
       _name,
       type: 'XdrSCSpecFunctionV0',
       key: 'name',
+      maxBytes: 32,
     ),
     'inputs': XdrJsonHelper.array<XdrSCSpecFunctionInputV0>(
       _inputs,
@@ -158,6 +162,7 @@ class XdrSCSpecFunctionV0 {
         jsonName,
         type: 'XdrSCSpecFunctionV0',
         key: 'name',
+        maxBytes: 32,
       ),
       XdrJsonHelper.readArray(
             jsonInputs,

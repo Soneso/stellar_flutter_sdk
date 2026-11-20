@@ -58,7 +58,10 @@ class XdrLedgerEntryV1Ext {
 
   static XdrLedgerEntryV1Ext fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrLedgerEntryV1Ext.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrLedgerEntryV1Ext decoded = XdrLedgerEntryV1Ext.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

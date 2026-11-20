@@ -29,7 +29,7 @@ class XdrTransactionV1Envelope {
   ) {
     XdrTransaction.encode(stream, encodedTransactionV1Envelope.tx);
     int signaturessize = encodedTransactionV1Envelope.signatures.length;
-    stream.writeInt(signaturessize);
+    stream.writeBoundedLength(signaturessize, 20);
     for (int i = 0; i < signaturessize; i++) {
       XdrDecoratedSignature.encode(
         stream,
@@ -40,7 +40,7 @@ class XdrTransactionV1Envelope {
 
   static XdrTransactionV1Envelope decode(XdrDataInputStream stream) {
     XdrTransaction tx = XdrTransaction.decode(stream);
-    int signaturessize = stream.readArrayLength();
+    int signaturessize = stream.readArrayLength(20);
     List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>.empty(
       growable: true,
     );
@@ -60,7 +60,10 @@ class XdrTransactionV1Envelope {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTransactionV1Envelope.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrTransactionV1Envelope decoded = XdrTransactionV1Envelope.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -80,6 +83,7 @@ class XdrTransactionV1Envelope {
       TxRepHelper.getValue(map, '$prefix.signatures.len') ?? '0',
       '$prefix.signatures.len',
     );
+    TxRepHelper.checkMaxLength(signaturesLen, 20, '$prefix.signatures.len');
     List<XdrDecoratedSignature> signatures = [];
     for (int i = 0; i < signaturesLen; i++) {
       signatures.add(

@@ -5,6 +5,7 @@
 import "dart:convert";
 import 'dart:typed_data';
 
+import 'constants/stellar_protocol_constants.dart';
 import 'muxed_account.dart';
 import 'key_pair.dart';
 import 'memo.dart';
@@ -162,11 +163,9 @@ abstract class AbstractTransaction {
   ///
   /// Decodes and parses the XDR string to create the appropriate transaction type.
   static AbstractTransaction fromEnvelopeXdrString(String envelope) {
-    Uint8List bytes = base64Decode(envelope);
-    XdrTransactionEnvelope transactionEnvelope = XdrTransactionEnvelope.decode(
-      XdrDataInputStream(bytes),
+    return fromEnvelopeXdr(
+      XdrTransactionEnvelope.fromBase64EncodedXdrString(envelope),
     );
-    return fromEnvelopeXdr(transactionEnvelope);
   }
 }
 
@@ -654,7 +653,16 @@ class TransactionBuilder {
   }
 
   /// Builds a transaction. It will increment the sequence number of the source account.
+  /// More than 100 operations throw an [Exception] before that.
   Transaction build() {
+    const int maxOperations =
+        StellarProtocolConstants.MAX_OPERATIONS_PER_TRANSACTION;
+    if (_mOperations.length > maxOperations) {
+      throw Exception(
+        "A transaction holds at most $maxOperations operations, "
+        "${_mOperations.length} were added",
+      );
+    }
     if (_mMaxOperationFee == null) {
       _mMaxOperationFee = AbstractTransaction.MIN_BASE_FEE;
     }

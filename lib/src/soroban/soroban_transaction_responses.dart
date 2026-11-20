@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 import 'package:stellar_flutter_sdk/src/responses/response.dart';
@@ -1023,8 +1022,9 @@ class Footprint {
 
   /// Creates a footprint from base64-encoded XDR.
   static Footprint fromBase64EncodedXdrString(String base64Encoded) {
-    Uint8List bytes = base64Decode(base64Encoded);
-    return Footprint(XdrLedgerFootprint.decode(XdrDataInputStream(bytes)));
+    return Footprint(
+      XdrLedgerFootprint.fromBase64EncodedXdrString(base64Encoded),
+    );
   }
 
   /// if found, returns the contract code ledger key as base64 encoded xdr string

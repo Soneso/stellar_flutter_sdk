@@ -32,7 +32,7 @@ class XdrInvokeContractArgs {
     XdrInvokeContractArgs encodedInvokeContractArgs,
   ) {
     XdrSCAddress.encode(stream, encodedInvokeContractArgs.contractAddress);
-    stream.writeString(encodedInvokeContractArgs.functionName);
+    stream.writeString(encodedInvokeContractArgs.functionName, 32);
     int argssize = encodedInvokeContractArgs.args.length;
     stream.writeInt(argssize);
     for (int i = 0; i < argssize; i++) {
@@ -42,7 +42,7 @@ class XdrInvokeContractArgs {
 
   static XdrInvokeContractArgs decode(XdrDataInputStream stream) {
     XdrSCAddress contractAddress = XdrSCAddress.decode(stream);
-    String functionName = stream.readString();
+    String functionName = stream.readString(32);
     int argssize = stream.readArrayLength();
     List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
     for (int i = 0; i < argssize; i++) {
@@ -61,7 +61,10 @@ class XdrInvokeContractArgs {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrInvokeContractArgs.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrInvokeContractArgs decoded = XdrInvokeContractArgs.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -83,8 +86,12 @@ class XdrInvokeContractArgs {
       map,
       '$prefix.contractAddress',
     );
-    String functionName = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.functionName') ?? '',
+    String functionName = TxRepHelper.checkStringMaxLength(
+      TxRepHelper.unescapeString(
+        TxRepHelper.getValue(map, '$prefix.functionName') ?? '',
+      ),
+      32,
+      '$prefix.functionName',
     );
     int argsLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.args.len') ?? '0',
@@ -115,6 +122,7 @@ class XdrInvokeContractArgs {
       _functionName,
       type: 'XdrInvokeContractArgs',
       key: 'function_name',
+      maxBytes: 32,
     ),
     'args': XdrJsonHelper.array<XdrSCVal>(
       _args,
@@ -152,6 +160,7 @@ class XdrInvokeContractArgs {
         jsonFunctionName,
         type: 'XdrInvokeContractArgs',
         key: 'function_name',
+        maxBytes: 32,
       ),
       XdrJsonHelper.readArray(
         jsonArgs,

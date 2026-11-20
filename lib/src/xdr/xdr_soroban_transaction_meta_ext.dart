@@ -76,7 +76,12 @@ class XdrSorobanTransactionMetaExt {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSorobanTransactionMetaExt.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSorobanTransactionMetaExt decoded = XdrSorobanTransactionMetaExt.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

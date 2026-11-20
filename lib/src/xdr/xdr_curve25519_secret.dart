@@ -36,7 +36,10 @@ class XdrCurve25519Secret {
 
   static XdrCurve25519Secret fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrCurve25519Secret.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrCurve25519Secret decoded = XdrCurve25519Secret.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

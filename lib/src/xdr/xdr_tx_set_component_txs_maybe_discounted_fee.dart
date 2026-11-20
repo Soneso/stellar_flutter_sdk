@@ -50,8 +50,7 @@ class XdrTxSetComponentTxsMaybeDiscountedFee {
     XdrDataInputStream stream,
   ) {
     XdrInt64? baseFee;
-    int baseFeePresent = stream.readInt();
-    if (baseFeePresent != 0) {
+    if (stream.readOptionalPresence()) {
       baseFee = XdrInt64.decode(stream);
     }
     int txssize = stream.readArrayLength();
@@ -74,9 +73,11 @@ class XdrTxSetComponentTxsMaybeDiscountedFee {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTxSetComponentTxsMaybeDiscountedFee.decode(
-      XdrDataInputStream(bytes),
-    );
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrTxSetComponentTxsMaybeDiscountedFee decoded =
+        XdrTxSetComponentTxsMaybeDiscountedFee.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

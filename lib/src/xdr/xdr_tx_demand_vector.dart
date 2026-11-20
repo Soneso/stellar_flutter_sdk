@@ -22,14 +22,14 @@ class XdrTxDemandVector {
     XdrTxDemandVector encodedTxDemandVector,
   ) {
     int size = encodedTxDemandVector.txDemandVector.length;
-    stream.writeInt(size);
+    stream.writeBoundedLength(size, 1000);
     for (int i = 0; i < size; i++) {
       XdrHash.encode(stream, encodedTxDemandVector.txDemandVector[i]);
     }
   }
 
   static XdrTxDemandVector decode(XdrDataInputStream stream) {
-    int size = stream.readArrayLength();
+    int size = stream.readArrayLength(1000);
     List<XdrHash> items = List<XdrHash>.empty(growable: true);
     for (int i = 0; i < size; i++) {
       items.add(XdrHash.decode(stream));
@@ -45,7 +45,10 @@ class XdrTxDemandVector {
 
   static XdrTxDemandVector fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTxDemandVector.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrTxDemandVector decoded = XdrTxDemandVector.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

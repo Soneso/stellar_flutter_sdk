@@ -24,7 +24,7 @@ class XdrContractCostParams {
     XdrContractCostParams encodedContractCostParams,
   ) {
     int size = encodedContractCostParams.contractCostParams.length;
-    stream.writeInt(size);
+    stream.writeBoundedLength(size, 1024);
     for (int i = 0; i < size; i++) {
       XdrContractCostParamEntry.encode(
         stream,
@@ -34,7 +34,7 @@ class XdrContractCostParams {
   }
 
   static XdrContractCostParams decode(XdrDataInputStream stream) {
-    int size = stream.readArrayLength();
+    int size = stream.readArrayLength(1024);
     List<XdrContractCostParamEntry> items =
         List<XdrContractCostParamEntry>.empty(growable: true);
     for (int i = 0; i < size; i++) {
@@ -53,7 +53,10 @@ class XdrContractCostParams {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrContractCostParams.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrContractCostParams decoded = XdrContractCostParams.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

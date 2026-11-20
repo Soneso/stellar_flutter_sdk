@@ -29,14 +29,14 @@ class XdrSCSpecUDTEnumCaseV0 {
     XdrDataOutputStream stream,
     XdrSCSpecUDTEnumCaseV0 encodedSCSpecUDTEnumCaseV0,
   ) {
-    stream.writeString(encodedSCSpecUDTEnumCaseV0.doc);
-    stream.writeString(encodedSCSpecUDTEnumCaseV0.name);
+    stream.writeString(encodedSCSpecUDTEnumCaseV0.doc, 1024);
+    stream.writeString(encodedSCSpecUDTEnumCaseV0.name, 60);
     XdrUint32.encode(stream, encodedSCSpecUDTEnumCaseV0.value);
   }
 
   static XdrSCSpecUDTEnumCaseV0 decode(XdrDataInputStream stream) {
-    String doc = stream.readString();
-    String name = stream.readString();
+    String doc = stream.readString(1024);
+    String name = stream.readString(60);
     XdrUint32 value = XdrUint32.decode(stream);
     return XdrSCSpecUDTEnumCaseV0(doc, name, value);
   }
@@ -51,7 +51,10 @@ class XdrSCSpecUDTEnumCaseV0 {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCSpecUDTEnumCaseV0.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCSpecUDTEnumCaseV0 decoded = XdrSCSpecUDTEnumCaseV0.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

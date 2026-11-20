@@ -70,9 +70,11 @@ class XdrConfigSettingContractBandwidthV0 {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrConfigSettingContractBandwidthV0.decode(
-      XdrDataInputStream(bytes),
-    );
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrConfigSettingContractBandwidthV0 decoded =
+        XdrConfigSettingContractBandwidthV0.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

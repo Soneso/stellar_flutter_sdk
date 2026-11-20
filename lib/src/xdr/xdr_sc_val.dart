@@ -888,7 +888,10 @@ class XdrSCVal extends XdrSCValBase {
 
   static XdrSCVal fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCVal.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCVal decoded = XdrSCVal.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCVal.

@@ -68,7 +68,7 @@ class XdrHello {
     XdrUint32.encode(stream, encodedHello.overlayVersion);
     XdrUint32.encode(stream, encodedHello.overlayMinVersion);
     XdrHash.encode(stream, encodedHello.networkID);
-    stream.writeString(encodedHello.versionStr);
+    stream.writeString(encodedHello.versionStr, 100);
     stream.writeInt(encodedHello.listeningPort);
     XdrNodeID.encode(stream, encodedHello.peerID);
     XdrAuthCert.encode(stream, encodedHello.cert);
@@ -80,7 +80,7 @@ class XdrHello {
     XdrUint32 overlayVersion = XdrUint32.decode(stream);
     XdrUint32 overlayMinVersion = XdrUint32.decode(stream);
     XdrHash networkID = XdrHash.decode(stream);
-    String versionStr = stream.readString();
+    String versionStr = stream.readString(100);
     int listeningPort = stream.readInt();
     XdrNodeID peerID = XdrNodeID.decode(stream);
     XdrAuthCert cert = XdrAuthCert.decode(stream);
@@ -106,7 +106,10 @@ class XdrHello {
 
   static XdrHello fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrHello.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrHello decoded = XdrHello.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

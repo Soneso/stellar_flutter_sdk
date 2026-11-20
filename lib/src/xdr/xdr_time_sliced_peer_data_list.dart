@@ -24,7 +24,7 @@ class XdrTimeSlicedPeerDataList {
     XdrTimeSlicedPeerDataList encodedTimeSlicedPeerDataList,
   ) {
     int size = encodedTimeSlicedPeerDataList.timeSlicedPeerDataList.length;
-    stream.writeInt(size);
+    stream.writeBoundedLength(size, 25);
     for (int i = 0; i < size; i++) {
       XdrTimeSlicedPeerData.encode(
         stream,
@@ -34,7 +34,7 @@ class XdrTimeSlicedPeerDataList {
   }
 
   static XdrTimeSlicedPeerDataList decode(XdrDataInputStream stream) {
-    int size = stream.readArrayLength();
+    int size = stream.readArrayLength(25);
     List<XdrTimeSlicedPeerData> items = List<XdrTimeSlicedPeerData>.empty(
       growable: true,
     );
@@ -54,7 +54,12 @@ class XdrTimeSlicedPeerDataList {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTimeSlicedPeerDataList.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrTimeSlicedPeerDataList decoded = XdrTimeSlicedPeerDataList.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

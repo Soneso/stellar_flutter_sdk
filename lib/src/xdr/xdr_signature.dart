@@ -22,12 +22,12 @@ class XdrSignature {
     XdrSignature encodedSignature,
   ) {
     int signatureSize = encodedSignature.signature.length;
-    stream.writeInt(signatureSize);
+    stream.writeBoundedLength(signatureSize, 64);
     stream.write(encodedSignature.signature);
   }
 
   static XdrSignature decode(XdrDataInputStream stream) {
-    int signatureSize = stream.readInt();
+    int signatureSize = stream.readBoundedLength(64);
     return XdrSignature(stream.readBytes(signatureSize));
   }
 
@@ -39,7 +39,10 @@ class XdrSignature {
 
   static XdrSignature fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSignature.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSignature decoded = XdrSignature.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -49,7 +52,9 @@ class XdrSignature {
   static XdrSignature fromTxRep(Map<String, String> map, String prefix) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
-    return XdrSignature(TxRepHelper.hexToBytes(raw));
+    return XdrSignature(
+      TxRepHelper.checkBytesMaxLength(TxRepHelper.hexToBytes(raw), 64, prefix),
+    );
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

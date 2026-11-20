@@ -37,7 +37,10 @@ class XdrBumpSequenceOp {
 
   static XdrBumpSequenceOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrBumpSequenceOp.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrBumpSequenceOp decoded = XdrBumpSequenceOp.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

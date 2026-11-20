@@ -44,7 +44,10 @@ class XdrTransactionEnvelope extends XdrTransactionEnvelopeBase {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTransactionEnvelope.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrTransactionEnvelope decoded = XdrTransactionEnvelope.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Legacy name — delegates to [toBase64EncodedXdrString].

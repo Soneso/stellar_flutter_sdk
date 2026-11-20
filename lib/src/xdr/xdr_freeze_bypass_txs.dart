@@ -45,7 +45,10 @@ class XdrFreezeBypassTxs {
 
   static XdrFreezeBypassTxs fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrFreezeBypassTxs.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrFreezeBypassTxs decoded = XdrFreezeBypassTxs.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

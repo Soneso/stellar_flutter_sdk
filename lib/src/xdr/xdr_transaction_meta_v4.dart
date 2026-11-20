@@ -114,8 +114,7 @@ class XdrTransactionMetaV4 {
     }
     XdrLedgerEntryChanges txChangesAfter = XdrLedgerEntryChanges.decode(stream);
     XdrSorobanTransactionMetaV2? sorobanMeta;
-    int sorobanMetaPresent = stream.readInt();
-    if (sorobanMetaPresent != 0) {
+    if (stream.readOptionalPresence()) {
       sorobanMeta = XdrSorobanTransactionMetaV2.decode(stream);
     }
     int eventssize = stream.readArrayLength();
@@ -151,7 +150,10 @@ class XdrTransactionMetaV4 {
 
   static XdrTransactionMetaV4 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTransactionMetaV4.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrTransactionMetaV4 decoded = XdrTransactionMetaV4.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

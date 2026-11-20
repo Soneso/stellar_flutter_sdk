@@ -363,6 +363,28 @@ class TxRepHelper {
   static BigInt parseInt64(String s, String key) =>
       _parseInteger(s, key, bits: 64);
 
+  /// Throws an [Exception] when the element or byte count [length] of the
+  /// value at [key] exceeds the maximum [max] its XDR definition declares.
+  static void checkMaxLength(int length, int max, String key) {
+    if (length > max) {
+      throw Exception(
+        '$key has length $length, more than the declared maximum of $max',
+      );
+    }
+  }
+
+  /// Returns [value] after checking its UTF-8 byte count ([checkMaxLength]).
+  static String checkStringMaxLength(String value, int max, String key) {
+    checkMaxLength(utf8.encode(value).length, max, key);
+    return value;
+  }
+
+  /// Returns [value] after checking its byte count ([checkMaxLength]).
+  static Uint8List checkBytesMaxLength(Uint8List value, int max, String key) {
+    checkMaxLength(value.length, max, key);
+    return value;
+  }
+
   static final _integerToken = RegExp(r'^[+-]?(?:[0-9]+|0[xX][0-9a-fA-F]+)$');
 
   static BigInt _parseInteger(

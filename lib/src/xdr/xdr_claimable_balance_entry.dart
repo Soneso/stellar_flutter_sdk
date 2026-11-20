@@ -52,7 +52,7 @@ class XdrClaimableBalanceEntry {
       encodedClaimableBalanceEntry.balanceID,
     );
     int claimantssize = encodedClaimableBalanceEntry.claimants.length;
-    stream.writeInt(claimantssize);
+    stream.writeBoundedLength(claimantssize, 10);
     for (int i = 0; i < claimantssize; i++) {
       XdrClaimant.encode(stream, encodedClaimableBalanceEntry.claimants[i]);
     }
@@ -66,7 +66,7 @@ class XdrClaimableBalanceEntry {
 
   static XdrClaimableBalanceEntry decode(XdrDataInputStream stream) {
     XdrClaimableBalanceID balanceID = XdrClaimableBalanceID.decode(stream);
-    int claimantssize = stream.readArrayLength();
+    int claimantssize = stream.readArrayLength(10);
     List<XdrClaimant> claimants = List<XdrClaimant>.empty(growable: true);
     for (int i = 0; i < claimantssize; i++) {
       claimants.add(XdrClaimant.decode(stream));
@@ -89,7 +89,10 @@ class XdrClaimableBalanceEntry {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrClaimableBalanceEntry.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrClaimableBalanceEntry decoded = XdrClaimableBalanceEntry.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

@@ -48,7 +48,7 @@ void main() {
 
   group('XDR Other Types - XdrDecoratedSignature', () {
     test('XdrSignature with different lengths', () {
-      final lengths = [32, 48, 64, 128];
+      final lengths = [32, 48, 64];
 
       for (var length in lengths) {
         var sigBytes = Uint8List.fromList(
@@ -289,9 +289,9 @@ void main() {
       expect(decoded.payload.dataValue.length, equals(0));
     });
 
-    test('XdrSignedPayload with large payload', () {
+    test('XdrSignedPayload with the largest payload', () {
       var ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x77)));
-      var payloadBytes = Uint8List.fromList(List.generate(256, (i) => i % 256));
+      var payloadBytes = Uint8List.fromList(List.generate(64, (i) => i % 256));
       var payload = XdrDataValue(payloadBytes);
 
       var original = XdrSignedPayload(ed25519, payload);
@@ -305,7 +305,7 @@ void main() {
 
       expect(decoded.ed25519.uint256, equals(ed25519.uint256));
       expect(decoded.payload.dataValue, equals(payloadBytes));
-      expect(decoded.payload.dataValue.length, equals(256));
+      expect(decoded.payload.dataValue.length, equals(64));
     });
   });
 

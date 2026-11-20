@@ -369,7 +369,7 @@ void main() {
       );
     });
 
-    test('an output without its final padding bytes does not re-encode', () {
+    test('an output without its final padding bytes fails at offset 0', () {
       // One output, UDT("a"), whose three final padding bytes are cut.
       final bytes = Uint8List.fromList([
         0x00, 0x00, 0x00, 0x00, // kind: SC_SPEC_ENTRY_FUNCTION_V0
@@ -391,7 +391,7 @@ void main() {
             (e) => e.message,
             'message',
             'The embedded SAC spec does not decode at byte offset 0: '
-                'the entry re-encodes to different bytes',
+                'Exception: XDR input ends inside padding at offset 37',
           ),
         ),
       );

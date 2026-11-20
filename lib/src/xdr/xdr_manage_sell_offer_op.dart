@@ -71,7 +71,10 @@ class XdrManageSellOfferOp {
 
   static XdrManageSellOfferOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrManageSellOfferOp.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrManageSellOfferOp decoded = XdrManageSellOfferOp.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
