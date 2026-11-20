@@ -1044,6 +1044,43 @@ void main() {
 
       var effectsPage = await sdk.effects.forAccount(accountAId).execute();
       assert(effectsPage.records.isNotEmpty);
+
+      // deploy the contract of a second asset through CREATE_CONTRACT_V2
+      account = await sorobanServer.getAccount(accountBId);
+      Asset assetV2 = AssetTypeCreditAlphaNum12("FsdkV2", accountBId);
+      operation = InvokeHostFuncOpBuilder(
+        DeploySACWithAssetHostFunction(assetV2, constructorArgs: []),
+      ).build();
+      XdrHostFunction hostFunction = operation.function.toXdr();
+      expect(
+        hostFunction.type,
+        XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2,
+      );
+      expect(hostFunction.createContractV2!.constructorArgs, isEmpty);
+      transaction = TransactionBuilder(
+        account!,
+      ).addOperation(operation).build();
+
+      simulateResponse = await sorobanServer.simulateTransaction(
+        SimulateTransactionRequest(transaction),
+      );
+      expect(simulateResponse.error, isNull);
+      expect(simulateResponse.resultError, isNull);
+      transaction.sorobanTransactionData = simulateResponse.transactionData;
+      transaction.addResourceFee(simulateResponse.minResourceFee!);
+      transaction.setSorobanAuth(simulateResponse.sorobanAuth);
+      transaction.sign(keyPairB, network);
+
+      sendResponse = await sorobanServer.sendTransaction(transaction);
+      expect(sendResponse.error, isNull);
+      expect(sendResponse.status, isNot(SendTransactionResponse.STATUS_ERROR));
+      expect(sendResponse.hash, Util.bytesToHex(transaction.hash(network)));
+      GetTransactionResponse deployV2 = await pollStatus(sendResponse.hash!);
+      expect(deployV2.status, GetTransactionResponse.STATUS_SUCCESS);
+      expect(
+        StrKey.encodeContractIdHex(deployV2.getCreatedContractId()!),
+        assetV2.contractId(network),
+      );
     });
 
     test('test StrKey contractId', () async {

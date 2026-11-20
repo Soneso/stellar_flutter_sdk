@@ -1,8 +1,11 @@
+import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import '../soroban/contract_address_guard_fixtures.dart';
+import 'sac_create_contract_v2_fixture.dart';
 
 void main() {
   group('UploadContractWasmHostFunction', () {
@@ -421,6 +424,206 @@ void main() {
 
       expect(deploySACFunction.asset, equals(asset2));
       expect(deploySACFunction.asset, isA<AssetTypeCreditAlphaNum4>());
+    });
+
+    // The expected host functions are built with the generated XDR classes.
+    final issuer = XdrAccountID.forAccountId(sep23Account);
+    final native = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
+    final alphaNum4 = XdrAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
+      ..alphaNum4 = XdrAssetAlphaNum4(
+        Uint8List.fromList('USDC'.codeUnits),
+        issuer,
+      );
+    final alphaNum12 = XdrAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12)
+      ..alphaNum12 = XdrAssetAlphaNum12(
+        Uint8List.fromList([...'LONGASSET'.codeUnits, 0, 0, 0]),
+        issuer,
+      );
+    final twoArgs = [XdrSCVal.forU32(7), XdrSCVal.forSymbol('init')];
+    XdrContractIDPreimage preimage(XdrAsset asset) => XdrContractIDPreimage(
+      XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET,
+    )..fromAsset = asset;
+    final sacExecutable = XdrContractExecutable(
+      XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET,
+    );
+    String v1(XdrAsset asset) =>
+        (XdrHostFunction(XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT)
+              ..createContract = XdrCreateContractArgs(
+                preimage(asset),
+                sacExecutable,
+              ))
+            .toBase64EncodedXdrString();
+    String v2(XdrAsset asset, List<XdrSCVal> args) =>
+        (XdrHostFunction(
+                XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2,
+              )
+              ..createContractV2 = XdrCreateContractArgsV2(
+                preimage(asset),
+                sacExecutable,
+                args,
+              ))
+            .toBase64EncodedXdrString();
+    XdrHostFunction decode(String hostFunction) =>
+        XdrHostFunction.decode(XdrDataInputStream(base64Decode(hostFunction)));
+    DeploySACWithAssetHostFunction read(String hostFunction) =>
+        HostFunction.fromXdr(decode(hostFunction))
+            as DeploySACWithAssetHostFunction;
+    List<String>? encoded(List<XdrSCVal>? args) =>
+        args?.map((arg) => arg.toBase64EncodedXdrString()).toList();
+
+    test('V2 keeps its arm and constructor arguments when read', () {
+      for (final asset in [native, alphaNum4, alphaNum12]) {
+        for (final args in [<XdrSCVal>[], twoArgs]) {
+          final hostFunction = v2(asset, args);
+          final decoded = read(hostFunction);
+          expect(decoded.toXdr().toBase64EncodedXdrString(), hostFunction);
+          expect(encoded(decoded.constructorArgs), encoded(args));
+
+          final operation = XdrOperation(
+            null,
+            XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION)
+              ..invokeHostFunctionOp = XdrInvokeHostFunctionOp(
+                decode(hostFunction),
+                [],
+              ),
+          ).toBase64EncodedXdrString();
+          final imported = Operation.fromXdr(
+            XdrOperation.fromBase64EncodedXdrString(operation),
+          );
+          expect(imported.toXdrBase64(), operation);
+          final function =
+              (imported as InvokeHostFunctionOperation).function
+                  as DeploySACWithAssetHostFunction;
+          expect(encoded(function.constructorArgs), encoded(args));
+        }
+      }
+    });
+
+    test('V1 stays V1 without constructor arguments', () {
+      for (final asset in [native, alphaNum4, alphaNum12]) {
+        final decoded = read(v1(asset));
+        expect(decoded.toXdr().toBase64EncodedXdrString(), v1(asset));
+        expect(decoded.constructorArgs, isNull);
+        expect(
+          DeploySACWithAssetHostFunction(
+            Asset.fromXdr(asset),
+          ).toXdr().toBase64EncodedXdrString(),
+          v1(asset),
+        );
+      }
+    });
+
+    test('constructor arguments select V2 with exactly those arguments', () {
+      final asset = Asset.fromXdr(alphaNum4);
+      for (final args in [<XdrSCVal>[], twoArgs]) {
+        expect(
+          DeploySACWithAssetHostFunction(
+            asset,
+            constructorArgs: args,
+          ).toXdr().toBase64EncodedXdrString(),
+          v2(alphaNum4, args),
+        );
+      }
+
+      final hostFunction = DeploySACWithAssetHostFunction(
+        asset,
+        constructorArgs: twoArgs,
+      );
+      final steps = <(List<XdrSCVal>?, String)>[
+        (null, v1(alphaNum4)),
+        (<XdrSCVal>[], v2(alphaNum4, [])),
+        (twoArgs, v2(alphaNum4, twoArgs)),
+        (null, v1(alphaNum4)),
+      ];
+      for (final (args, expected) in steps) {
+        hostFunction.constructorArgs = args;
+        expect(hostFunction.constructorArgs, same(args));
+        expect(hostFunction.toXdr().toBase64EncodedXdrString(), expected);
+      }
+    });
+
+    test('invalid pairings still throw', () {
+      final addressPreimage =
+          XdrContractIDPreimage(
+              XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+            )
+            ..address = Address.forAccountId(sep23Account).toXdr()
+            ..salt = XdrUint256(Uint8List(32));
+      final wasmExecutable = XdrContractExecutable(
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+      )..wasmHash = XdrHash(Uint8List(32));
+      final pairings = [
+        (preimage(alphaNum4), wasmExecutable),
+        (addressPreimage, sacExecutable),
+      ];
+      for (final (idPreimage, executable) in pairings) {
+        for (final hostFunction in [
+          XdrHostFunction.forCreatingContractWithArgs(
+            XdrCreateContractArgs(idPreimage, executable),
+          ),
+          XdrHostFunction.forCreatingContractV2WithArgs(
+            XdrCreateContractArgsV2(idPreimage, executable, []),
+          ),
+        ]) {
+          expect(
+            () => HostFunction.fromXdr(hostFunction),
+            throwsA(isA<UnimplementedError>()),
+          );
+        }
+      }
+    });
+
+    test('network envelope keeps its bytes and hash', () {
+      final transaction = AbstractTransaction.fromEnvelopeXdrString(
+        sacCreateContractV2Envelope,
+      );
+      expect(transaction.toEnvelopeXdrBase64(), sacCreateContractV2Envelope);
+      expect(
+        Util.bytesToHex(transaction.hash(Network.TESTNET)),
+        sacCreateContractV2Hash,
+      );
+    });
+
+    test('fee bump of the network transaction keeps its bytes and hashes', () {
+      final inner = XdrTransactionEnvelope.fromEnvelopeXdrString(
+        sacCreateContractV2Envelope,
+      ).v1!;
+      final feeBump = XdrFeeBumpTransaction(
+        inner.tx.sourceAccount,
+        XdrInt64(BigInt.from(200000)),
+        XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX)
+          ..v1 = inner,
+        XdrFeeBumpTransactionExt(0),
+      );
+      final envelope =
+          (XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP)
+                ..feeBump = XdrFeeBumpTransactionEnvelope(feeBump, []))
+              .toEnvelopeXdrBase64();
+      final payload = XdrTransactionSignaturePayload(
+        XdrHash(
+          Uint8List.fromList(
+            sha256
+                .convert(utf8.encode(Network.TESTNET.networkPassphrase))
+                .bytes,
+          ),
+        ),
+        XdrTransactionSignaturePayloadTaggedTransaction(
+          XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP,
+        )..feeBump = feeBump,
+      ).toBase64EncodedXdrString();
+
+      final parsed =
+          AbstractTransaction.fromEnvelopeXdrString(envelope)
+              as FeeBumpTransaction;
+      expect(parsed.toEnvelopeXdrBase64(), envelope);
+      expect(
+        Util.bytesToHex(parsed.innerTransaction.hash(Network.TESTNET)),
+        sacCreateContractV2Hash,
+      );
+      expect(
+        Util.bytesToHex(parsed.hash(Network.TESTNET)),
+        sha256.convert(base64Decode(payload)).toString(),
+      );
     });
   });
 

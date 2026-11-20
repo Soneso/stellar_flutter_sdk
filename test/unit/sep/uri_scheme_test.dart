@@ -5,6 +5,8 @@ import 'package:http/testing.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../operations/sac_create_contract_v2_fixture.dart';
+
 void main() {
   late KeyPair sourceKeyPair;
   late Account sourceAccount;
@@ -2305,6 +2307,54 @@ void main() {
           final signatures = envelope.feeBump!.signatures;
           expect(signatures.length, 2);
           expect(posted, expected.toEnvelopeXdrBase64());
+        },
+      );
+
+      test(
+        'callback keeps a contract deployment through CREATE_CONTRACT_V2',
+        () async {
+          final signer = KeyPair.random();
+          final fixture = XdrTransactionEnvelope.fromEnvelopeXdrString(
+            sacCreateContractV2Envelope,
+          );
+          final expected =
+              XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX)
+                ..v1 = XdrTransactionV1Envelope(fixture.v1!.tx, [
+                  ...fixture.v1!.signatures,
+                  signer.signDecorated(
+                    Util.hexToBytes(sacCreateContractV2Hash),
+                  ),
+                ]);
+
+          String? posted;
+          final client = MockClient((request) async {
+            posted = Uri.splitQueryString(request.body)['xdr'];
+            return http.Response('ok', 200);
+          });
+          addTearDown(client.close);
+          final scheme = URIScheme(httpClient: client);
+          final uri = scheme.generateSignTransactionURI(
+            sacCreateContractV2Envelope,
+            callback: 'url:https://example.com/callback',
+          );
+          final result = await scheme.signAndSubmitTransaction(
+            uri,
+            signer,
+            network: Network.TESTNET,
+          );
+
+          expect(result.response!.statusCode, 200);
+          // The fixture's transaction with one signature over the network hash
+          // appended.
+          expect(posted, expected.toEnvelopeXdrBase64());
+          expect(
+            Util.bytesToHex(
+              AbstractTransaction.fromEnvelopeXdrString(
+                posted!,
+              ).hash(Network.TESTNET),
+            ),
+            sacCreateContractV2Hash,
+          );
         },
       );
 
