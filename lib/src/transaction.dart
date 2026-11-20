@@ -5,6 +5,7 @@
 import "dart:convert";
 import 'dart:typed_data';
 
+import 'constants/bit_constants.dart';
 import 'constants/stellar_protocol_constants.dart';
 import 'muxed_account.dart';
 import 'key_pair.dart';
@@ -1057,56 +1058,96 @@ class FeeBumpTransactionBuilder {
   }
 }
 
+/// Returns [value] when it is an unsigned 64-bit integer, 0 to 2^64-1.
+BigInt _checkedUint64(BigInt value, String name) {
+  if (value.isNegative) {
+    throw Exception("$name cannot be negative: $value");
+  }
+  if (value > BitConstants.uint64MaskBigInt) {
+    throw Exception(
+      "$name cannot be greater than ${BitConstants.uint64MaskBigInt}: $value",
+    );
+  }
+  return value;
+}
+
+/// Returns [value] as an `int`, or throws a [StateError] that names
+/// [exactGetter]. An `int` holds every value up to 2^63-1 on the Dart VM and
+/// only values that are exact as a double in the browser.
+int _platformInt(BigInt value, String name, String exactGetter) {
+  if (!value.isValidInt) {
+    throw StateError(
+      "$name $value does not fit in an int on this platform; "
+      "read $exactGetter",
+    );
+  }
+  return value.toInt();
+}
+
 /// TimeBounds represents the time interval that a transaction is valid.
+///
+/// The bounds are unsigned 64-bit Unix timestamps and are held exactly.
+/// [minTimeBigInt] and [maxTimeBigInt] return every value; [minTime] and
+/// [maxTime] throw a [StateError] for a value the platform `int` cannot hold.
 class TimeBounds {
-  late int _mMinTime;
-  late int _mMaxTime;
+  final BigInt _mMinTime;
+  final BigInt _mMaxTime;
 
   /// Creates a time bounds constraint for transaction validity.
   ///
   /// Parameters [minTime] and [maxTime] are 64-bit Unix timestamps defining
   /// the time window when the transaction can be included in the ledger.
-  TimeBounds(int minTime, int maxTime) {
-    if (minTime < 0) {
-      throw Exception("minTime cannot be negative");
-    }
+  TimeBounds(int minTime, int maxTime)
+    : this.fromBigInt(BigInt.from(minTime), BigInt.from(maxTime));
 
-    if (maxTime < 0) {
-      throw new Exception("maxTime cannot be negative");
+  /// Creates a time bounds constraint from exact unsigned 64-bit timestamps.
+  ///
+  /// Throws an [Exception] when [minTime] or [maxTime] is outside 0 to
+  /// 2^64-1, or when [maxTime] is not 0 and [minTime] is greater than it.
+  TimeBounds.fromBigInt(BigInt minTime, BigInt maxTime)
+    : _mMinTime = _checkedUint64(minTime, 'minTime'),
+      _mMaxTime = _checkedUint64(maxTime, 'maxTime') {
+    if (_mMaxTime != BigInt.zero && _mMinTime > _mMaxTime) {
+      throw Exception(
+        "minTime cannot be greater than maxTime: $_mMinTime > $_mMaxTime",
+      );
     }
-    if (maxTime != 0 && minTime > maxTime) {
-      throw Exception("minTime cannot be greater than maxTime");
-    }
-
-    _mMinTime = minTime;
-    _mMaxTime = maxTime;
   }
 
-  int get minTime => _mMinTime;
+  /// The earliest time. Throws a [StateError] when the platform `int` cannot
+  /// hold it; [minTimeBigInt] returns every value.
+  int get minTime => _platformInt(_mMinTime, 'minTime', 'minTimeBigInt');
 
-  int get maxTime => _mMaxTime;
+  /// The latest time, 0 for none. Throws a [StateError] when the platform
+  /// `int` cannot hold it; [maxTimeBigInt] returns every value.
+  int get maxTime => _platformInt(_mMaxTime, 'maxTime', 'maxTimeBigInt');
+
+  /// The earliest time as an exact unsigned 64-bit value.
+  BigInt get minTimeBigInt => _mMinTime;
+
+  /// The latest time as an exact unsigned 64-bit value, 0 for none.
+  BigInt get maxTimeBigInt => _mMaxTime;
 
   /// A factory method that sets maxTime to the specified [timeout] second from now. [timeout] in seconds.
   static TimeBounds expiresAfter(int timeout) {
     int now = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-    int endTime = now + timeout;
-    return TimeBounds(0, endTime);
+    return TimeBounds.fromBigInt(
+      BigInt.zero,
+      BigInt.from(now) + BigInt.from(timeout),
+    );
   }
 
   /// Creates a [TimeBounds] instance from a [timeBounds] XdrTimeBounds object.
   static TimeBounds fromXdr(XdrTimeBounds timeBounds) {
-    return TimeBounds(
-      timeBounds.minTime.uint64.toInt(),
-      timeBounds.maxTime.uint64.toInt(),
+    return TimeBounds.fromBigInt(
+      timeBounds.minTime.uint64,
+      timeBounds.maxTime.uint64,
     );
   }
 
   /// Creates a [XdrTimeBounds] object from this time bounds.
   XdrTimeBounds toXdr() {
-    XdrUint64 minTime = XdrUint64(BigInt.from(_mMinTime));
-    XdrUint64 maxTime = XdrUint64(BigInt.from(_mMaxTime));
-    XdrTimeBounds timeBounds = XdrTimeBounds(minTime, maxTime);
-    return timeBounds;
+    return XdrTimeBounds(XdrUint64(_mMinTime), XdrUint64(_mMaxTime));
   }
 
   /// Compares this instance to another for equality.
@@ -1122,9 +1163,12 @@ class TimeBounds {
       return false;
     }
 
-    if (_mMinTime != o.minTime) return false;
-    return _mMaxTime == o.maxTime;
+    if (_mMinTime != o._mMinTime) return false;
+    return _mMaxTime == o._mMaxTime;
   }
+
+  @override
+  int get hashCode => Object.hash(_mMinTime, _mMaxTime);
 }
 
 /// LedgerBounds are Preconditions of a transaction per [CAP-21](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0021.md#specification)
@@ -1253,9 +1297,10 @@ class TransactionPreconditions {
   TimeBounds? _timeBounds;
   LedgerBounds? _ledgerBounds;
   BigInt? _minSeqNumber;
-  int? _minSeqAge;
+  BigInt? _minSeqAge;
   int? _minSeqLedgerGap;
   List<XdrSignerKey>? _extraSigners;
+  bool _readAsV2 = false;
 
   /// Gets the time bounds for transaction validity.
   ///
@@ -1274,8 +1319,16 @@ class TransactionPreconditions {
 
   /// Gets the minimum age in seconds for the source account's sequence number.
   ///
-  /// Returns: Minimum age in seconds or null if not set
-  int? get minSeqAge => _minSeqAge;
+  /// Returns: Minimum age in seconds or null if not set. Throws a
+  /// [StateError] when the platform `int` cannot hold the age;
+  /// [minSeqAgeBigInt] returns every value.
+  int? get minSeqAge => _minSeqAge == null
+      ? null
+      : _platformInt(_minSeqAge!, 'minSeqAge', 'minSeqAgeBigInt');
+
+  /// The minimum sequence age in seconds as an exact unsigned 64-bit value,
+  /// or null if not set.
+  BigInt? get minSeqAgeBigInt => _minSeqAge;
 
   /// Gets the minimum ledger gap since the sequence number last changed.
   ///
@@ -1290,7 +1343,18 @@ class TransactionPreconditions {
   set timeBounds(TimeBounds? value) => _timeBounds = value;
   set ledgerBounds(LedgerBounds? value) => _ledgerBounds = value;
   set minSeqNumber(BigInt? value) => _minSeqNumber = value;
-  set minSeqAge(int? value) => _minSeqAge = value;
+
+  /// Sets the minimum sequence age in seconds, or clears it with null.
+  ///
+  /// Throws an [Exception] for a value outside 0 to 2^64-1.
+  set minSeqAge(int? value) =>
+      minSeqAgeBigInt = value == null ? null : BigInt.from(value);
+
+  /// Sets the minimum sequence age in seconds, or clears it with null.
+  ///
+  /// Throws an [Exception] for a value outside 0 to 2^64-1.
+  set minSeqAgeBigInt(BigInt? value) =>
+      _minSeqAge = value == null ? null : _checkedUint64(value, 'minSeqAge');
   set minSeqLedgerGap(int? value) => _minSeqLedgerGap = value;
   set extraSigners(List<XdrSignerKey>? value) => _extraSigners = value;
 
@@ -1298,6 +1362,7 @@ class TransactionPreconditions {
   static TransactionPreconditions fromXdr(XdrPreconditions xdr) {
     TransactionPreconditions result = TransactionPreconditions();
     if (xdr.discriminant.value == XdrPreconditionType.PRECOND_V2.value) {
+      result._readAsV2 = true;
       if (xdr.v2!.timeBounds != null) {
         result.timeBounds = TimeBounds.fromXdr(xdr.v2!.timeBounds!);
       }
@@ -1307,7 +1372,7 @@ class TransactionPreconditions {
       if (xdr.v2!.minSeqNum != null) {
         result.minSeqNumber = xdr.v2!.minSeqNum!.sequenceNumber;
       }
-      result.minSeqAge = xdr.v2!.minSeqAge.uint64.toInt();
+      result.minSeqAgeBigInt = xdr.v2!.minSeqAge.uint64;
       result.minSeqLedgerGap = xdr.v2!.minSeqLedgerGap.uint32;
       List<XdrSignerKey> keys = [];
       for (var i = 0; i < xdr.v2!.extraSigners.length; i++) {
@@ -1324,12 +1389,16 @@ class TransactionPreconditions {
 
   /// Checks if this instance requires V2 preconditions format.
   ///
-  /// Returns true if any V2-specific fields are set (ledger bounds, sequence constraints, extra signers).
+  /// Returns true if this instance was read from a `PRECOND_V2` precondition,
+  /// so that it encodes to the same bytes, or if a V2-specific field is set:
+  /// ledger bounds, a minimum sequence number of any value, a positive
+  /// minimum sequence age or ledger gap, or at least one extra signer.
   bool hasV2() {
-    return _ledgerBounds != null ||
+    return _readAsV2 ||
+        _ledgerBounds != null ||
         (_minSeqLedgerGap != null && _minSeqLedgerGap! > 0) ||
-        (_minSeqAge != null && _minSeqAge! > 0) ||
-        (_minSeqNumber != null && _minSeqNumber! > BigInt.zero) ||
+        (_minSeqAge != null && _minSeqAge! > BigInt.zero) ||
+        _minSeqNumber != null ||
         (_extraSigners != null && _extraSigners!.length > 0);
   }
 
@@ -1343,11 +1412,7 @@ class TransactionPreconditions {
     }
     XdrPreconditions result = XdrPreconditions(type);
     if (hasV2()) {
-      int sav = 0;
-      if (_minSeqAge != null) {
-        sav = _minSeqAge!;
-      }
-      XdrUint64 sa = XdrUint64(BigInt.from(sav));
+      XdrUint64 sa = XdrUint64(_minSeqAge ?? BigInt.zero);
 
       int slv = 0;
       if (_minSeqLedgerGap != null) {

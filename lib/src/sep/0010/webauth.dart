@@ -637,15 +637,19 @@ class WebAuth {
     if (timeBoundsGracePeriod != null) {
       grace = timeBoundsGracePeriod;
     }
-    final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    final minTime = timeBounds.minTime;
-    final maxTime = timeBounds.maxTime;
-    if (maxTime == 0) {
+    final currentTime = BigInt.from(
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
+    final graceTime = BigInt.from(grace);
+    final minTime = timeBounds.minTimeBigInt;
+    final maxTime = timeBounds.maxTimeBigInt;
+    if (maxTime == BigInt.zero) {
       throw ChallengeValidationErrorInvalidTimeBounds(
         "Invalid transaction, requires non-infinite time bounds",
       );
     }
-    if (currentTime < minTime - grace || currentTime > maxTime + grace) {
+    if (currentTime < minTime - graceTime ||
+        currentTime > maxTime + graceTime) {
       throw ChallengeValidationErrorInvalidTimeBounds(
         "Invalid transaction, invalid time bounds",
       );

@@ -13,9 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SACSpec` embeds the Stellar Asset Contract spec at upstream commit 4f08d14.
 - `SorobanClient.forSpecEntries()` builds a client from spec entries without an RPC request. With `readOnly: true`, its transactions simulate without loading the source account and refuse to sign, send, or restore.
 - `DeploySACWithAssetHostFunction` takes optional constructor arguments; with an argument list, including an empty one, it writes `HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2`.
+- `TimeBounds.fromBigInt()`, `TimeBounds.minTimeBigInt`, `TimeBounds.maxTimeBigInt` and `TransactionPreconditions.minSeqAgeBigInt` take and return time bounds and the minimum sequence age as exact unsigned 64-bit values.
 
 ### Changed
 - `SorobanClient.forClientOptions` opens Stellar Asset Contracts with the embedded spec.
+- `TimeBounds.minTime`, `TimeBounds.maxTime` and `TransactionPreconditions.minSeqAge` throw a `StateError` for a value that the platform `int` cannot hold, and `minSeqAge` refuses a negative value. Before this change, they returned a clamped or rounded number, and a negative age wrapped modulo 2^64 when another field selected V2 and was dropped otherwise.
 
 ### Fixed
 - `AbstractTransaction.fromEnvelopeXdr()`, `fromEnvelopeXdrString()` and `Operation.fromXdr()` read an inflation operation as the new `InflationOperation`, which encodes it unchanged. Before this change, they threw an exception, so a transaction with inflation could not be read or hashed.
@@ -26,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `TransactionBuilder.build()` throws for more than 100 operations and leaves the source account's sequence number unchanged. Before this change, it built the transaction.
 - Binary XDR decoding throws for input that ends inside the padding of a string or opaque value and for a presence flag other than 0 or 1. `fromBase64EncodedXdrString()`, `AbstractTransaction.fromEnvelopeXdrString()`, and the other decoders of a complete value throw when bytes follow the value. Before this change, such input decoded, so different bytes read as the same transaction.
 - TxRep reading throws for a signature hint that is not 4 bytes. Before this change, it wrote the hint to XDR with its wrong length.
+- `AbstractTransaction.fromEnvelopeXdr()`, `fromEnvelopeXdrString()` and `TransactionPreconditions.fromXdr()` keep a `PRECOND_V2` precondition as V2, and `TransactionPreconditions` with a minimum sequence number of 0 or less write `PRECOND_V2`. Before this change, a V2 precondition without ledger bounds, extra signers, or a positive sequence condition was written back as `PRECOND_TIME` or `PRECOND_NONE`, and such a minimum sequence number was dropped. The transaction then had a different hash.
+- Reading a transaction keeps large time bounds and minimum sequence ages exactly, so its hash and its envelope match the input. This covers values over 2^63-1 on the Dart VM and over 2^53 in the browser. Before this change, the values were clamped or rounded, and in the browser a value of 2^64-1 made `hash()` throw.
+- `TimeBounds` has a `hashCode` that agrees with `==`, so equal time bounds match in sets and maps.
 
 ## [3.12.0] - 2026-11-16
 
