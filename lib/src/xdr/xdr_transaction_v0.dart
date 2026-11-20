@@ -72,7 +72,7 @@ class XdrTransactionV0 {
     }
     XdrMemo.encode(stream, encodedTransactionV0.memo);
     int operationssize = encodedTransactionV0.operations.length;
-    stream.writeInt(operationssize);
+    stream.writeBoundedLength(operationssize, 100);
     for (int i = 0; i < operationssize; i++) {
       XdrOperation.encode(stream, encodedTransactionV0.operations[i]);
     }
@@ -84,12 +84,11 @@ class XdrTransactionV0 {
     XdrUint32 fee = XdrUint32.decode(stream);
     XdrSequenceNumber seqNum = XdrSequenceNumber.decode(stream);
     XdrTimeBounds? timeBounds;
-    int timeBoundsPresent = stream.readInt();
-    if (timeBoundsPresent != 0) {
+    if (stream.readOptionalPresence()) {
       timeBounds = XdrTimeBounds.decode(stream);
     }
     XdrMemo memo = XdrMemo.decode(stream);
-    int operationssize = stream.readArrayLength();
+    int operationssize = stream.readArrayLength(100);
     List<XdrOperation> operations = List<XdrOperation>.empty(growable: true);
     for (int i = 0; i < operationssize; i++) {
       operations.add(XdrOperation.decode(stream));
@@ -114,7 +113,10 @@ class XdrTransactionV0 {
 
   static XdrTransactionV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTransactionV0.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrTransactionV0 decoded = XdrTransactionV0.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -158,6 +160,7 @@ class XdrTransactionV0 {
       TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0',
       '$prefix.operations.len',
     );
+    TxRepHelper.checkMaxLength(operationsLen, 100, '$prefix.operations.len');
     List<XdrOperation> operations = [];
     for (int i = 0; i < operationsLen; i++) {
       operations.add(XdrOperation.fromTxRep(map, '$prefix.operations[$i]'));

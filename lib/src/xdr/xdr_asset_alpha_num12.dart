@@ -44,7 +44,10 @@ class XdrAssetAlphaNum12 {
 
   static XdrAssetAlphaNum12 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrAssetAlphaNum12.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrAssetAlphaNum12 decoded = XdrAssetAlphaNum12.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

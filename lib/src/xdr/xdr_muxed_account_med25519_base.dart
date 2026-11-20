@@ -47,7 +47,12 @@ class XdrMuxedAccountMed25519Base {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrMuxedAccountMed25519Base.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrMuxedAccountMed25519Base decoded = XdrMuxedAccountMed25519Base.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

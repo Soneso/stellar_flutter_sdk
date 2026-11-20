@@ -1092,7 +1092,7 @@ void main() {
 
     test('readFully without len/off reads all bytes', () {
       final output = DataOutput();
-      output.data = [1, 2, 3];
+      output.data = [1, 2, 3, 0];
 
       final input = DataInput.fromUint8List(Uint8List.fromList(output.data));
       final bytes = List<int>.filled(3, 0);

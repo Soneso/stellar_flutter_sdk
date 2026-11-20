@@ -43,8 +43,7 @@ class XdrSorobanTransactionMetaV2 {
       stream,
     );
     XdrSCVal? returnValue;
-    int returnValuePresent = stream.readInt();
-    if (returnValuePresent != 0) {
+    if (stream.readOptionalPresence()) {
       returnValue = XdrSCVal.decode(stream);
     }
     return XdrSorobanTransactionMetaV2(ext, returnValue);
@@ -60,7 +59,12 @@ class XdrSorobanTransactionMetaV2 {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSorobanTransactionMetaV2.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSorobanTransactionMetaV2 decoded = XdrSorobanTransactionMetaV2.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

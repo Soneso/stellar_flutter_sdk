@@ -65,7 +65,12 @@ class XdrCreatePassiveSellOfferOp {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrCreatePassiveSellOfferOp.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrCreatePassiveSellOfferOp decoded = XdrCreatePassiveSellOfferOp.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

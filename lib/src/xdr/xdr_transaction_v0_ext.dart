@@ -59,7 +59,10 @@ class XdrTransactionV0Ext {
 
   static XdrTransactionV0Ext fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTransactionV0Ext.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrTransactionV0Ext decoded = XdrTransactionV0Ext.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

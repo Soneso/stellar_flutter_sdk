@@ -37,8 +37,7 @@ class XdrLedgerEntryV1 {
 
   static XdrLedgerEntryV1 decode(XdrDataInputStream stream) {
     XdrAccountID? sponsoringID;
-    int sponsoringIDPresent = stream.readInt();
-    if (sponsoringIDPresent != 0) {
+    if (stream.readOptionalPresence()) {
       sponsoringID = XdrAccountID.decode(stream);
     }
     XdrLedgerEntryV1Ext ext = XdrLedgerEntryV1Ext.decode(stream);
@@ -53,7 +52,10 @@ class XdrLedgerEntryV1 {
 
   static XdrLedgerEntryV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrLedgerEntryV1.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrLedgerEntryV1 decoded = XdrLedgerEntryV1.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

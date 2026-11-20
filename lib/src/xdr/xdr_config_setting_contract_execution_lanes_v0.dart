@@ -45,9 +45,11 @@ class XdrConfigSettingContractExecutionLanesV0 {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrConfigSettingContractExecutionLanesV0.decode(
-      XdrDataInputStream(bytes),
-    );
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrConfigSettingContractExecutionLanesV0 decoded =
+        XdrConfigSettingContractExecutionLanesV0.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

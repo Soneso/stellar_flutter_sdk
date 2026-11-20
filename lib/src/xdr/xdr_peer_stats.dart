@@ -103,7 +103,7 @@ class XdrPeerStats {
     XdrPeerStats encodedPeerStats,
   ) {
     XdrNodeID.encode(stream, encodedPeerStats.id);
-    stream.writeString(encodedPeerStats.versionStr);
+    stream.writeString(encodedPeerStats.versionStr, 100);
     XdrUint64.encode(stream, encodedPeerStats.messagesRead);
     XdrUint64.encode(stream, encodedPeerStats.messagesWritten);
     XdrUint64.encode(stream, encodedPeerStats.bytesRead);
@@ -121,7 +121,7 @@ class XdrPeerStats {
 
   static XdrPeerStats decode(XdrDataInputStream stream) {
     XdrNodeID id = XdrNodeID.decode(stream);
-    String versionStr = stream.readString();
+    String versionStr = stream.readString(100);
     XdrUint64 messagesRead = XdrUint64.decode(stream);
     XdrUint64 messagesWritten = XdrUint64.decode(stream);
     XdrUint64 bytesRead = XdrUint64.decode(stream);
@@ -162,7 +162,10 @@ class XdrPeerStats {
 
   static XdrPeerStats fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrPeerStats.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrPeerStats decoded = XdrPeerStats.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

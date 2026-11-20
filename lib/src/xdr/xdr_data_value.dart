@@ -22,12 +22,12 @@ class XdrDataValue {
     XdrDataValue encodedDataValue,
   ) {
     int dataValueSize = encodedDataValue.dataValue.length;
-    stream.writeInt(dataValueSize);
+    stream.writeBoundedLength(dataValueSize, 64);
     stream.write(encodedDataValue.dataValue);
   }
 
   static XdrDataValue decode(XdrDataInputStream stream) {
-    int dataValueSize = stream.readInt();
+    int dataValueSize = stream.readBoundedLength(64);
     return XdrDataValue(stream.readBytes(dataValueSize));
   }
 
@@ -39,7 +39,10 @@ class XdrDataValue {
 
   static XdrDataValue fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrDataValue.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrDataValue decoded = XdrDataValue.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -49,7 +52,9 @@ class XdrDataValue {
   static XdrDataValue fromTxRep(Map<String, String> map, String prefix) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
-    return XdrDataValue(TxRepHelper.hexToBytes(raw));
+    return XdrDataValue(
+      TxRepHelper.checkBytesMaxLength(TxRepHelper.hexToBytes(raw), 64, prefix),
+    );
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

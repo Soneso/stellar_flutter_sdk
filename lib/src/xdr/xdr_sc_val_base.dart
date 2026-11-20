@@ -221,7 +221,7 @@ class XdrSCValBase {
         stream.writeString(encodedSCVal._str!);
         break;
       case XdrSCValType.SCV_SYMBOL:
-        stream.writeString(encodedSCVal._sym!);
+        stream.writeString(encodedSCVal._sym!, 32);
         break;
       case XdrSCValType.SCV_VEC:
         if (encodedSCVal._vec == null) {
@@ -321,11 +321,10 @@ class XdrSCValBase {
           decoded._str = stream.readString();
           break;
         case XdrSCValType.SCV_SYMBOL:
-          decoded._sym = stream.readString();
+          decoded._sym = stream.readString(32);
           break;
         case XdrSCValType.SCV_VEC:
-          int vecPresent = stream.readInt();
-          if (vecPresent != 0) {
+          if (stream.readOptionalPresence()) {
             int vecLen = stream.readArrayLength();
             decoded._vec = List<XdrSCVal>.empty(growable: true);
             for (int veci = 0; veci < vecLen; veci++) {
@@ -334,8 +333,7 @@ class XdrSCValBase {
           }
           break;
         case XdrSCValType.SCV_MAP:
-          int mapPresent = stream.readInt();
-          if (mapPresent != 0) {
+          if (stream.readOptionalPresence()) {
             int mapLen = stream.readArrayLength();
             decoded._map = List<XdrSCMapEntry>.empty(growable: true);
             for (int mapi = 0; mapi < mapLen; mapi++) {
@@ -372,7 +370,10 @@ class XdrSCValBase {
 
   static XdrSCValBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCValBase.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCValBase decoded = XdrSCValBase.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -522,8 +523,12 @@ class XdrSCValBase {
         );
         break;
       case XdrSCValType.SCV_SYMBOL:
-        result._sym = TxRepHelper.unescapeString(
-          TxRepHelper.getValue(map, '$prefix.sym') ?? '',
+        result._sym = TxRepHelper.checkStringMaxLength(
+          TxRepHelper.unescapeString(
+            TxRepHelper.getValue(map, '$prefix.sym') ?? '',
+          ),
+          32,
+          '$prefix.sym',
         );
         break;
       case XdrSCValType.SCV_VEC:
@@ -630,6 +635,7 @@ class XdrSCValBase {
             _sym!,
             type: 'XdrSCVal',
             key: 'symbol',
+            maxBytes: 32,
           ),
         };
       case 16:
@@ -777,6 +783,7 @@ class XdrSCValBase {
           arm.value,
           type: 'XdrSCVal',
           key: 'symbol',
+          maxBytes: 32,
         );
         return arm14;
       case 'vec':

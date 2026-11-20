@@ -899,6 +899,7 @@ class WebAuthForContracts {
           ),
         );
       }
+      xdrBuffer.checkFullyConsumed();
 
       return entries;
     } catch (e) {

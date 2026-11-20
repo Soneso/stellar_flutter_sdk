@@ -39,8 +39,7 @@ class XdrManageDataOp {
   static XdrManageDataOp decode(XdrDataInputStream stream) {
     XdrString64 dataName = XdrString64.decode(stream);
     XdrDataValue? dataValue;
-    int dataValuePresent = stream.readInt();
-    if (dataValuePresent != 0) {
+    if (stream.readOptionalPresence()) {
       dataValue = XdrDataValue.decode(stream);
     }
     return XdrManageDataOp(dataName, dataValue);
@@ -54,7 +53,10 @@ class XdrManageDataOp {
 
   static XdrManageDataOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrManageDataOp.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrManageDataOp decoded = XdrManageDataOp.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

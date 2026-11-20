@@ -22,6 +22,14 @@ import '../../xdr/txrep_helper.dart';
 /// - XDR to TxRep: [fromTransactionEnvelopeXdrBase64]
 /// - TxRep to XDR: [transactionEnvelopeXdrBase64FromTxRep]
 class TxRep {
+  // Maxima of the XDR definitions: Memo `string text<28>`, the envelopes'
+  // `DecoratedSignature signatures<20>` and `typedef opaque Signature<64>`.
+  static const int _maxMemoText = 28;
+  static const int _maxSignatures = 20;
+  static const int _maxSignature = 64;
+  static const int _maxOps =
+      StellarProtocolConstants.MAX_OPERATIONS_PER_TRANSACTION;
+
   // ---------------------------------------------------------------------------
   // Encoding: XDR base64 → TxRep text
   // ---------------------------------------------------------------------------
@@ -341,6 +349,7 @@ class TxRep {
     String? opsLenStr = TxRepHelper.getValue(map, '$prefix.operations.len');
     if (opsLenStr == null) throw Exception('missing $prefix.operations.len');
     int opsLen = TxRepHelper.parseUint32(opsLenStr, '$prefix.operations.len');
+    TxRepHelper.checkMaxLength(opsLen, _maxOps, '$prefix.operations.len');
     List<XdrOperation> operations = [];
     for (int i = 0; i < opsLen; i++) {
       operations.add(XdrOperation.fromTxRep(map, '$prefix.operations[$i]'));
@@ -412,6 +421,7 @@ class TxRep {
       }
       XdrMemo memo = XdrMemo(XdrMemoType.MEMO_TEXT);
       memo.text = text;
+      TxRepHelper.checkStringMaxLength(text, _maxMemoText, '$prefix.text');
       return memo;
     } else if (memoTypeStr == 'MEMO_ID') {
       XdrMemo memo = XdrMemo(XdrMemoType.MEMO_ID);
@@ -440,15 +450,13 @@ class TxRep {
     String? lenStr = TxRepHelper.getValue(map, '${prefix}signatures.len');
     if (lenStr == null) return [];
     int len = TxRepHelper.parseUint32(lenStr, '${prefix}signatures.len');
+    TxRepHelper.checkMaxLength(len, _maxSignatures, '${prefix}signatures.len');
     List<XdrDecoratedSignature> signatures = [];
     for (int i = 0; i < len; i++) {
-      String? hintStr = TxRepHelper.getValue(
+      XdrSignatureHint hint = XdrSignatureHint.fromTxRep(
         map,
         '${prefix}signatures[$i].hint',
       );
-      if (hintStr == null) {
-        throw Exception('missing ${prefix}signatures[$i].hint');
-      }
       String? sigStr = TxRepHelper.getValue(
         map,
         '${prefix}signatures[$i].signature',
@@ -458,8 +466,14 @@ class TxRep {
       }
       signatures.add(
         XdrDecoratedSignature(
-          XdrSignatureHint(Util.hexToBytes(hintStr)),
-          XdrSignature(Util.hexToBytes(sigStr)),
+          hint,
+          XdrSignature(
+            TxRepHelper.checkBytesMaxLength(
+              Util.hexToBytes(sigStr),
+              _maxSignature,
+              '${prefix}signatures[$i].signature',
+            ),
+          ),
         ),
       );
     }

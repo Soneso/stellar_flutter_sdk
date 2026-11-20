@@ -29,8 +29,8 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
     XdrDataOutputStream stream,
     XdrSCSpecUDTUnionCaseTupleV0 encodedSCSpecUDTUnionCaseTupleV0,
   ) {
-    stream.writeString(encodedSCSpecUDTUnionCaseTupleV0.doc);
-    stream.writeString(encodedSCSpecUDTUnionCaseTupleV0.name);
+    stream.writeString(encodedSCSpecUDTUnionCaseTupleV0.doc, 1024);
+    stream.writeString(encodedSCSpecUDTUnionCaseTupleV0.name, 60);
     int typesize = encodedSCSpecUDTUnionCaseTupleV0.type.length;
     stream.writeInt(typesize);
     for (int i = 0; i < typesize; i++) {
@@ -39,8 +39,8 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
   }
 
   static XdrSCSpecUDTUnionCaseTupleV0 decode(XdrDataInputStream stream) {
-    String doc = stream.readString();
-    String name = stream.readString();
+    String doc = stream.readString(1024);
+    String name = stream.readString(60);
     int typesize = stream.readArrayLength();
     List<XdrSCSpecTypeDef> type = List<XdrSCSpecTypeDef>.empty(growable: true);
     for (int i = 0; i < typesize; i++) {
@@ -59,7 +59,12 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCSpecUDTUnionCaseTupleV0.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCSpecUDTUnionCaseTupleV0 decoded = XdrSCSpecUDTUnionCaseTupleV0.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

@@ -73,7 +73,12 @@ class XdrClaimableBalanceIDBase {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrClaimableBalanceIDBase.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrClaimableBalanceIDBase decoded = XdrClaimableBalanceIDBase.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

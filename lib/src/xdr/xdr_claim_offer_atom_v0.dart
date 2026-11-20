@@ -84,7 +84,10 @@ class XdrClaimOfferAtomV0 {
 
   static XdrClaimOfferAtomV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrClaimOfferAtomV0.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrClaimOfferAtomV0 decoded = XdrClaimOfferAtomV0.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

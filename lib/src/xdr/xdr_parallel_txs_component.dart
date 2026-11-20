@@ -47,8 +47,7 @@ class XdrParallelTxsComponent {
 
   static XdrParallelTxsComponent decode(XdrDataInputStream stream) {
     XdrInt64? baseFee;
-    int baseFeePresent = stream.readInt();
-    if (baseFeePresent != 0) {
+    if (stream.readOptionalPresence()) {
       baseFee = XdrInt64.decode(stream);
     }
     int executionStagessize = stream.readArrayLength();
@@ -70,7 +69,10 @@ class XdrParallelTxsComponent {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrParallelTxsComponent.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrParallelTxsComponent decoded = XdrParallelTxsComponent.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

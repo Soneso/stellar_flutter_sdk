@@ -78,7 +78,11 @@ class XdrClaimClaimableBalanceResultCode {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrClaimClaimableBalanceResultCode.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrClaimClaimableBalanceResultCode decoded =
+        XdrClaimClaimableBalanceResultCode.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

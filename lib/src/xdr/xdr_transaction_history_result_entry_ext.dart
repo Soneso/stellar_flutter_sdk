@@ -60,9 +60,11 @@ class XdrTransactionHistoryResultEntryExt {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTransactionHistoryResultEntryExt.decode(
-      XdrDataInputStream(bytes),
-    );
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrTransactionHistoryResultEntryExt decoded =
+        XdrTransactionHistoryResultEntryExt.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

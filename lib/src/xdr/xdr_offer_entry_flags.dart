@@ -48,7 +48,10 @@ class XdrOfferEntryFlags {
 
   static XdrOfferEntryFlags fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrOfferEntryFlags.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrOfferEntryFlags decoded = XdrOfferEntryFlags.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

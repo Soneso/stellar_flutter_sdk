@@ -72,7 +72,10 @@ class XdrSCSpecEntryKind {
 
   static XdrSCSpecEntryKind fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCSpecEntryKind.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCSpecEntryKind decoded = XdrSCSpecEntryKind.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

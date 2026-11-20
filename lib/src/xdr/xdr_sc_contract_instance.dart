@@ -44,8 +44,7 @@ class XdrSCContractInstance {
     try {
       XdrContractExecutable executable = XdrContractExecutable.decode(stream);
       List<XdrSCMapEntry>? storage;
-      int storagePresent = stream.readInt();
-      if (storagePresent != 0) {
+      if (stream.readOptionalPresence()) {
         int storageLen = stream.readArrayLength();
         storage = List<XdrSCMapEntry>.empty(growable: true);
         for (int storagei = 0; storagei < storageLen; storagei++) {
@@ -68,7 +67,10 @@ class XdrSCContractInstance {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCContractInstance.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCContractInstance decoded = XdrSCContractInstance.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

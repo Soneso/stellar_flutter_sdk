@@ -66,9 +66,11 @@ class XdrSignedTimeSlicedSurveyStopCollectingMessage {
   static XdrSignedTimeSlicedSurveyStopCollectingMessage
   fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSignedTimeSlicedSurveyStopCollectingMessage.decode(
-      XdrDataInputStream(bytes),
-    );
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSignedTimeSlicedSurveyStopCollectingMessage decoded =
+        XdrSignedTimeSlicedSurveyStopCollectingMessage.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

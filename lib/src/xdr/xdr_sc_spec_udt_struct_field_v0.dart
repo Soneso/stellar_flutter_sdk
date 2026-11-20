@@ -29,14 +29,14 @@ class XdrSCSpecUDTStructFieldV0 {
     XdrDataOutputStream stream,
     XdrSCSpecUDTStructFieldV0 encodedSCSpecUDTStructFieldV0,
   ) {
-    stream.writeString(encodedSCSpecUDTStructFieldV0.doc);
-    stream.writeString(encodedSCSpecUDTStructFieldV0.name);
+    stream.writeString(encodedSCSpecUDTStructFieldV0.doc, 1024);
+    stream.writeString(encodedSCSpecUDTStructFieldV0.name, 30);
     XdrSCSpecTypeDef.encode(stream, encodedSCSpecUDTStructFieldV0.type);
   }
 
   static XdrSCSpecUDTStructFieldV0 decode(XdrDataInputStream stream) {
-    String doc = stream.readString();
-    String name = stream.readString();
+    String doc = stream.readString(1024);
+    String name = stream.readString(30);
     XdrSCSpecTypeDef type = XdrSCSpecTypeDef.decode(stream);
     return XdrSCSpecUDTStructFieldV0(doc, name, type);
   }
@@ -51,7 +51,12 @@ class XdrSCSpecUDTStructFieldV0 {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCSpecUDTStructFieldV0.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCSpecUDTStructFieldV0 decoded = XdrSCSpecUDTStructFieldV0.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

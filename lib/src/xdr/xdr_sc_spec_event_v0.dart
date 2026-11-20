@@ -49,13 +49,13 @@ class XdrSCSpecEventV0 {
     XdrDataOutputStream stream,
     XdrSCSpecEventV0 encodedSCSpecEventV0,
   ) {
-    stream.writeString(encodedSCSpecEventV0.doc);
-    stream.writeString(encodedSCSpecEventV0.lib);
-    stream.writeString(encodedSCSpecEventV0.name);
+    stream.writeString(encodedSCSpecEventV0.doc, 1024);
+    stream.writeString(encodedSCSpecEventV0.lib, 80);
+    stream.writeString(encodedSCSpecEventV0.name, 1024);
     int prefixTopicssize = encodedSCSpecEventV0.prefixTopics.length;
-    stream.writeInt(prefixTopicssize);
+    stream.writeBoundedLength(prefixTopicssize, 2);
     for (int i = 0; i < prefixTopicssize; i++) {
-      stream.writeString(encodedSCSpecEventV0.prefixTopics[i]);
+      stream.writeString(encodedSCSpecEventV0.prefixTopics[i], 32);
     }
     int paramssize = encodedSCSpecEventV0.params.length;
     stream.writeInt(paramssize);
@@ -66,13 +66,13 @@ class XdrSCSpecEventV0 {
   }
 
   static XdrSCSpecEventV0 decode(XdrDataInputStream stream) {
-    String doc = stream.readString();
-    String lib = stream.readString();
-    String name = stream.readString();
-    int prefixTopicssize = stream.readArrayLength();
+    String doc = stream.readString(1024);
+    String lib = stream.readString(80);
+    String name = stream.readString(1024);
+    int prefixTopicssize = stream.readArrayLength(2);
     List<String> prefixTopics = List<String>.empty(growable: true);
     for (int i = 0; i < prefixTopicssize; i++) {
-      prefixTopics.add(stream.readString());
+      prefixTopics.add(stream.readString(32));
     }
     int paramssize = stream.readArrayLength();
     List<XdrSCSpecEventParamV0> params = List<XdrSCSpecEventParamV0>.empty(
@@ -95,7 +95,10 @@ class XdrSCSpecEventV0 {
 
   static XdrSCSpecEventV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCSpecEventV0.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCSpecEventV0 decoded = XdrSCSpecEventV0.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.
@@ -133,6 +136,7 @@ class XdrSCSpecEventV0 {
         v,
         type: 'XdrSCSpecEventV0',
         key: 'prefix_topics',
+        maxBytes: 32,
       ),
       type: 'XdrSCSpecEventV0',
       key: 'prefix_topics',
@@ -221,6 +225,7 @@ class XdrSCSpecEventV0 {
               e,
               type: 'XdrSCSpecEventV0',
               key: 'prefix_topics',
+              maxBytes: 32,
             ),
           )
           .toList(),

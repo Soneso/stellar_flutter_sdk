@@ -71,7 +71,10 @@ class XdrAccountEntryV2Ext {
 
   static XdrAccountEntryV2Ext fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrAccountEntryV2Ext.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrAccountEntryV2Ext decoded = XdrAccountEntryV2Ext.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

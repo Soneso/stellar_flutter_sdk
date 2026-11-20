@@ -66,7 +66,7 @@ class XdrTransaction {
     XdrPreconditions.encode(stream, encodedTransaction.cond);
     XdrMemo.encode(stream, encodedTransaction.memo);
     int operationssize = encodedTransaction.operations.length;
-    stream.writeInt(operationssize);
+    stream.writeBoundedLength(operationssize, 100);
     for (int i = 0; i < operationssize; i++) {
       XdrOperation.encode(stream, encodedTransaction.operations[i]);
     }
@@ -79,7 +79,7 @@ class XdrTransaction {
     XdrSequenceNumber seqNum = XdrSequenceNumber.decode(stream);
     XdrPreconditions cond = XdrPreconditions.decode(stream);
     XdrMemo memo = XdrMemo.decode(stream);
-    int operationssize = stream.readArrayLength();
+    int operationssize = stream.readArrayLength(100);
     List<XdrOperation> operations = List<XdrOperation>.empty(growable: true);
     for (int i = 0; i < operationssize; i++) {
       operations.add(XdrOperation.decode(stream));
@@ -104,7 +104,10 @@ class XdrTransaction {
 
   static XdrTransaction fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTransaction.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrTransaction decoded = XdrTransaction.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -137,6 +140,7 @@ class XdrTransaction {
       TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0',
       '$prefix.operations.len',
     );
+    TxRepHelper.checkMaxLength(operationsLen, 100, '$prefix.operations.len');
     List<XdrOperation> operations = [];
     for (int i = 0; i < operationsLen; i++) {
       operations.add(XdrOperation.fromTxRep(map, '$prefix.operations[$i]'));

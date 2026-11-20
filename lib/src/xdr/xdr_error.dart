@@ -23,12 +23,12 @@ class XdrError {
 
   static void encode(XdrDataOutputStream stream, XdrError encodedError) {
     XdrErrorCode.encode(stream, encodedError.code);
-    stream.writeString(encodedError.msg);
+    stream.writeString(encodedError.msg, 100);
   }
 
   static XdrError decode(XdrDataInputStream stream) {
     XdrErrorCode code = XdrErrorCode.decode(stream);
-    String msg = stream.readString();
+    String msg = stream.readString(100);
     return XdrError(code, msg);
   }
 
@@ -40,7 +40,10 @@ class XdrError {
 
   static XdrError fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrError.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrError decoded = XdrError.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

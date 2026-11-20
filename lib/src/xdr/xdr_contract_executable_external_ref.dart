@@ -54,7 +54,11 @@ class XdrContractExecutableExternalRef {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrContractExecutableExternalRef.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrContractExecutableExternalRef decoded =
+        XdrContractExecutableExternalRef.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

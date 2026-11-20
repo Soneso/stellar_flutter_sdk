@@ -218,9 +218,11 @@ class XdrConfigSettingContractLedgerCostV0 {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrConfigSettingContractLedgerCostV0.decode(
-      XdrDataInputStream(bytes),
-    );
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrConfigSettingContractLedgerCostV0 decoded =
+        XdrConfigSettingContractLedgerCostV0.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

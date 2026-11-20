@@ -22,7 +22,7 @@ class XdrSCSpecTypeTuple {
     XdrSCSpecTypeTuple encodedSCSpecTypeTuple,
   ) {
     int valueTypessize = encodedSCSpecTypeTuple.valueTypes.length;
-    stream.writeInt(valueTypessize);
+    stream.writeBoundedLength(valueTypessize, 12);
     for (int i = 0; i < valueTypessize; i++) {
       XdrSCSpecTypeDef.encode(stream, encodedSCSpecTypeTuple.valueTypes[i]);
     }
@@ -31,7 +31,7 @@ class XdrSCSpecTypeTuple {
   static XdrSCSpecTypeTuple decode(XdrDataInputStream stream) {
     stream.enterRecursiveDecode();
     try {
-      int valueTypessize = stream.readArrayLength();
+      int valueTypessize = stream.readArrayLength(12);
       List<XdrSCSpecTypeDef> valueTypes = List<XdrSCSpecTypeDef>.empty(
         growable: true,
       );
@@ -52,7 +52,10 @@ class XdrSCSpecTypeTuple {
 
   static XdrSCSpecTypeTuple fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCSpecTypeTuple.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCSpecTypeTuple decoded = XdrSCSpecTypeTuple.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

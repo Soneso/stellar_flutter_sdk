@@ -22,14 +22,14 @@ class XdrTxAdvertVector {
     XdrTxAdvertVector encodedTxAdvertVector,
   ) {
     int size = encodedTxAdvertVector.txAdvertVector.length;
-    stream.writeInt(size);
+    stream.writeBoundedLength(size, 1000);
     for (int i = 0; i < size; i++) {
       XdrHash.encode(stream, encodedTxAdvertVector.txAdvertVector[i]);
     }
   }
 
   static XdrTxAdvertVector decode(XdrDataInputStream stream) {
-    int size = stream.readArrayLength();
+    int size = stream.readArrayLength(1000);
     List<XdrHash> items = List<XdrHash>.empty(growable: true);
     for (int i = 0; i < size; i++) {
       items.add(XdrHash.decode(stream));
@@ -45,7 +45,10 @@ class XdrTxAdvertVector {
 
   static XdrTxAdvertVector fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTxAdvertVector.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrTxAdvertVector decoded = XdrTxAdvertVector.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

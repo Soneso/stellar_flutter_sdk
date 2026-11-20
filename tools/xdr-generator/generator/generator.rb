@@ -207,6 +207,7 @@ class Generator < Xdrgen::Generators::Base
       type_overridden = false
       if FIELD_TYPE_OVERRIDES.key?(struct_name) && FIELD_TYPE_OVERRIDES[struct_name].key?(xdr_field_name)
         override = FIELD_TYPE_OVERRIDES[struct_name][xdr_field_name]
+        verify_override_max!(struct_name, xdr_field_name, m.declaration, override)
         # Preserve optionality (? suffix)
         type_str = type_str.end_with?('?') ? "#{override}?" : override
         type_overridden = true
@@ -747,19 +748,20 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  Uint8List get #{field_name} => this._#{field_name};"
     out.puts "  set #{field_name}(Uint8List value) => this._#{field_name} = value;"
     out.puts ""
+    max = declared_max(decl)
     out.puts "  static void encode(XdrDataOutputStream stream, #{dart_name} #{param}) {"
     out.puts "    int #{field_name}Size = #{param}.#{field_name}.length;"
-    out.puts "    stream.writeInt(#{field_name}Size);"
+    out.puts "    #{length_write("#{field_name}Size", max)}"
     out.puts "    stream.write(#{param}.#{field_name});"
     out.puts "  }"
     out.puts ""
     out.puts "  static #{dart_name} decode(XdrDataInputStream stream) {"
-    out.puts "    int #{field_name}Size = stream.readInt();"
+    out.puts "    int #{field_name}Size = #{opaque_length_read(max)};"
     out.puts "    return #{dart_name}(stream.readBytes(#{field_name}Size));"
     out.puts "  }"
 
     render_base64_methods(out, dart_name)
-    render_txrep_methods(out, dart_name, { kind: :variable_opaque_typedef }) if gen_txrep
+    render_txrep_methods(out, dart_name, { kind: :variable_opaque_typedef, max: max }) if gen_txrep
     render_typedef_sep51_methods(out, dart_name, decl, field_name)
 
     out.puts "}"
@@ -790,16 +792,17 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  String get #{field_name} => this._#{field_name};"
     out.puts "  set #{field_name}(String value) => this._#{field_name} = value;"
     out.puts ""
+    max = declared_max(decl)
     out.puts "  static void encode(XdrDataOutputStream stream, #{dart_name} #{param}) {"
-    out.puts "    stream.writeString(#{param}.#{field_name});"
+    out.puts "    #{encode_type_call("String", "#{param}.#{field_name}", max)};"
     out.puts "  }"
     out.puts ""
     out.puts "  static #{dart_name} decode(XdrDataInputStream stream) {"
-    out.puts "    return #{dart_name}(stream.readString());"
+    out.puts "    return #{dart_name}(#{decode_type_call("String", max)});"
     out.puts "  }"
 
     render_base64_methods(out, dart_name)
-    render_txrep_methods(out, dart_name, { kind: :string_typedef }) if gen_txrep
+    render_txrep_methods(out, dart_name, { kind: :string_typedef, max: max }) if gen_txrep
     render_typedef_sep51_methods(out, dart_name, decl, field_name)
 
     out.puts "}"
@@ -822,6 +825,7 @@ class Generator < Xdrgen::Generators::Base
       element_type: element_type,
       fixed: decl.fixed?,
       size: decl.fixed? ? resolve_size(decl) : nil,
+      max: declared_max(decl),
     }
 
     imports = Set.new(collect_type_imports(element_type))
@@ -850,10 +854,10 @@ class Generator < Xdrgen::Generators::Base
       out.puts "    for (int i = 0; i < size; i++) {"
     else
       out.puts "    int size = #{param}.#{field_name}.length;"
-      out.puts "    stream.writeInt(size);"
+      out.puts "    #{length_write("size", declared_max(decl))}"
       out.puts "    for (int i = 0; i < size; i++) {"
     end
-    out.puts "      #{encode_type_call(element_type, "#{param}.#{field_name}[i]")};"
+    out.puts "      #{encode_type_call(element_type, "#{param}.#{field_name}[i]", collapsed_max(decl.type))};"
     out.puts "    }"
     out.puts "  }"
     out.puts ""
@@ -863,11 +867,11 @@ class Generator < Xdrgen::Generators::Base
       out.puts "    List<#{element_type}> items = List<#{element_type}>.empty(growable: true);"
       out.puts "    for (int i = 0; i < #{size}; i++) {"
     else
-      out.puts "    int size = stream.readArrayLength();"
+      out.puts "    int size = stream.readArrayLength(#{declared_max(decl)});"
       out.puts "    List<#{element_type}> items = List<#{element_type}>.empty(growable: true);"
       out.puts "    for (int i = 0; i < size; i++) {"
     end
-    out.puts "      items.add(#{decode_type_call(element_type)});"
+    out.puts "      items.add(#{decode_type_call(element_type, collapsed_max(decl.type))});"
     out.puts "    }"
     out.puts "    return #{class_name}(items);"
     out.puts "  }"
@@ -888,11 +892,12 @@ class Generator < Xdrgen::Generators::Base
     decl = field_info[:decl]
     member = field_info[:member]
     is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+    max = declared_max(decl)
 
     # When a FIELD_TYPE_OVERRIDE changes the type, use simple Type.encode() dispatch
     # instead of AST-based Opaque/Array dispatch (which would generate raw byte operations).
     if field_info[:bytes_string_getter]
-      out.puts "    stream.writeStringBytes(#{accessor});"
+      out.puts "    stream.writeStringBytes(#{[accessor, max].compact.join(', ')});"
       return
     end
 
@@ -915,18 +920,19 @@ class Generator < Xdrgen::Generators::Base
     case decl
     when AST::Declarations::Array
       element_type = dart_type_for_typespec(decl.type)
+      element_max = collapsed_max(decl.type)
       out.puts "    int #{field_info[:name]}size = #{accessor}.length;"
-      out.puts "    stream.writeInt(#{field_info[:name]}size);" unless decl.fixed?
+      out.puts "    #{length_write("#{field_info[:name]}size", max)}" unless decl.fixed?
       out.puts "    for (int i = 0; i < #{field_info[:name]}size; i++) {"
       if array_element_optional?(decl)
         out.puts "      if (#{accessor}[i] != null) {"
         out.puts "        stream.writeInt(1);"
-        out.puts "        #{encode_type_call(element_type, "#{accessor}[i]!")};"
+        out.puts "        #{encode_type_call(element_type, "#{accessor}[i]!", element_max)};"
         out.puts "      } else {"
         out.puts "        stream.writeInt(0);"
         out.puts "      }"
       else
-        out.puts "      #{encode_type_call(element_type, "#{accessor}[i]")};"
+        out.puts "      #{encode_type_call(element_type, "#{accessor}[i]", element_max)};"
       end
       out.puts "    }"
     when AST::Declarations::Opaque
@@ -934,7 +940,7 @@ class Generator < Xdrgen::Generators::Base
         out.puts "    stream.write(#{accessor});"
       else
         out.puts "    int #{field_info[:name]}size = #{accessor}.length;"
-        out.puts "    stream.writeInt(#{field_info[:name]}size);"
+        out.puts "    #{length_write("#{field_info[:name]}size", max)}"
         out.puts "    stream.write(#{accessor});"
       end
     else
@@ -943,9 +949,9 @@ class Generator < Xdrgen::Generators::Base
         out.puts "      stream.writeInt(1);"
         type_str = field_info[:type].sub(/\?\z/, '')
         if type_str =~ /\AList<(.+)>\z/
-          out.puts encode_list_lines($1, "#{accessor}!", "      ")
+          out.puts encode_list_lines($1, "#{accessor}!", "      ", max)
         else
-          out.puts "      #{encode_type_call(type_str, "#{accessor}!")};"
+          out.puts "      #{encode_type_call(type_str, "#{accessor}!", max)};"
         end
         out.puts "    } else {"
         out.puts "      stream.writeInt(0);"
@@ -953,9 +959,9 @@ class Generator < Xdrgen::Generators::Base
       else
         type_str = field_info[:type]
         if type_str =~ /\AList<(.+)>\z/
-          out.puts encode_list_lines($1, accessor, "    ")
+          out.puts encode_list_lines($1, accessor, "    ", max)
         else
-          out.puts "    #{encode_type_call(type_str, accessor)};"
+          out.puts "    #{encode_type_call(type_str, accessor, max)};"
         end
       end
     end
@@ -965,9 +971,10 @@ class Generator < Xdrgen::Generators::Base
     decl = field_info[:decl]
     member = field_info[:member]
     is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+    max = declared_max(decl)
 
     if field_info[:bytes_string_getter]
-      out.puts "    Uint8List #{local_name} = stream.readStringBytes();"
+      out.puts "    Uint8List #{local_name} = stream.readStringBytes(#{max});"
       return
     end
 
@@ -977,8 +984,7 @@ class Generator < Xdrgen::Generators::Base
       if is_optional
         type_str = field_info[:type].sub(/\?\z/, '')
         out.puts "    #{type_str}? #{local_name};"
-        out.puts "    int #{local_name}Present = stream.readInt();"
-        out.puts "    if (#{local_name}Present != 0) {"
+        out.puts "    if (stream.readOptionalPresence()) {"
         out.puts "      #{local_name} = #{decode_type_call(type_str)};"
         out.puts "    }"
       else
@@ -991,25 +997,25 @@ class Generator < Xdrgen::Generators::Base
     case decl
     when AST::Declarations::Array
       element_type = dart_type_for_typespec(decl.type)
+      element_max = collapsed_max(decl.type)
       element_optional = array_element_optional?(decl)
       declared_type = element_optional ? "#{element_type}?" : element_type
       if decl.fixed?
         count = resolve_size(decl).to_s
       else
-        out.puts "    int #{local_name}size = stream.readArrayLength();"
+        out.puts "    int #{local_name}size = stream.readArrayLength(#{max});"
         count = "#{local_name}size"
       end
       out.puts "    List<#{declared_type}> #{local_name} = List<#{declared_type}>.empty(growable: true);"
       out.puts "    for (int i = 0; i < #{count}; i++) {"
       if element_optional
-        out.puts "      int #{local_name}Present = stream.readInt();"
-        out.puts "      if (#{local_name}Present != 0) {"
-        out.puts "        #{local_name}.add(#{decode_type_call(element_type)});"
+        out.puts "      if (stream.readOptionalPresence()) {"
+        out.puts "        #{local_name}.add(#{decode_type_call(element_type, element_max)});"
         out.puts "      } else {"
         out.puts "        #{local_name}.add(null);"
         out.puts "      }"
       else
-        out.puts "      #{local_name}.add(#{decode_type_call(element_type)});"
+        out.puts "      #{local_name}.add(#{decode_type_call(element_type, element_max)});"
       end
       out.puts "    }"
     when AST::Declarations::Opaque
@@ -1017,21 +1023,20 @@ class Generator < Xdrgen::Generators::Base
         size = resolve_size(decl)
         out.puts "    Uint8List #{local_name} = stream.readBytes(#{size});"
       else
-        out.puts "    int #{local_name}size = stream.readInt();"
+        out.puts "    int #{local_name}size = #{opaque_length_read(max)};"
         out.puts "    Uint8List #{local_name} = stream.readBytes(#{local_name}size);"
       end
     else
       if is_optional
         type_str = field_info[:type].sub(/\?\z/, '')
         out.puts "    #{type_str}? #{local_name};"
-        out.puts "    int #{local_name}Present = stream.readInt();"
-        out.puts "    if (#{local_name}Present != 0) {"
+        out.puts "    if (stream.readOptionalPresence()) {"
         if field_info[:fixed_opaque_size]
           out.puts "      #{local_name} = stream.readBytes(#{field_info[:fixed_opaque_size]});"
         elsif type_str =~ /\AList<(.+)>\z/
-          out.puts decode_list_lines($1, local_name, "      ", force_unwrap: false, var_suffix: local_name)
+          out.puts decode_list_lines($1, local_name, "      ", force_unwrap: false, var_suffix: local_name, max: max)
         else
-          out.puts "      #{local_name} = #{decode_type_call(type_str)};"
+          out.puts "      #{local_name} = #{decode_type_call(type_str, max)};"
         end
         out.puts "    }"
       else
@@ -1040,13 +1045,13 @@ class Generator < Xdrgen::Generators::Base
           out.puts "    #{type_str} #{local_name} = stream.readBytes(#{field_info[:fixed_opaque_size]});"
         elsif type_str =~ /\AList<(.+)>\z/
           element_type = $1
-          out.puts "    int #{local_name}size = stream.readArrayLength();"
+          out.puts "    int #{local_name}size = stream.readArrayLength(#{max});"
           out.puts "    #{type_str} #{local_name} = List<#{element_type}>.empty(growable: true);"
           out.puts "    for (int i = 0; i < #{local_name}size; i++) {"
           out.puts "      #{local_name}.add(#{decode_type_call(element_type)});"
           out.puts "    }"
         else
-          out.puts "    #{type_str} #{local_name} = #{decode_type_call(type_str)};"
+          out.puts "    #{type_str} #{local_name} = #{decode_type_call(type_str, max)};"
         end
       end
     end
@@ -1057,19 +1062,22 @@ class Generator < Xdrgen::Generators::Base
   # ---------------------------------------------------------------------------
 
   def render_encode_arm_value(out, accessor, arm)
+    max = declared_max(arm[:decl])
     case arm[:encode_style]
     when :string
-      out.puts "        stream.writeString(#{accessor});"
+      out.puts "        #{encode_type_call("String", accessor, max)};"
     when :string_bytes
-      out.puts "        stream.writeStringBytes(#{accessor});"
+      out.puts "        stream.writeStringBytes(#{[accessor, max].compact.join(', ')});"
     when :opaque_var
-      out.puts "        XdrDataValue.encode(stream, #{accessor});"
+      out.puts "        int #{arm[:field_name]}size = #{accessor}.dataValue.length;"
+      out.puts "        #{length_write("#{arm[:field_name]}size", max)}"
+      out.puts "        stream.write(#{accessor}.dataValue);"
     when :array
       element_type = arm[:element_type]
       out.puts "        int #{arm[:field_name]}size = #{accessor}.length;"
-      out.puts "        stream.writeInt(#{arm[:field_name]}size);"
+      out.puts "        #{length_write("#{arm[:field_name]}size", max)}"
       out.puts "        for (int i = 0; i < #{arm[:field_name]}size; i++) {"
-      out.puts "          #{encode_type_call(element_type, "#{accessor}[i]")};"
+      out.puts "          #{encode_type_call(element_type, "#{accessor}[i]", collapsed_max(arm[:decl].type))};"
       out.puts "        }"
     when :optional
       type_str = arm[:inner_type]
@@ -1078,9 +1086,9 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        } else {"
       out.puts "          stream.writeInt(1);"
       if type_str =~ /\AList<(.+)>\z/
-        out.puts encode_list_lines($1, "#{accessor}!", "          ")
+        out.puts encode_list_lines($1, "#{accessor}!", "          ", max)
       else
-        out.puts "          #{encode_type_call(type_str, "#{accessor}!")};"
+        out.puts "          #{encode_type_call(type_str, "#{accessor}!", max)};"
       end
       out.puts "        }"
     when :opaque_fixed
@@ -1088,9 +1096,9 @@ class Generator < Xdrgen::Generators::Base
     when :simple
       type_str = arm[:dart_type]
       if type_str =~ /\AList<(.+)>\z/
-        out.puts encode_list_lines($1, accessor, "        ")
+        out.puts encode_list_lines($1, accessor, "        ", max)
       else
-        out.puts "        #{encode_type_call(type_str, accessor)};"
+        out.puts "        #{encode_type_call(type_str, accessor, max)};"
       end
     end
   end
@@ -1098,28 +1106,29 @@ class Generator < Xdrgen::Generators::Base
   def render_decode_arm_value(out, target, arm)
     field = arm[:field_name]
     pfield = "_#{field}"
+    max = declared_max(arm[:decl])
     case arm[:decode_style]
     when :string
-      out.puts "        #{target}.#{pfield} = stream.readString();"
+      out.puts "        #{target}.#{pfield} = #{decode_type_call("String", max)};"
     when :string_bytes
-      out.puts "        #{target}.#{pfield} = stream.readStringBytes();"
+      out.puts "        #{target}.#{pfield} = stream.readStringBytes(#{max});"
     when :opaque_var
-      out.puts "        #{target}.#{pfield} = XdrDataValue.decode(stream);"
+      out.puts "        int #{field}size = #{opaque_length_read(max)};"
+      out.puts "        #{target}.#{pfield} = XdrDataValue(stream.readBytes(#{field}size));"
     when :array
       element_type = arm[:element_type]
-      out.puts "        int #{field}size = stream.readArrayLength();"
+      out.puts "        int #{field}size = stream.readArrayLength(#{max});"
       out.puts "        #{target}.#{pfield} = List<#{element_type}>.empty(growable: true);"
       out.puts "        for (int i = 0; i < #{field}size; i++) {"
-      out.puts "          #{target}.#{pfield}!.add(#{decode_type_call(element_type)});"
+      out.puts "          #{target}.#{pfield}!.add(#{decode_type_call(element_type, collapsed_max(arm[:decl].type))});"
       out.puts "        }"
     when :optional
       type_str = arm[:inner_type]
-      out.puts "        int #{field}Present = stream.readInt();"
-      out.puts "        if (#{field}Present != 0) {"
+      out.puts "        if (stream.readOptionalPresence()) {"
       if type_str =~ /\AList<(.+)>\z/
-        out.puts decode_list_lines($1, "#{target}.#{pfield}", "          ", force_unwrap: true, var_suffix: field)
+        out.puts decode_list_lines($1, "#{target}.#{pfield}", "          ", var_suffix: field, max: max)
       else
-        out.puts "          #{target}.#{pfield} = #{decode_type_call(type_str)};"
+        out.puts "          #{target}.#{pfield} = #{decode_type_call(type_str, max)};"
       end
       out.puts "        }"
     when :opaque_fixed
@@ -1128,7 +1137,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        #{target}.#{pfield} = stream.readBytes(#{field}size);"
     when :simple
       type_str = arm[:dart_type]
-      out.puts "        #{target}.#{pfield} = #{decode_type_call(type_str)};"
+      out.puts "        #{target}.#{pfield} = #{decode_type_call(type_str, max)};"
     end
   end
 
@@ -1303,10 +1312,11 @@ class Generator < Xdrgen::Generators::Base
           fixed_size: decl.size,
         }
       else
+        # Read and written inline: the XdrDataValue codec checks the DataValue maximum.
         {
           dart_type: "XdrDataValue",
-          encode_style: :simple,
-          decode_style: :simple,
+          encode_style: :opaque_var,
+          decode_style: :opaque_var,
           element_type: nil,
           inner_type: nil,
         }
@@ -1421,7 +1431,9 @@ class Generator < Xdrgen::Generators::Base
   # Encode/decode call generators
   # ---------------------------------------------------------------------------
 
-  def encode_type_call(dart_type, accessor)
+  # max bounds a String; every other type checks its bound in its own codec.
+  def encode_type_call(dart_type, accessor, max = nil)
+    raise "#{dart_type} has no bounded encode for #{accessor}" if max && dart_type != "String"
     case dart_type
     when "int"
       "stream.writeInt(#{accessor})"
@@ -1430,7 +1442,7 @@ class Generator < Xdrgen::Generators::Base
     when "bool"
       "stream.writeBoolean(#{accessor})"
     when "String"
-      "stream.writeString(#{accessor})"
+      "stream.writeString(#{[accessor, max].compact.join(', ')})"
     when "Uint8List"
       "stream.write(#{accessor})"
     when "double"
@@ -1442,9 +1454,9 @@ class Generator < Xdrgen::Generators::Base
 
   # Returns a multi-line encode snippet for List<ElementType> fields.
   # Used when TYPE_OVERRIDES maps an array typedef to a raw List type.
-  def encode_list_lines(element_type, accessor, indent)
+  def encode_list_lines(element_type, accessor, indent, max = nil)
     lines = []
-    lines << "#{indent}stream.writeInt(#{accessor}.length);"
+    lines << "#{indent}#{length_write("#{accessor}.length", max)}"
     lines << "#{indent}for (int i = 0; i < #{accessor}.length; i++) {"
     lines << "#{indent}  #{encode_type_call(element_type, "#{accessor}[i]")};"
     lines << "#{indent}}"
@@ -1456,10 +1468,10 @@ class Generator < Xdrgen::Generators::Base
   #               false when target is a local variable (e.g. storage).
   # var_suffix: appended to temp variable names to avoid collisions when
   #             multiple List fields are decoded in the same scope.
-  def decode_list_lines(element_type, target_expr, indent, force_unwrap: true, var_suffix: "")
+  def decode_list_lines(element_type, target_expr, indent, force_unwrap: true, var_suffix: "", max: nil)
     lines = []
     bang = force_unwrap ? "!" : ""
-    lines << "#{indent}int #{var_suffix}Len = stream.readArrayLength();"
+    lines << "#{indent}int #{var_suffix}Len = stream.readArrayLength(#{max});"
     lines << "#{indent}#{target_expr} = List<#{element_type}>.empty(growable: true);"
     lines << "#{indent}for (int #{var_suffix}i = 0; #{var_suffix}i < #{var_suffix}Len; #{var_suffix}i++) {"
     lines << "#{indent}  #{target_expr}#{bang}.add(#{decode_type_call(element_type)});"
@@ -1467,7 +1479,19 @@ class Generator < Xdrgen::Generators::Base
     lines.join("\n")
   end
 
-  def decode_type_call(dart_type)
+  # The write of an array count or byte length, checked against a maximum.
+  def length_write(length_expr, max)
+    max ? "stream.writeBoundedLength(#{length_expr}, #{max});" : "stream.writeInt(#{length_expr});"
+  end
+
+  # The read of an opaque byte length, checked as in length_write.
+  def opaque_length_read(max)
+    max ? "stream.readBoundedLength(#{max})" : "stream.readInt()"
+  end
+
+  # max as in encode_type_call.
+  def decode_type_call(dart_type, max = nil)
+    raise "#{dart_type} has no bounded decode" if max && dart_type != "String"
     case dart_type
     when "int"
       "stream.readInt()"
@@ -1476,7 +1500,7 @@ class Generator < Xdrgen::Generators::Base
     when "bool"
       "stream.readBoolean()"
     when "String"
-      "stream.readString()"
+      "stream.readString(#{max})"
     when "Uint8List"
       # This case is for non-fixed opaque (handled differently in context)
       "stream.readBytes(stream.readInt())"
@@ -1899,9 +1923,12 @@ class Generator < Xdrgen::Generators::Base
     return renderer[:to].call(accessor, type_q, key_q) if renderer
 
     args = sep51_args(type_q, key_q)
+    dart = dart_type_for_typespec(typespec)
+    bound = collapsed_max(typespec)
+    raise "#{dart} has no bounded SEP-0051 write" if bound && dart != 'String'
 
-    case dart_type_for_typespec(typespec)
-    when 'String' then "XdrJsonHelper.escapedString(#{accessor}, #{args})"
+    case dart
+    when 'String' then "XdrJsonHelper.escapedString(#{accessor}, #{args}#{bound ? ", maxBytes: #{bound}" : ''})"
     when 'Uint8List' then "XdrJsonHelper.hex(#{accessor}, #{args})"
     when /\AList<(.+)>\z/
       element = Regexp.last_match(1)
@@ -1917,9 +1944,11 @@ class Generator < Xdrgen::Generators::Base
 
     args = sep51_args(type_q, key_q)
     dart = dart_type_for_typespec(typespec)
+    bound = collapsed_max(typespec)
+    raise "#{dart} has no bounded SEP-0051 read" if bound && dart != 'String'
 
     case dart
-    when 'String' then "XdrJsonHelper.readEscapedString(#{value}, #{args})"
+    when 'String' then "XdrJsonHelper.readEscapedString(#{value}, #{args}#{bound ? ", maxBytes: #{bound}" : ''})"
     when 'Uint8List' then "XdrJsonHelper.readHex(#{value}, #{args})"
     when /\AList<(.+)>\z/
       element = Regexp.last_match(1)
@@ -2459,7 +2488,10 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
     out.puts "  static #{class_name} fromBase64EncodedXdrString(String base64Encoded) {"
     out.puts "    Uint8List bytes = base64Decode(base64Encoded);"
-    out.puts "    return #{class_name}.decode(XdrDataInputStream(bytes));"
+    out.puts "    XdrDataInputStream stream = XdrDataInputStream(bytes);"
+    out.puts "    #{class_name} decoded = #{class_name}.decode(stream);"
+    out.puts "    stream.checkFullyConsumed();"
+    out.puts "    return decoded;"
     out.puts "  }"
   end
 
@@ -2583,11 +2615,11 @@ class Generator < Xdrgen::Generators::Base
     when :fixed_opaque_typedef
       render_fixed_opaque_typedef_txrep_methods(out, class_name, type_context[:size])
     when :variable_opaque_typedef
-      render_variable_opaque_typedef_txrep_methods(out, class_name)
+      render_variable_opaque_typedef_txrep_methods(out, class_name, type_context[:max])
     when :string_typedef
-      render_string_typedef_txrep_methods(out, class_name)
+      render_string_typedef_txrep_methods(out, class_name, type_context[:max])
     when :array_typedef
-      render_array_typedef_txrep_methods(out, class_name, type_context[:element_type], type_context[:fixed], type_context[:size], type_context[:typespec])
+      render_array_typedef_txrep_methods(out, class_name, type_context[:element_type], type_context[:fixed], type_context[:size], type_context[:typespec], type_context[:max])
     end
   end
 
@@ -2719,8 +2751,10 @@ class Generator < Xdrgen::Generators::Base
       decl      = f[:decl]
       member    = f[:member]
       is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+      max = f[:type_overridden] ? nil : declared_max(decl)
 
       if f[:bytes_string_getter]
+        raise "#{class_name}.#{xdr_name}: a bytes-backed string field has no bounded TxRep read" if max
         out.puts "    Uint8List #{dart_name} = TxRepHelper.unescapeBytes("
         out.puts "      TxRepHelper.getValue(map, '\$prefix.#{xdr_name}') ?? '',"
         out.puts "    );"
@@ -2741,24 +2775,28 @@ class Generator < Xdrgen::Generators::Base
         next
       end
 
+      len_key = "'\$prefix.#{xdr_name}.len'"
       case decl
       when AST::Declarations::Array
         element_type = dart_type_for_typespec(decl.type)
+        element_max = collapsed_max(decl.type)
         if decl.fixed?
           size = resolve_size(decl)
           out.puts "    List<#{element_type}> #{dart_name} = [];"
           out.puts "    for (int i = 0; i < #{size}; i++) {"
-          out.puts "      #{dart_name}.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_name}[$i]", decl.type)});"
+          out.puts "      #{dart_name}.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_name}[$i]", decl.type, element_max)});"
           out.puts "    }"
         else
           out.puts "    int #{dart_name}Len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}.len') ?? '0', '\$prefix.#{xdr_name}.len');"
+          txrep_len_check(out, "    ", "#{dart_name}Len", max, len_key)
           out.puts "    List<#{element_type}> #{dart_name} = [];"
           out.puts "    for (int i = 0; i < #{dart_name}Len; i++) {"
-          out.puts "      #{dart_name}.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_name}[$i]", decl.type)});"
+          out.puts "      #{dart_name}.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_name}[$i]", decl.type, element_max)});"
           out.puts "    }"
         end
       when AST::Declarations::Opaque
-        out.puts "    Uint8List #{dart_name} = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}') ?? '');"
+        value = "TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}') ?? '')"
+        out.puts "    Uint8List #{dart_name} = #{txrep_bounded("Uint8List", value, max, "'\$prefix.#{xdr_name}'")};"
       else
         if is_optional
           inner_type = type_str.sub(/\?\z/, '')
@@ -2770,12 +2808,13 @@ class Generator < Xdrgen::Generators::Base
           elsif inner_type =~ /\AList<(.+)>\z/
             elem = $1
             out.puts "      int #{dart_name}Len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}.len') ?? '0', '\$prefix.#{xdr_name}.len');"
+            txrep_len_check(out, "      ", "#{dart_name}Len", max, len_key)
             out.puts "      #{dart_name} = [];"
             out.puts "      for (int i = 0; i < #{dart_name}Len; i++) {"
             out.puts "        #{dart_name}.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_name}[$i]", decl.type)});"
             out.puts "      }"
           else
-            out.puts "      #{dart_name} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_name}", decl.type)};"
+            out.puts "      #{dart_name} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_name}", decl.type, max)};"
           end
           out.puts "    }"
         else
@@ -2784,12 +2823,13 @@ class Generator < Xdrgen::Generators::Base
           elsif type_str =~ /\AList<(.+)>\z/
             elem = $1
             out.puts "    int #{dart_name}Len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}.len') ?? '0', '\$prefix.#{xdr_name}.len');"
+            txrep_len_check(out, "    ", "#{dart_name}Len", max, len_key)
             out.puts "    #{type_str} #{dart_name} = [];"
             out.puts "    for (int i = 0; i < #{dart_name}Len; i++) {"
             out.puts "      #{dart_name}.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_name}[$i]", decl.type)});"
             out.puts "    }"
           else
-            out.puts "    #{type_str} #{dart_name} = #{txrep_from_expr(type_str, "map", "$prefix.#{xdr_name}", decl.type)};"
+            out.puts "    #{type_str} #{dart_name} = #{txrep_from_expr(type_str, "map", "$prefix.#{xdr_name}", decl.type, max)};"
           end
         end
       end
@@ -2884,8 +2924,7 @@ class Generator < Xdrgen::Generators::Base
     when :string_bytes
       out.puts "        lines.add('\$prefix.#{xdr_field}: \${TxRepHelper.escapeBytes(#{accessor})}');"
     when :opaque_var
-      # XdrDataValue is variable opaque
-      out.puts "        lines.add('\$prefix.#{xdr_field}: \${TxRepHelper.bytesToHex(#{accessor}.dataValue)}');"
+      txrep_to_line(out, accessor, dart_type, "$prefix.#{xdr_field}", "        ")
     when :opaque_fixed
       out.puts "        lines.add('\$prefix.#{xdr_field}: \${TxRepHelper.bytesToHex(#{accessor})}');"
     when :array
@@ -2918,21 +2957,30 @@ class Generator < Xdrgen::Generators::Base
 
   # Emit the fromTxRep assignment for one non-void union arm.
   def render_txrep_arm_from(out, field, xdr_field, dart_type, style, arm)
+    max = declared_max(arm[:decl])
+    key = "'\$prefix.#{xdr_field}'"
+    len_key = "'\$prefix.#{xdr_field}.len'"
     case style
     when :string
-      out.puts "        result._#{field} = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? '');"
+      value = "TxRepHelper.unescapeString(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? '')"
+      out.puts "        result._#{field} = #{txrep_bounded("String", value, max, key)};"
     when :string_bytes
+      raise "#{xdr_field}: a bytes-backed string arm has no bounded TxRep read" if max
       out.puts "        result._#{field} = TxRepHelper.unescapeBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? '');"
     when :opaque_var
-      out.puts "        result._#{field} = XdrDataValue(TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? ''));"
+      out.puts "        String? #{field}Raw = TxRepHelper.getValue(map, '\$prefix.#{xdr_field}');"
+      out.puts "        if (#{field}Raw == null) throw Exception('missing \$prefix.#{xdr_field}');"
+      value = txrep_bounded("Uint8List", "TxRepHelper.hexToBytes(#{field}Raw)", max, key)
+      out.puts "        result._#{field} = XdrDataValue(#{value});"
     when :opaque_fixed
       out.puts "        result._#{field} = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? '');"
     when :array
       element_type = arm[:element_type]
       out.puts "        int #{field}Len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}.len') ?? '0', '\$prefix.#{xdr_field}.len');"
+      txrep_len_check(out, "        ", "#{field}Len", max, len_key)
       out.puts "        result._#{field} = [];"
       out.puts "        for (int i = 0; i < #{field}Len; i++) {"
-      out.puts "          result._#{field}!.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_field}[$i]", arm[:decl].type)});"
+      out.puts "          result._#{field}!.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_field}[$i]", arm[:decl].type, collapsed_max(arm[:decl].type))});"
       out.puts "        }"
     when :optional
       inner_type = arm[:inner_type]
@@ -2941,24 +2989,26 @@ class Generator < Xdrgen::Generators::Base
       if inner_type =~ /\AList<(.+)>\z/
         elem = $1
         out.puts "          int #{field}Len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}.len') ?? '0', '\$prefix.#{xdr_field}.len');"
+        txrep_len_check(out, "          ", "#{field}Len", max, len_key)
         out.puts "          result._#{field} = [];"
         out.puts "          for (int i = 0; i < #{field}Len; i++) {"
         out.puts "            result._#{field}!.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_field}[$i]", arm[:decl].type)});"
         out.puts "          }"
       else
-        out.puts "          result._#{field} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_field}", arm[:decl].type)};"
+        out.puts "          result._#{field} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_field}", arm[:decl].type, max)};"
       end
       out.puts "        }"
     when :simple
       if dart_type =~ /\AList<(.+)>\z/
         elem = $1
         out.puts "        int #{field}Len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}.len') ?? '0', '\$prefix.#{xdr_field}.len');"
+        txrep_len_check(out, "        ", "#{field}Len", max, len_key)
         out.puts "        result._#{field} = [];"
         out.puts "        for (int i = 0; i < #{field}Len; i++) {"
         out.puts "          result._#{field}!.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_field}[$i]", arm[:decl].type)});"
         out.puts "        }"
       else
-        out.puts "        result._#{field} = #{txrep_from_expr(dart_type, "map", "$prefix.#{xdr_field}", arm[:decl].type)};"
+        out.puts "        result._#{field} = #{txrep_from_expr(dart_type, "map", "$prefix.#{xdr_field}", arm[:decl].type, max)};"
       end
     end
   end
@@ -3023,7 +3073,7 @@ class Generator < Xdrgen::Generators::Base
   # Variable opaque typedef TxRep (e.g., XdrDataValue)
   # ---------------------------------------------------------------------------
 
-  def render_variable_opaque_typedef_txrep_methods(out, class_name)
+  def render_variable_opaque_typedef_txrep_methods(out, class_name, max)
     field_name = underscore_field(class_name)
     out.puts ""
     out.puts "  void toTxRep(String prefix, List<String> lines) {"
@@ -3033,7 +3083,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
     out.puts "    String? raw = TxRepHelper.getValue(map, prefix);"
     out.puts "    if (raw == null) throw Exception('missing \$prefix');"
-    out.puts "    return #{class_name}(TxRepHelper.hexToBytes(raw));"
+    out.puts "    return #{class_name}(#{txrep_bounded("Uint8List", "TxRepHelper.hexToBytes(raw)", max, "prefix")});"
     out.puts "  }"
   end
 
@@ -3041,7 +3091,7 @@ class Generator < Xdrgen::Generators::Base
   # String typedef TxRep (e.g., XdrString32)
   # ---------------------------------------------------------------------------
 
-  def render_string_typedef_txrep_methods(out, class_name)
+  def render_string_typedef_txrep_methods(out, class_name, max)
     field_name = underscore_field(class_name)
     out.puts ""
     out.puts "  void toTxRep(String prefix, List<String> lines) {"
@@ -3051,7 +3101,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
     out.puts "    String? raw = TxRepHelper.getValue(map, prefix);"
     out.puts "    if (raw == null) throw Exception('missing \$prefix');"
-    out.puts "    return #{class_name}(TxRepHelper.unescapeString(raw));"
+    out.puts "    return #{class_name}(#{txrep_bounded("String", "TxRepHelper.unescapeString(raw)", max, "prefix")});"
     out.puts "  }"
   end
 
@@ -3059,7 +3109,7 @@ class Generator < Xdrgen::Generators::Base
   # Array typedef TxRep (e.g., XdrContractCostParams)
   # ---------------------------------------------------------------------------
 
-  def render_array_typedef_txrep_methods(out, class_name, element_type, is_fixed, size, typespec)
+  def render_array_typedef_txrep_methods(out, class_name, element_type, is_fixed, size, typespec, max)
     field_name = underscore_field(class_name)
     out.puts ""
     out.puts "  void toTxRep(String prefix, List<String> lines) {"
@@ -3072,16 +3122,18 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
     out.puts ""
     out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
+    element_max = collapsed_max(typespec)
     if is_fixed
       out.puts "    List<#{element_type}> items = [];"
       out.puts "    for (int i = 0; i < #{size}; i++) {"
-      out.puts "      items.add(#{txrep_from_expr(element_type, "map", "$prefix[$i]", typespec)});"
+      out.puts "      items.add(#{txrep_from_expr(element_type, "map", "$prefix[$i]", typespec, element_max)});"
       out.puts "    }"
     else
       out.puts "    int len = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '\$prefix.len') ?? '0', '\$prefix.len');"
+      txrep_len_check(out, "    ", "len", max, "'\$prefix.len'")
       out.puts "    List<#{element_type}> items = [];"
       out.puts "    for (int i = 0; i < len; i++) {"
-      out.puts "      items.add(#{txrep_from_expr(element_type, "map", "$prefix[$i]", typespec)});"
+      out.puts "      items.add(#{txrep_from_expr(element_type, "map", "$prefix[$i]", typespec, element_max)});"
       out.puts "    }"
     end
     out.puts "    return #{class_name}(items);"
@@ -3147,9 +3199,11 @@ class Generator < Xdrgen::Generators::Base
     end
   end
 
-  # Return a Dart expression for fromTxRep of the given type.
-  def txrep_from_expr(dart_type, map_var, prefix_expr, typespec)
+  # Return a Dart expression for fromTxRep of the given type; max bounds a
+  # String or Uint8List, other types check their own.
+  def txrep_from_expr(dart_type, map_var, prefix_expr, typespec, max = nil)
     base_type = dart_type.sub(/\?\z/, '')
+    raise "#{base_type} has no bounded TxRep read for #{prefix_expr}" if max && !%w[String Uint8List].include?(base_type)
 
     if TXREP_COMPACT_TYPES.key?(base_type)
       parse = TXREP_COMPACT_TYPES[base_type][:parse]
@@ -3164,12 +3218,27 @@ class Generator < Xdrgen::Generators::Base
     when "double"
       "double.parse(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '0')"
     when "String"
-      "TxRepHelper.unescapeString(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '')"
+      txrep_bounded("String", "TxRepHelper.unescapeString(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '')",
+                    max, "'#{prefix_expr}'")
     when "Uint8List"
-      "TxRepHelper.hexToBytes(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '')"
+      txrep_bounded("Uint8List", "TxRepHelper.hexToBytes(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '')",
+                    max, "'#{prefix_expr}'")
     else
       "#{base_type}.fromTxRep(#{map_var}, '#{prefix_expr}')"
     end
+  end
+
+  # A String or Uint8List TxRep value expression, checked against a maximum.
+  def txrep_bounded(dart_type, expr, max, key_expr)
+    return expr if max.nil?
+
+    helper = dart_type == "String" ? "checkStringMaxLength" : "checkBytesMaxLength"
+    "TxRepHelper.#{helper}(#{expr}, #{max}, #{key_expr})"
+  end
+
+  # Emits the check of a parsed TxRep array count against the declared maximum.
+  def txrep_len_check(out, indent, len_var, max, key_expr)
+    out.puts "#{indent}TxRepHelper.checkMaxLength(#{len_var}, #{max}, #{key_expr});" if max
   end
 
   # Generate a parameter name for encode methods
@@ -3201,6 +3270,44 @@ class Generator < Xdrgen::Generators::Base
     else
       decl.size
     end
+  end
+
+  # The declared maximum of a variable-length array, string or opaque as a Dart
+  # literal, or nil. A typedef that TYPE_OVERRIDES collapses onto a Dart type
+  # (SCSymbol onto String) has no class to check it, so its users carry it.
+  def declared_max(decl)
+    case decl
+    when AST::Declarations::Array, AST::Declarations::Opaque
+      decl.fixed? ? nil : sep51_bound(resolve_size(decl))
+    when AST::Declarations::String
+      sep51_bound(decl.size)
+    else
+      decl.respond_to?(:type) ? collapsed_max(decl.type) : nil
+    end
+  end
+
+  # The maximum of a collapsed typedef a typespec names, or nil.
+  def collapsed_max(typespec)
+    return nil unless typespec.is_a?(AST::Typespecs::Simple)
+
+    resolved = typespec.resolved_type
+    return nil unless resolved.is_a?(AST::Definitions::Typedef) && TYPE_OVERRIDES.key?(name(resolved))
+
+    declared_max(resolved.declaration)
+  end
+
+  # A FIELD_TYPE_OVERRIDES replacement checks the bound in its own codec, so it
+  # must be a typedef declaring the maximum of the field it replaces.
+  def verify_override_max!(type_name, field_name, decl, override)
+    max = declared_max(decl)
+    return if max.nil? || declared_max(typedef_named(override)&.declaration) == max
+
+    raise "#{type_name}.#{field_name} declares a maximum of #{max} that #{override} does not check"
+  end
+
+  def typedef_named(dart_name, node = @top)
+    node.definitions.find { |d| d.is_a?(AST::Definitions::Typedef) && name(d) == dart_name } ||
+      node.namespaces.lazy.map { |ns| typedef_named(dart_name, ns) }.find(&:itself)
   end
 
   def typedef_is_optional?(type)
