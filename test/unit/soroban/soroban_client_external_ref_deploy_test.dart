@@ -234,17 +234,21 @@ void main() {
   /// Serves the full external-ref deploy flow: the executable tag entry for
   /// the resolution, the wasm code entry for the spec preload, the source
   /// account, simulate, send and getTransaction. When [tagEntryExists] is
-  /// false, the resolution request is answered with no entries. Requests are
-  /// appended to [requestLog] as 'tag', 'code', 'account', 'simulate',
-  /// 'send' or 'getTx'; requested ledger keys and the submitted envelope are
-  /// recorded into [capturedKeys] and [capturedEnvelopes].
+  /// false, the resolution request is answered with no entries. Every code
+  /// entry request is answered with [code], the hello world module by
+  /// default; with [firstCodeEntryMissing], the first one is answered with no
+  /// entries. Requests are appended to [requestLog] as 'tag', 'code',
+  /// 'instance', 'account', 'simulate', 'send' or 'getTx'; requested ledger
+  /// keys and the submitted envelope are recorded into [capturedKeys] and
+  /// [capturedEnvelopes].
   SorobanServer externalRefDeployFlowMockServer(
     KeyPair keyPair,
     List<String> requestLog,
     List<XdrLedgerKey> capturedKeys,
     List<String> capturedEnvelopes, {
     bool tagEntryExists = true,
-    bool firstCodeLoadParseable = true,
+    Uint8List? code,
+    bool firstCodeEntryMissing = false,
     bool deployReturnsContractId = true,
     Map<String, dynamic>? simulationFailure,
   }) {
@@ -278,20 +282,14 @@ void main() {
             );
           }
           if (key.discriminant == XdrLedgerEntryType.CONTRACT_CODE) {
-            final firstCodeLoad = !requestLog.contains('code');
+            final firstCodeRead = !requestLog.contains('code');
             requestLog.add('code');
-            if (firstCodeLoad && !firstCodeLoadParseable) {
-              return ledgerEntryResponse(
-                requestBody,
-                contractCodeEntry(
-                  wasmHashBytes,
-                  Uint8List.fromList('not wasm'.codeUnits),
-                ),
-              );
+            if (firstCodeRead && firstCodeEntryMissing) {
+              return emptyLedgerEntriesResponse(requestBody);
             }
             return ledgerEntryResponse(
               requestBody,
-              contractCodeEntry(wasmHashBytes, helloWasm),
+              contractCodeEntry(wasmHashBytes, code ?? helloWasm),
             );
           }
           if (key.discriminant == XdrLedgerEntryType.CONTRACT_DATA &&
@@ -795,24 +793,51 @@ void main() {
       expect(requestLog, isEmpty);
     });
 
-    test(
-      'falls back to forClientOptions when the code has no parseable spec',
-      () async {
-        // The spec preload throws SorobanContractParserFailed on the unparseable
-        // code; the deployment proceeds anyway and the client is built through
-        // the forClientOptions fallback, which reads the instance entry and the
-        // code entry behind it after the deployment.
-        final keyPair = KeyPair.random();
-        final requestLog = <String>[];
-        final server = externalRefDeployFlowMockServer(
-          keyPair,
-          requestLog,
-          <XdrLedgerKey>[],
-          <String>[],
-          firstCodeLoadParseable: false,
-        );
+    test('falls back to loading by contract id when the code entry is '
+        'missing', () async {
+      final keyPair = KeyPair.random();
+      final requestLog = <String>[];
+      final server = externalRefDeployFlowMockServer(
+        keyPair,
+        requestLog,
+        <XdrLedgerKey>[],
+        <String>[],
+        firstCodeEntryMissing: true,
+      );
+      final client = await SorobanClient.deployFromExternalRef(
+        deployRequest: DeployFromExternalRefRequest.forTagString(
+          sourceAccountKeyPair: keyPair,
+          network: Network.TESTNET,
+          rpcUrl: rpcUrl,
+          executableOwner: Address.forContractId(ownerContractIdHex),
+          tag: executableTag,
+          server: server,
+        ),
+      );
+      expect(client.getContractId(), createdContractId);
+      expect(client.getMethodNames(), contains('hello'));
+      expect(
+        requestLog.indexOf('instance'),
+        greaterThan(requestLog.indexOf('getTx')),
+      );
+      expect(requestLog.where((r) => r == 'code'), hasLength(2));
+    });
 
-        final client = await SorobanClient.deployFromExternalRef(
+    test('throws the parser error before submitting when the resolved code '
+        'cannot be parsed', () async {
+      final keyPair = KeyPair.random();
+      final requestLog = <String>[];
+      final server = externalRefDeployFlowMockServer(
+        keyPair,
+        requestLog,
+        <XdrLedgerKey>[],
+        <String>[],
+        // The hello world module with spec entry kind 6.
+        code: Uint8List.fromList(helloWasm)..[345] = 6,
+      );
+
+      await expectLater(
+        SorobanClient.deployFromExternalRef(
           deployRequest: DeployFromExternalRefRequest.forTagString(
             sourceAccountKeyPair: keyPair,
             network: Network.TESTNET,
@@ -821,19 +846,20 @@ void main() {
             tag: executableTag,
             server: server,
           ),
-        );
-
-        expect(client.getContractId(), createdContractId);
-        expect(client.getMethodNames(), contains('hello'));
-        // The fallback read the instance after the deployment and loaded the
-        // code a second time through it.
-        expect(
-          requestLog.indexOf('instance'),
-          greaterThan(requestLog.indexOf('getTx')),
-        );
-        expect(requestLog.where((r) => r == 'code'), hasLength(2));
-      },
-    );
+        ),
+        throwsA(
+          isA<SorobanContractParserFailed>().having(
+            (e) => e.toString(),
+            'message',
+            'invalid byte code: the contractspecv0 entry at byte offset 342 '
+                'does not decode: Exception: Unknown enum value: 6',
+          ),
+        ),
+      );
+      // Only the tag and the code entry were read: nothing was simulated or
+      // sent.
+      expect(requestLog, ['tag', 'code']);
+    });
 
     test(
       'throws when the transaction meta carries no created contract id',

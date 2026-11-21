@@ -251,6 +251,12 @@ class SorobanClient {
   /// After deploying the contract it creates and returns a new SorobanClient for the deployed contract.
   /// The contract must be installed before calling this method. You can use `SorobanClient.install`
   /// to install the contract.
+  ///
+  /// The spec of the returned client is read from the installed code before
+  /// the deployment is submitted. Code that [SorobanContractParser] rejects,
+  /// including code without a spec section, throws
+  /// [SorobanContractParserFailed] before any transaction is built; such code
+  /// deploys through [CreateContractWithConstructorHostFunction] directly.
   /// Simulation failures observed during validation throw [SorobanSimulationException]
   /// with an event snapshot and the heuristic selection described by
   /// [SimulateTransactionResponse.reportedContractError].
@@ -268,14 +274,9 @@ class SorobanClient {
       server = SorobanServer(deployRequest.rpcUrl);
       server.enableLogging = deployRequest.enableSorobanServerLogging;
     }
-    SorobanContractInfo? contractInfo;
-    try {
-      contractInfo = await server.loadContractInfoForWasmId(
-        deployRequest.wasmHash,
-      );
-    } on SorobanContractParserFailed {
-      contractInfo = null; // code without a parseable spec: fall back below
-    }
+    final contractInfo = await server.loadContractInfoForWasmId(
+      deployRequest.wasmHash,
+    );
 
     final sourceAddress = Address.forAccountId(
       deployRequest.sourceAccountKeyPair.accountId,
@@ -341,6 +342,13 @@ class SorobanClient {
   /// built, so an unresolvable reference fails here with an [Exception]
   /// naming the owner and the tag. One message covers both misses: no entry
   /// under the tag, or an entry that does not hold a 32-byte wasm hash.
+  ///
+  /// The spec of the returned client is read from the resolved code before
+  /// the deployment is submitted. Code that [SorobanContractParser] rejects,
+  /// including code without a spec section, throws
+  /// [SorobanContractParserFailed] before any transaction is built; such code
+  /// deploys through [CreateContractFromExternalRefWithConstructorHostFunction]
+  /// directly.
   /// Simulation failures observed during validation throw [SorobanSimulationException]
   /// with an event snapshot and the heuristic selection described by
   /// [SimulateTransactionResponse.reportedContractError].
@@ -393,14 +401,9 @@ class SorobanClient {
     // is already settled, while reading the contract instance right after
     // deployment races the RPC's ledger-entry ingestion, so a successful
     // deployment could surface as a load failure.
-    SorobanContractInfo? contractInfo;
-    try {
-      contractInfo = await server.loadContractInfoForWasmId(
-        Util.bytesToHex(wasmHash),
-      );
-    } on SorobanContractParserFailed {
-      contractInfo = null; // code without a parseable spec: fall back below
-    }
+    final contractInfo = await server.loadContractInfoForWasmId(
+      Util.bytesToHex(wasmHash),
+    );
 
     final sourceAddress = Address.forAccountId(
       deployRequest.sourceAccountKeyPair.accountId,

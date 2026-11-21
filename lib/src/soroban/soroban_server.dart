@@ -680,7 +680,7 @@ class SorobanServer {
   /// - [wasmId] Hex-encoded hash of the contract WebAssembly bytecode
   ///
   /// Returns: XdrContractCodeEntry containing:
-  /// - code: DataValue with the raw WebAssembly bytecode
+  /// - code: Uint8List with the raw WebAssembly bytecode
   /// - ext: Extension field for future protocol upgrades
   ///
   /// Returns null if no contract code exists with the given Wasm ID.
@@ -695,7 +695,7 @@ class SorobanServer {
   ///
   /// final codeEntry = await server.loadContractCodeForWasmId(wasmId);
   /// if (codeEntry != null) {
-  ///   final wasmBytes = codeEntry.code.dataValue;
+  ///   final wasmBytes = codeEntry.code;
   ///   print('Contract bytecode size: ${wasmBytes.length} bytes');
   ///   // Can parse bytecode to extract contract metadata
   /// }
@@ -739,7 +739,7 @@ class SorobanServer {
   ///   contract id
   ///
   /// Returns: XdrContractCodeEntry containing:
-  /// - code: DataValue with the raw WebAssembly bytecode
+  /// - code: Uint8List with the raw WebAssembly bytecode
   /// - ext: Extension field for future protocol upgrades
   ///
   /// Returns null if:
@@ -761,12 +761,12 @@ class SorobanServer {
   ///
   /// final codeEntry = await server.loadContractCodeForContractId(contractId);
   /// if (codeEntry != null) {
-  ///   final wasmBytes = codeEntry.code.dataValue;
+  ///   final wasmBytes = codeEntry.code;
   ///   print('Contract bytecode size: ${wasmBytes.length} bytes');
   ///
   ///   // Parse contract to extract metadata and spec
   ///   final info = SorobanContractParser.parseContractByteCode(wasmBytes);
-  ///   print('Contract spec: ${info.spec}');
+  ///   print('Contract spec: ${info.specEntries}');
   /// }
   /// ```
   ///

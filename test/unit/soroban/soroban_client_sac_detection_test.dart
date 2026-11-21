@@ -292,7 +292,8 @@ void main() {
           isA<SorobanContractParserFailed>().having(
             (e) => e.toString(),
             'toString',
-            'invalid byte code: environment meta not found.',
+            'invalid byte code: the wasm magic at byte offset 0 is 6e6f7420, '
+                'expected 0061736d.',
           ),
         ),
       );
