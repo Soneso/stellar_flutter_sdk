@@ -2,8 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'dart:convert';
-
 import '../xdr/xdr.dart';
 import 'contract_address_guard.dart';
 
@@ -97,14 +95,14 @@ int compareScValHostOrder(XdrSCVal a, XdrSCVal b) {
   }
   if (a.discriminant == XdrSCValType.SCV_STRING) {
     return _compareBytesUnsigned(
-      utf8.encode(a.str ?? ''),
-      utf8.encode(b.str ?? ''),
+      a.strBytes ?? const <int>[],
+      b.strBytes ?? const <int>[],
     );
   }
   if (a.discriminant == XdrSCValType.SCV_SYMBOL) {
     return _compareBytesUnsigned(
-      utf8.encode(a.sym ?? ''),
-      utf8.encode(b.sym ?? ''),
+      a.symBytes ?? const <int>[],
+      b.symBytes ?? const <int>[],
     );
   }
   if (a.discriminant == XdrSCValType.SCV_EXECUTABLE_TAG) {

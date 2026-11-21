@@ -54,11 +54,10 @@ abstract class HostFunction {
         if (xdr.invokeContract != null) {
           XdrInvokeContractArgs invokeArgs = xdr.invokeContract!;
           String contractID = invokeArgs.contractAddress.toStrKey();
-          String functionName = invokeArgs.functionName;
           List<XdrSCVal> funcArgs = invokeArgs.args;
           return InvokeContractHostFunction._decoded(
             contractID,
-            functionName,
+            invokeArgs.functionNameBytes,
             arguments: funcArgs,
           );
         }
@@ -511,8 +510,9 @@ class CreateContractFromExternalRefHostFunction extends HostFunction {
 
   /// The text [tag] spells, read as UTF-8.
   ///
-  /// Throws a FormatException when the bytes are not valid UTF-8.
-  String get tagString => utf8.decode(_tag);
+  /// Every leading byte order mark is kept. Throws a FormatException when the
+  /// bytes are not valid UTF-8.
+  String get tagString => XdrUtf8.decode(_tag);
 
   late XdrUint256 _salt;
 
@@ -643,8 +643,9 @@ class CreateContractFromExternalRefWithConstructorHostFunction
 
   /// The text [tag] spells, read as UTF-8.
   ///
-  /// Throws a FormatException when the bytes are not valid UTF-8.
-  String get tagString => utf8.decode(_tag);
+  /// Every leading byte order mark is kept. Throws a FormatException when the
+  /// bytes are not valid UTF-8.
+  String get tagString => XdrUtf8.decode(_tag);
 
   List<XdrSCVal> _constructorArgs;
 
@@ -914,11 +915,20 @@ class InvokeContractHostFunction extends HostFunction {
     this._contractID = value;
   }
 
-  String _functionName;
+  Uint8List _functionName;
 
   /// The name of the contract function to invoke.
-  String get functionName => this._functionName;
-  set functionName(String value) => this._functionName = value;
+  ///
+  /// The name bytes are read as UTF-8 with every leading byte order mark
+  /// kept. Throws a [FormatException] when they are not valid UTF-8;
+  /// [functionNameBytes] holds them unchanged. Assigning a name stores its
+  /// UTF-8 encoding.
+  String get functionName => XdrUtf8.decode(this._functionName);
+  set functionName(String value) => this._functionName = XdrUtf8.encode(value);
+
+  /// The bytes of [functionName] as they are encoded.
+  Uint8List get functionNameBytes => this._functionName;
+  set functionNameBytes(Uint8List value) => this._functionName = value;
 
   /// Optional arguments to pass to the contract function.
   List<XdrSCVal>? arguments;
@@ -930,13 +940,13 @@ class InvokeContractHostFunction extends HostFunction {
   ///
   /// Parameters:
   /// - [_contractID]: Contract address (C-format or hex).
-  /// - [_functionName]: Name of the function to invoke.
+  /// - [functionName]: Name of the function to invoke.
   /// - [arguments]: Optional list of arguments for the function.
   InvokeContractHostFunction(
     this._contractID,
-    this._functionName, {
+    String functionName, {
     this.arguments,
-  }) {
+  }) : _functionName = XdrUtf8.encode(functionName) {
     checkContractAddress(_contractID, 'The contract to invoke');
   }
 
@@ -967,7 +977,7 @@ class InvokeContractHostFunction extends HostFunction {
         "Could not convert contract id: $contractID to address",
       );
     }
-    XdrInvokeContractArgs args = XdrInvokeContractArgs(
+    XdrInvokeContractArgs args = XdrInvokeContractArgs.withFunctionNameBytes(
       address.toXdr(),
       this._functionName,
       fcArgs,

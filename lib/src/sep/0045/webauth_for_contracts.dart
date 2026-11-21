@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
 
 import '../../key_pair.dart';
@@ -256,6 +257,9 @@ class SubmitContractChallengeResponse {
 /// );
 /// ```
 class WebAuthForContracts {
+  /// The UTF-8 bytes of the function name a challenge entry must invoke.
+  static final List<int> _webAuthVerify = utf8.encode('web_auth_verify');
+
   final String _authEndpoint;
   final String _webAuthContractId;
   final String _serverSigningKey;
@@ -630,11 +634,13 @@ class WebAuthForContracts {
         );
       }
 
-      // Check 4: Function name is "web_auth_verify"
-      final functionName = function.contractFn!.functionName;
-      if (functionName != 'web_auth_verify') {
+      // Check 4: Function name is "web_auth_verify", compared byte for byte
+      // because a name is an XDR string, whose bytes need not be UTF-8.
+      final functionName = function.contractFn!.functionNameBytes;
+      if (!const ListEquality<int>().equals(functionName, _webAuthVerify)) {
         throw ContractChallengeValidationErrorInvalidFunctionName(
-          'Function name is not "web_auth_verify": $functionName',
+          'Function name is not "web_auth_verify": '
+          '${utf8.decode(functionName, allowMalformed: true)}',
         );
       }
 

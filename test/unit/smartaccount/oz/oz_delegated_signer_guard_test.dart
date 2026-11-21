@@ -362,6 +362,24 @@ void main() {
       );
     });
 
+    test('a function name whose bytes are not UTF-8 is ignored', () async {
+      final XdrSorobanAuthorizationEntry entry = _entry(
+        _addSigner(_delegated(_otherContract)),
+      );
+      final XdrInvokeContractArgs call =
+          entry.rootInvocation.function.contractFn!;
+      call.functionNameBytes = Uint8List.fromList(<int>[
+        ...'add_signer'.codeUnits,
+        0xff,
+      ]);
+      await _guard(entry);
+      call.functionNameBytes = Uint8List.fromList('add_signer'.codeUnits);
+      await expectLater(
+        _guard(entry),
+        _invalidAddress(_notAnAccount(_otherContract)),
+      );
+    });
+
     test(
       'a signer list argument that is no Vec is refused naming the call',
       () async {

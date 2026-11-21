@@ -232,7 +232,9 @@ Future<void> requireValidAddedSigners(
         call == null) {
       continue;
     }
-    final position = _signerAddingFunctions[call.functionName];
+    // A name whose bytes are not valid UTF-8 names none of these functions.
+    final String? functionName = XdrUtf8.tryDecode(call.functionNameBytes);
+    final position = _signerAddingFunctions[functionName];
     if (position == null ||
         OZAddressStrKey.fromXdr(call.contractAddress) != walletContractId ||
         call.args.length <= position.index) {
@@ -248,7 +250,7 @@ Future<void> requireValidAddedSigners(
     } else {
       throw SmartAccountValidationException.invalidInput(
         'signers',
-        '${call.functionName} on $walletContractId carries '
+        '$functionName on $walletContractId carries '
             '${argument.discriminant.enumName()} at argument '
             '${position.index}, where a Vec of signers is expected',
       );

@@ -5,7 +5,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
 import '../assets.dart';
@@ -89,9 +88,9 @@ class SACClient {
   /// spec embedded in the SDK.
   ///
   /// Each call returns new objects. The decoding is strict and throws a
-  /// [StateError] for a spec that does not decode, is not canonical, or does
-  /// not match its digest. Other Error types from decoding propagate
-  /// unchanged; see [decodeSpec].
+  /// [StateError] for a spec that does not decode or does not match its
+  /// digest. Other Error types from decoding propagate unchanged; see
+  /// [decodeSpec].
   static List<XdrSCSpecEntry> specEntries() {
     return decodeSpec(SACSpec.XDR_BASE64, SACSpec.SHA256);
   }
@@ -100,21 +99,16 @@ class SACClient {
   /// against [sha256Hex], the lowercase hex sha256 digest of the decoded
   /// bytes.
   ///
-  /// The decoding is strict, because the wasm spec parser stops silently at
-  /// the first entry that does not decode. The failures listed below throw a
-  /// [StateError]:
+  /// The decoding is strict. The failures listed below throw a [StateError]:
   /// - [base64] is not valid base64: a StateError, whose trace starts at the
   ///   FormatException from `base64Decode`.
   /// - The digest of the decoded bytes is not [sha256Hex].
   /// - An entry throws an [Exception] or a [RangeError] while decoding; the
   ///   message gives its byte offset. Other [Error] types from decoding are
   ///   not wrapped and propagate unchanged.
-  /// - An entry decodes but encodes to different bytes, such as missing
-  ///   padding at the end of the input or a byte order mark in a string. The
-  ///   message gives its byte offset.
   ///
   /// The base64 and decoding failures keep the original stack trace; the
-  /// digest and re-encoding failures carry the trace of the check.
+  /// digest failure carries the trace of the check.
   @visibleForTesting
   static List<XdrSCSpecEntry> decodeSpec(String base64, String sha256Hex) {
     final Uint8List bytes;
@@ -147,21 +141,6 @@ class SACClient {
         _throwDecodeFailure(start, error, stackTrace);
       } on RangeError catch (error, stackTrace) {
         _throwDecodeFailure(start, error, stackTrace);
-      }
-      final end = stream.offset!;
-      final encoded = XdrDataOutputStream();
-      XdrSCSpecEntry.encode(encoded, entry);
-      if (!const ListEquality<int>().equals(
-        encoded.bytes,
-        bytes.sublist(start, end),
-      )) {
-        Error.throwWithStackTrace(
-          StateError(
-            'The embedded SAC spec does not decode at byte offset $start: the '
-            'entry re-encodes to different bytes',
-          ),
-          StackTrace.current,
-        );
       }
       entries.add(entry);
     }

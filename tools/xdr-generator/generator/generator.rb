@@ -213,9 +213,13 @@ class Generator < Xdrgen::Generators::Base
         type_overridden = true
       end
 
-      # A `string` field the SDK carries as raw bytes keeps the string wire
-      # form; its Dart type becomes Uint8List and its text moves to a getter.
-      bytes_string_getter = bytes_backed_string_getter(struct_name, xdr_field_name, m.declaration)
+      # A `string` field the SDK stores as raw bytes keeps the string wire
+      # form. Either its Dart type becomes Uint8List and its text moves to a
+      # getter, or it keeps its String accessors over the stored bytes and
+      # gains a bytes accessor.
+      entry = bytes_backed_string_entry(struct_name, xdr_field_name, m.declaration)
+      bytes_string_getter = entry.is_a?(String) ? entry : nil
+      string_bytes_accessor = entry.is_a?(Hash) ? entry.fetch(:bytes) : nil
       type_str = "Uint8List" if bytes_string_getter
 
       # Detect fixed-opaque typedef size for proper decode (stream.readBytes(N)).
@@ -234,6 +238,7 @@ class Generator < Xdrgen::Generators::Base
         fixed_opaque_size: fos,
         type_overridden: type_overridden,
         bytes_string_getter: bytes_string_getter,
+        string_bytes_accessor: string_bytes_accessor,
       }
     end
 
@@ -251,6 +256,11 @@ class Generator < Xdrgen::Generators::Base
     # Fields with getters/setters
     fields.each do |f|
       out.puts ""
+      if f[:string_bytes_accessor]
+        render_string_bytes_field(out, f[:name], f[:string_bytes_accessor])
+        next
+      end
+
       out.puts "  #{f[:type]} _#{f[:name]};"
       out.puts "  #{f[:type]} get #{f[:name]} => this._#{f[:name]};"
       out.puts "  set #{f[:name]}(#{f[:type]} value) => this._#{f[:name]} = value;"
@@ -260,10 +270,25 @@ class Generator < Xdrgen::Generators::Base
       render_bytes_string_getter(out, f[:bytes_string_getter], f[:name], "_#{f[:name]}")
     end
 
-    # Constructor (after fields, matching hand-written pattern)
+    # Constructor (after fields, matching hand-written pattern). A field that
+    # keeps its String accessors over stored bytes takes its text here; the
+    # bytes constructor takes the bytes of every such field.
     out.puts ""
-    constructor_params = fields.map { |f| "this._#{f[:name]}" }.join(", ")
-    out.puts "  #{class_name}(#{constructor_params});"
+    constructor_params = fields.map do |f|
+      f[:string_bytes_accessor] ? "String #{f[:name]}" : "this._#{f[:name]}"
+    end.join(", ")
+    initializers = fields.select { |f| f[:string_bytes_accessor] }.map do |f|
+      "_#{f[:name]} = XdrUtf8.encode(#{f[:name]})"
+    end
+    initializer_list = initializers.empty? ? "" : " : #{initializers.join(', ')}"
+    out.puts "  #{class_name}(#{constructor_params})#{initializer_list};"
+    bytes_constructor = struct_bytes_constructor(fields)
+    if bytes_constructor
+      out.puts ""
+      out.puts "  /// Builds an #{class_name} that stores the given bytes of " \
+               "#{bytes_constructor_fields_phrase(fields)}."
+      out.puts "  #{class_name}.#{bytes_constructor}(#{fields.map { |f| "this._#{f[:name]}" }.join(', ')});"
+    end
 
     out.puts ""
 
@@ -287,7 +312,8 @@ class Generator < Xdrgen::Generators::Base
     param_name = encode_param_name(struct_name)
     out.puts "  static void encode(XdrDataOutputStream stream, #{struct_name} #{param_name}) {"
     fields.each do |f|
-      render_encode_field(out, "#{param_name}.#{f[:name]}", f)
+      accessor = f[:string_bytes_accessor] || f[:name]
+      render_encode_field(out, "#{param_name}.#{accessor}", f)
     end
     out.puts "  }"
   end
@@ -301,9 +327,30 @@ class Generator < Xdrgen::Generators::Base
     render_decode_guard(out, struct_name) do |body|
       fields.each { |f| render_decode_field(body, f[:name], f) }
       args = fields.map { |f| f[:name] }.join(", ")
-      body.puts "    return #{struct_name}(#{args});"
+      body.puts "    return #{struct_constructor_call(struct_name, fields)}(#{args});"
     end
     out.puts "  }"
+  end
+
+  # The constructor a decoder calls with every field value it read: the bytes
+  # constructor when the struct has one, because a decoder reads the bytes of
+  # every bytes-backed string field.
+  def struct_constructor_call(class_name, fields)
+    bytes_constructor = struct_bytes_constructor(fields)
+    bytes_constructor ? "#{class_name}.#{bytes_constructor}" : class_name
+  end
+
+  # The name of the constructor that takes the stored bytes of the fields that
+  # keep String accessors over bytes, or nil when the struct has none.
+  def struct_bytes_constructor(fields)
+    names = fields.select { |f| f[:string_bytes_accessor] }.map { |f| f[:name] }
+    return nil if names.empty?
+
+    "with#{names.map { |n| n[0].upcase + n[1..] }.join('And')}Bytes"
+  end
+
+  def bytes_constructor_fields_phrase(fields)
+    fields.select { |f| f[:string_bytes_accessor] }.map { |f| "[#{f[:name]}]" }.join(" and ")
   end
 
   def render_decode_guard(out, type)
@@ -412,6 +459,11 @@ class Generator < Xdrgen::Generators::Base
     arms.each do |arm|
       next if arm[:void]
       out.puts ""
+      if arm[:string_bytes_accessor]
+        render_string_bytes_arm_getters(out, arm[:field_name], arm[:string_bytes_accessor])
+        next
+      end
+
       out.puts "  #{arm[:dart_type]}? _#{arm[:field_name]};"
       out.puts ""
       out.puts "  #{arm[:dart_type]}? get #{arm[:field_name]} => this._#{arm[:field_name]};"
@@ -430,6 +482,11 @@ class Generator < Xdrgen::Generators::Base
     arms.each do |arm|
       next if arm[:void]
       out.puts ""
+      if arm[:string_bytes_accessor]
+        render_string_bytes_arm_setters(out, arm[:field_name], arm[:string_bytes_accessor])
+        next
+      end
+
       out.puts "  set #{arm[:field_name]}(#{arm[:dart_type]}? value) => this._#{arm[:field_name]} = value;"
     end
 
@@ -888,6 +945,11 @@ class Generator < Xdrgen::Generators::Base
   # Field encode/decode helpers
   # ---------------------------------------------------------------------------
 
+  # True for a field or arm listed in BYTES_BACKED_STRING_FIELDS, in either form.
+  def bytes_backed_field?(info)
+    !(info[:bytes_string_getter] || info[:string_bytes_accessor]).nil?
+  end
+
   def render_encode_field(out, accessor, field_info)
     decl = field_info[:decl]
     member = field_info[:member]
@@ -896,7 +958,7 @@ class Generator < Xdrgen::Generators::Base
 
     # When a FIELD_TYPE_OVERRIDE changes the type, use simple Type.encode() dispatch
     # instead of AST-based Opaque/Array dispatch (which would generate raw byte operations).
-    if field_info[:bytes_string_getter]
+    if bytes_backed_field?(field_info)
       out.puts "    stream.writeStringBytes(#{[accessor, max].compact.join(', ')});"
       return
     end
@@ -973,7 +1035,7 @@ class Generator < Xdrgen::Generators::Base
     is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
     max = declared_max(decl)
 
-    if field_info[:bytes_string_getter]
+    if bytes_backed_field?(field_info)
       out.puts "    Uint8List #{local_name} = stream.readStringBytes(#{max});"
       return
     end
@@ -1201,7 +1263,9 @@ class Generator < Xdrgen::Generators::Base
           element_type: arm_info[:element_type],
           inner_type: arm_info[:inner_type],
           fixed_size: arm_info[:fixed_size],
+          storage_type: arm_info[:storage_type],
           bytes_string_getter: arm_info[:bytes_string_getter],
+          string_bytes_accessor: arm_info[:string_bytes_accessor],
           is_default: false,
         }
       end
@@ -1232,7 +1296,9 @@ class Generator < Xdrgen::Generators::Base
           element_type: arm_info[:element_type],
           inner_type: arm_info[:inner_type],
           fixed_size: arm_info[:fixed_size],
+          storage_type: arm_info[:storage_type],
           bytes_string_getter: arm_info[:bytes_string_getter],
+          string_bytes_accessor: arm_info[:string_bytes_accessor],
           is_default: true,
         }
       end
@@ -1256,15 +1322,20 @@ class Generator < Xdrgen::Generators::Base
   def resolve_dart_arm_info(arm, union_name)
     decl = arm.declaration
 
-    bytes_string_getter = bytes_backed_string_getter(union_name, arm.name, decl)
-    if bytes_string_getter
+    # A bytes-backed arm stores a Uint8List. dart_type is the type its public
+    # getter and setter take: the bytes, or the text of an arm that keeps its
+    # String accessors.
+    entry = bytes_backed_string_entry(union_name, arm.name, decl)
+    if entry
       return {
-        dart_type: "Uint8List",
+        dart_type: entry.is_a?(Hash) ? "String" : "Uint8List",
+        storage_type: "Uint8List",
         encode_style: :string_bytes,
         decode_style: :string_bytes,
         element_type: nil,
         inner_type: nil,
-        bytes_string_getter: bytes_string_getter,
+        bytes_string_getter: entry.is_a?(String) ? entry : nil,
+        string_bytes_accessor: entry.is_a?(Hash) ? entry.fetch(:bytes) : nil,
       }
     end
 
@@ -1748,8 +1819,13 @@ class Generator < Xdrgen::Generators::Base
   # calls for rather than the one its collapsed Dart type would imply.
   def sep51_decl_to(decl, accessor, type_q, key_q, override_type = nil, bytes_backed: false)
     # A bytes-backed `string` renders through the same escape ladder SEP-0051
-    # gives a string, applied to the bytes the field holds.
-    return "XdrJsonHelper.escapedBytes(#{accessor}, #{sep51_args(type_q, key_q)})" if bytes_backed
+    # gives a string, applied to the bytes the field holds, with the declared
+    # maximum checked on those bytes.
+    if bytes_backed
+      bound = declared_max(decl)
+      return "XdrJsonHelper.escapedBytes(#{accessor}, #{sep51_args(type_q, key_q)}" \
+             "#{bound ? ", maxBytes: #{bound}" : ''})"
+    end
 
     renderer = sep51_typedef_renderer(decl)
     return renderer[:to].call(accessor, type_q, key_q) if renderer
@@ -1793,7 +1869,9 @@ class Generator < Xdrgen::Generators::Base
 
   def sep51_decl_from(decl, value, type_q, key_q, override_type = nil, bytes_backed: false)
     if bytes_backed
-      return "XdrJsonHelper.readEscapedBytes(#{value}, #{sep51_args(type_q, key_q)})"
+      bound = declared_max(decl)
+      return "XdrJsonHelper.readEscapedBytes(#{value}, #{sep51_args(type_q, key_q)}" \
+             "#{bound ? ", maxLength: #{bound}" : ''})"
     end
 
     renderer = sep51_typedef_renderer(decl)
@@ -2006,7 +2084,7 @@ class Generator < Xdrgen::Generators::Base
       keys << alias_key if alias_key
 
       override = field[:type_overridden] ? field[:type].sub(/\?\z/, '') : nil
-      bytes_backed = !field[:bytes_string_getter].nil?
+      bytes_backed = bytes_backed_field?(field)
       value = sep51_decl_to(field[:decl], optional ? "#{accessor}!" : accessor, quoted, key_q,
                             override, bytes_backed: bytes_backed)
       entries << [key_q, optional ? "#{accessor} == null ? null : #{value}" : value]
@@ -2035,7 +2113,7 @@ class Generator < Xdrgen::Generators::Base
     reads.each do |read|
       out.puts "    final Object? #{read[:local]} = #{read[:read]};"
     end
-    out.puts "    return #{class_name}("
+    out.puts "    return #{struct_constructor_call(class_name, fields)}("
     reads.each do |read|
       value = read[:optional] ? "#{read[:local]} == null ? null : #{read[:parsed]}" : read[:parsed]
       out.puts "        #{value},"
@@ -2105,7 +2183,7 @@ class Generator < Xdrgen::Generators::Base
       else
         accessor = "_#{arm[:field_name]}!#{sep51_arm_unwrap(arm)}"
         value = sep51_decl_to(arm[:decl], accessor, quoted, "'#{branch[:key]}'", nil,
-                              bytes_backed: !arm[:bytes_string_getter].nil?)
+                              bytes_backed: bytes_backed_field?(arm))
         value = "_#{arm[:field_name]} == null ? null : #{value}" if sep51_optional_arm?(arm)
         out.puts "        return <String, Object?>{'#{branch[:key]}': #{value}};"
       end
@@ -2158,13 +2236,13 @@ class Generator < Xdrgen::Generators::Base
         arm = branch[:arm]
         parsed = sep51_arm_rewrap(arm,
                                   sep51_decl_from(arm[:decl], 'arm.value', quoted, "'#{branch[:key]}'",
-                                                  nil, bytes_backed: !arm[:bytes_string_getter].nil?))
+                                                  nil, bytes_backed: bytes_backed_field?(arm)))
         parsed = "arm.value == null ? null : #{parsed}" if sep51_optional_arm?(arm)
         local = "arm#{index}"
         out.puts "      case '#{branch[:key]}':"
         out.puts "        final #{is_base ? 'T' : class_name} #{local} = " \
                  "#{is_base ? 'constructor' : class_name}(#{branch[:label]});"
-        out.puts "        #{local}.#{arm[:field_name]} = #{parsed};"
+        out.puts "        #{local}.#{arm[:string_bytes_accessor] || arm[:field_name]} = #{parsed};"
         out.puts "        return #{local};"
       end
       out.puts "    }"
@@ -2237,32 +2315,87 @@ class Generator < Xdrgen::Generators::Base
   # wants text rather than to the field itself.
   def render_bytes_string_getter(out, getter, field_name, accessor, nullable: false)
     out.puts "  /// The text [#{field_name}] spells, read as UTF-8#{nullable ? ', or null when this arm is unset' : ''}."
-    out.puts "  ///"
-    out.puts "  /// Throws a FormatException when the bytes are not valid UTF-8."
+    render_text_view_doc_tail(out)
     if nullable
       out.puts "  String? get #{getter} {"
       out.puts "    final Uint8List? bytes = #{accessor};"
-      out.puts "    return bytes == null ? null : utf8.decode(bytes);"
+      out.puts "    return bytes == null ? null : XdrUtf8.decode(bytes);"
       out.puts "  }"
     else
-      out.puts "  String get #{getter} => utf8.decode(#{accessor});"
+      out.puts "  String get #{getter} => XdrUtf8.decode(#{accessor});"
     end
   end
 
-  # The getter name a `string` field carried as raw bytes exposes its text
-  # under, or nil where the field is ordinary Dart text. Records the hit so the
-  # registry check can tell an applied entry from a stale one.
-  def bytes_backed_string_getter(type_name, xdr_field_name, decl)
-    getter = BYTES_BACKED_STRING_FIELDS.dig(type_name, xdr_field_name.to_s)
-    return nil if getter.nil?
+  def render_text_view_doc_tail(out)
+    out.puts "  ///"
+    out.puts "  /// Every leading byte order mark is kept. Throws a FormatException when the"
+    out.puts "  /// bytes are not valid UTF-8."
+  end
+
+  # Emits a struct field that stores the bytes of an XDR `string` and keeps its
+  # String accessors: the getter reads the bytes as text, the setter stores the
+  # UTF-8 encoding of the text, and the bytes accessor reads and writes the
+  # bytes themselves.
+  def render_string_bytes_field(out, field_name, bytes_accessor)
+    out.puts "  Uint8List _#{field_name};"
+    out.puts ""
+    out.puts "  /// The text [#{bytes_accessor}] spells, read as UTF-8."
+    render_text_view_doc_tail(out)
+    out.puts "  String get #{field_name} => XdrUtf8.decode(this._#{field_name});"
+    out.puts ""
+    out.puts "  /// Stores the UTF-8 encoding of [value]."
+    out.puts "  set #{field_name}(String value) => this._#{field_name} = XdrUtf8.encode(value);"
+    out.puts ""
+    out.puts "  /// The bytes of [#{field_name}] as they are encoded."
+    out.puts "  Uint8List get #{bytes_accessor} => this._#{field_name};"
+    out.puts "  set #{bytes_accessor}(Uint8List value) => this._#{field_name} = value;"
+  end
+
+  # Emits the getters of a union arm that stores the bytes of an XDR `string`
+  # and keeps its String accessors. The setters follow the constructor
+  # (render_string_bytes_arm_setters).
+  def render_string_bytes_arm_getters(out, field_name, bytes_accessor)
+    out.puts "  Uint8List? _#{field_name};"
+    out.puts ""
+    out.puts "  /// The text [#{bytes_accessor}] spells, read as UTF-8, or null when this arm is unset."
+    render_text_view_doc_tail(out)
+    out.puts "  String? get #{field_name} {"
+    out.puts "    final Uint8List? bytes = this._#{field_name};"
+    out.puts "    return bytes == null ? null : XdrUtf8.decode(bytes);"
+    out.puts "  }"
+    out.puts ""
+    out.puts "  /// The bytes of [#{field_name}] as they are encoded, or null when this arm is unset."
+    out.puts "  Uint8List? get #{bytes_accessor} => this._#{field_name};"
+  end
+
+  def render_string_bytes_arm_setters(out, field_name, bytes_accessor)
+    out.puts "  /// Stores the UTF-8 encoding of [value], or unsets the arm when it is null."
+    out.puts "  set #{field_name}(String? value) =>"
+    out.puts "      this._#{field_name} = value == null ? null : XdrUtf8.encode(value);"
+    out.puts ""
+    out.puts "  set #{bytes_accessor}(Uint8List? value) => this._#{field_name} = value;"
+  end
+
+  # The BYTES_BACKED_STRING_FIELDS entry of a field: the getter name of a field
+  # emitted as a Uint8List, a Hash naming the bytes accessor of a field that
+  # keeps its String accessors, or nil where the field is ordinary Dart text.
+  # Records the hit so the registry check can tell an applied entry from a
+  # stale one.
+  def bytes_backed_string_entry(type_name, xdr_field_name, decl)
+    entry = BYTES_BACKED_STRING_FIELDS.dig(type_name, xdr_field_name.to_s)
+    return nil if entry.nil?
 
     unless string_valued?(decl)
       raise "#{type_name}.#{xdr_field_name} is listed in BYTES_BACKED_STRING_FIELDS " \
             'but does not declare an XDR string'
     end
+    unless entry.is_a?(String) || (entry.is_a?(Hash) && entry.keys == [:bytes])
+      raise "#{type_name}.#{xdr_field_name}: a BYTES_BACKED_STRING_FIELDS entry is a getter " \
+            'name or { bytes: "accessorName" }'
+    end
 
     @bytes_backed_applied.add("#{type_name}.#{xdr_field_name}")
-    getter
+    entry
   end
 
   # Every field listed as bytes-backed must reach a generated type, so a rename
@@ -2530,7 +2663,7 @@ class Generator < Xdrgen::Generators::Base
     is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
 
     # Bytes-backed string fields call escapeBytes / unescapeBytes
-    return true if field[:bytes_string_getter]
+    return true if bytes_backed_field?(field)
 
     # Optional fields always emit _present via TxRepHelper.getValue
     return true if is_optional
@@ -2678,7 +2811,7 @@ class Generator < Xdrgen::Generators::Base
       member    = f[:member]
       is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
 
-      if f[:bytes_string_getter]
+      if bytes_backed_field?(f)
         out.puts "    lines.add('\$prefix.#{xdr_name}: \${TxRepHelper.escapeBytes(_#{dart_name})}');"
         next
       end
@@ -2753,11 +2886,9 @@ class Generator < Xdrgen::Generators::Base
       is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
       max = f[:type_overridden] ? nil : declared_max(decl)
 
-      if f[:bytes_string_getter]
-        raise "#{class_name}.#{xdr_name}: a bytes-backed string field has no bounded TxRep read" if max
-        out.puts "    Uint8List #{dart_name} = TxRepHelper.unescapeBytes("
-        out.puts "      TxRepHelper.getValue(map, '\$prefix.#{xdr_name}') ?? '',"
-        out.puts "    );"
+      if bytes_backed_field?(f)
+        value = "TxRepHelper.unescapeBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}') ?? '')"
+        out.puts "    Uint8List #{dart_name} = #{txrep_bounded("Uint8List", value, max, "'\$prefix.#{xdr_name}'")};"
         next
       end
 
@@ -2835,7 +2966,7 @@ class Generator < Xdrgen::Generators::Base
       end
     end
     args = fields.map { |f| f[:name] }.join(", ")
-    out.puts "    return #{class_name}(#{args});"
+    out.puts "    return #{struct_constructor_call(class_name, fields)}(#{args});"
     out.puts "  }"
   end
 
@@ -2965,8 +3096,8 @@ class Generator < Xdrgen::Generators::Base
       value = "TxRepHelper.unescapeString(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? '')"
       out.puts "        result._#{field} = #{txrep_bounded("String", value, max, key)};"
     when :string_bytes
-      raise "#{xdr_field}: a bytes-backed string arm has no bounded TxRep read" if max
-      out.puts "        result._#{field} = TxRepHelper.unescapeBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? '');"
+      value = "TxRepHelper.unescapeBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? '')"
+      out.puts "        result._#{field} = #{txrep_bounded("Uint8List", value, max, key)};"
     when :opaque_var
       out.puts "        String? #{field}Raw = TxRepHelper.getValue(map, '\$prefix.#{xdr_field}');"
       out.puts "        if (#{field}Raw == null) throw Exception('missing \$prefix.#{xdr_field}');"
