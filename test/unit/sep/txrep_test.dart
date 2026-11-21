@@ -829,7 +829,7 @@ void main() {
       );
     });
 
-    test('MEMO_TEXT malformed \\xNN UTF-8 sequence throws', () {
+    test('MEMO_TEXT \\xNN bytes that are not UTF-8 are kept', () {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
@@ -845,24 +845,17 @@ void main() {
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(
         transaction.toEnvelopeXdrBase64(),
       );
-      // A lone 0xC3 is an incomplete UTF-8 sequence (0xC3 is a 2-byte
-      // lead byte); decoding must throw FormatException which the facade
-      // rewraps as a TxRep-style Exception.
-      final broken = txRep.replaceFirst(
+      // A lone 0xC3 is an incomplete UTF-8 sequence. A text memo is an XDR
+      // string, which carries arbitrary bytes, so the byte is kept.
+      final edited = txRep.replaceFirst(
         'tx.memo.text: "hello"',
         r'tx.memo.text: "\xc3"',
       );
 
-      expect(
-        () => TxRep.transactionEnvelopeXdrBase64FromTxRep(broken),
-        throwsA(
-          isA<Exception>().having(
-            (e) => e.toString(),
-            'message',
-            contains('invalid tx.memo.text'),
-          ),
-        ),
-      );
+      final envelope = TxRep.transactionEnvelopeXdrBase64FromTxRep(edited);
+      final decoded = XdrTransactionEnvelope.fromEnvelopeXdrString(envelope);
+      expect(decoded.v1!.tx.memo.textBytes, [0xc3]);
+      expect(TxRep.fromTransactionEnvelopeXdrBase64(envelope), edited);
     });
 
     test('encodes V0 envelope without time bounds', () {

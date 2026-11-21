@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -523,19 +524,65 @@ void main() {
 
     test('names the member where the reading type declares a key', () {
       expect(
-        () => XdrMemo.fromXdrJson(r'{"text":"\\xc3"}'),
+        () => XdrSCMetaV0.fromXdrJson(r'{"key":"\\xc3","val":"v"}'),
         formatFailure(
-          'XDR-JSON XdrMemo key "text" resolves to bytes that are not valid '
+          'XDR-JSON XdrSCMetaV0 key "key" resolves to bytes that are not valid '
           'UTF-8',
         ),
       );
       expect(
-        () => XdrSCVal.fromXdrJson(r'{"symbol":"\\xc3"}'),
+        () => XdrSCMetaV0.fromXdrJson(r'{"key":"k","val":"\\xc3"}'),
         formatFailure(
-          'XDR-JSON XdrSCVal key "symbol" resolves to bytes that are not valid '
+          'XDR-JSON XdrSCMetaV0 key "val" resolves to bytes that are not valid '
           'UTF-8',
         ),
       );
+    });
+
+    test('keeps the bytes of the strings the SDK stores as bytes', () {
+      // A memo text, an SCVal string and symbol and a function name are XDR
+      // strings whose bytes need not be UTF-8, so the bytes survive.
+      for (final String json in <String>[
+        r'{"text":"\\xc3"}',
+        r'{"text":"\\xff\\xfe abc"}',
+      ]) {
+        expect(XdrMemo.fromXdrJson(json).toXdrJson(), json);
+      }
+      for (final String json in <String>[
+        r'{"string":"\\xff\\xfe abc"}',
+        r'{"symbol":"\\xff\\xfe abc"}',
+        r'{"string":"\\xef\\xbb\\xbfa"}',
+      ]) {
+        expect(XdrSCVal.fromXdrJson(json).toXdrJson(), json);
+      }
+      expect(XdrMemo.fromXdrJson(r'{"text":"\\xff\\xfe abc"}').textBytes, <int>[
+        0xff,
+        0xfe,
+        0x20,
+        0x61,
+        0x62,
+        0x63,
+      ]);
+    });
+
+    test('checks the declared maximum of a string stored as bytes', () {
+      expect(
+        () => XdrMemo.fromXdrJson('{"text":"${r'\\xff' * 29}"}'),
+        formatFailure(
+          'XDR-JSON XdrMemo key "text" holds 29 bytes, more than the declared '
+          'maximum of 28',
+        ),
+      );
+      expect(
+        () => XdrSCVal.fromXdrJson('{"symbol":"${'a' * 33}"}'),
+        formatFailure(
+          'XDR-JSON XdrSCVal key "symbol" holds 33 bytes, more than the '
+          'declared maximum of 32',
+        ),
+      );
+      final XdrMemo memo = XdrMemo(XdrMemoType.MEMO_TEXT)
+        ..textBytes = Uint8List.fromList(List<int>.filled(29, 0xff));
+      expect(memo.toXdrJson, formatFailure('longer than the declared maximum'));
     });
 
     test('accepts multi-byte text whose escapes form valid UTF-8', () {

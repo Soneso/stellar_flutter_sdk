@@ -1420,4 +1420,60 @@ void main() {
     );
     assert(response.success);
   });
+
+  test('send payment with a text memo whose bytes are not UTF-8', () async {
+    KeyPair keyPairA = KeyPair.random();
+    String accountAId = keyPairA.accountId;
+    KeyPair keyPairB = KeyPair.random();
+    String accountBId = keyPairB.accountId;
+    await fundTestAccountAndAwaitVisibility(
+      accountAId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
+    await fundTestAccountAndAwaitVisibility(
+      accountBId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
+
+    final Uint8List memoBytes = Uint8List.fromList(<int>[
+      0xff,
+      0xfe,
+      0x20,
+      0x61,
+      0x62,
+      0x63,
+    ]);
+    AccountResponse accountA = await sdk.accounts.account(accountAId);
+    Transaction transaction = TransactionBuilder(accountA)
+        .addOperation(
+          PaymentOperationBuilder(accountBId, Asset.NATIVE, '10').build(),
+        )
+        .addMemo(MemoText.fromBytes(memoBytes))
+        .build();
+    transaction.sign(keyPairA, network);
+    final String envelope = transaction.toEnvelopeXdrBase64();
+    final String hash = Util.bytesToHex(transaction.hash(network));
+
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
+    expect(response.success, true);
+    expect(response.hash, hash);
+
+    // Horizon gives the envelope as submitted and the memo bytes in
+    // memo_bytes.
+    TransactionResponse record = await sdk.transactions.transaction(hash);
+    expect(record.hash, hash);
+    expect(record.envelopeXdr, envelope);
+    expect(record.memoBytes, base64Encode(memoBytes));
+    expect((record.memo as MemoText).bytes, memoBytes);
+
+    AbstractTransaction imported = AbstractTransaction.fromEnvelopeXdrString(
+      record.envelopeXdr,
+    );
+    expect(imported.toEnvelopeXdrBase64(), envelope);
+    expect(Util.bytesToHex(imported.hash(network)), hash);
+  });
 }

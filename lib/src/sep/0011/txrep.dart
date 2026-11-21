@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -256,7 +257,7 @@ class TxRep {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        lines.add('$prefix.text: ${TxRepHelper.escapeString(memo.text!)}');
+        lines.add('$prefix.text: ${TxRepHelper.escapeBytes(memo.textBytes!)}');
         break;
       case XdrMemoType.MEMO_ID:
         memo.id!.toTxRep('$prefix.id', lines);
@@ -389,10 +390,10 @@ class TxRep {
     } else if (memoTypeStr == 'MEMO_TEXT') {
       String? textStr = TxRepHelper.getValue(map, '$prefix.text');
       if (textStr == null) throw Exception('missing $prefix.text');
-      // Per SEP-0011, MEMO_TEXT uses C-style \xNN UTF-8 byte escapes.
-      // For backwards compatibility, also accept legacy \uNNNN JSON escapes
-      // produced by older versions of this SDK.
-      String text;
+      // Per SEP-0011, MEMO_TEXT uses C-style \xNN byte escapes, which spell
+      // the memo bytes whether or not they are valid UTF-8. The legacy
+      // \uNNNN JSON escapes are accepted as well.
+      Uint8List bytes;
       if (textStr.startsWith('"') &&
           textStr.endsWith('"') &&
           textStr.length >= 2) {
@@ -403,25 +404,21 @@ class TxRep {
         final legacyUnicode = RegExp(r'(?<!\\)(?:\\\\)*\\u[0-9a-fA-F]{4}');
         if (legacyUnicode.hasMatch(textStr)) {
           try {
-            text = jsonDecode(textStr) as String;
+            bytes = XdrUtf8.encode(jsonDecode(textStr) as String);
           } on FormatException catch (e) {
             throw Exception(
               'invalid $prefix.text (legacy \\uNNNN form): ${e.message}',
             );
           }
         } else {
-          try {
-            text = TxRepHelper.unescapeString(textStr);
-          } on FormatException catch (e) {
-            throw Exception('invalid $prefix.text: ${e.message}');
-          }
+          bytes = TxRepHelper.unescapeBytes(textStr);
         }
       } else {
-        text = textStr;
+        bytes = XdrUtf8.encode(textStr);
       }
       XdrMemo memo = XdrMemo(XdrMemoType.MEMO_TEXT);
-      memo.text = text;
-      TxRepHelper.checkStringMaxLength(text, _maxMemoText, '$prefix.text');
+      memo.textBytes = bytes;
+      TxRepHelper.checkBytesMaxLength(bytes, _maxMemoText, '$prefix.text');
       return memo;
     } else if (memoTypeStr == 'MEMO_ID') {
       XdrMemo memo = XdrMemo(XdrMemoType.MEMO_ID);

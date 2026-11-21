@@ -295,7 +295,7 @@ abstract class Memo {
       case XdrMemoType.MEMO_ID:
         return id(memo.id!.uint64);
       case XdrMemoType.MEMO_TEXT:
-        return text(memo.text!);
+        return MemoText.fromBytes(memo.textBytes!);
       case XdrMemoType.MEMO_HASH:
         return hash(memo.hash!.hash);
       case XdrMemoType.MEMO_RETURN:
@@ -328,7 +328,7 @@ abstract class Memo {
   /// Two memos are equal if they are of the same type and contain the
   /// same value. The comparison logic varies by memo type:
   /// - [MemoNone] Always equal to other MemoNone instances
-  /// - [MemoText] Equal if text strings match
+  /// - [MemoText] Equal if their bytes match
   /// - [MemoId] Equal if ID values match
   /// - [MemoHash] Equal if byte arrays match
   /// - [MemoReturnHash] Equal if byte arrays match
@@ -359,10 +359,13 @@ abstract class Memo {
   /// - [json]: Map containing memo data with keys:
   ///   - 'memo_type': String ('none', 'text', 'id', 'hash', or 'return')
   ///   - 'memo': String value (not required for 'none' type)
+  ///   - 'memo_bytes': base64-encoded bytes of a text memo, optional
   ///
   /// Returns: The appropriate Memo subclass instance:
   /// - [MemoNone] for type 'none'
-  /// - [MemoText] for type 'text' (memo contains text string)
+  /// - [MemoText] for type 'text' (from 'memo_bytes' when present, since
+  ///   Horizon's 'memo' text replaces bytes that are not valid UTF-8;
+  ///   otherwise from 'memo')
   /// - [MemoId] for type 'id' (memo contains numeric string)
   /// - [MemoHash] for type 'hash' (memo contains base64-encoded bytes)
   /// - [MemoReturnHash] for type 'return' (memo contains base64-encoded bytes)
@@ -405,7 +408,12 @@ abstract class Memo {
       memo = Memo.none();
     } else {
       if (memoType == "text") {
-        memo = Memo.text(json["memo"] ?? "");
+        final Object? memoBytes = json["memo_bytes"];
+        memo = memoBytes is String
+            ? MemoText.fromBytes(
+                parseRedactingSecretSeeds(memoBytes, base64.decode),
+              )
+            : Memo.text(json["memo"] ?? "");
       } else {
         String memoValue = json["memo"];
         if (memoType == "id") {
@@ -798,11 +806,12 @@ class MemoReturnHash extends MemoHashAbstract {
   }
 }
 
-/// Represents a MEMO_TEXT type memo containing UTF-8 text.
+/// Represents a MEMO_TEXT type memo, which holds up to 28 bytes.
 ///
-/// Text memos can contain up to 28 bytes of UTF-8 encoded text. This is the
-/// most human-readable memo type, commonly used for notes, descriptions, or
-/// simple identifiers.
+/// Text memos usually hold UTF-8 encoded text. This is the most
+/// human-readable memo type, commonly used for notes, descriptions, or
+/// simple identifiers. The network accepts any bytes in a text memo;
+/// [MemoText.fromBytes] and [bytes] hold bytes that are not valid UTF-8.
 ///
 /// Important: The 28-byte limit applies to the UTF-8 encoded bytes, not
 /// character count. Multi-byte characters (emojis, non-ASCII) count as
@@ -855,7 +864,9 @@ class MemoReturnHash extends MemoHashAbstract {
 /// - [Memo.text] factory method for creating text memos
 /// - [MemoId] for numeric identifiers (recommended for exchanges)
 class MemoText extends Memo {
-  String? _text;
+  static const int _maxBytes = 28;
+
+  final Uint8List _bytes;
 
   /// Creates a MEMO_TEXT with the given text string.
   ///
@@ -864,17 +875,39 @@ class MemoText extends Memo {
   ///
   /// Throws:
   /// - [MemoTooLongException] If text exceeds 28 bytes when UTF-8 encoded
-  MemoText(String text) {
-    this._text = text;
+  MemoText(String text) : _bytes = XdrUtf8.encode(text) {
+    _checkLength(_bytes);
+  }
 
-    int length = utf8.encode(text).length;
-    if (length > 28) {
-      throw MemoTooLongException("text must be <= 28 bytes. length=$length");
+  /// Creates a MEMO_TEXT that holds the given bytes.
+  ///
+  /// A text memo is an XDR string, which carries arbitrary bytes, so [bytes]
+  /// need not be valid UTF-8; they are encoded unchanged. The memo keeps a
+  /// copy of [bytes].
+  ///
+  /// Throws:
+  /// - [MemoTooLongException] If [bytes] are longer than 28 bytes
+  MemoText.fromBytes(Uint8List bytes) : _bytes = Uint8List.fromList(bytes) {
+    _checkLength(_bytes);
+  }
+
+  static void _checkLength(Uint8List bytes) {
+    if (bytes.length > _maxBytes) {
+      throw MemoTooLongException(
+        "text must be <= $_maxBytes bytes. length=${bytes.length}",
+      );
     }
   }
 
   /// Returns the text content of this memo.
-  String? get text => _text;
+  ///
+  /// The bytes are read as UTF-8 with every leading byte order mark kept.
+  /// Throws a [FormatException] when they are not valid UTF-8; [bytes] holds
+  /// them unchanged.
+  String? get text => XdrUtf8.decode(_bytes);
+
+  /// The bytes of this memo as they are encoded.
+  Uint8List get bytes => _bytes;
 
   /// Converts this memo to its XDR representation.
   ///
@@ -882,18 +915,22 @@ class MemoText extends Memo {
   @override
   XdrMemo toXdr() {
     XdrMemo memo = XdrMemo(XdrMemoType.MEMO_TEXT);
-    memo.text = _text;
+    memo.textBytes = _bytes;
     return memo;
   }
 
   /// Compares this instance to another for equality.
   ///
-  /// Returns `true` if [o] is of the same type and all fields are equal, `false` otherwise.
+  /// Returns `true` if [o] is a [MemoText] holding the same bytes, `false`
+  /// otherwise.
   @override
   bool operator ==(Object o) {
     if (!(o is MemoText)) return false;
-    return _text == o.text;
+    return const ListEquality<int>().equals(_bytes, o._bytes);
   }
+
+  @override
+  int get hashCode => const ListEquality<int>().hash(_bytes);
 }
 
 /// Exception thrown when a memo value exceeds maximum allowed length.

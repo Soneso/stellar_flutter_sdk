@@ -619,6 +619,29 @@ void main() {
       expect(info.metaEntries, {...helloMeta, 'k': 'v'});
     });
 
+    test('keeps a leading byte order mark in a doc and in a meta value', () {
+      final bom = String.fromCharCode(0xFEFF);
+      final bomSpec = _xdr(
+        (s) => XdrSCSpecEntry.encode(
+          s,
+          XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0)
+            ..functionV0 = XdrSCSpecFunctionV0('${bom}doc', 'other', [], []),
+        ),
+      );
+      final bomKv = _kv('k', '${bom}v');
+      expect(bomSpec.sublist(4, 11), [0, 0, 0, 6, 0xef, 0xbb, 0xbf]);
+      expect(bomKv.sublist(12, 19), [0, 0, 0, 4, 0xef, 0xbb, 0xbf]);
+      final info = _parse(
+        _wasm([
+          _custom('contractspecv0', _specContent + bomSpec),
+          env,
+          _custom('contractmetav0', _metaContent + bomKv),
+        ]),
+      );
+      expect(info.specEntries.last.functionV0!.doc, '${bom}doc');
+      expect(info.metaEntries['k'], '${bom}v');
+    });
+
     test('uses the first spec and environment meta section and every '
         'meta section', () {
       final info = _parse(

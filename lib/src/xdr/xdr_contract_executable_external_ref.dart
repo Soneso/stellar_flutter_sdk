@@ -22,8 +22,9 @@ class XdrContractExecutableExternalRef {
 
   /// The text [tag] spells, read as UTF-8.
   ///
-  /// Throws a FormatException when the bytes are not valid UTF-8.
-  String get tagString => utf8.decode(_tag);
+  /// Every leading byte order mark is kept. Throws a FormatException when the
+  /// bytes are not valid UTF-8.
+  String get tagString => XdrUtf8.decode(_tag);
 
   XdrContractExecutableExternalRef(this._executableOwner, this._tag);
 

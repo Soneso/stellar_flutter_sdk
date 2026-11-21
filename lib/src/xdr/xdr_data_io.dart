@@ -397,8 +397,13 @@ class XdrDataInputStream extends DataInput {
     return readBytes(length);
   }
 
+  /// Reads an XDR `string` and returns its text, as [XdrUtf8.decode] reads
+  /// the bytes: every leading byte order mark is kept.
+  ///
+  /// Throws a [FormatException] when the bytes are not valid UTF-8, and the
+  /// errors of [readStringBytes].
   String readString([int? maxLength]) {
-    return utf8.decode(readStringBytes(maxLength));
+    return XdrUtf8.decode(readStringBytes(maxLength));
   }
 
   /// Reads the element count of a variable-length XDR array and checks it
@@ -507,5 +512,61 @@ class XdrDataOutputStream extends DataOutput {
     for (int i = 0; i < a.length; i++) {
       writeDouble(a[i]);
     }
+  }
+}
+
+/// Reads and writes the text of XDR `string` values.
+///
+/// An XDR `string` carries arbitrary bytes. The SDK reads them as UTF-8 text
+/// only where a caller asks for text, and then strictly: bytes that are not
+/// valid UTF-8 are refused rather than replaced, and every leading byte order
+/// mark is part of the text, so the text encodes back to the same bytes.
+class XdrUtf8 {
+  XdrUtf8._();
+
+  static const int _byteOrderMark = 0xFEFF;
+
+  /// Returns the text [bytes] spell in UTF-8, with every leading byte order
+  /// mark kept as U+FEFF.
+  ///
+  /// Throws a [FormatException] when [bytes] are not valid UTF-8.
+  static String decode(List<int> bytes) {
+    final String text = utf8.decode(bytes);
+    final int marks = _leadingByteOrderMarks(bytes);
+    int kept = 0;
+    while (kept < text.length && text.codeUnitAt(kept) == _byteOrderMark) {
+      kept++;
+    }
+    return marks > kept
+        ? String.fromCharCodes(List<int>.filled(marks - kept, _byteOrderMark)) +
+              text
+        : text;
+  }
+
+  /// Returns the text [bytes] spell, as [decode] reads it, or null when they
+  /// are not valid UTF-8.
+  static String? tryDecode(List<int> bytes) {
+    try {
+      return decode(bytes);
+    } on FormatException {
+      return null;
+    }
+  }
+
+  /// Returns the UTF-8 encoding of [text].
+  static Uint8List encode(String text) => utf8.encode(text);
+
+  /// The number of byte order marks (`ef bb bf`) at the start of [bytes].
+  static int _leadingByteOrderMarks(List<int> bytes) {
+    int count = 0;
+    int index = 0;
+    while (index + 2 < bytes.length &&
+        bytes[index] == 0xEF &&
+        bytes[index + 1] == 0xBB &&
+        bytes[index + 2] == 0xBF) {
+      count++;
+      index += 3;
+    }
+    return count;
   }
 }

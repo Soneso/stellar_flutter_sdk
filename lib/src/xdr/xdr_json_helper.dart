@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import '../constants/stellar_protocol_constants.dart';
 import '../key_pair.dart' show StrKey;
 import '../util.dart' show Util;
+import 'xdr_data_io.dart' show XdrUtf8;
 
 /// Shared runtime for SEP-0051 (XDR-JSON) encoding and decoding.
 ///
@@ -338,25 +339,31 @@ class XdrJsonHelper {
     String? key,
     int? maxBytes,
   }) {
-    final List<int> bytes = utf8.encode(value);
+    return escapedBytes(
+      utf8.encode(value),
+      type: type,
+      key: key,
+      maxBytes: maxBytes,
+    );
+  }
+
+  /// Applies the escape ladder of SEP-0051 §String to raw bytes.
+  ///
+  /// Used for the opaque-backed types and the XDR `string` values the SDK
+  /// stores as bytes, which are never interpreted as UTF-8 here. Fails when
+  /// [maxBytes] is given and [bytes] are longer.
+  static String escapedBytes(
+    List<int> bytes, {
+    required String type,
+    String? key,
+    int? maxBytes,
+  }) {
     if (maxBytes != null && bytes.length > maxBytes) {
       fail(
         type,
         '${_at(key)}is ${bytes.length} bytes, longer than the declared maximum of $maxBytes',
       );
     }
-    return escapedBytes(bytes, type: type, key: key);
-  }
-
-  /// Applies the escape ladder of SEP-0051 §String to raw bytes.
-  ///
-  /// Used for the opaque-backed types, whose bytes are not text and are never
-  /// interpreted as UTF-8.
-  static String escapedBytes(
-    List<int> bytes, {
-    required String type,
-    String? key,
-  }) {
     final StringBuffer buffer = StringBuffer();
     for (final int byte in bytes) {
       if (byte < 0 || byte > 0xFF) {
@@ -661,9 +668,10 @@ class XdrJsonHelper {
 
   /// Reads a Dart string from escaped ASCII.
   ///
-  /// The escapes are resolved to bytes and the bytes decoded as UTF-8. Input
-  /// whose bytes are not valid UTF-8 is rejected: the binary decoder cannot
-  /// produce such a string either, so the two paths accept the same values.
+  /// The escapes are resolved to bytes and the bytes read as text by
+  /// [XdrUtf8.decode], which keeps every leading byte order mark. Input whose
+  /// bytes are not valid UTF-8 is rejected: the binary decoder refuses such a
+  /// string as text too, so the two paths accept the same values.
   static String readEscapedString(
     Object? value, {
     required String type,
@@ -677,7 +685,7 @@ class XdrJsonHelper {
       maxLength: maxBytes,
     );
     try {
-      return utf8.decode(bytes);
+      return XdrUtf8.decode(bytes);
     } on FormatException {
       fail(
         type,

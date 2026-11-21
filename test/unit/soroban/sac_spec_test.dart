@@ -85,8 +85,7 @@ List<int> _entryWithKind(int kind) {
 }
 
 /// An entry whose doc is the UTF-8 byte order mark EF BB BF, with one zero
-/// padding byte. It decodes, but its doc is dropped, so it re-encodes to
-/// different bytes.
+/// padding byte.
 final List<int> _bomEntry = [
   0x00, 0x00, 0x00, 0x00, // kind: SC_SPEC_ENTRY_FUNCTION_V0
   0x00, 0x00, 0x00, 0x03, // doc length
@@ -353,20 +352,19 @@ void main() {
       });
     });
 
-    test('a doc that starts with a byte order mark does not re-encode', () {
+    test('a doc that starts with a byte order mark keeps it', () {
       // The doc is EF BB BF with one zero padding byte.
       final bytes = Uint8List.fromList(_bomEntry);
-      expect(
-        () => SACClient.decodeSpec(base64Encode(bytes), _sha256Hex(bytes)),
-        throwsA(
-          isA<StateError>().having(
-            (e) => e.message,
-            'message',
-            'The embedded SAC spec does not decode at byte offset 0: '
-                'the entry re-encodes to different bytes',
-          ),
-        ),
+      final entries = SACClient.decodeSpec(
+        base64Encode(bytes),
+        _sha256Hex(bytes),
       );
+      expect(entries, hasLength(1));
+      expect(entries.single.functionV0!.doc, '\uFEFF');
+      expect(entries.single.functionV0!.name, 'balance');
+      final encoded = XdrDataOutputStream();
+      XdrSCSpecEntry.encode(encoded, entries.single);
+      expect(encoded.bytes, bytes);
     });
 
     test('an output without its final padding bytes fails at offset 0', () {
@@ -453,25 +451,6 @@ void main() {
         expect(
           error.message,
           'The embedded SAC spec has sha256 0c15c7a293dba569d8a304726d3571816a6f7dda83382874004d7977b31b2460, expected a88030febc66645d40b96deba8be16a6eb13c213768b4c1f9cd6278080d74669',
-        );
-      }
-      expect(thrown, isNotNull);
-      expect(
-        thrown.toString().split('\n').take(2).join('\n'),
-        contains('decodeSpec'),
-      );
-    });
-
-    test('a re-encoding mismatch starts at the check in decodeSpec', () {
-      final bytes = Uint8List.fromList(_bomEntry);
-      StackTrace? thrown;
-      try {
-        SACClient.decodeSpec(base64Encode(bytes), _sha256Hex(bytes));
-      } on StateError catch (error, stackTrace) {
-        thrown = stackTrace;
-        expect(
-          error.message,
-          'The embedded SAC spec does not decode at byte offset 0: the entry re-encodes to different bytes',
         );
       }
       expect(thrown, isNotNull);
