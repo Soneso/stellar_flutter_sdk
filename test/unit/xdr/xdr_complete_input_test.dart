@@ -188,23 +188,54 @@ void main() {
       final spec = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0)
         ..functionV0 = XdrSCSpecFunctionV0('', 'f', [], []);
       final tail = utf8.encode('tail');
+      final parts = [
+        (
+          'contractenvmetav0',
+          _encoded((s) => XdrSCEnvMetaEntry.encode(s, envMeta)),
+        ),
+        ('contractmetav0', _encoded((s) => XdrSCMetaEntry.encode(s, meta))),
+        ('contractspecv0', _encoded((s) => XdrSCSpecEntry.encode(s, spec))),
+      ];
+      // Each entry fills a wasm custom section that another section follows.
+      List<int> section(String name, List<int> content) {
+        final payload = [name.length, ...utf8.encode(name), ...content];
+        return [0, payload.length, ...payload];
+      }
+
       final info = SorobanContractParser.parseContractByteCode(
         Uint8List.fromList([
-          ...utf8.encode('contractenvmetav0'),
-          ..._encoded((s) => XdrSCEnvMetaEntry.encode(s, envMeta)),
-          ...tail,
-          ...utf8.encode('contractmetav0'),
-          ..._encoded((s) => XdrSCMetaEntry.encode(s, meta)),
-          ...tail,
-          ...utf8.encode('contractspecv0'),
-          ..._encoded((s) => XdrSCSpecEntry.encode(s, spec)),
-          ...tail,
+          ...[0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00],
+          for (final (name, entry) in parts) ...[
+            ...section(name, entry),
+            ...section('tail', tail),
+          ],
         ]),
       );
       expect(info.envProtocolVersion, 23);
       expect(info.metaEntries, {'k': 'v'});
       expect(info.specEntries.single.functionV0!.name, 'f');
       expect(SACClient.specEntries(), hasLength(30));
+      // The same entries behind bare markers, without wasm framing.
+      final markersOnly = [
+        for (final (name, entry) in parts) ...[
+          ...utf8.encode(name),
+          ...entry,
+          ...tail,
+        ],
+      ];
+      expect(
+        () => SorobanContractParser.parseContractByteCode(
+          Uint8List.fromList(markersOnly),
+        ),
+        throwsA(
+          isA<SorobanContractParserFailed>().having(
+            (e) => e.toString(),
+            'message',
+            'invalid byte code: the wasm magic at byte offset 0 is 636f6e74, '
+                'expected 0061736d.',
+          ),
+        ),
+      );
     });
   });
 
