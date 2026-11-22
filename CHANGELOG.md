@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SorobanClient.forClientOptions` opens Stellar Asset Contracts with the embedded spec.
 - `TimeBounds.minTime`, `TimeBounds.maxTime` and `TransactionPreconditions.minSeqAge` throw a `StateError` for a value that the platform `int` cannot hold, and `minSeqAge` refuses a negative value. Before this change, they returned a clamped or rounded number, and a negative age wrapped modulo 2^64 when another field selected V2 and was dropped otherwise.
 - Breaking: XDR-JSON and TxRep write and read an offer id as a signed 64-bit integer, as the XDR schema defines it. Offer id -16 is written as `"-16"`. The `offerID` field of `XdrManageSellOfferOp`, `XdrManageBuyOfferOp`, `XdrOfferEntry`, `XdrLedgerKeyOffer`, `XdrClaimOfferAtom` and `XdrClaimOfferAtomV0` is an `XdrInt64`; read its value with `.int64`. An offer id outside the int64 range is refused when read. Before this change, a negative offer id was written as a number above 2^63-1, and reading its signed form failed.
+- `Network` compares by `networkPassphrase`, with a matching `hashCode`.
 
 ### Fixed
 - `AbstractTransaction.fromEnvelopeXdr()`, `fromEnvelopeXdrString()` and `Operation.fromXdr()` read an inflation operation as the new `InflationOperation`, which encodes it unchanged. Before this change, they threw an exception, so a transaction with inflation could not be read or hashed.
