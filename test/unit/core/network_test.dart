@@ -150,5 +150,26 @@ void main() {
         expect(passphrase1, equals('Original'));
       });
     });
+
+    group('Equality and hashCode', () {
+      test(
+        'networks with the same passphrase are equal and share hashCode',
+        () {
+          final constructed = Network(
+            'Public Global Stellar Network ; September 2015',
+          );
+
+          expect(constructed, equals(Network.PUBLIC));
+          expect(Network.PUBLIC, equals(constructed));
+          expect(constructed.hashCode, equals(Network.PUBLIC.hashCode));
+          expect(constructed, isNot(equals(Network.TESTNET)));
+          expect(
+            constructed == 'Public Global Stellar Network ; September 2015',
+            isFalse,
+          );
+          expect({Network.PUBLIC, constructed}, hasLength(1));
+        },
+      );
+    });
   });
 }

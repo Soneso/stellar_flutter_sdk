@@ -1,3 +1,4 @@
+import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
@@ -6,6 +7,121 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import '../operations/sac_create_contract_v2_fixture.dart';
+
+http.Response _horizonSubmitSuccessResponse() {
+  final successJson = {
+    'hash': 'abc123def456',
+    'ledger': 12345,
+    'envelope_xdr': 'AAAAAgAAAAA=',
+    'result_xdr': 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+    'result_meta_xdr': 'AAAAAwAAAAA=',
+    'successful': true,
+    'id': 'abc123def456',
+    'paging_token': '12345-1',
+    'source_account':
+        'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+    'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+    'source_account_sequence': 100,
+    'max_fee': 1000,
+    'fee_charged': 100,
+    'operation_count': 1,
+    'created_at': '2024-01-15T10:30:00Z',
+    'fee_meta_xdr': 'AAAAAgAAAAA=',
+    'memo_type': 'none',
+    'signatures': [],
+    '_links': {
+      'self': {'href': '/transactions/abc123def456'},
+    },
+  };
+  return http.Response(json.encode(successJson), 200);
+}
+
+class _SignSubmitMocks {
+  final List<http.Request> publicRequests = [];
+  final List<http.Request> testnetRequests = [];
+  final List<http.Request> futurenetRequests = [];
+  final List<http.Request> callbackRequests = [];
+  late final URIScheme uriScheme;
+
+  _SignSubmitMocks() {
+    final originalPublic = StellarSDK.PUBLIC.httpClient;
+    final originalTestnet = StellarSDK.TESTNET.httpClient;
+    final originalFuturenet = StellarSDK.FUTURENET.httpClient;
+
+    final publicClient = MockClient((request) async {
+      publicRequests.add(request);
+      return _horizonSubmitSuccessResponse();
+    });
+    final testnetClient = MockClient((request) async {
+      testnetRequests.add(request);
+      return _horizonSubmitSuccessResponse();
+    });
+    final futurenetClient = MockClient((request) async {
+      futurenetRequests.add(request);
+      return _horizonSubmitSuccessResponse();
+    });
+    final callbackClient = MockClient((request) async {
+      callbackRequests.add(request);
+      return http.Response('ok', 200);
+    });
+
+    StellarSDK.PUBLIC.httpClient = publicClient;
+    StellarSDK.TESTNET.httpClient = testnetClient;
+    StellarSDK.FUTURENET.httpClient = futurenetClient;
+    uriScheme = URIScheme(httpClient: callbackClient);
+
+    addTearDown(() {
+      StellarSDK.PUBLIC.httpClient = originalPublic;
+      StellarSDK.TESTNET.httpClient = originalTestnet;
+      StellarSDK.FUTURENET.httpClient = originalFuturenet;
+      publicClient.close();
+      testnetClient.close();
+      futurenetClient.close();
+      callbackClient.close();
+    });
+  }
+
+  void clear() {
+    publicRequests.clear();
+    testnetRequests.clear();
+    futurenetRequests.clear();
+    callbackRequests.clear();
+  }
+}
+
+Uint8List _independentTxHash(XdrTransaction tx, String networkPassphrase) {
+  final networkId = sha256.convert(utf8.encode(networkPassphrase)).bytes;
+  final bodyStream = XdrDataOutputStream();
+  XdrTransaction.encode(bodyStream, tx);
+  final preimage = BytesBuilder()
+    ..add(networkId)
+    ..add(const [0, 0, 0, 2]) // ENVELOPE_TYPE_TX
+    ..add(bodyStream.bytes);
+  return Uint8List.fromList(sha256.convert(preimage.toBytes()).bytes);
+}
+
+Uint8List _independentFeeBumpHash(
+  XdrFeeBumpTransaction feeBumpTx,
+  String networkPassphrase,
+) {
+  final networkId = sha256.convert(utf8.encode(networkPassphrase)).bytes;
+  final bodyStream = XdrDataOutputStream();
+  XdrFeeBumpTransaction.encode(bodyStream, feeBumpTx);
+  final preimage = BytesBuilder()
+    ..add(networkId)
+    ..add(const [0, 0, 0, 5]) // ENVELOPE_TYPE_TX_FEE_BUMP
+    ..add(bodyStream.bytes);
+  return Uint8List.fromList(sha256.convert(preimage.toBytes()).bytes);
+}
+
+Transaction _buildUnsignedMemoTx(String sourceAccountId) {
+  return TransactionBuilder(Account(sourceAccountId, BigInt.from(100)))
+      .addOperation(
+        SetOptionsOperationBuilder().setHomeDomain('example.com').build(),
+      )
+      .addMemo(Memo.text('sep7-test'))
+      .build();
+}
 
 void main() {
   late KeyPair sourceKeyPair;
@@ -2421,6 +2537,409 @@ void main() {
 
         expect(result.response, isNotNull);
       });
+
+      test(
+        'submits without callback to Horizon host for PUBLIC, TESTNET, and FUTURENET',
+        () async {
+          final mocks = _SignSubmitMocks();
+          final signer = KeyPair.random();
+          final tx = _buildUnsignedMemoTx(signer.accountId);
+          final sep7Url = mocks.uriScheme.generateSignTransactionURI(
+            tx.toEnvelopeXdrBase64(),
+          );
+
+          final cases = [
+            (
+              network: null,
+              passphrase: 'Public Global Stellar Network ; September 2015',
+              host: 'horizon.stellar.org',
+              expectedList: mocks.publicRequests,
+              otherLists: [
+                mocks.testnetRequests,
+                mocks.futurenetRequests,
+                mocks.callbackRequests,
+              ],
+            ),
+            (
+              network: Network(
+                'Public Global Stellar Network ; September 2015',
+              ),
+              passphrase: 'Public Global Stellar Network ; September 2015',
+              host: 'horizon.stellar.org',
+              expectedList: mocks.publicRequests,
+              otherLists: [
+                mocks.testnetRequests,
+                mocks.futurenetRequests,
+                mocks.callbackRequests,
+              ],
+            ),
+            (
+              network: Network.PUBLIC,
+              passphrase: 'Public Global Stellar Network ; September 2015',
+              host: 'horizon.stellar.org',
+              expectedList: mocks.publicRequests,
+              otherLists: [
+                mocks.testnetRequests,
+                mocks.futurenetRequests,
+                mocks.callbackRequests,
+              ],
+            ),
+            (
+              network: Network.TESTNET,
+              passphrase: 'Test SDF Network ; September 2015',
+              host: 'horizon-testnet.stellar.org',
+              expectedList: mocks.testnetRequests,
+              otherLists: [
+                mocks.publicRequests,
+                mocks.futurenetRequests,
+                mocks.callbackRequests,
+              ],
+            ),
+            (
+              network: Network.FUTURENET,
+              passphrase: 'Test SDF Future Network ; October 2022',
+              host: 'horizon-futurenet.stellar.org',
+              expectedList: mocks.futurenetRequests,
+              otherLists: [
+                mocks.publicRequests,
+                mocks.testnetRequests,
+                mocks.callbackRequests,
+              ],
+            ),
+          ];
+
+          for (final testCase in cases) {
+            mocks.clear();
+            final response = testCase.network == null
+                ? await mocks.uriScheme.signAndSubmitTransaction(
+                    sep7Url,
+                    signer,
+                  )
+                : await mocks.uriScheme.signAndSubmitTransaction(
+                    sep7Url,
+                    signer,
+                    network: testCase.network,
+                  );
+
+            expect(response.submitTransactionResponse, isNotNull);
+            expect(response.submitTransactionResponse!.success, isTrue);
+            expect(response.response, isNull);
+            expect(testCase.expectedList, hasLength(1));
+            for (final other in testCase.otherLists) {
+              expect(other, isEmpty);
+            }
+
+            final request = testCase.expectedList.single;
+            expect(request.method, 'POST');
+            expect(request.url.host, testCase.host);
+            expect(request.url.path, '/transactions');
+
+            final postedXdr = request.bodyFields['tx'];
+            expect(postedXdr, isNotNull);
+            final envelope = XdrTransactionEnvelope.fromEnvelopeXdrString(
+              postedXdr!,
+            );
+            expect(envelope.discriminant, XdrEnvelopeType.ENVELOPE_TYPE_TX);
+            expect(envelope.v1!.signatures, hasLength(1));
+            final sig = envelope.v1!.signatures.single;
+            expect(sig.hint.signatureHint, signer.publicKey.sublist(28));
+            final expectedHash = _independentTxHash(
+              envelope.v1!.tx,
+              testCase.passphrase,
+            );
+            expect(
+              signer.verify(expectedHash, sig.signature.signature),
+              isTrue,
+            );
+          }
+        },
+      );
+
+      test(
+        'throws ArgumentError for custom network without callback and sends no request',
+        () async {
+          final mocks = _SignSubmitMocks();
+          final signer = KeyPair.random();
+          const customPassphrase = 'Custom Private Network ; 2026';
+          final tx = _buildUnsignedMemoTx(signer.accountId);
+          final sep7Url = mocks.uriScheme.generateSignTransactionURI(
+            tx.toEnvelopeXdrBase64(),
+          );
+
+          await expectLater(
+            mocks.uriScheme.signAndSubmitTransaction(
+              sep7Url,
+              signer,
+              network: Network(customPassphrase),
+            ),
+            throwsA(
+              isA<ArgumentError>().having(
+                (e) => e.toString(),
+                'toString',
+                allOf(contains(customPassphrase), contains('Horizon')),
+              ),
+            ),
+          );
+
+          expect(mocks.publicRequests, isEmpty);
+          expect(mocks.testnetRequests, isEmpty);
+          expect(mocks.futurenetRequests, isEmpty);
+          expect(mocks.callbackRequests, isEmpty);
+        },
+      );
+
+      test(
+        'posts envelope signed for custom network when url:https callback is set',
+        () async {
+          final mocks = _SignSubmitMocks();
+          final signer = KeyPair.random();
+          const customPassphrase = 'Custom Private Network ; 2026';
+          final tx = _buildUnsignedMemoTx(signer.accountId);
+          final sep7Url = mocks.uriScheme.generateSignTransactionURI(
+            tx.toEnvelopeXdrBase64(),
+            callback: 'url:https://example.com/custom-cb?session=42',
+          );
+
+          final result = await mocks.uriScheme.signAndSubmitTransaction(
+            sep7Url,
+            signer,
+            network: Network(customPassphrase),
+          );
+
+          expect(result.response, isNotNull);
+          expect(result.response!.statusCode, 200);
+          expect(result.submitTransactionResponse, isNull);
+          expect(mocks.callbackRequests, hasLength(1));
+          expect(mocks.publicRequests, isEmpty);
+          expect(mocks.testnetRequests, isEmpty);
+          expect(mocks.futurenetRequests, isEmpty);
+
+          final request = mocks.callbackRequests.single;
+          expect(request.method, 'POST');
+          expect(
+            request.url.toString(),
+            'https://example.com/custom-cb?session=42',
+          );
+          expect(
+            request.headers['Content-Type'],
+            'application/x-www-form-urlencoded',
+          );
+          final postedXdr = Uri.splitQueryString(request.body)['xdr'];
+          expect(postedXdr, isNotNull);
+          final envelope = XdrTransactionEnvelope.fromEnvelopeXdrString(
+            postedXdr!,
+          );
+          expect(envelope.v1!.signatures, hasLength(1));
+          final sig = envelope.v1!.signatures.single;
+          expect(sig.hint.signatureHint, signer.publicKey.sublist(28));
+          final customHash = _independentTxHash(
+            envelope.v1!.tx,
+            customPassphrase,
+          );
+          final publicHash = _independentTxHash(
+            envelope.v1!.tx,
+            'Public Global Stellar Network ; September 2015',
+          );
+          expect(signer.verify(customHash, sig.signature.signature), isTrue);
+          expect(signer.verify(publicHash, sig.signature.signature), isFalse);
+        },
+      );
+
+      test(
+        'throws ArgumentError for unsupported callback values without sending a request',
+        () async {
+          final mocks = _SignSubmitMocks();
+          final signer = KeyPair.random();
+          final encodedXdr = Uri.encodeComponent(
+            _buildUnsignedMemoTx(signer.accountId).toEnvelopeXdrBase64(),
+          );
+
+          final cases = [
+            (
+              uri: 'web+stellar:tx?xdr=$encodedXdr&callback=foo:bar',
+              expectedInError: 'foo:bar',
+            ),
+            (
+              uri: 'web+stellar:tx?xdr=$encodedXdr&callback=foo%3Abar',
+              expectedInError: 'foo:bar',
+            ),
+            (
+              uri: 'web+stellar:tx?xdr=$encodedXdr&callback=',
+              expectedInError: '""',
+            ),
+          ];
+
+          for (final testCase in cases) {
+            mocks.clear();
+            await expectLater(
+              mocks.uriScheme.signAndSubmitTransaction(
+                testCase.uri,
+                signer,
+                network: Network.TESTNET,
+              ),
+              throwsA(
+                isA<ArgumentError>().having(
+                  (e) => e.toString(),
+                  'toString',
+                  contains(testCase.expectedInError),
+                ),
+              ),
+            );
+
+            expect(mocks.publicRequests, isEmpty);
+            expect(mocks.testnetRequests, isEmpty);
+            expect(mocks.futurenetRequests, isEmpty);
+            expect(mocks.callbackRequests, isEmpty);
+          }
+        },
+      );
+
+      test('enforces HTTPS and localhost rules for url: callbacks', () async {
+        final mocks = _SignSubmitMocks();
+        final signer = KeyPair.random();
+        final xdr = _buildUnsignedMemoTx(
+          signer.accountId,
+        ).toEnvelopeXdrBase64();
+
+        final rejectedUrls = [
+          'http://example.com/cb',
+          'ftp://example.com/cb',
+          'http://user@localhost/cb',
+          'https://',
+          'http://[::1',
+        ];
+
+        for (final badUrl in rejectedUrls) {
+          mocks.clear();
+          final sep7Url = mocks.uriScheme.generateSignTransactionURI(
+            xdr,
+            callback: 'url:$badUrl',
+          );
+          await expectLater(
+            mocks.uriScheme.signAndSubmitTransaction(
+              sep7Url,
+              signer,
+              network: Network.TESTNET,
+            ),
+            throwsA(
+              isA<ArgumentError>().having(
+                (e) => e.toString(),
+                'toString',
+                contains(badUrl),
+              ),
+            ),
+          );
+          expect(mocks.publicRequests, isEmpty);
+          expect(mocks.testnetRequests, isEmpty);
+          expect(mocks.futurenetRequests, isEmpty);
+          expect(mocks.callbackRequests, isEmpty);
+        }
+
+        final allowedLocalhostUrls = [
+          'http://localhost:8000/cb',
+          'http://127.0.0.1/cb',
+          'http://[::1]/cb',
+        ];
+
+        for (final goodUrl in allowedLocalhostUrls) {
+          mocks.clear();
+          final sep7Url = mocks.uriScheme.generateSignTransactionURI(
+            xdr,
+            callback: 'url:$goodUrl',
+          );
+          final result = await mocks.uriScheme.signAndSubmitTransaction(
+            sep7Url,
+            signer,
+            network: Network.TESTNET,
+          );
+          expect(result.response, isNotNull);
+          expect(result.response!.statusCode, 200);
+          expect(result.submitTransactionResponse, isNull);
+          expect(mocks.callbackRequests, hasLength(1));
+          expect(mocks.callbackRequests.single.url.toString(), goodUrl);
+          expect(mocks.publicRequests, isEmpty);
+          expect(mocks.testnetRequests, isEmpty);
+          expect(mocks.futurenetRequests, isEmpty);
+        }
+      });
+
+      test(
+        'submits fee bump without callback on Network.PUBLIC to horizon.stellar.org with one added outer signature',
+        () async {
+          final mocks = _SignSubmitMocks();
+          final source = KeyPair.random();
+          final feeAccount = KeyPair.random();
+          final addedSigner = KeyPair.random();
+
+          final inner = _buildUnsignedMemoTx(source.accountId);
+          inner.sign(source, Network.PUBLIC);
+
+          final feeBump = FeeBumpTransactionBuilder(
+            inner,
+          ).setBaseFee(200).setFeeAccount(feeAccount.accountId).build();
+          feeBump.sign(feeAccount, Network.PUBLIC);
+          final originalOuterSig = feeBump.signatures.single;
+
+          final sep7Url = mocks.uriScheme.generateSignTransactionURI(
+            feeBump.toEnvelopeXdrBase64(),
+          );
+
+          final result = await mocks.uriScheme.signAndSubmitTransaction(
+            sep7Url,
+            addedSigner,
+            network: Network.PUBLIC,
+          );
+
+          expect(result.submitTransactionResponse, isNotNull);
+          expect(result.submitTransactionResponse!.success, isTrue);
+          expect(result.response, isNull);
+          expect(mocks.publicRequests, hasLength(1));
+          expect(mocks.testnetRequests, isEmpty);
+          expect(mocks.futurenetRequests, isEmpty);
+          expect(mocks.callbackRequests, isEmpty);
+
+          final request = mocks.publicRequests.single;
+          expect(request.method, 'POST');
+          expect(request.url.host, 'horizon.stellar.org');
+          expect(request.url.path, '/transactions');
+
+          final postedXdr = request.bodyFields['tx'];
+          expect(postedXdr, isNotNull);
+          final envelope = XdrTransactionEnvelope.fromEnvelopeXdrString(
+            postedXdr!,
+          );
+          expect(
+            envelope.discriminant,
+            XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP,
+          );
+          final outerSigs = envelope.feeBump!.signatures;
+          expect(outerSigs, hasLength(2));
+          expect(
+            outerSigs[0].hint.signatureHint,
+            originalOuterSig.hint.signatureHint,
+          );
+          expect(
+            outerSigs[0].signature.signature,
+            originalOuterSig.signature.signature,
+          );
+          expect(
+            outerSigs[1].hint.signatureHint,
+            addedSigner.publicKey.sublist(28),
+          );
+          final expectedFeeBumpHash = _independentFeeBumpHash(
+            envelope.feeBump!.tx,
+            'Public Global Stellar Network ; September 2015',
+          );
+          expect(
+            addedSigner.verify(
+              expectedFeeBumpHash,
+              outerSigs[1].signature.signature,
+            ),
+            isTrue,
+          );
+          expect(envelope.feeBump!.tx.innerTx.v1!.signatures, hasLength(1));
+        },
+      );
     });
 
     group('Deprecated signURI Tests', () {

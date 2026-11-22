@@ -8,6 +8,7 @@ import '../../stellar_sdk.dart';
 import '../../transaction.dart';
 import '../../key_pair.dart';
 import '../../network.dart';
+import '../../smartaccount/oz/oz_validation.dart' show isLocalhostUrl;
 
 /// Implements utility methods for SEP-0007 - URI Scheme to facilitate delegated signing.
 ///
@@ -536,8 +537,8 @@ class URIScheme {
   /// Signs and submits a transaction from a SEP-0007 URI.
   ///
   /// Extracts the transaction from the provided [sep7TxUrl], signs it with [signerKeyPair],
-  /// and submits it either to the callback URL (if specified in the URI) or directly to the
-  /// Stellar network.
+  /// and submits it either to the callback URL (if specified in the URI) or directly to
+  /// Horizon for [network].
   ///
   /// **Parameters:**
   ///
@@ -548,11 +549,15 @@ class URIScheme {
   /// - [signerKeyPair] The keypair to use for signing the transaction (required). This should
   ///   be the user's keypair that they want to use to authorize the transaction.
   ///
-  /// - [network] Optional network to use for signing and submission. If omitted, defaults to
-  ///   the public Stellar network. Use `Network.TESTNET` for testnet transactions.
+  /// - [network] Optional network to use for signing and submission. Defaults to
+  ///   [Network.PUBLIC]. Without a `callback` parameter, direct Horizon submission supports
+  ///   [Network.PUBLIC] (`horizon.stellar.org`), [Network.TESTNET]
+  ///   (`horizon-testnet.stellar.org`), and [Network.FUTURENET]
+  ///   (`horizon-futurenet.stellar.org`), matched by passphrase. Any other
+  ///   network requires a `url:` callback and throws [ArgumentError] when no callback is set.
   ///
   /// **Returns:** A [SubmitUriSchemeTransactionResponse] containing either:
-  /// - `submitTransactionResponse`: If submitted directly to Stellar network
+  /// - `submitTransactionResponse`: If submitted directly to Horizon
   /// - `response`: If submitted to a callback URL
   ///
   /// **Throws:**
@@ -560,19 +565,28 @@ class URIScheme {
   /// - [ArgumentError] if [sep7TxUrl] operation type is not `tx`
   /// - [ArgumentError] if [sep7TxUrl] does not contain a valid `xdr` parameter
   /// - [ArgumentError] if the XDR cannot be parsed as a valid transaction
+  /// - [ArgumentError] if a `callback` parameter is present and does not start with `url:`
+  ///   (including an empty value)
+  /// - [ArgumentError] if the callback URL after `url:` does not parse as `https` with a
+  ///   non-empty host, or as `http` for `localhost`, `127.0.0.1`, or `[::1]` without userinfo
+  /// - [ArgumentError] if no `callback` parameter is present and [network] is not
+  ///   [Network.PUBLIC], [Network.TESTNET], or [Network.FUTURENET]
   /// - [ArgumentError] if the transaction type is unsupported
   /// - [AccountRequiresMemoException] if the transaction is submitted directly to
-  ///   the Stellar network, carries no memo, and a destination account requires
-  ///   one (SEP-29)
+  ///   Horizon, carries no memo, and a destination account requires one (SEP-29)
   ///
   /// **Behavior:**
   ///
-  /// 1. If the URI contains a `callback` parameter starting with `url:`, the signed transaction
-  ///    is POSTed to that URL with Content-Type `application/x-www-form-urlencoded` and the
-  ///    signed XDR in the `xdr` field.
+  /// 1. If the URI contains a `callback` parameter, it must start with `url:`, and the URL
+  ///    following `url:` must use `https` with a non-empty host, or `http` for `localhost`,
+  ///    `127.0.0.1`, or `[::1]` without userinfo. The signed transaction is POSTed to that
+  ///    URL with Content-Type `application/x-www-form-urlencoded` and the signed XDR in the
+  ///    `xdr` field. This works for any [network], including custom networks.
   ///
-  /// 2. If no `callback` parameter exists, the signed transaction is submitted directly to
-  ///    the Stellar network using the appropriate SDK (PUBLIC or TESTNET).
+  /// 2. If no `callback` parameter is present, the signed transaction is submitted directly
+  ///    to Horizon via [StellarSDK.PUBLIC], [StellarSDK.TESTNET], or [StellarSDK.FUTURENET]
+  ///    according to [network] (matched by passphrase). Custom networks throw [ArgumentError]
+  ///    before any request is sent because no Horizon URL is known for them.
   ///
   /// **Security Note:** This method does NOT verify the URI signature or origin domain.
   /// Wallets should validate the URI using [isValidSep7SignedUrl] before calling this method
@@ -644,14 +658,12 @@ class URIScheme {
       );
     }
 
-    absTransaction.sign(signerKeyPair, network ?? Network.PUBLIC);
-
+    final Network net = network ?? Network.PUBLIC;
     final String? callback =
-        parsedUrlResult.queryParameters.containsKey(callbackParameterName)
-        ? parsedUrlResult.queryParameters[callbackParameterName]
-        : null;
-    if (callback != null && callback.startsWith("url:")) {
-      final Uri serverURI = Uri.parse(callback.substring(4));
+        parsedUrlResult.queryParameters[callbackParameterName];
+    if (callback != null) {
+      final Uri serverURI = _parseAllowedCallback(callback);
+      absTransaction.sign(signerKeyPair, net);
       Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
       headers.putIfAbsent(
         "Content-Type",
@@ -671,10 +683,8 @@ class URIScheme {
           });
       return result;
     } else {
-      Network net = network ?? Network.PUBLIC;
-      StellarSDK sdk = net == Network.PUBLIC
-          ? StellarSDK.PUBLIC
-          : StellarSDK.TESTNET;
+      final StellarSDK sdk = _sdkForNetwork(net);
+      absTransaction.sign(signerKeyPair, net);
       if (absTransaction is Transaction) {
         SubmitTransactionResponse submitTransactionResponse = await sdk
             .submitTransaction(absTransaction);
@@ -697,6 +707,42 @@ class URIScheme {
         );
       }
     }
+  }
+
+  static Uri _parseAllowedCallback(String callback) {
+    if (!callback.startsWith('url:')) {
+      throw ArgumentError(
+        'Unsupported callback "$callback"; only url: callbacks are supported',
+        'sep7TxUrl',
+      );
+    }
+    final String callbackUrl = callback.substring(4);
+    final Uri? uri = Uri.tryParse(callbackUrl);
+    if (uri != null &&
+        ((uri.scheme == 'https' && uri.host.isNotEmpty) ||
+            isLocalhostUrl(callbackUrl))) {
+      return uri;
+    }
+    throw ArgumentError(
+      'Callback URL "$callbackUrl" must use https, or http for localhost, 127.0.0.1, or [::1] without userinfo',
+      'sep7TxUrl',
+    );
+  }
+
+  static StellarSDK _sdkForNetwork(Network network) {
+    if (network == Network.PUBLIC) {
+      return StellarSDK.PUBLIC;
+    }
+    if (network == Network.TESTNET) {
+      return StellarSDK.TESTNET;
+    }
+    if (network == Network.FUTURENET) {
+      return StellarSDK.FUTURENET;
+    }
+    throw ArgumentError(
+      'No Horizon URL is known for network passphrase "${network.networkPassphrase}"',
+      'network',
+    );
   }
 
   /// Signs a SEP-0007 URI by adding a signature parameter.
