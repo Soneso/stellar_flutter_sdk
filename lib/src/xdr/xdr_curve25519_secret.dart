@@ -20,7 +20,7 @@ class XdrCurve25519Secret {
     XdrDataOutputStream stream,
     XdrCurve25519Secret encodedCurve25519Secret,
   ) {
-    stream.write(encodedCurve25519Secret.key);
+    stream.writeFixedOpaque(encodedCurve25519Secret.key, 32);
   }
 
   static XdrCurve25519Secret decode(XdrDataInputStream stream) {
@@ -55,7 +55,12 @@ class XdrCurve25519Secret {
 
   /// Returns the SEP-0051 rendering of this XdrCurve25519Secret.
   Object? toXdrJsonValue() => <String, Object?>{
-    'key': XdrJsonHelper.hex(_key, type: 'XdrCurve25519Secret', key: 'key'),
+    'key': XdrJsonHelper.hex(
+      _key,
+      type: 'XdrCurve25519Secret',
+      key: 'key',
+      expectedLength: 32,
+    ),
   };
 
   /// Reads a XdrCurve25519Secret from its SEP-0051 rendering.

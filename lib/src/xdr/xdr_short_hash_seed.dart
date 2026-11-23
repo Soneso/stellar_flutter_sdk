@@ -20,7 +20,7 @@ class XdrShortHashSeed {
     XdrDataOutputStream stream,
     XdrShortHashSeed encodedShortHashSeed,
   ) {
-    stream.write(encodedShortHashSeed.seed);
+    stream.writeFixedOpaque(encodedShortHashSeed.seed, 16);
   }
 
   static XdrShortHashSeed decode(XdrDataInputStream stream) {
@@ -53,7 +53,12 @@ class XdrShortHashSeed {
 
   /// Returns the SEP-0051 rendering of this XdrShortHashSeed.
   Object? toXdrJsonValue() => <String, Object?>{
-    'seed': XdrJsonHelper.hex(_seed, type: 'XdrShortHashSeed', key: 'seed'),
+    'seed': XdrJsonHelper.hex(
+      _seed,
+      type: 'XdrShortHashSeed',
+      key: 'seed',
+      expectedLength: 16,
+    ),
   };
 
   /// Reads a XdrShortHashSeed from its SEP-0051 rendering.

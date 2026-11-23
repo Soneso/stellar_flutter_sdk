@@ -18,7 +18,7 @@ class XdrHash {
   set hash(Uint8List value) => this._hash = value;
 
   static void encode(XdrDataOutputStream stream, XdrHash encodedHash) {
-    stream.write(encodedHash.hash);
+    stream.writeFixedOpaque(encodedHash.hash, 32);
   }
 
   static XdrHash decode(XdrDataInputStream stream) {
@@ -41,17 +41,13 @@ class XdrHash {
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${TxRepHelper.bytesToHex(_hash)}');
+    lines.add('$prefix: ${TxRepHelper.bytesToHex(TxRepHelper.checkBytesExactLength(_hash, 32, prefix))}');
   }
 
   static XdrHash fromTxRep(Map<String, String> map, String prefix) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
-    Uint8List bytes = TxRepHelper.hexToBytes(raw);
-    if (bytes.length != 32) {
-      throw Exception('$prefix must be 32 bytes, ${bytes.length} given');
-    }
-    return XdrHash(bytes);
+    return XdrHash(TxRepHelper.checkBytesExactLength(TxRepHelper.hexToBytes(raw), 32, prefix));
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.
@@ -63,7 +59,7 @@ class XdrHash {
       fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrHash'));
 
   /// Returns the SEP-0051 rendering of the wrapped value.
-  Object? toXdrJsonValue() => XdrJsonHelper.hex(_hash, type: 'XdrHash');
+  Object? toXdrJsonValue() => XdrJsonHelper.hex(_hash, type: 'XdrHash', expectedLength: 32);
 
   /// Reads a XdrHash from the SEP-0051 rendering of its value.
   static XdrHash fromXdrJsonValue(Object? value) =>

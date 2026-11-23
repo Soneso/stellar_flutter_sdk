@@ -316,15 +316,23 @@ class XdrJsonHelper {
   /// Renders bytes as a lowercase hexadecimal string.
   ///
   /// Empty input renders as an empty string, which is the rendering of an
-  /// empty variable-length opaque field. [maxLength] bounds a variable-length
+  /// empty variable-length opaque field. [expectedLength] pins a fixed-length
+  /// field to its declared byte count, and [maxLength] bounds a variable-length
   /// field whose declaration carries a maximum.
   static String hex(
     Uint8List bytes, {
     required String type,
     String? key,
+    int? expectedLength,
     int? maxLength,
   }) {
-    _checkByteLength(bytes.length, type: type, key: key, maxLength: maxLength);
+    _checkByteLength(
+      bytes.length,
+      type: type,
+      key: key,
+      expectedLength: expectedLength,
+      maxLength: maxLength,
+    );
     return Util.bytesToHex(bytes);
   }
 
@@ -901,30 +909,55 @@ class XdrJsonHelper {
 
   /// Renders a four-byte asset code.
   ///
-  /// The code is padded with trailing NUL bytes to fill the field; the padding
-  /// is not part of the value, so it is dropped before the escape ladder runs.
-  /// A field of four NUL bytes renders as the empty string.
+  /// Input of 0 to four bytes is treated as zero-padded to four bytes; more
+  /// than four bytes throws a [FormatException]. Trailing NUL bytes are dropped
+  /// before the escape ladder runs, so an all-NUL or empty field renders as the
+  /// empty string.
   static String assetCode4(
     Uint8List bytes, {
     required String type,
     String? key,
-  }) => escapedBytes(_trimTrailingNuls(bytes, 0), type: type, key: key);
+  }) => _assetCode(
+    bytes,
+    type: type,
+    key: key,
+    width: _assetCode4Width,
+    minRendered: 0,
+  );
 
   /// Renders a twelve-byte asset code.
   ///
-  /// Trailing NUL bytes are dropped, then restored up to
-  /// [_assetCode12MinRendered]. An all-NUL field therefore renders as five
-  /// escaped NULs rather than as an empty string, and reads back as the twelve
-  /// bytes it came from.
+  /// Input of 0 to twelve bytes is treated as zero-padded to twelve bytes; more
+  /// than twelve bytes throws a [FormatException]. Trailing NUL bytes are
+  /// dropped, then restored up to [_assetCode12MinRendered]. An all-NUL or
+  /// empty field therefore renders as five escaped NULs rather than as an empty
+  /// string, and reads back as the twelve zero bytes it represents.
   static String assetCode12(
     Uint8List bytes, {
     required String type,
     String? key,
-  }) => escapedBytes(
-    _trimTrailingNuls(bytes, _assetCode12MinRendered),
+  }) => _assetCode(
+    bytes,
     type: type,
     key: key,
+    width: _assetCode12Width,
+    minRendered: _assetCode12MinRendered,
   );
+
+  static String _assetCode(
+    Uint8List bytes, {
+    required String type,
+    required String? key,
+    required int width,
+    required int minRendered,
+  }) {
+    _checkByteLength(bytes.length, type: type, key: key, maxLength: width);
+    return escapedBytes(
+      _trimTrailingNuls(bytes, minRendered),
+      type: type,
+      key: key,
+    );
+  }
 
   /// Reads a four-byte asset code, restoring the trailing NUL padding.
   static Uint8List readAssetCode4(
@@ -1034,15 +1067,22 @@ class XdrJsonHelper {
     );
   }
 
-  /// The bytes of [bytes] up to its last non-NUL, never fewer than [floor] and
-  /// never more than it was given.
+  /// The bytes of [bytes] up to its last non-NUL, padded with trailing NUL
+  /// bytes up to [floor] when shorter.
   static Uint8List _trimTrailingNuls(Uint8List bytes, int floor) {
     int end = bytes.length;
     while (end > 0 && bytes[end - 1] == 0) {
       end--;
     }
-    final int least = floor < bytes.length ? floor : bytes.length;
-    return Uint8List.sublistView(bytes, 0, end < least ? least : end);
+    if (end >= floor) {
+      return Uint8List.sublistView(bytes, 0, end);
+    }
+    if (floor <= bytes.length) {
+      return Uint8List.sublistView(bytes, 0, floor);
+    }
+    final Uint8List padded = Uint8List(floor);
+    padded.setRange(0, end, bytes);
+    return padded;
   }
 
   // ---------------------------------------------------------------------------

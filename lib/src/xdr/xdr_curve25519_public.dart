@@ -20,7 +20,7 @@ class XdrCurve25519Public {
     XdrDataOutputStream stream,
     XdrCurve25519Public encodedCurve25519Public,
   ) {
-    stream.write(encodedCurve25519Public.key);
+    stream.writeFixedOpaque(encodedCurve25519Public.key, 32);
   }
 
   static XdrCurve25519Public decode(XdrDataInputStream stream) {
@@ -55,7 +55,12 @@ class XdrCurve25519Public {
 
   /// Returns the SEP-0051 rendering of this XdrCurve25519Public.
   Object? toXdrJsonValue() => <String, Object?>{
-    'key': XdrJsonHelper.hex(_key, type: 'XdrCurve25519Public', key: 'key'),
+    'key': XdrJsonHelper.hex(
+      _key,
+      type: 'XdrCurve25519Public',
+      key: 'key',
+      expectedLength: 32,
+    ),
   };
 
   /// Reads a XdrCurve25519Public from its SEP-0051 rendering.

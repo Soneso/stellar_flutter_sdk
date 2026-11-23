@@ -20,7 +20,7 @@ class XdrHmacSha256Key {
     XdrDataOutputStream stream,
     XdrHmacSha256Key encodedHmacSha256Key,
   ) {
-    stream.write(encodedHmacSha256Key.key);
+    stream.writeFixedOpaque(encodedHmacSha256Key.key, 32);
   }
 
   static XdrHmacSha256Key decode(XdrDataInputStream stream) {
@@ -53,7 +53,12 @@ class XdrHmacSha256Key {
 
   /// Returns the SEP-0051 rendering of this XdrHmacSha256Key.
   Object? toXdrJsonValue() => <String, Object?>{
-    'key': XdrJsonHelper.hex(_key, type: 'XdrHmacSha256Key', key: 'key'),
+    'key': XdrJsonHelper.hex(
+      _key,
+      type: 'XdrHmacSha256Key',
+      key: 'key',
+      expectedLength: 32,
+    ),
   };
 
   /// Reads a XdrHmacSha256Key from its SEP-0051 rendering.

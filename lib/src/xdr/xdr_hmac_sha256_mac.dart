@@ -20,7 +20,7 @@ class XdrHmacSha256Mac {
     XdrDataOutputStream stream,
     XdrHmacSha256Mac encodedHmacSha256Mac,
   ) {
-    stream.write(encodedHmacSha256Mac.mac);
+    stream.writeFixedOpaque(encodedHmacSha256Mac.mac, 32);
   }
 
   static XdrHmacSha256Mac decode(XdrDataInputStream stream) {
@@ -53,7 +53,12 @@ class XdrHmacSha256Mac {
 
   /// Returns the SEP-0051 rendering of this XdrHmacSha256Mac.
   Object? toXdrJsonValue() => <String, Object?>{
-    'mac': XdrJsonHelper.hex(_mac, type: 'XdrHmacSha256Mac', key: 'mac'),
+    'mac': XdrJsonHelper.hex(
+      _mac,
+      type: 'XdrHmacSha256Mac',
+      key: 'mac',
+      expectedLength: 32,
+    ),
   };
 
   /// Reads a XdrHmacSha256Mac from its SEP-0051 rendering.
