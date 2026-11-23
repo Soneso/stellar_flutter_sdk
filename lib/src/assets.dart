@@ -5,6 +5,7 @@
 import 'dart:typed_data';
 
 import 'xdr/xdr.dart';
+import 'asset_code_bytes.dart';
 import 'key_pair.dart';
 import 'network.dart';
 import 'util.dart';
@@ -309,6 +310,7 @@ abstract class Asset {
   ///
   /// Throws:
   /// - [Exception] If XDR contains unknown or unsupported asset type
+  /// - [FormatException] If the asset code holds a byte above 0x7F
   ///
   /// Example:
   /// ```dart
@@ -323,17 +325,13 @@ abstract class Asset {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         return new AssetTypeNative();
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        String assetCode4 = Util.paddedByteArrayToString(
-          xdrAsset.alphaNum4!.assetCode,
-        );
+        String assetCode4 = readAssetCode(xdrAsset.alphaNum4!.assetCode);
         KeyPair issuer4 = KeyPair.fromXdrPublicKey(
           xdrAsset.alphaNum4!.issuer.accountID,
         );
         return AssetTypeCreditAlphaNum4(assetCode4, issuer4.accountId);
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        String assetCode12 = Util.paddedByteArrayToString(
-          xdrAsset.alphaNum12!.assetCode,
-        );
+        String assetCode12 = readAssetCode(xdrAsset.alphaNum12!.assetCode);
         KeyPair issuer12 = KeyPair.fromXdrPublicKey(
           xdrAsset.alphaNum12!.issuer.accountID,
         );
@@ -349,27 +347,34 @@ abstract class Asset {
   ///
   /// Unlike [fromXdr], this supports ASSET_TYPE_POOL_SHARE which is only valid
   /// for ChangeTrustAsset in the XDR spec (not plain Asset).
+  ///
+  /// Throws a [FormatException] for an asset code that holds a byte above 0x7F
+  /// and for a pool share whose fee is not 30, the only fee the network
+  /// accepts and [AssetTypePoolShare] writes.
   static Asset fromXdrChangeTrustAsset(XdrChangeTrustAsset xdrAsset) {
     switch (xdrAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         return AssetTypeNative();
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        String assetCode4 = Util.paddedByteArrayToString(
-          xdrAsset.alphaNum4!.assetCode,
-        );
+        String assetCode4 = readAssetCode(xdrAsset.alphaNum4!.assetCode);
         KeyPair issuer4 = KeyPair.fromXdrPublicKey(
           xdrAsset.alphaNum4!.issuer.accountID,
         );
         return AssetTypeCreditAlphaNum4(assetCode4, issuer4.accountId);
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        String assetCode12 = Util.paddedByteArrayToString(
-          xdrAsset.alphaNum12!.assetCode,
-        );
+        String assetCode12 = readAssetCode(xdrAsset.alphaNum12!.assetCode);
         KeyPair issuer12 = KeyPair.fromXdrPublicKey(
           xdrAsset.alphaNum12!.issuer.accountID,
         );
         return AssetTypeCreditAlphaNum12(assetCode12, issuer12.accountId);
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        int fee = xdrAsset.liquidityPool!.constantProduct!.fee.int32;
+        if (fee != StellarProtocolConstants.LIQUIDITY_POOL_FEE_V18) {
+          throw FormatException(
+            'Liquidity pool fee $fee is not '
+            '${StellarProtocolConstants.LIQUIDITY_POOL_FEE_V18}',
+          );
+        }
         XdrAsset a = xdrAsset.liquidityPool!.constantProduct!.assetA;
         XdrAsset b = xdrAsset.liquidityPool!.constantProduct!.assetB;
         return AssetTypePoolShare(
