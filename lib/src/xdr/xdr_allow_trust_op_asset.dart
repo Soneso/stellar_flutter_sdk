@@ -43,10 +43,10 @@ class XdrAllowTrustOpAsset {
     stream.writeInt(encodedAllowTrustOpAsset.discriminant.value);
     switch (encodedAllowTrustOpAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        stream.write(encodedAllowTrustOpAsset._assetCode4!);
+        stream.writeAssetCode(encodedAllowTrustOpAsset._assetCode4!, 4);
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        stream.write(encodedAllowTrustOpAsset._assetCode12!);
+        stream.writeAssetCode(encodedAllowTrustOpAsset._assetCode12!, 12);
         break;
       default:
         break;
@@ -95,12 +95,12 @@ class XdrAllowTrustOpAsset {
     switch (discriminant) {
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
         lines.add(
-          '$prefix.assetCode4: ${TxRepHelper.bytesToHex(_assetCode4!)}',
+          '$prefix.assetCode4: ${TxRepHelper.bytesToHex(TxRepHelper.padAssetCode(_assetCode4!, 4, '$prefix.assetCode4'))}',
         );
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
         lines.add(
-          '$prefix.assetCode12: ${TxRepHelper.bytesToHex(_assetCode12!)}',
+          '$prefix.assetCode12: ${TxRepHelper.bytesToHex(TxRepHelper.padAssetCode(_assetCode12!, 12, '$prefix.assetCode12'))}',
         );
         break;
       default:
@@ -118,13 +118,21 @@ class XdrAllowTrustOpAsset {
     XdrAllowTrustOpAsset result = XdrAllowTrustOpAsset(disc);
     switch (result.discriminant) {
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        result._assetCode4 = TxRepHelper.hexToBytes(
-          TxRepHelper.getValue(map, '$prefix.assetCode4') ?? '',
+        result._assetCode4 = TxRepHelper.checkBytesMaxLength(
+          TxRepHelper.hexToBytes(
+            TxRepHelper.getValue(map, '$prefix.assetCode4') ?? '',
+          ),
+          4,
+          '$prefix.assetCode4',
         );
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        result._assetCode12 = TxRepHelper.hexToBytes(
-          TxRepHelper.getValue(map, '$prefix.assetCode12') ?? '',
+        result._assetCode12 = TxRepHelper.checkBytesMaxLength(
+          TxRepHelper.hexToBytes(
+            TxRepHelper.getValue(map, '$prefix.assetCode12') ?? '',
+          ),
+          12,
+          '$prefix.assetCode12',
         );
         break;
       default:

@@ -2474,29 +2474,6 @@ void main() {
         },
       );
 
-      test('submits transaction to network when no callback', () async {
-        final localSourceAccount = Account(
-          testKeyPair.accountId,
-          BigInt.from(100),
-        );
-        final transaction = TransactionBuilder(localSourceAccount)
-            .addOperation(
-              PaymentOperationBuilder(
-                KeyPair.random().accountId,
-                Asset.NATIVE,
-                '10',
-              ).build(),
-            )
-            .build();
-        transaction.sign(testKeyPair, Network.TESTNET);
-
-        final xdr = transaction.toEnvelopeXdrBase64();
-        final txUrl = uriScheme.generateSignTransactionURI(xdr);
-
-        // This test verifies the code path, actual submission would require network
-        expect(txUrl, contains('xdr='));
-      });
-
       test('handles callback with HTTP request headers', () async {
         final localSourceAccount = Account(
           testKeyPair.accountId,

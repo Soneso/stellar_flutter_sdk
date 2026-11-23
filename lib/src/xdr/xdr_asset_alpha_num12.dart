@@ -26,7 +26,7 @@ class XdrAssetAlphaNum12 {
     XdrDataOutputStream stream,
     XdrAssetAlphaNum12 encodedAssetAlphaNum12,
   ) {
-    stream.write(encodedAssetAlphaNum12.assetCode);
+    stream.writeAssetCode(encodedAssetAlphaNum12.assetCode, 12);
     XdrAccountID.encode(stream, encodedAssetAlphaNum12.issuer);
   }
 
@@ -51,13 +51,19 @@ class XdrAssetAlphaNum12 {
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.assetCode: ${TxRepHelper.bytesToHex(_assetCode)}');
+    lines.add(
+      '$prefix.assetCode: ${TxRepHelper.bytesToHex(TxRepHelper.padAssetCode(_assetCode, 12, '$prefix.assetCode'))}',
+    );
     lines.add('$prefix.issuer: ${TxRepHelper.formatAccountId(_issuer)}');
   }
 
   static XdrAssetAlphaNum12 fromTxRep(Map<String, String> map, String prefix) {
-    Uint8List assetCode = TxRepHelper.hexToBytes(
-      TxRepHelper.getValue(map, '$prefix.assetCode') ?? '',
+    Uint8List assetCode = TxRepHelper.checkBytesMaxLength(
+      TxRepHelper.hexToBytes(
+        TxRepHelper.getValue(map, '$prefix.assetCode') ?? '',
+      ),
+      12,
+      '$prefix.assetCode',
     );
     XdrAccountID issuer = TxRepHelper.parseAccountId(
       TxRepHelper.getValue(map, '$prefix.issuer') ?? '',

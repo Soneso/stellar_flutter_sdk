@@ -5,6 +5,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../constants/stellar_protocol_constants.dart';
 import '../key_pair.dart' show StrKey;
 import '../muxed_account.dart' show MuxedAccount;
 import '../soroban/contract_address_guard.dart' show redactSecretSeeds;
@@ -324,6 +325,32 @@ class TxRepHelper {
     return value;
   }
 
+  /// Returns [value] after checking that its byte count equals [expected].
+  ///
+  /// Throws an [Exception] when [value] holds any other number of bytes.
+  static Uint8List checkBytesExactLength(
+    Uint8List value,
+    int expected,
+    String key,
+  ) {
+    if (value.length != expected) {
+      throw Exception('$key must be $expected bytes, ${value.length} given');
+    }
+    return value;
+  }
+
+  /// Returns [bytes] padded with trailing zero bytes to [length], throwing an
+  /// [Exception] when [bytes] holds more than [length] bytes.
+  static Uint8List padAssetCode(Uint8List bytes, int length, String key) {
+    checkBytesMaxLength(bytes, length, key);
+    if (bytes.length == length) {
+      return bytes;
+    }
+    final Uint8List padded = Uint8List(length);
+    padded.setAll(0, bytes);
+    return padded;
+  }
+
   static final _integerToken = RegExp(r'^[+-]?(?:[0-9]+|0[xX][0-9a-fA-F]+)$');
 
   static BigInt _parseInteger(
@@ -405,11 +432,19 @@ class TxRepHelper {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         return 'XLM';
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        String code = _assetCodeFromBytes(asset.alphaNum4!.assetCode);
+        String code = _assetCodeFromBytes(
+          asset.alphaNum4!.assetCode,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH,
+          'assetCode',
+        );
         String issuer = formatAccountId(asset.alphaNum4!.issuer);
         return '$code:$issuer';
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        String code = _assetCodeFromBytes(asset.alphaNum12!.assetCode);
+        String code = _assetCodeFromBytes(
+          asset.alphaNum12!.assetCode,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH,
+          'assetCode',
+        );
         String issuer = formatAccountId(asset.alphaNum12!.issuer);
         return '$code:$issuer';
       default:
@@ -431,18 +466,27 @@ class TxRepHelper {
     String code = parts[0].trim();
     String issuer = parts[1].trim();
     XdrAccountID issuerId = XdrAccountID.forAccountId(issuer);
+    int codeByteLength = utf8.encode(code).length;
 
-    if (code.length <= 4) {
+    if (codeByteLength <=
+        StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH) {
       XdrAsset result = XdrAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
       result.alphaNum4 = XdrAssetAlphaNum4(
-        _assetCodeToBytes(code, 4),
+        _assetCodeToBytes(
+          code,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH,
+        ),
         issuerId,
       );
       return result;
-    } else if (code.length <= 12) {
+    } else if (codeByteLength <=
+        StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH) {
       XdrAsset result = XdrAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
       result.alphaNum12 = XdrAssetAlphaNum12(
-        _assetCodeToBytes(code, 12),
+        _assetCodeToBytes(
+          code,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH,
+        ),
         issuerId,
       );
       return result;
@@ -460,11 +504,19 @@ class TxRepHelper {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         return 'XLM';
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        String code = _assetCodeFromBytes(asset.alphaNum4!.assetCode);
+        String code = _assetCodeFromBytes(
+          asset.alphaNum4!.assetCode,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH,
+          'assetCode',
+        );
         String issuer = formatAccountId(asset.alphaNum4!.issuer);
         return '$code:$issuer';
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        String code = _assetCodeFromBytes(asset.alphaNum12!.assetCode);
+        String code = _assetCodeFromBytes(
+          asset.alphaNum12!.assetCode,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH,
+          'assetCode',
+        );
         String issuer = formatAccountId(asset.alphaNum12!.issuer);
         return '$code:$issuer';
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
@@ -497,22 +549,31 @@ class TxRepHelper {
     String code = parts[0].trim();
     String issuer = parts[1].trim();
     XdrAccountID issuerId = XdrAccountID.forAccountId(issuer);
+    int codeByteLength = utf8.encode(code).length;
 
-    if (code.length <= 4) {
+    if (codeByteLength <=
+        StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH) {
       XdrChangeTrustAsset result = XdrChangeTrustAsset(
         XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4,
       );
       result.alphaNum4 = XdrAssetAlphaNum4(
-        _assetCodeToBytes(code, 4),
+        _assetCodeToBytes(
+          code,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH,
+        ),
         issuerId,
       );
       return result;
-    } else if (code.length <= 12) {
+    } else if (codeByteLength <=
+        StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH) {
       XdrChangeTrustAsset result = XdrChangeTrustAsset(
         XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12,
       );
       result.alphaNum12 = XdrAssetAlphaNum12(
-        _assetCodeToBytes(code, 12),
+        _assetCodeToBytes(
+          code,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH,
+        ),
         issuerId,
       );
       return result;
@@ -529,15 +590,29 @@ class TxRepHelper {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         return 'XLM';
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        String code = _assetCodeFromBytes(asset.alphaNum4!.assetCode);
+        String code = _assetCodeFromBytes(
+          asset.alphaNum4!.assetCode,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH,
+          'assetCode',
+        );
         String issuer = formatAccountId(asset.alphaNum4!.issuer);
         return '$code:$issuer';
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        String code = _assetCodeFromBytes(asset.alphaNum12!.assetCode);
+        String code = _assetCodeFromBytes(
+          asset.alphaNum12!.assetCode,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH,
+          'assetCode',
+        );
         String issuer = formatAccountId(asset.alphaNum12!.issuer);
         return '$code:$issuer';
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
-        return Util.bytesToHex(asset.liquidityPoolID!.hash);
+        return Util.bytesToHex(
+          checkBytesExactLength(
+            asset.liquidityPoolID!.hash,
+            StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES,
+            'liquidityPoolID',
+          ),
+        );
       default:
         throw Exception(
           'unsupported trustline asset type: ${asset.discriminant}',
@@ -578,22 +653,31 @@ class TxRepHelper {
     String code = parts[0].trim();
     String issuer = parts[1].trim();
     XdrAccountID issuerId = XdrAccountID.forAccountId(issuer);
+    int codeByteLength = utf8.encode(code).length;
 
-    if (code.length <= 4) {
+    if (codeByteLength <=
+        StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH) {
       XdrTrustlineAsset result = XdrTrustlineAsset(
         XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4,
       );
       result.alphaNum4 = XdrAssetAlphaNum4(
-        _assetCodeToBytes(code, 4),
+        _assetCodeToBytes(
+          code,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH,
+        ),
         issuerId,
       );
       return result;
-    } else if (code.length <= 12) {
+    } else if (codeByteLength <=
+        StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH) {
       XdrTrustlineAsset result = XdrTrustlineAsset(
         XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12,
       );
       result.alphaNum12 = XdrAssetAlphaNum12(
-        _assetCodeToBytes(code, 12),
+        _assetCodeToBytes(
+          code,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH,
+        ),
         issuerId,
       );
       return result;
@@ -659,9 +743,17 @@ class TxRepHelper {
   static String formatAllowTrustAsset(XdrAllowTrustOpAsset asset) {
     switch (asset.discriminant) {
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        return _assetCodeFromBytes(asset.assetCode4!);
+        return _assetCodeFromBytes(
+          asset.assetCode4!,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH,
+          'assetCode4',
+        );
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        return _assetCodeFromBytes(asset.assetCode12!);
+        return _assetCodeFromBytes(
+          asset.assetCode12!,
+          StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH,
+          'assetCode12',
+        );
       default:
         throw Exception(
           'unsupported allow trust asset type: ${asset.discriminant}',
@@ -671,17 +763,26 @@ class TxRepHelper {
 
   /// Parse an asset code string to an [XdrAllowTrustOpAsset].
   static XdrAllowTrustOpAsset parseAllowTrustAsset(String code) {
-    if (code.length <= 4) {
+    int codeByteLength = utf8.encode(code).length;
+    if (codeByteLength <=
+        StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH) {
       XdrAllowTrustOpAsset result = XdrAllowTrustOpAsset(
         XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4,
       );
-      result.assetCode4 = _assetCodeToBytes(code, 4);
+      result.assetCode4 = _assetCodeToBytes(
+        code,
+        StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH,
+      );
       return result;
-    } else if (code.length <= 12) {
+    } else if (codeByteLength <=
+        StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH) {
       XdrAllowTrustOpAsset result = XdrAllowTrustOpAsset(
         XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12,
       );
-      result.assetCode12 = _assetCodeToBytes(code, 12);
+      result.assetCode12 = _assetCodeToBytes(
+        code,
+        StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH,
+      );
       return result;
     } else {
       throw Exception('asset code too long: $code');
@@ -692,8 +793,14 @@ class TxRepHelper {
   // Private helpers
   // ---------------------------------------------------------------------------
 
-  /// Extract an asset code string from raw XDR bytes, stripping trailing nulls.
-  static String _assetCodeFromBytes(Uint8List bytes) {
+  /// Extract an asset code string from raw XDR bytes, checking [maxLength] and
+  /// stripping trailing nulls.
+  static String _assetCodeFromBytes(
+    Uint8List bytes,
+    int maxLength,
+    String key,
+  ) {
+    checkBytesMaxLength(bytes, maxLength, key);
     int end = bytes.length;
     while (end > 0 && bytes[end - 1] == 0) {
       end--;
@@ -705,9 +812,7 @@ class TxRepHelper {
   static Uint8List _assetCodeToBytes(String code, int length) {
     List<int> encoded = utf8.encode(code);
     Uint8List result = Uint8List(length);
-    for (int i = 0; i < encoded.length && i < length; i++) {
-      result[i] = encoded[i];
-    }
+    result.setAll(0, encoded);
     return result;
   }
 }

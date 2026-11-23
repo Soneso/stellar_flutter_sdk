@@ -478,6 +478,42 @@ class XdrDataOutputStream extends DataOutput {
     writeInt(length);
   }
 
+  /// Writes a fixed-length XDR opaque value of [expectedLength] bytes and pads
+  /// it to the next multiple of four.
+  ///
+  /// Throws a [RangeError] and writes nothing when [bytes] does not hold
+  /// [expectedLength] bytes.
+  void writeFixedOpaque(Uint8List bytes, int expectedLength) {
+    if (bytes.length != expectedLength) {
+      throw RangeError(
+        'XDR fixed opaque length ${bytes.length} does not match the declared '
+        'length of $expectedLength',
+      );
+    }
+    write(bytes);
+  }
+
+  /// Writes an XDR asset code field of [expectedLength] bytes, padding a
+  /// shorter code of 0 to [expectedLength] bytes with trailing zero bytes.
+  ///
+  /// Throws a [RangeError] and writes nothing when [bytes] holds more than
+  /// [expectedLength] bytes.
+  void writeAssetCode(Uint8List bytes, int expectedLength) {
+    if (bytes.length > expectedLength) {
+      throw RangeError(
+        'XDR asset code length ${bytes.length} exceeds the declared length '
+        'of $expectedLength',
+      );
+    }
+    if (bytes.length == expectedLength) {
+      write(bytes);
+      return;
+    }
+    final Uint8List padded = Uint8List(expectedLength);
+    padded.setAll(0, bytes);
+    write(padded);
+  }
+
   /// Writes [bytes] in the XDR `string` wire form: a four-byte length,
   /// the bytes themselves, and padding to the next multiple of four.
   ///

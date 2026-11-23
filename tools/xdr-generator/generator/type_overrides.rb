@@ -40,6 +40,12 @@ TYPE_OVERRIDES = {
   "XdrSCMap" => "List<XdrSCMapEntry>",
 }.freeze
 
+# Fixed-length opaque typedefs that hold zero-padded asset codes (0..N bytes on write).
+ASSET_CODE_TYPEDEFS = %w[
+  XdrAssetCode4
+  XdrAssetCode12
+].freeze
+
 # The 23 types whose generator output goes to *_base.dart files.
 # The hand-maintained wrapper files extend these base classes.
 BASE_WRAPPER_TYPES = %w[

@@ -42,10 +42,10 @@ class XdrPeerAddressIp {
     stream.writeInt(encodedPeerAddressIp.discriminant.value);
     switch (encodedPeerAddressIp.discriminant) {
       case XdrIPAddrType.IPv4:
-        stream.write(encodedPeerAddressIp._ipv4!);
+        stream.writeFixedOpaque(encodedPeerAddressIp._ipv4!, 4);
         break;
       case XdrIPAddrType.IPv6:
-        stream.write(encodedPeerAddressIp._ipv6!);
+        stream.writeFixedOpaque(encodedPeerAddressIp._ipv6!, 16);
         break;
       default:
         break;
@@ -101,6 +101,7 @@ class XdrPeerAddressIp {
             _ipv4!,
             type: 'XdrPeerAddressIp',
             key: 'i_pv4',
+            expectedLength: 4,
           ),
         };
       case 1:
@@ -109,6 +110,7 @@ class XdrPeerAddressIp {
             _ipv6!,
             type: 'XdrPeerAddressIp',
             key: 'i_pv6',
+            expectedLength: 16,
           ),
         };
     }
