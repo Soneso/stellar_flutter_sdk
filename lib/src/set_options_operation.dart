@@ -7,6 +7,9 @@ import 'key_pair.dart';
 import 'xdr/xdr.dart';
 import 'constants/stellar_protocol_constants.dart';
 
+/// The highest signer weight, since the XDR signer weight is a uint32.
+const int _maxSignerWeight = 0xFFFFFFFF;
+
 /// Configures account settings including flags, thresholds, signers, and account properties.
 ///
 /// The SetOptions operation is one of the most versatile operations in Stellar, allowing
@@ -171,7 +174,9 @@ class SetOptionsOperation extends Operation {
   /// - [highThreshold] Weight required for high threshold operations (0-255).
   /// - [homeDomain] Home domain for federation lookup (max 32 chars).
   /// - [signer] XdrSignerKey to add/update/remove.
-  /// - [signerWeight] Weight for the signer (0-255, 0 removes signer).
+  /// - [signerWeight] Weight for the signer, 0 to 2^32-1; the network accepts
+  ///   0 to 255, and 0 removes the signer. [toOperationBody] throws a
+  ///   [RangeError] for a weight outside 0 to 2^32-1.
   SetOptionsOperation(
     String? inflationDestination,
     int? clearFlags,
@@ -241,7 +246,7 @@ class SetOptionsOperation extends Operation {
   /// Use with signerWeight to manage account signers.
   XdrSignerKey? get signer => _signer;
 
-  /// Weight for the signer (0-255).
+  /// Weight for the signer, 0 to 2^32-1; the network accepts 0 to 255.
   ///
   /// Set to 0 to remove the signer from the account.
   int? get signerWeight => _signerWeight;
@@ -289,7 +294,14 @@ class SetOptionsOperation extends Operation {
       op.homeDomain = new XdrString32(this.homeDomain!);
     }
     if (signer != null) {
-      XdrUint32 weight = new XdrUint32(signerWeight! & 0xFF);
+      XdrUint32 weight = new XdrUint32(
+        RangeError.checkValueInInterval(
+          signerWeight!,
+          0,
+          _maxSignerWeight,
+          'signerWeight',
+        ),
+      );
       op.signer = new XdrSigner(this.signer!, weight);
     }
 
@@ -336,10 +348,7 @@ class SetOptionsOperation extends Operation {
       builder = builder.setHomeDomain(op.homeDomain!.string32);
     }
     if (op.signer != null) {
-      builder = builder.setSigner(
-        op.signer!.key,
-        op.signer!.weight.uint32 & 0xFF,
-      );
+      builder = builder.setSigner(op.signer!.key, op.signer!.weight.uint32);
     }
 
     return builder;
@@ -503,9 +512,12 @@ class SetOptionsOperationBuilder
   ///
   /// Parameters:
   /// - [signer] XdrSignerKey representing the signer.
-  /// - [weight] Weight of the signer (0-255). 0 removes the signer.
+  /// - [weight] Weight of the signer, 0 to 2^32-1; the network accepts 0 to
+  ///   255. 0 removes the signer.
   ///
   /// Returns: This builder instance for method chaining.
+  ///
+  /// Throws: [RangeError] if [weight] is outside 0 to 2^32-1.
   ///
   /// Example:
   /// ```dart
@@ -516,8 +528,9 @@ class SetOptionsOperationBuilder
   /// .setSigner(signerKey, 0)
   /// ```
   SetOptionsOperationBuilder setSigner(XdrSignerKey signer, int weight) {
+    RangeError.checkValueInInterval(weight, 0, _maxSignerWeight, 'weight');
     this._signer = signer;
-    _signerWeight = weight & 0xFF;
+    _signerWeight = weight;
     return this;
   }
 
