@@ -153,7 +153,7 @@ final List<(String, String, String)> _v1Cases = <(String, String, String)>[
   ),
 ];
 
-// (name, V0 envelope, the V1 form the import writes, hash).
+// (name, V0 envelope, equivalent V1 envelope, hash).
 final List<(String, String, String, String)>
 _v0Cases = <(String, String, String, String)>[
   (
@@ -388,13 +388,19 @@ void main() {
     }
 
     for (final (String name, String v0, String v1, String hash) in _v0Cases) {
-      test('a V0 envelope $name imports in its V1 form', () {
+      test('a V0 envelope $name re-encodes and hashes exactly', () {
         final AbstractTransaction tx =
             AbstractTransaction.fromEnvelopeXdrString(v0);
-        expect(tx.toEnvelopeXdrBase64(), v1);
+        expect(tx.toEnvelopeXdrBase64(), v0);
+        expect(
+          (tx as Transaction).toXdrBase64(),
+          XdrTransactionEnvelope.fromEnvelopeXdrString(
+            v1,
+          ).v1!.tx.toBase64EncodedXdrString(),
+        );
         expect(Util.bytesToHex(tx.hash(Network.TESTNET)), hash);
         if (name.contains('2ops')) {
-          expect((tx as Transaction).fee, 200);
+          expect(tx.fee, 200);
         }
         _expectXdrRoundTrip(v0);
         _expectSignatureOver(tx, hash);
