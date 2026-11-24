@@ -228,6 +228,7 @@ class Transaction extends AbstractTransaction {
   List<Operation> _mOperations;
   Memo? _mMemo;
   TransactionPreconditions? _mPreconditions;
+  bool _readAsV0 = false;
 
   XdrSorobanTransactionData? _sorobanTransactionData;
   XdrSorobanTransactionData? get sorobanTransactionData =>
@@ -472,6 +473,7 @@ class Transaction extends AbstractTransaction {
       mMemo,
       preconditions,
     );
+    transaction._readAsV0 = true;
 
     for (XdrDecoratedSignature? signature in envelope.signatures) {
       if (signature != null) {
@@ -483,8 +485,19 @@ class Transaction extends AbstractTransaction {
   }
 
   /// Generates a TransactionEnvelope XDR object for this transaction.
+  /// Preserves a V0 envelope while the current preconditions and Soroban data
+  /// fit V0; otherwise generates a V1 envelope.
   /// This transaction needs to have at least one signature.
   XdrTransactionEnvelope toEnvelopeXdr() {
+    if (_readAsV0 &&
+        _sorobanTransactionData == null &&
+        !(_mPreconditions?.hasV2() ?? false)) {
+      return XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0)
+        ..v0 = XdrTransactionV0Envelope(
+          toV0Xdr(),
+          List<XdrDecoratedSignature>.from(_mSignatures),
+        );
+    }
     XdrTransactionEnvelope xdrTe = XdrTransactionEnvelope(
       XdrEnvelopeType.ENVELOPE_TYPE_TX,
     );
@@ -809,7 +822,10 @@ class FeeBumpTransaction extends AbstractTransaction {
     XdrFeeBumpTransactionInnerTx innerXDR = XdrFeeBumpTransactionInnerTx(
       XdrEnvelopeType.ENVELOPE_TYPE_TX,
     );
-    innerXDR.v1 = _mInner.toEnvelopeXdr().v1;
+    innerXDR.v1 = XdrTransactionV1Envelope(
+      _mInner.toXdr(),
+      List<XdrDecoratedSignature>.from(_mInner.signatures),
+    );
 
     return XdrFeeBumpTransaction(
       _mFeeAccount.toXdr(),
