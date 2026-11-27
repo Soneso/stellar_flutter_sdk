@@ -1,7 +1,7 @@
 # SEP-0047 (Contract Interface Discovery) Compatibility Matrix
 
-**Generated:** 2026-11-16 15:32:02  
-**SDK Version:** 3.12.0  
+**Generated:** 2026-11-27 13:15:32  
+**SDK Version:** 3.13.0  
 **SEP Version:** 0.1.0  
 **SEP Status:** Draft  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0047.md
@@ -66,7 +66,7 @@ A standard for a contract to indicate which SEPs it claims to implement.
 | Field | Required | Status | SDK Property | Description |
 |-------|----------|--------|--------------|-------------|
 | `comma_separated_list` | ✓ | ✅ | `_parseSupportedSeps` | Parse comma-separated list of SEP numbers from meta value |
-| `multiple_sep_entries` | ✓ | ✅ | `_parseSupportedSeps` | Support for multiple "sep" meta entries with combined values |
+| `multiple_sep_entries` | ✓ | ✅ | `_appendSepValue` | Support for multiple "sep" meta entries with combined values |
 | `sep_meta_key` | ✓ | ✅ | `_parseSupportedSeps` | Support for "sep" meta entry key to indicate implemented SEPs |
 
 ## Implementation Gaps
