@@ -14,7 +14,6 @@ flutter test test/unit/
 flutter test test/unit/core/key_pair_test.dart --plain-name 'KeyPair fromSecretSeed creates keypair from known seed'
 ```
 
-- `flutter pub get` and `flutter test` rewrite the tracked `analysis_options.yaml`, `example/analysis_options.yaml` and the two files under `example/ios/Flutter/`; restore them with `git checkout --` before every commit and never stage them.
 - The unit suite (about 12,000 tests) takes 40 to 70 seconds. It needs loopback sockets, because three Soroban test files bind a local server, and one test resolves a `.invalid` host and expects the failure.
 - The tree is `dart format` clean. Format the files you change, never the whole tree: the generated paths are formatted by their Make targets, and `example/lib` follows the style of the example package's own Dart floor.
 - CI analyzes `lib/` only. `test/` carries a few analyzer findings; a change does not add to them.

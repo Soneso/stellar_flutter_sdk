@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- The analysis options and the example's iOS configuration carry the lines Flutter writes on `flutter pub get`, so dependency setup leaves the checkout unchanged.
+
 ## [3.13.0] - 2026-11-27
 
 Migration guide: [documentation/migration/3.13.0.md](documentation/migration/3.13.0.md)
