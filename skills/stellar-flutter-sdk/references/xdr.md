@@ -172,6 +172,8 @@ if (u128 != null) {
 XdrUInt256Parts? u256 = val.u256;
 ```
 
+The `str` and `sym` getters throw a `FormatException` for bytes that are not valid UTF-8; `strBytes` and `symBytes` hold the bytes.
+
 **Common mistake:** Writing `val.u32 == 42` — this compares an `XdrUint32?` to `int`, which is always false. Use `val.u32?.uint32 == 42`.
 
 ## XdrSCVal Base64 Serialization

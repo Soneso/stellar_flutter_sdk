@@ -342,8 +342,9 @@ Returns `false` if: `signerPublicKey` is invalid, URI is invalid, URI has no `si
 
 `signAndSubmitTransaction()` extracts the transaction from a `web+stellar:tx?` URI, signs it, and submits it either to a callback URL or directly to the Stellar network. Direct submission to the network runs the SEP-29 memo-required check (see [sep-29.md](sep-29.md)), so the method can throw `AccountRequiresMemoException` when the transaction has no memo and a destination account requires one. The method has no `skipMemoRequiredCheck` parameter.
 
-- If `callback` parameter starts with `url:`, it POSTs signed XDR to that URL with `Content-Type: application/x-www-form-urlencoded`, body `xdr=<url-encoded-xdr>`.
-- Otherwise, it submits directly to the Stellar network (PUBLIC or TESTNET based on `network` param).
+- If `callback` parameter starts with `url:`, it POSTs signed XDR to that URL with `Content-Type: application/x-www-form-urlencoded`, body `xdr=<url-encoded-xdr>`. That URL must use `https` with a host, or `http` to `localhost`, `127.0.0.1`, or `[::1]` without userinfo.
+- A `callback` without `url:`, including an empty one, throws `ArgumentError` and sends nothing.
+- Without a `callback`, it submits to the Horizon of the public, testnet, or futurenet network, matched by passphrase, and throws `ArgumentError` for any other network.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -394,7 +395,7 @@ try {
     print('Callback body: ${httpResponse.body}');
   }
 } on ArgumentError catch (e) {
-  // URI is invalid, missing xdr param, XDR cannot be parsed, or unsupported tx type
+  // Invalid URI, XDR, callback or transaction type, or an unsupported network
   print('Bad URI: $e');
 } catch (e) {
   // HTTP error (callback) or Horizon error (network submission)
@@ -407,6 +408,9 @@ try {
 - Operation type is not `tx`
 - `xdr` parameter is absent
 - XDR cannot be parsed as a valid transaction
+- `callback` does not start with `url:`, including an empty value
+- The URL after `url:` is neither `https` with a host nor `http` to `localhost`, `127.0.0.1`, or `[::1]` without userinfo
+- No `callback` is set and `network` is not public, testnet, or futurenet
 
 Direct network submission runs the SEP-29 memo-required check and can throw `AccountRequiresMemoException`.
 
@@ -552,7 +556,7 @@ if (txResponse != null) {
   txResponse.envelopeXdr;       // String?, signed envelope XDR
   txResponse.resultXdr;         // String?, result XDR
   txResponse.extras?.resultCodes?.transactionResultCode; // String? e.g. "tx_failed"
-  txResponse.extras?.resultCodes?.operationsResultCodes; // List<String>?
+  txResponse.extras?.resultCodes?.operationsResultCodes; // List<String?>?
 }
 
 // Callback URL submission:
@@ -740,7 +744,7 @@ final uri = uriScheme.generateSignTransactionURI(
   xdrBase64,
   callback: 'https://example.com/submit',  // missing "url:" prefix
 );
-// callback is ignored; falls through to direct network submission
+// signAndSubmitTransaction() throws an ArgumentError and sends nothing
 
 // CORRECT: prefix with "url:"
 final uri = uriScheme.generateSignTransactionURI(

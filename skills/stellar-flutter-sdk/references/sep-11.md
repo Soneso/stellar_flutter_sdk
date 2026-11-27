@@ -243,7 +243,7 @@ tx.memo.type: MEMO_RETURN
 tx.memo.retHash: 0102030405... # 32 bytes, lowercase hex (64 hex chars)
 ```
 
-> The SDK writes memo text in double quotes with SEP-11 escapes: `\"`, `\\`, `\n`, `\r`, `\t`, and `\xNN` for each UTF-8 byte of a non-ASCII or non-printable character. The parser reverses them; it also reads the `\uNNNN` form and unquoted text.
+> The SDK writes memo text in double quotes with SEP-11 escapes: `\"`, `\\`, `\n`, `\r`, `\t`, and `\xNN` for every other byte outside printable ASCII, also for bytes that are not valid UTF-8. The parser reverses them; it also reads the `\uNNNN` form and unquoted text.
 
 ### Asset format
 
@@ -858,7 +858,7 @@ String xdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
 **Memo text uses SEP-11 escapes, not JSON escapes:**
 
 ```
-# The SDK writes double quotes, C-style escapes and \xNN per UTF-8 byte of a non-ASCII character
+# The SDK writes double quotes, C-style escapes and \xNN for every other byte outside printable ASCII
 tx.memo.text: "Gr\xc3\xbc\xc3\x9fe \"quoted\""
 ```
 

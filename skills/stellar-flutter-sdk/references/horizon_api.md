@@ -116,7 +116,8 @@ for (var tx in txs.records) {
   Memo? memo = tx.memo;
   if (memo != null && memo is! MemoNone) {
     if (memo is MemoText) {
-      print('  Memo (text): ${memo.text}');
+      // memo.text throws a FormatException for bytes that are not valid UTF-8
+      print('  Memo (text): ${XdrUtf8.tryDecode(memo.bytes) ?? memo.bytes}');
     } else if (memo is MemoId) {
       print('  Memo (id): ${memo.getId()}');
     } else if (memo is MemoHash) {

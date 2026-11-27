@@ -334,7 +334,7 @@ if (uriScheme.verifySignature(uri, signingKey)) {
 
 ## Signing and submitting transactions
 
-Use `signAndSubmitTransaction()` to sign a transaction from a URI and submit it. The method handles submission to either a callback URL or directly to the Stellar network. Direct submission to the network runs the [SEP-29](sep-29.md) memo-required check, so the method can throw `AccountRequiresMemoException` when the transaction has no memo and a destination account requires one. The method has no `skipMemoRequiredCheck` parameter.
+Use `signAndSubmitTransaction()` to sign a transaction from a URI and submit it. With a `url:` callback in the URI, the method posts to that URL, which must use https with a host, or http to `localhost`, `127.0.0.1`, or `[::1]` without userinfo. Without a callback, it submits to the Horizon of the public, testnet, or futurenet network, matched by passphrase. Any other callback, or any other network without a callback, throws an `ArgumentError` before the method sends anything. Direct submission to the network runs the [SEP-29](sep-29.md) memo-required check, so the method can throw `AccountRequiresMemoException` when the transaction has no memo and a destination account requires one. The method has no `skipMemoRequiredCheck` parameter.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -492,7 +492,7 @@ try {
     if (!txResponse.success) {
       // Transaction was submitted but failed
       print('Transaction failed: ${txResponse.extras?.resultCodes?.transactionResultCode}');
-      List<String>? opCodes = txResponse.extras?.resultCodes?.operationsResultCodes;
+      List<String?>? opCodes = txResponse.extras?.resultCodes?.operationsResultCodes;
       if (opCodes != null) {
         for (int i = 0; i < opCodes.length; i++) {
           print('  Operation $i: ${opCodes[i]}');
@@ -501,7 +501,7 @@ try {
     }
   }
 } on ArgumentError catch (e) {
-  // URI is invalid, missing xdr, XDR cannot be parsed
+  // Invalid URI, XDR, callback or transaction type, or an unsupported network
   print('Bad URI: $e');
 } catch (e) {
   // HTTP error (callback) or Horizon error (network submission)

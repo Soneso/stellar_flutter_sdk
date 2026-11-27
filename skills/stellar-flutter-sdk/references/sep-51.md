@@ -434,7 +434,7 @@ Encoding raises the same type. A value outside its declared range, a field longe
 
 ## Limitations
 
-**Text members carry UTF-8 only.** An XDR `string<>` is a Dart `String`, so its bytes are text, and a document whose escapes resolve to bytes that are not valid UTF-8 is refused. The binary decoder refuses the same bytes, so such a value cannot reach the JSON path from a real envelope. Opaque-backed members, including asset codes and every fixed opaque field, hold raw bytes and are unaffected.
+**Most text members carry UTF-8 only.** Memo text, `SCV_STRING` and `SCV_SYMBOL` values, contract function names, and executable tags keep their bytes, also when they are not valid UTF-8. XDR-JSON writes such bytes as `\xNN` escapes and reads them back unchanged. Every other XDR `string<>` is a Dart `String`, so its bytes are text, and a document whose escapes resolve to bytes that are not valid UTF-8 is refused. The binary decoder refuses the same bytes, so such a value cannot reach the JSON path from a real envelope. Opaque-backed members, including asset codes and every fixed opaque field, hold raw bytes and are unaffected.
 
 ```dart
 // 0xc3 alone is not valid UTF-8

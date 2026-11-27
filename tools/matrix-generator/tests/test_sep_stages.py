@@ -35,6 +35,52 @@ class SepStagesTest(unittest.TestCase):
             with self.assertRaises(FileNotFoundError):
                 analyzer.analyze()
 
+    def test_every_source_detection_matches_repository_source(self):
+        root = TOOLS_DIR.parent.parent
+        detections = SEPAnalyzer.sep_51_detections()
+        sources = {
+            path: (root / path).read_text(encoding='utf-8')
+            for path, _, _ in detections.values()
+        }
+        with redirect_stdout(io.StringIO()):
+            definition = SEPParser('0051').parse_sep_51()
+        features = SEPAnalyzer(str(root), '0051').map_sep_51_features(sources, definition)
+        entries = {name: entry for section in features.values() for name, entry in section.items()}
+        self.assertEqual(set(entries), set(detections))
+        for name, entry in entries.items():
+            with self.subTest(feature=name):
+                self.assertTrue(entry['implemented'], detections[name])
+
+        for number, paths, count in ((29, ('stellar_sdk', 'manage_data_operation'), 18),
+                                     (53, ('key_pair',), 8)):
+            with redirect_stdout(io.StringIO()):
+                definition = getattr(SEPParser(f'{number:04d}'), f'parse_sep_{number}')()
+            contents = [(root / f'lib/src/{path}.dart').read_text(encoding='utf-8') for path in paths]
+            analyzer = SEPAnalyzer(str(root), f'{number:04d}')
+            features = getattr(analyzer, f'map_sep_{number}_features')(*contents, definition)
+            entries = {name: entry for section in features.values() for name, entry in section.items()}
+            self.assertEqual(len(entries), count)
+            for name, entry in entries.items():
+                with self.subTest(sep=number, feature=name):
+                    self.assertTrue(entry['implemented'], name)
+
+    def test_sep_51_fixed_opaque_detection_allows_trailing_arguments(self):
+        root = TOOLS_DIR.parent.parent
+        path = 'lib/src/xdr/xdr_hash.dart'
+        content = (
+            "XdrJsonHelper.hex(_hash, type: 'XdrHash', expectedLength: 32)\n"
+            "XdrJsonHelper.readHex(value, type: 'XdrHash', expectedLength: 32)"
+        )
+        with redirect_stdout(io.StringIO()):
+            definition = SEPParser('0051').parse_sep_51()
+        analyzer = SEPAnalyzer(str(root), '0051')
+        for call in ("hex(_hash", "readHex(value"):
+            with self.subTest(call=call):
+                original = f"XdrJsonHelper.{call}, type: 'XdrHash', expectedLength: 32)"
+                sources = {path: content.replace(original, original[:-1] + ', extra: true)')}
+                features = analyzer.map_sep_51_features(sources, definition)
+                self.assertTrue(features['xdr_data_types']['opaque_fixed']['implemented'])
+
     def test_sep_06_status_values_cite_the_status_property(self):
         comparator = SEPComparator('definition.json', 'analysis.json', '0006')
         comparator.sdk_data = {'implemented': True, 'implemented_features': {'transaction_status_values': {

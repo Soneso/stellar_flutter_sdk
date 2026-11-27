@@ -492,9 +492,9 @@ try {
 
 ## Limitations
 
-### Text members carry UTF-8 only
+### Most text members carry UTF-8 only
 
-An XDR `string<>` is a Dart `String`, so its bytes are text. A document whose escapes resolve to bytes that are not valid UTF-8 is refused:
+Memo text, `SCV_STRING` and `SCV_SYMBOL` values, contract function names, and executable tags keep their bytes, also when they are not valid UTF-8. XDR-JSON writes such bytes as `\xNN` escapes and reads them back unchanged. Every other XDR `string<>` is a Dart `String`, so its bytes are text. A document whose escapes resolve to bytes that are not valid UTF-8 is refused for such a member:
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -510,7 +510,7 @@ try {
 print(XdrDataValue.fromXdrJson('"c3"').toXdrJson()); // "c3"
 ```
 
-This limitation is exactly the one the binary path already has. The XDR decoder throws on a non-UTF-8 `string<>` too, so such a value cannot reach the JSON path from a real envelope. The JSON path accepts what the binary path accepts, no more and no less. Opaque-backed members, including asset codes and every fixed opaque field, hold raw bytes and are unaffected.
+This limitation is exactly the one the binary path already has. The XDR decoder throws on these bytes in such a member too, so the value cannot reach the JSON path from a real envelope. The JSON path accepts what the binary path accepts, no more and no less. Opaque-backed members, including asset codes and every fixed opaque field, hold raw bytes and are unaffected.
 
 ### Divergences from the reference implementation
 
