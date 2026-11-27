@@ -556,7 +556,7 @@ if (txResponse != null) {
   txResponse.envelopeXdr;       // String?, signed envelope XDR
   txResponse.resultXdr;         // String?, result XDR
   txResponse.extras?.resultCodes?.transactionResultCode; // String? e.g. "tx_failed"
-  txResponse.extras?.resultCodes?.operationsResultCodes; // List<String>?
+  txResponse.extras?.resultCodes?.operationsResultCodes; // List<String?>?
 }
 
 // Callback URL submission:
