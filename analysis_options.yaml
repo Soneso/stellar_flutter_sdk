@@ -1,3 +1,6 @@
 analyzer:
   exclude:
     - tools/xdr-generator/test/snapshots/**
+    - build/**
+    - android/**
+    - ios/**

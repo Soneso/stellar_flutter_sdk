@@ -16,7 +16,7 @@ Open a feature request issue and describe the use case and the proposed behavior
 - Chrome for the browser suites, and Node with WasmGC support for the smoke test.
 - For the XDR generator: Docker, or Ruby with Bundler for the setup without Docker. For the SEP-51 tools: Python 3 and Rust's cargo for the pinned reference CLI. For the compatibility matrices: Python 3, network, and the sibling clones the generator README names; a GitHub token raises the API rate limit. Each tool's README under `tools/` names its requirements.
 
-Run the unit suite as `AGENTS.md` describes before you change anything, so you know the baseline is green on your machine. The toolchain rewrites a few tracked files on every run; `AGENTS.md` names them and how to restore them.
+Run the unit suite as `AGENTS.md` describes before you change anything, so you know the baseline is green on your machine.
 
 ## Submitting a change
 
