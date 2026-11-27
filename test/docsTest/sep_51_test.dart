@@ -483,9 +483,10 @@ void main() {
     );
   });
 
-  test('sep-51: Non-UTF-8 bytes cannot reach a text member', () {
+  test('sep-51: Non-UTF-8 bytes cannot reach a Dart String member', () {
     // Snippet from sep-51.md "Limitations"
-    // A `string<>` member is Dart text, and 0xc3 alone is not valid UTF-8.
+    // `data_name` is a `string64`, held as a Dart `String`, and 0xc3 alone is
+    // not valid UTF-8.
     expect(
       () => XdrManageDataOp.fromXdrJson(
         r'{"data_name":"\\xc3","data_value":null}',

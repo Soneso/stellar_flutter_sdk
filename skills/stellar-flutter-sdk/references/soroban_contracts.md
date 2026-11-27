@@ -489,7 +489,7 @@ XdrSCVal addressVal = XdrSCVal.forAddress(forAccount);
 
 ## Reading Contract Return Values
 
-Extract typed results from contract invocations. Numeric XDR wrappers must be unwrapped:
+Extract typed results from contract invocations. The `str` and `sym` getters throw a `FormatException` for bytes that are not valid UTF-8; `strBytes` and `symBytes` hold the bytes. Numeric XDR wrappers must be unwrapped:
 
 ```dart
 // From your app: txResponse (GetTransactionResponse)
@@ -552,7 +552,7 @@ itself, so the caller can detect that with `is XdrSCVal`.
 | U64, I64, Timepoint, Duration | `BigInt` |
 | U128, I128, U256, I256 | `BigInt` |
 | Bytes | `Uint8List` (the stored instance, not a copy) |
-| String, Symbol | `String` |
+| String, Symbol | `String`, or the `XdrSCVal` itself when the bytes are not valid UTF-8 |
 | Vec | `List<dynamic>`, elements converted recursively |
 | Map | `Map<dynamic, dynamic>` (see below), or the `XdrSCVal` itself |
 | Address | `Address` |
@@ -566,7 +566,7 @@ map keys use a narrower conversion than values:
 
 | Key XDR type | Dart map key |
 |---|---|
-| Symbol, String | `String` |
+| Symbol, String | `String` when the bytes are valid UTF-8 |
 | U32, I32 | `int` |
 | U64, I64, Timepoint, Duration, U128, I128, U256, I256 | `BigInt` |
 | Bool | `bool` |

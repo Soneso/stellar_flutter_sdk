@@ -1259,7 +1259,7 @@ XdrSCVal tupleVal = spec.nativeToXdrSCVal(
 
 ### Reading Return Values
 
-Access return values by their XDR type.
+Access return values by their XDR type. The `str` and `sym` getters throw a `FormatException` for bytes that are not valid UTF-8; `strBytes` and `symBytes` hold the bytes.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -1313,7 +1313,7 @@ detect that with `is XdrSCVal`.
 | U64, I64, Timepoint, Duration | `BigInt` |
 | U128, I128, U256, I256 | `BigInt` |
 | Bytes | `Uint8List` (the stored instance, not a copy) |
-| String, Symbol | `String` |
+| String, Symbol | `String`, or the `XdrSCVal` itself when the bytes are not valid UTF-8 |
 | Vec | `List<dynamic>`, elements converted recursively |
 | Map | `Map<dynamic, dynamic>` (see below), or the `XdrSCVal` itself |
 | Address | `Address` |
@@ -1328,7 +1328,7 @@ Map keys use a narrower conversion than values, because `Address`, `Uint8List`, 
 
 | Key XDR type | Dart map key |
 |---|---|
-| Symbol, String | `String` |
+| Symbol, String | `String` when the bytes are valid UTF-8; otherwise the whole map falls back to the `XdrSCVal` itself |
 | U32, I32 | `int` |
 | U64, I64, Timepoint, Duration, U128, I128, U256, I256 | `BigInt` |
 | Bool | `bool` |
