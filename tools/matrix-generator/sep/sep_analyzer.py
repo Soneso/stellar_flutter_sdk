@@ -2129,8 +2129,8 @@ class SEPAnalyzer:
             ),
             'opaque_fixed': (
                 'lib/src/xdr/xdr_hash.dart',
-                ("XdrJsonHelper.hex(_hash, type: 'XdrHash')",
-                 'expectedLength: 32'),
+                ("XdrJsonHelper.hex(_hash, type: 'XdrHash', expectedLength: 32",
+                 "XdrJsonHelper.readHex(value, type: 'XdrHash', expectedLength: 32"),
                 'XdrHash.toXdrJsonValue / fromXdrJsonValue',
             ),
             'opaque_variable': (

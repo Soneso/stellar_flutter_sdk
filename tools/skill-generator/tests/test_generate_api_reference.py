@@ -98,6 +98,52 @@ class TypeParameterHeaderTest(DartSourceTestCase):
         self.assertEqual(gen.format_class_header(infos['Network']), '## Network')
 
 
+class RecordReturnTypeTest(DartSourceTestCase):
+    """Record return types belong to the signature, before the method name."""
+
+    RECORD_TYPES = ('(int, int)', '(int, {String label})', '((int, int), String)?')
+
+    def test_public_record_return_method_keeps_its_type(self):
+        for modifier in ('', 'static '):
+            for return_type in self.RECORD_TYPES:
+                signature = f'{modifier}{return_type} read(int offset)'
+                with self.subTest(signature=signature):
+                    body = f'{signature} {{ throw UnimplementedError(); }}'
+                    infos = self.parse(f'class Reader {{ {body} }}')
+                    self.assertEqual(infos['Reader'].member_lines(), [signature])
+                    self.assertEqual(gen.scan_public_member_count(body, 'Reader'), 1)
+
+    def test_private_record_return_method_is_left_out(self):
+        for modifier in ('', 'static '):
+            for return_type in self.RECORD_TYPES:
+                signature = f'{modifier}{return_type} _read(int offset)'
+                with self.subTest(signature=signature):
+                    body = f'{signature} {{ throw UnimplementedError(); }}'
+                    infos = self.parse(f'class Reader {{ {body} }}')
+                    self.assertEqual(infos['Reader'].member_lines(), [])
+                    self.assertEqual(gen.scan_public_member_count(body, 'Reader'), 0)
+
+    def test_private_static_record_getter_is_left_out(self):
+        body = 'static (int, int) get _pair => (1, 2);'
+        infos = self.parse(f'class Reader {{ {body} }}')
+        self.assertEqual(infos['Reader'].member_lines(), [])
+        self.assertEqual(gen.scan_public_member_count(body, 'Reader'), 0)
+
+    def test_private_record_field_is_left_out(self):
+        for modifier in ('', 'static ', 'final ', 'late final ', 'external ', 'covariant '):
+            with self.subTest(modifier=modifier):
+                body = f'{modifier}(int, int) _field;'
+                infos = self.parse(f'class Reader {{ {body} }}')
+                self.assertEqual(infos['Reader'].member_lines(), [])
+                self.assertEqual(gen.scan_public_member_count(body, 'Reader'), 0)
+
+    def test_private_static_const_record_is_left_out(self):
+        body = 'static const (int, int) _range = (0, 1);'
+        infos = self.parse(f'class Reader {{ {body} }}')
+        self.assertEqual(infos['Reader'].member_lines(), [])
+        self.assertEqual(gen.scan_public_member_count(body, 'Reader'), 0)
+
+
 class InternalAnnotationTest(DartSourceTestCase):
     """`@internal` keeps members and declarations out, public members stay."""
 
