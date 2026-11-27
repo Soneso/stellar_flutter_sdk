@@ -77,6 +77,9 @@ ENUM_VALUE_NOISE = frozenset({"const", "final"})
 # Field/declaration modifier keywords handled explicitly by the field branch.
 FIELD_MODIFIERS = ("static", "late", "final", "var", "const")
 
+# A modifier before a record type's `(` is not a callable member name.
+MEMBER_MODIFIERS = frozenset(FIELD_MODIFIERS) | {"external", "covariant"}
+
 # Operators supported by the operator branch (longest first so multi-char
 # operators are matched before their single-char prefixes).
 OPERATORS = [
@@ -350,6 +353,9 @@ _METHOD_RE = re.compile(
     r'([\w.]+\s*<[\w<>,?.\s]+?>[?]?|[\w<>,?.]+)\s+'
     r'(\w+)\s*(<|\()'
 )
+# A leading record type needs balanced parentheses so its fields are not read
+# as a method's parameters. Group 1 captures the optional static modifier.
+_RECORD_TYPE_RETURN_RE = re.compile(r'(static\s+)?\(')
 # Matches a method whose return type is itself a function type: the pattern
 # captures everything up to and including the first `Function` keyword so the
 # caller can then balance the function-type's `(...)` and extract the real
@@ -433,13 +439,32 @@ def _classify_func_type_field(line: str, info: ClassInfo) -> bool:
 
 def _classify_method(line: str, info: ClassInfo, class_name: str) -> bool:
     """Append a method signature if `line` declares one. Returns True if matched."""
-    m = _METHOD_RE.match(line)
-    if not m:
-        return False
-    is_static = bool(m.group(1))
-    return_type = m.group(2).strip()
-    method_name = m.group(3)
+    record = _RECORD_TYPE_RETURN_RE.match(line)
+    if record:
+        # Records can nest other records and function types, so balance their
+        # parentheses before looking for the method name and parameter list.
+        type_start = record.end() - 1
+        type_end = balance_parens(line, type_start) + 1
+        if line[type_end:type_end + 1] == '?':
+            type_end += 1
+        m = re.match(r'\s+(\w+)\s*(<|\()', line[type_end:])
+        if not m:
+            return False
+        is_static = bool(record.group(1))
+        return_type = line[type_start:type_end]
+        method_name = m.group(1)
+        delim_pos = type_end + m.start(2)
+    else:
+        m = _METHOD_RE.match(line)
+        if not m:
+            return False
+        is_static = bool(m.group(1))
+        return_type = m.group(2).strip()
+        method_name = m.group(3)
+        delim_pos = m.start(4)
 
+    if method_name in MEMBER_MODIFIERS:
+        return False
     if is_private(method_name):
         return True  # consumed (private), do not fall through
     if method_name == class_name:
@@ -455,7 +480,6 @@ def _classify_method(line: str, info: ClassInfo, class_name: str) -> bool:
         return _classify_func_type_return_method(line, info, class_name)
 
     # Resolve an optional generic clause before the parameter list.
-    delim_pos = m.start(4)
     if line[delim_pos] == '<':
         generic_end = balance(line, delim_pos, '<', '>')
         # If the `<...>` is not a method type-parameter clause immediately
@@ -742,6 +766,8 @@ def _classify_member(line: str, info: ClassInfo, class_name: str) -> None:
     if m and m.group(2) != class_name:
         is_static = bool(m.group(1))
         method_name = m.group(2)
+        if method_name in MEMBER_MODIFIERS:
+            return
         if is_private(method_name):
             return
         if method_name in SUPPRESSED_METHODS or method_name in NON_TYPE_KEYWORDS:
@@ -868,8 +894,9 @@ def scan_public_member_count(body: str, type_name: str) -> int:
 
 
 def _first_top_level_paren(line: str) -> int:
-    """Return the index of the first `(` not inside a string literal, or -1."""
-    i = 0
+    """Return the first `(` outside strings and a leading record return type, or -1."""
+    record = _RECORD_TYPE_RETURN_RE.match(line)
+    i = balance_parens(line, record.end() - 1) + 1 if record else 0
     n = len(line)
     while i < n:
         ch = line[i]
@@ -907,7 +934,7 @@ def _is_countable_member(name: str | None) -> bool:
     """True if a scanned member name should be counted (public, not suppressed)."""
     if not name or is_private(name):
         return False
-    if name in SUPPRESSED_MEMBER_NAMES or name in NON_TYPE_KEYWORDS:
+    if name in SUPPRESSED_MEMBER_NAMES or name in NON_TYPE_KEYWORDS or name in MEMBER_MODIFIERS:
         return False
     return True
 
