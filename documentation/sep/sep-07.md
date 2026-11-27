@@ -492,7 +492,7 @@ try {
     if (!txResponse.success) {
       // Transaction was submitted but failed
       print('Transaction failed: ${txResponse.extras?.resultCodes?.transactionResultCode}');
-      List<String>? opCodes = txResponse.extras?.resultCodes?.operationsResultCodes;
+      List<String?>? opCodes = txResponse.extras?.resultCodes?.operationsResultCodes;
       if (opCodes != null) {
         for (int i = 0; i < opCodes.length; i++) {
           print('  Operation $i: ${opCodes[i]}');
