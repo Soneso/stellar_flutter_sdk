@@ -38,8 +38,7 @@ class XdrOperation {
 
   static XdrOperation decode(XdrDataInputStream stream) {
     XdrMuxedAccount? sourceAccount;
-    int sourceAccountPresent = stream.readInt();
-    if (sourceAccountPresent != 0) {
+    if (stream.readOptionalPresence()) {
       sourceAccount = XdrMuxedAccount.decode(stream);
     }
     XdrOperationBody body = XdrOperationBody.decode(stream);
@@ -54,7 +53,10 @@ class XdrOperation {
 
   static XdrOperation fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrOperation.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrOperation decoded = XdrOperation.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

@@ -83,4 +83,15 @@ class Network {
   /// Returns the network id (SHA-256 hashed networkPassphrase).
   Uint8List get networkId =>
       Util.hash(Uint8List.fromList(utf8.encode(this.networkPassphrase)));
+
+  /// Returns `true` if [other] is a [Network] with the same
+  /// [networkPassphrase].
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Network && _networkPassphrase == other._networkPassphrase);
+
+  /// Returns a hash code consistent with [==].
+  @override
+  int get hashCode => _networkPassphrase.hashCode;
 }

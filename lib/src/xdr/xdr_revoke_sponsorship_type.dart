@@ -59,7 +59,10 @@ class XdrRevokeSponsorshipType {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrRevokeSponsorshipType.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrRevokeSponsorshipType decoded = XdrRevokeSponsorshipType.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

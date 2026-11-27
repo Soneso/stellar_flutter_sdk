@@ -72,7 +72,12 @@ class XdrLiquidityPoolParameters {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrLiquidityPoolParameters.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrLiquidityPoolParameters decoded = XdrLiquidityPoolParameters.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

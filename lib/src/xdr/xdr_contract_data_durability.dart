@@ -57,7 +57,12 @@ class XdrContractDataDurability {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrContractDataDurability.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrContractDataDurability decoded = XdrContractDataDurability.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

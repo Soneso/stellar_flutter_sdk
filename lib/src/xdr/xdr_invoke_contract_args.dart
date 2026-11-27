@@ -17,22 +17,41 @@ class XdrInvokeContractArgs {
   XdrSCAddress get contractAddress => this._contractAddress;
   set contractAddress(XdrSCAddress value) => this._contractAddress = value;
 
-  String _functionName;
-  String get functionName => this._functionName;
-  set functionName(String value) => this._functionName = value;
+  Uint8List _functionName;
+
+  /// The text [functionNameBytes] spells, read as UTF-8.
+  ///
+  /// Every leading byte order mark is kept. Throws a FormatException when the
+  /// bytes are not valid UTF-8.
+  String get functionName => XdrUtf8.decode(this._functionName);
+
+  /// Stores the UTF-8 encoding of [value].
+  set functionName(String value) => this._functionName = XdrUtf8.encode(value);
+
+  /// The bytes of [functionName] as they are encoded.
+  Uint8List get functionNameBytes => this._functionName;
+  set functionNameBytes(Uint8List value) => this._functionName = value;
 
   List<XdrSCVal> _args;
   List<XdrSCVal> get args => this._args;
   set args(List<XdrSCVal> value) => this._args = value;
 
-  XdrInvokeContractArgs(this._contractAddress, this._functionName, this._args);
+  XdrInvokeContractArgs(this._contractAddress, String functionName, this._args)
+    : _functionName = XdrUtf8.encode(functionName);
+
+  /// Builds an XdrInvokeContractArgs that stores the given bytes of [functionName].
+  XdrInvokeContractArgs.withFunctionNameBytes(
+    this._contractAddress,
+    this._functionName,
+    this._args,
+  );
 
   static void encode(
     XdrDataOutputStream stream,
     XdrInvokeContractArgs encodedInvokeContractArgs,
   ) {
     XdrSCAddress.encode(stream, encodedInvokeContractArgs.contractAddress);
-    stream.writeString(encodedInvokeContractArgs.functionName);
+    stream.writeStringBytes(encodedInvokeContractArgs.functionNameBytes, 32);
     int argssize = encodedInvokeContractArgs.args.length;
     stream.writeInt(argssize);
     for (int i = 0; i < argssize; i++) {
@@ -42,13 +61,17 @@ class XdrInvokeContractArgs {
 
   static XdrInvokeContractArgs decode(XdrDataInputStream stream) {
     XdrSCAddress contractAddress = XdrSCAddress.decode(stream);
-    String functionName = stream.readString();
+    Uint8List functionName = stream.readStringBytes(32);
     int argssize = stream.readArrayLength();
     List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
     for (int i = 0; i < argssize; i++) {
       args.add(XdrSCVal.decode(stream));
     }
-    return XdrInvokeContractArgs(contractAddress, functionName, args);
+    return XdrInvokeContractArgs.withFunctionNameBytes(
+      contractAddress,
+      functionName,
+      args,
+    );
   }
 
   String toBase64EncodedXdrString() {
@@ -61,13 +84,16 @@ class XdrInvokeContractArgs {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrInvokeContractArgs.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrInvokeContractArgs decoded = XdrInvokeContractArgs.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
     _contractAddress.toTxRep('$prefix.contractAddress', lines);
     lines.add(
-      '$prefix.functionName: ${TxRepHelper.escapeString(_functionName)}',
+      '$prefix.functionName: ${TxRepHelper.escapeBytes(_functionName)}',
     );
     lines.add('$prefix.args.len: ${_args.length}');
     for (int i = 0; i < _args.length; i++) {
@@ -83,8 +109,12 @@ class XdrInvokeContractArgs {
       map,
       '$prefix.contractAddress',
     );
-    String functionName = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.functionName') ?? '',
+    Uint8List functionName = TxRepHelper.checkBytesMaxLength(
+      TxRepHelper.unescapeBytes(
+        TxRepHelper.getValue(map, '$prefix.functionName') ?? '',
+      ),
+      32,
+      '$prefix.functionName',
     );
     int argsLen = TxRepHelper.parseUint32(
       TxRepHelper.getValue(map, '$prefix.args.len') ?? '0',
@@ -94,7 +124,11 @@ class XdrInvokeContractArgs {
     for (int i = 0; i < argsLen; i++) {
       args.add(XdrSCVal.fromTxRep(map, '$prefix.args[$i]'));
     }
-    return XdrInvokeContractArgs(contractAddress, functionName, args);
+    return XdrInvokeContractArgs.withFunctionNameBytes(
+      contractAddress,
+      functionName,
+      args,
+    );
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.
@@ -111,10 +145,11 @@ class XdrInvokeContractArgs {
   /// Returns the SEP-0051 rendering of this XdrInvokeContractArgs.
   Object? toXdrJsonValue() => <String, Object?>{
     'contract_address': _contractAddress.toXdrJsonValue(),
-    'function_name': XdrJsonHelper.escapedString(
+    'function_name': XdrJsonHelper.escapedBytes(
       _functionName,
       type: 'XdrInvokeContractArgs',
       key: 'function_name',
+      maxBytes: 32,
     ),
     'args': XdrJsonHelper.array<XdrSCVal>(
       _args,
@@ -146,12 +181,13 @@ class XdrInvokeContractArgs {
       'args',
       type: 'XdrInvokeContractArgs',
     );
-    return XdrInvokeContractArgs(
+    return XdrInvokeContractArgs.withFunctionNameBytes(
       XdrSCAddress.fromXdrJsonValue(jsonContractAddress),
-      XdrJsonHelper.readEscapedString(
+      XdrJsonHelper.readEscapedBytes(
         jsonFunctionName,
         type: 'XdrInvokeContractArgs',
         key: 'function_name',
+        maxLength: 32,
       ),
       XdrJsonHelper.readArray(
         jsonArgs,

@@ -60,7 +60,7 @@ class XdrPathPaymentStrictReceiveOp {
     XdrAsset.encode(stream, encodedPathPaymentStrictReceiveOp.destAsset);
     XdrInt64.encode(stream, encodedPathPaymentStrictReceiveOp.destAmount);
     int pathsize = encodedPathPaymentStrictReceiveOp.path.length;
-    stream.writeInt(pathsize);
+    stream.writeBoundedLength(pathsize, 5);
     for (int i = 0; i < pathsize; i++) {
       XdrAsset.encode(stream, encodedPathPaymentStrictReceiveOp.path[i]);
     }
@@ -72,7 +72,7 @@ class XdrPathPaymentStrictReceiveOp {
     XdrMuxedAccount destination = XdrMuxedAccount.decode(stream);
     XdrAsset destAsset = XdrAsset.decode(stream);
     XdrInt64 destAmount = XdrInt64.decode(stream);
-    int pathsize = stream.readArrayLength();
+    int pathsize = stream.readArrayLength(5);
     List<XdrAsset> path = List<XdrAsset>.empty(growable: true);
     for (int i = 0; i < pathsize; i++) {
       path.add(XdrAsset.decode(stream));
@@ -97,7 +97,11 @@ class XdrPathPaymentStrictReceiveOp {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrPathPaymentStrictReceiveOp.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrPathPaymentStrictReceiveOp decoded =
+        XdrPathPaymentStrictReceiveOp.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -133,6 +137,7 @@ class XdrPathPaymentStrictReceiveOp {
       TxRepHelper.getValue(map, '$prefix.path.len') ?? '0',
       '$prefix.path.len',
     );
+    TxRepHelper.checkMaxLength(pathLen, 5, '$prefix.path.len');
     List<XdrAsset> path = [];
     for (int i = 0; i < pathLen; i++) {
       path.add(

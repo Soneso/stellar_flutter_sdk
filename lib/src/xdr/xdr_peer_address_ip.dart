@@ -42,10 +42,10 @@ class XdrPeerAddressIp {
     stream.writeInt(encodedPeerAddressIp.discriminant.value);
     switch (encodedPeerAddressIp.discriminant) {
       case XdrIPAddrType.IPv4:
-        stream.write(encodedPeerAddressIp._ipv4!);
+        stream.writeFixedOpaque(encodedPeerAddressIp._ipv4!, 4);
         break;
       case XdrIPAddrType.IPv6:
-        stream.write(encodedPeerAddressIp._ipv6!);
+        stream.writeFixedOpaque(encodedPeerAddressIp._ipv6!, 16);
         break;
       default:
         break;
@@ -77,7 +77,10 @@ class XdrPeerAddressIp {
 
   static XdrPeerAddressIp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrPeerAddressIp.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrPeerAddressIp decoded = XdrPeerAddressIp.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.
@@ -98,6 +101,7 @@ class XdrPeerAddressIp {
             _ipv4!,
             type: 'XdrPeerAddressIp',
             key: 'i_pv4',
+            expectedLength: 4,
           ),
         };
       case 1:
@@ -106,6 +110,7 @@ class XdrPeerAddressIp {
             _ipv6!,
             type: 'XdrPeerAddressIp',
             key: 'i_pv6',
+            expectedLength: 16,
           ),
         };
     }

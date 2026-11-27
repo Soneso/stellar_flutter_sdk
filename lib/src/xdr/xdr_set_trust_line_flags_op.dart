@@ -65,7 +65,10 @@ class XdrSetTrustLineFlagsOp {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSetTrustLineFlagsOp.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSetTrustLineFlagsOp decoded = XdrSetTrustLineFlagsOp.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

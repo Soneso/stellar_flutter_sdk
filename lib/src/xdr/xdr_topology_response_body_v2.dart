@@ -71,7 +71,12 @@ class XdrTopologyResponseBodyV2 {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTopologyResponseBodyV2.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrTopologyResponseBodyV2 decoded = XdrTopologyResponseBodyV2.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

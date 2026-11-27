@@ -35,7 +35,7 @@ class XdrCreateClaimableBalanceOp {
     XdrAsset.encode(stream, encodedCreateClaimableBalanceOp.asset);
     XdrInt64.encode(stream, encodedCreateClaimableBalanceOp.amount);
     int claimantssize = encodedCreateClaimableBalanceOp.claimants.length;
-    stream.writeInt(claimantssize);
+    stream.writeBoundedLength(claimantssize, 10);
     for (int i = 0; i < claimantssize; i++) {
       XdrClaimant.encode(stream, encodedCreateClaimableBalanceOp.claimants[i]);
     }
@@ -44,7 +44,7 @@ class XdrCreateClaimableBalanceOp {
   static XdrCreateClaimableBalanceOp decode(XdrDataInputStream stream) {
     XdrAsset asset = XdrAsset.decode(stream);
     XdrInt64 amount = XdrInt64.decode(stream);
-    int claimantssize = stream.readArrayLength();
+    int claimantssize = stream.readArrayLength(10);
     List<XdrClaimant> claimants = List<XdrClaimant>.empty(growable: true);
     for (int i = 0; i < claimantssize; i++) {
       claimants.add(XdrClaimant.decode(stream));
@@ -62,7 +62,12 @@ class XdrCreateClaimableBalanceOp {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrCreateClaimableBalanceOp.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrCreateClaimableBalanceOp decoded = XdrCreateClaimableBalanceOp.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -86,6 +91,7 @@ class XdrCreateClaimableBalanceOp {
       TxRepHelper.getValue(map, '$prefix.claimants.len') ?? '0',
       '$prefix.claimants.len',
     );
+    TxRepHelper.checkMaxLength(claimantsLen, 10, '$prefix.claimants.len');
     List<XdrClaimant> claimants = [];
     for (int i = 0; i < claimantsLen; i++) {
       claimants.add(XdrClaimant.fromTxRep(map, '$prefix.claimants[$i]'));

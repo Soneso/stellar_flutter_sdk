@@ -54,7 +54,12 @@ class XdrPathPaymentResultSuccess {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrPathPaymentResultSuccess.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrPathPaymentResultSuccess decoded = XdrPathPaymentResultSuccess.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

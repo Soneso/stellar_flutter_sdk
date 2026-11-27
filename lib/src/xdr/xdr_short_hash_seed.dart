@@ -20,7 +20,7 @@ class XdrShortHashSeed {
     XdrDataOutputStream stream,
     XdrShortHashSeed encodedShortHashSeed,
   ) {
-    stream.write(encodedShortHashSeed.seed);
+    stream.writeFixedOpaque(encodedShortHashSeed.seed, 16);
   }
 
   static XdrShortHashSeed decode(XdrDataInputStream stream) {
@@ -36,7 +36,10 @@ class XdrShortHashSeed {
 
   static XdrShortHashSeed fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrShortHashSeed.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrShortHashSeed decoded = XdrShortHashSeed.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.
@@ -50,7 +53,12 @@ class XdrShortHashSeed {
 
   /// Returns the SEP-0051 rendering of this XdrShortHashSeed.
   Object? toXdrJsonValue() => <String, Object?>{
-    'seed': XdrJsonHelper.hex(_seed, type: 'XdrShortHashSeed', key: 'seed'),
+    'seed': XdrJsonHelper.hex(
+      _seed,
+      type: 'XdrShortHashSeed',
+      key: 'seed',
+      expectedLength: 16,
+    ),
   };
 
   /// Reads a XdrShortHashSeed from its SEP-0051 rendering.

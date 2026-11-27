@@ -40,7 +40,12 @@ class XdrLedgerKeyLiquidityPool {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrLedgerKeyLiquidityPool.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrLedgerKeyLiquidityPool decoded = XdrLedgerKeyLiquidityPool.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

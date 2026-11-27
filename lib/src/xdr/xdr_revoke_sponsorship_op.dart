@@ -85,7 +85,10 @@ class XdrRevokeSponsorshipOp {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrRevokeSponsorshipOp.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrRevokeSponsorshipOp decoded = XdrRevokeSponsorshipOp.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

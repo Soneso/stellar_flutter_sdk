@@ -89,7 +89,7 @@ class XdrAccountEntry {
     XdrString32.encode(stream, encodedAccountEntry.homeDomain);
     XdrThresholds.encode(stream, encodedAccountEntry.thresholds);
     int signerssize = encodedAccountEntry.signers.length;
-    stream.writeInt(signerssize);
+    stream.writeBoundedLength(signerssize, 20);
     for (int i = 0; i < signerssize; i++) {
       XdrSigner.encode(stream, encodedAccountEntry.signers[i]);
     }
@@ -102,14 +102,13 @@ class XdrAccountEntry {
     XdrSequenceNumber seqNum = XdrSequenceNumber.decode(stream);
     XdrUint32 numSubEntries = XdrUint32.decode(stream);
     XdrAccountID? inflationDest;
-    int inflationDestPresent = stream.readInt();
-    if (inflationDestPresent != 0) {
+    if (stream.readOptionalPresence()) {
       inflationDest = XdrAccountID.decode(stream);
     }
     XdrUint32 flags = XdrUint32.decode(stream);
     XdrString32 homeDomain = XdrString32.decode(stream);
     XdrThresholds thresholds = XdrThresholds.decode(stream);
-    int signerssize = stream.readArrayLength();
+    int signerssize = stream.readArrayLength(20);
     List<XdrSigner> signers = List<XdrSigner>.empty(growable: true);
     for (int i = 0; i < signerssize; i++) {
       signers.add(XdrSigner.decode(stream));
@@ -137,7 +136,10 @@ class XdrAccountEntry {
 
   static XdrAccountEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrAccountEntry.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrAccountEntry decoded = XdrAccountEntry.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

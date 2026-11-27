@@ -32,7 +32,7 @@ XdrOperationResult _manageOfferOperationResult(
       XdrAccountID.forAccountId(
         'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
       ),
-      XdrUint64(BigInt.from(offerId!)),
+      XdrInt64(BigInt.from(offerId!)),
       XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
       XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
       XdrInt64(BigInt.from(1000000)),

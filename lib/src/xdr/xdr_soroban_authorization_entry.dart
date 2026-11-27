@@ -54,7 +54,12 @@ class XdrSorobanAuthorizationEntry {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSorobanAuthorizationEntry.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSorobanAuthorizationEntry decoded = XdrSorobanAuthorizationEntry.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

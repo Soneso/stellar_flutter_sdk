@@ -77,18 +77,13 @@ void main() {
           Uint8List.fromList(List<int>.filled(32, 0xBB)),
         );
 
-        var signerKey3 = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
-        signerKey3.hashX = XdrUint256(
-          Uint8List.fromList(List<int>.filled(32, 0xCC)),
-        );
-
         var original = XdrPreconditionsV2(
           null,
           null,
           null,
           XdrUint64(BigInt.from(3600)),
           XdrUint32(10),
-          [signerKey1, signerKey2, signerKey3],
+          [signerKey1, signerKey2],
         );
 
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -98,7 +93,7 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrPreconditionsV2.decode(input);
 
-        expect(decoded.extraSigners.length, equals(3));
+        expect(decoded.extraSigners.length, equals(2));
         expect(decoded.minSeqAge.uint64, equals(BigInt.from(3600)));
         expect(decoded.minSeqLedgerGap.uint32, equals(10));
       },

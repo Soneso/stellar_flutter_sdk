@@ -1178,9 +1178,8 @@ class SorobanAuthorizationEntry {
 
   /// Creates an authorization entry from base64-encoded XDR.
   static SorobanAuthorizationEntry fromBase64EncodedXdr(String xdr) {
-    Uint8List bytes = base64Decode(xdr);
     return SorobanAuthorizationEntry.fromXdr(
-      XdrSorobanAuthorizationEntry.decode(XdrDataInputStream(bytes)),
+      XdrSorobanAuthorizationEntry.fromBase64EncodedXdrString(xdr),
     );
   }
 

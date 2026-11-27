@@ -1717,8 +1717,8 @@ void main() {
       );
     });
 
-    test('never pads beyond the bytes it was given', () {
-      expect(XdrJsonHelper.assetCode12(Uint8List(3), type: 'T'), r'\0\0\0');
+    test('pads a short twelve-byte code to the five-byte floor', () {
+      expect(XdrJsonHelper.assetCode12(Uint8List(3), type: 'T'), r'\0\0\0\0\0');
     });
 
     test('escapes a byte outside printable ASCII', () {

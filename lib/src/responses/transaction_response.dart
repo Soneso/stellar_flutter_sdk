@@ -99,7 +99,8 @@ class TransactionResponse extends Response {
   /// Memo attached to this transaction.
   Memo _memo;
 
-  /// Base64-encoded memo bytes for hash memos.
+  /// Base64-encoded bytes of a text memo, as Horizon gives them. The text
+  /// memo of [memo] holds these bytes.
   String? memoBytes;
 
   /// List of base64-encoded signatures.
@@ -144,7 +145,7 @@ class TransactionResponse extends Response {
   /// - [resultMetaXdr] Base64-encoded transaction metadata XDR
   /// - [feeMetaXdr] Base64-encoded fee metadata XDR
   /// - [_memo] Memo attached to transaction
-  /// - [memoBytes] Base64-encoded memo bytes for hash memos
+  /// - [memoBytes] Base64-encoded bytes of a text memo
   /// - [signatures] List of base64-encoded signatures
   /// - [feeBumpTransaction] Fee bump wrapper if transaction was fee-bumped
   /// - [innerTransaction] Inner transaction if this is a fee bump

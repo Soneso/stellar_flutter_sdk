@@ -73,6 +73,109 @@ class GeneratorSnapshotTest < Minitest::Test
       "int disc = TxRepHelper.parseUint32(TxRepHelper.getValue(map, '$prefix.v') ?? '0', '$prefix.v');"
   end
 
+  def test_fixed_opaque_fields_emit_exact_length_checks
+    hash = File.read(File.join(@output_dir, "xdr_hash.dart"))
+    assert_includes hash, "stream.writeFixedOpaque(encodedHash.hash, 32);"
+    assert_includes hash, "XdrJsonHelper.hex(_hash, type: 'XdrHash', expectedLength: 32)"
+    assert_includes hash, "TxRepHelper.checkBytesExactLength(_hash, 32, prefix)"
+    assert_includes hash, "TxRepHelper.checkBytesExactLength(TxRepHelper.hexToBytes(raw), 32, prefix)"
+
+    seed = File.read(File.join(@output_dir, "xdr_short_hash_seed.dart"))
+    assert_includes seed, "stream.writeFixedOpaque(encodedShortHashSeed.seed, 16);"
+    assert_includes seed, "XdrJsonHelper.hex(_seed, type: 'XdrShortHashSeed', key: 'seed', expectedLength: 16)"
+
+    ip = File.read(File.join(@output_dir, "xdr_peer_address_ip.dart"))
+    assert_includes ip, "stream.writeFixedOpaque(encodedPeerAddressIp._ipv4!, 4);"
+    assert_includes ip, "stream.writeFixedOpaque(encodedPeerAddressIp._ipv6!, 16);"
+    assert_includes ip, "XdrJsonHelper.hex(_ipv4!, type: 'XdrPeerAddressIp', key: 'i_pv4', expectedLength: 4)"
+    assert_includes ip, "XdrJsonHelper.hex(_ipv6!, type: 'XdrPeerAddressIp', key: 'i_pv6', expectedLength: 16)"
+  end
+
+  def test_variable_opaque_fields_keep_variable_length_codecs
+    data_val = File.read(File.join(@output_dir, "xdr_data_value.dart"))
+    assert_includes data_val, "stream.writeBoundedLength(dataValueSize, 64);"
+    assert_includes data_val, "stream.write(encodedDataValue.dataValue);"
+    refute_includes data_val, "writeFixedOpaque"
+    assert_includes data_val, "XdrJsonHelper.hex(_dataValue, type: 'XdrDataValue', maxLength: 64)"
+    refute_includes data_val, "expectedLength"
+    assert_includes data_val, "TxRepHelper.bytesToHex(_dataValue)"
+    refute_includes data_val, "checkBytesExactLength"
+
+    contract_code = File.read(File.join(@output_dir, "xdr_contract_code_entry.dart"))
+    assert_includes contract_code, "stream.write(encodedContractCodeEntry.code);"
+    refute_includes contract_code, "writeFixedOpaque(encodedContractCodeEntry.code"
+  end
+
+  def test_asset_code_fields_emit_padding_writers_and_bounded_readers
+    a4 = File.read(File.join(@output_dir, "xdr_asset_alpha_num4.dart"))
+    assert_includes a4, "stream.writeAssetCode(encodedAssetAlphaNum4.assetCode, 4);"
+    assert_includes a4, "XdrJsonHelper.assetCode4(_assetCode, type: 'XdrAssetAlphaNum4', key: 'asset_code')"
+    assert_includes a4, "TxRepHelper.padAssetCode(_assetCode, 4, '$prefix.assetCode')"
+    assert_includes a4, "TxRepHelper.checkBytesMaxLength(TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.assetCode') ?? ''), 4, '$prefix.assetCode')"
+
+    a12 = File.read(File.join(@output_dir, "xdr_asset_alpha_num12.dart"))
+    assert_includes a12, "stream.writeAssetCode(encodedAssetAlphaNum12.assetCode, 12);"
+    assert_includes a12, "XdrJsonHelper.assetCode12(_assetCode, type: 'XdrAssetAlphaNum12', key: 'asset_code')"
+    assert_includes a12, "TxRepHelper.padAssetCode(_assetCode, 12, '$prefix.assetCode')"
+    assert_includes a12, "TxRepHelper.checkBytesMaxLength(TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.assetCode') ?? ''), 12, '$prefix.assetCode')"
+
+    allow = File.read(File.join(@output_dir, "xdr_allow_trust_op_asset.dart"))
+    assert_includes allow, "stream.writeAssetCode(encodedAllowTrustOpAsset._assetCode4!, 4);"
+    assert_includes allow, "stream.writeAssetCode(encodedAllowTrustOpAsset._assetCode12!, 12);"
+    assert_includes allow, "TxRepHelper.padAssetCode(_assetCode4!, 4, '$prefix.assetCode4')"
+    assert_includes allow, "TxRepHelper.padAssetCode(_assetCode12!, 12, '$prefix.assetCode12')"
+    assert_includes allow, "TxRepHelper.checkBytesMaxLength(TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.assetCode4') ?? ''), 4, '$prefix.assetCode4')"
+    assert_includes allow, "TxRepHelper.checkBytesMaxLength(TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.assetCode12') ?? ''), 12, '$prefix.assetCode12')"
+  end
+
+  def test_fixed_opaque_typedef_chain_and_constant_bound_resolution
+    top = Xdrgen::Parser.new.parse(<<~XDR)
+      const KEY_LEN = 16;
+      typedef opaque RawKey[KEY_LEN];
+      typedef RawKey ChainedKey;
+      typedef opaque AssetCode4[4];
+      typedef AssetCode4 ChainedAssetCode4;
+      struct TestFixed {
+        opaque inlineKey[KEY_LEN];
+        AssetCode4* optCode;
+        ChainedKey chained;
+      };
+    XDR
+    generator = Generator.new(top, nil)
+    struct = top.definitions.find { |d| d.is_a?(AST::Definitions::Struct) }
+    chained_member = struct.members.find { |m| m.name.to_s == 'chained' }
+    assert_equal '16', generator.send(:fixed_opaque_typedef_size, chained_member.declaration.type)
+
+    chained_code_td = top.definitions.find { |d| d.is_a?(AST::Definitions::Typedef) && d.name.to_s == 'ChainedAssetCode4' }
+    assert generator.send(:asset_code_typedef?, chained_code_td.declaration.type)
+
+    fields = struct.members.map do |m|
+      type_str = generator.send(:dart_type_string, m.declaration, m)
+      fos = type_str.delete_suffix('?') == 'Uint8List' && m.declaration.respond_to?(:type) ?
+              generator.send(:fixed_opaque_typedef_size, m.declaration.type) : nil
+      {
+        name: m.name.to_s,
+        type: type_str,
+        member: m,
+        decl: m.declaration,
+        fixed_opaque_size: fos,
+        asset_code: fos ? generator.send(:asset_code_typedef?, m.declaration.type) : false,
+        type_overridden: false,
+      }
+    end
+    out = StringIO.new
+    generator.send(:render_struct_encode, out, 'XdrTestFixed', fields)
+    assert_includes out.string, "stream.writeFixedOpaque(encodedTestFixed.inlineKey, 16);"
+    assert_includes out.string, "stream.writeAssetCode(encodedTestFixed.optCode!, 4);"
+
+    txrep = StringIO.new
+    generator.send(:render_struct_txrep_methods, txrep, 'XdrTestFixed', fields)
+    assert_includes txrep.string, "TxRepHelper.checkBytesExactLength(_inlineKey, 16, '$prefix.inlineKey')"
+    assert_includes txrep.string, "TxRepHelper.checkBytesExactLength(TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.inlineKey') ?? ''), 16, '$prefix.inlineKey')"
+    assert_includes txrep.string, "String optCodeHex = TxRepHelper.bytesToHex(TxRepHelper.padAssetCode(_optCode!, 4, '$prefix.optCode'));"
+    assert_includes txrep.string, "TxRepHelper.checkBytesMaxLength(TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.optCode') ?? ''), 4, '$prefix.optCode')"
+  end
+
   def test_recursive_decoders_match_type_cycles
     sources = Dir.glob(File.join(@output_dir, '*.dart')).to_h do |path|
       source = File.read(path)

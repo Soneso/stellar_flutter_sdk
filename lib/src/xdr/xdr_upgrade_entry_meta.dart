@@ -44,7 +44,10 @@ class XdrUpgradeEntryMeta {
 
   static XdrUpgradeEntryMeta fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrUpgradeEntryMeta.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrUpgradeEntryMeta decoded = XdrUpgradeEntryMeta.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

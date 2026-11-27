@@ -4,9 +4,9 @@
 
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_int64.dart';
 import 'xdr_json_helper.dart';
 import 'xdr_ledger_key_offer_base.dart';
-import 'xdr_uint64.dart';
 
 class XdrLedgerKeyOffer extends XdrLedgerKeyOfferBase {
   XdrLedgerKeyOffer(super.sellerID, super.offerID);
@@ -39,7 +39,7 @@ class XdrLedgerKeyOffer extends XdrLedgerKeyOfferBase {
   static XdrLedgerKeyOffer forOfferId(String sellerAccountId, int offerId) {
     return XdrLedgerKeyOffer(
       XdrAccountID.forAccountId(sellerAccountId),
-      XdrUint64(BigInt.from(offerId)),
+      XdrInt64(BigInt.from(offerId)),
     );
   }
 }

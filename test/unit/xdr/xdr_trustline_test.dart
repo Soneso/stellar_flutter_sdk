@@ -79,7 +79,7 @@ void main() {
 
       var claimAtom1 = XdrClaimOfferAtom(
         sellerId,
-        XdrUint64(BigInt.from(111)),
+        XdrInt64(BigInt.from(111)),
         asset,
         XdrInt64(BigInt.from(100)),
         asset,
@@ -88,7 +88,7 @@ void main() {
 
       var claimAtom2 = XdrClaimOfferAtom(
         sellerId,
-        XdrUint64(BigInt.from(222)),
+        XdrInt64(BigInt.from(222)),
         asset,
         XdrInt64(BigInt.from(300)),
         asset,
@@ -117,11 +117,11 @@ void main() {
 
       expect(decoded.offersClaimed.length, equals(2));
       expect(
-        decoded.offersClaimed[0].orderBook!.offerID.uint64,
+        decoded.offersClaimed[0].orderBook!.offerID.int64,
         equals(BigInt.from(111)),
       );
       expect(
-        decoded.offersClaimed[1].orderBook!.offerID.uint64,
+        decoded.offersClaimed[1].orderBook!.offerID.int64,
         equals(BigInt.from(222)),
       );
     });
@@ -136,7 +136,7 @@ void main() {
 
       var claimAtom = XdrClaimOfferAtom(
         sellerId,
-        XdrUint64(BigInt.from(9999)),
+        XdrInt64(BigInt.from(9999)),
         asset,
         XdrInt64(BigInt.from(500)),
         asset,

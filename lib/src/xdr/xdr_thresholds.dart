@@ -20,7 +20,7 @@ class XdrThresholds {
     XdrDataOutputStream stream,
     XdrThresholds encodedThresholds,
   ) {
-    stream.write(encodedThresholds.thresholds);
+    stream.writeFixedOpaque(encodedThresholds.thresholds, 4);
   }
 
   static XdrThresholds decode(XdrDataInputStream stream) {
@@ -36,7 +36,10 @@ class XdrThresholds {
 
   static XdrThresholds fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrThresholds.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrThresholds decoded = XdrThresholds.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.
@@ -50,7 +53,7 @@ class XdrThresholds {
 
   /// Returns the SEP-0051 rendering of the wrapped value.
   Object? toXdrJsonValue() =>
-      XdrJsonHelper.hex(_thresholds, type: 'XdrThresholds');
+      XdrJsonHelper.hex(_thresholds, type: 'XdrThresholds', expectedLength: 4);
 
   /// Reads a XdrThresholds from the SEP-0051 rendering of its value.
   static XdrThresholds fromXdrJsonValue(Object? value) => XdrThresholds(

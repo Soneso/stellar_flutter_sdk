@@ -291,7 +291,7 @@ class GeneratedTypeValidator
     # Validate arm fields (non-void arms should have nullable fields)
     non_void_arms = arms.reject { |a| a[:void] }
     expected_arm_fields = non_void_arms.map do |arm|
-      { name: arm[:field_name], type: "#{arm[:dart_type]}?" }
+      { name: arm[:field_name], type: "#{arm[:storage_type] || arm[:dart_type]}?" }
     end
 
     # Extract nullable fields (arm fields are always nullable with ?)

@@ -75,7 +75,7 @@ class XdrPreconditionsV2 {
     XdrUint64.encode(stream, encodedPreconditionsV2.minSeqAge);
     XdrUint32.encode(stream, encodedPreconditionsV2.minSeqLedgerGap);
     int extraSignerssize = encodedPreconditionsV2.extraSigners.length;
-    stream.writeInt(extraSignerssize);
+    stream.writeBoundedLength(extraSignerssize, 2);
     for (int i = 0; i < extraSignerssize; i++) {
       XdrSignerKey.encode(stream, encodedPreconditionsV2.extraSigners[i]);
     }
@@ -83,23 +83,20 @@ class XdrPreconditionsV2 {
 
   static XdrPreconditionsV2 decode(XdrDataInputStream stream) {
     XdrTimeBounds? timeBounds;
-    int timeBoundsPresent = stream.readInt();
-    if (timeBoundsPresent != 0) {
+    if (stream.readOptionalPresence()) {
       timeBounds = XdrTimeBounds.decode(stream);
     }
     XdrLedgerBounds? ledgerBounds;
-    int ledgerBoundsPresent = stream.readInt();
-    if (ledgerBoundsPresent != 0) {
+    if (stream.readOptionalPresence()) {
       ledgerBounds = XdrLedgerBounds.decode(stream);
     }
     XdrSequenceNumber? minSeqNum;
-    int minSeqNumPresent = stream.readInt();
-    if (minSeqNumPresent != 0) {
+    if (stream.readOptionalPresence()) {
       minSeqNum = XdrSequenceNumber.decode(stream);
     }
     XdrUint64 minSeqAge = XdrUint64.decode(stream);
     XdrUint32 minSeqLedgerGap = XdrUint32.decode(stream);
-    int extraSignerssize = stream.readArrayLength();
+    int extraSignerssize = stream.readArrayLength(2);
     List<XdrSignerKey> extraSigners = List<XdrSignerKey>.empty(growable: true);
     for (int i = 0; i < extraSignerssize; i++) {
       extraSigners.add(XdrSignerKey.decode(stream));
@@ -122,7 +119,10 @@ class XdrPreconditionsV2 {
 
   static XdrPreconditionsV2 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrPreconditionsV2.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrPreconditionsV2 decoded = XdrPreconditionsV2.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -188,6 +188,7 @@ class XdrPreconditionsV2 {
       TxRepHelper.getValue(map, '$prefix.extraSigners.len') ?? '0',
       '$prefix.extraSigners.len',
     );
+    TxRepHelper.checkMaxLength(extraSignersLen, 2, '$prefix.extraSigners.len');
     List<XdrSignerKey> extraSigners = [];
     for (int i = 0; i < extraSignersLen; i++) {
       extraSigners.add(

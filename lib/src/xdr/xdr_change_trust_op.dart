@@ -44,7 +44,10 @@ class XdrChangeTrustOp {
 
   static XdrChangeTrustOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrChangeTrustOp.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrChangeTrustOp decoded = XdrChangeTrustOp.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

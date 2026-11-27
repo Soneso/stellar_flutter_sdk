@@ -51,8 +51,7 @@ class XdrContractEvent {
   static XdrContractEvent decode(XdrDataInputStream stream) {
     XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
     XdrHash? hash;
-    int hashPresent = stream.readInt();
-    if (hashPresent != 0) {
+    if (stream.readOptionalPresence()) {
       hash = XdrHash.decode(stream);
     }
     XdrContractEventType type = XdrContractEventType.decode(stream);
@@ -68,7 +67,10 @@ class XdrContractEvent {
 
   static XdrContractEvent fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrContractEvent.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrContractEvent decoded = XdrContractEvent.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

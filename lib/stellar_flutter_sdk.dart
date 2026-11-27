@@ -37,6 +37,7 @@ export 'src/set_options_operation.dart';
 export 'src/change_trust_operation.dart';
 export 'src/allow_trust_operation.dart';
 export 'src/account_merge_operation.dart';
+export 'src/inflation_operation.dart';
 export 'src/manage_data_operation.dart';
 export 'src/bump_sequence_operation.dart';
 export 'src/create_claimable_balance_operation.dart';
@@ -188,6 +189,8 @@ export 'src/soroban/soroban_contract_parser.dart';
 export 'src/soroban/soroban_passkey.dart';
 export 'src/soroban/contract_spec.dart';
 export 'src/soroban/sc_val_host_order.dart';
+export 'src/soroban/sac_spec.dart';
+export 'src/soroban/sac_client.dart';
 
 // Smart Accounts — core
 export 'src/smartaccount/core/allow_credential.dart';

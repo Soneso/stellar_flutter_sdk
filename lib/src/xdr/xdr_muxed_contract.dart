@@ -29,8 +29,12 @@ class XdrMuxedContract extends XdrMuxedContractBase {
     return XdrMuxedContract(b.id, b.contractId);
   }
 
-  static XdrMuxedContract fromBase64EncodedXdrString(String base64Encoded) =>
-      decode(XdrDataInputStream(base64Decode(base64Encoded)));
+  static XdrMuxedContract fromBase64EncodedXdrString(String base64Encoded) {
+    XdrDataInputStream stream = XdrDataInputStream(base64Decode(base64Encoded));
+    XdrMuxedContract decoded = decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
+  }
 
   static XdrMuxedContract fromTxRep(Map<String, String> map, String prefix) {
     var b = XdrMuxedContractBase.fromTxRep(map, prefix);

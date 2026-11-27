@@ -57,8 +57,8 @@ class XdrSCVal extends XdrSCValBase {
     result.u256 = b.u256;
     result.i256 = b.i256;
     result.bytes = b.bytes;
-    result.str = b.str;
-    result.sym = b.sym;
+    result.strBytes = b.strBytes;
+    result.symBytes = b.symBytes;
     result.vec = b.vec;
     result.map = b.map;
     result.address = b.address;
@@ -190,9 +190,30 @@ class XdrSCVal extends XdrSCValBase {
     return val;
   }
 
+  /// Builds an SCV_STRING value over the raw bytes of [str].
+  ///
+  /// An XDR string carries arbitrary bytes, so a value whose bytes are not
+  /// valid UTF-8 is built and encoded unchanged.
+  static XdrSCVal forStringBytes(Uint8List str) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_STRING);
+    val.strBytes = str;
+    return val;
+  }
+
   static XdrSCVal forSymbol(String symbol) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_SYMBOL);
     val.sym = symbol;
+    return val;
+  }
+
+  /// Builds an SCV_SYMBOL value over the raw bytes of [symbol].
+  ///
+  /// An XDR string carries arbitrary bytes, so a value whose bytes are not
+  /// valid UTF-8 is built and encoded unchanged; encoding checks the declared
+  /// maximum of 32 bytes.
+  static XdrSCVal forSymbolBytes(Uint8List symbol) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_SYMBOL);
+    val.symBytes = symbol;
     return val;
   }
 
@@ -689,7 +710,9 @@ class XdrSCVal extends XdrSCValBase {
   /// an address key becomes its StrKey String, because Uint8List and
   /// Address have no value equality and so cannot serve as usable map
   /// keys. A Dart int key and a BigInt key holding the same numeric value
-  /// are distinct map entries. This method never throws: an arm with no
+  /// are distinct map entries. SCV_STRING and SCV_SYMBOL convert to their
+  /// text as [XdrUtf8.decode] reads it; bytes that are not valid UTF-8 have
+  /// no native representation. This method never throws: an arm with no
   /// native representation, an ill-formed payload, or a map with an
   /// unrepresentable or colliding key converts to this XdrSCVal itself,
   /// which a caller can detect with `is XdrSCVal`. The Uint8List returned
@@ -748,13 +771,10 @@ class XdrSCVal extends XdrSCValBase {
         }
         break;
       case XdrSCValType.SCV_STRING:
-        if (str != null) {
-          return str!;
-        }
-        break;
       case XdrSCValType.SCV_SYMBOL:
-        if (sym != null) {
-          return sym!;
+        final String? text = _textOrNull(this);
+        if (text != null) {
+          return text;
         }
         break;
       case XdrSCValType.SCV_VEC:
@@ -802,6 +822,15 @@ class XdrSCVal extends XdrSCValBase {
     return result;
   }
 
+  /// The text of the SCV_STRING or SCV_SYMBOL [value], or null when its arm
+  /// is unset or its bytes are not valid UTF-8.
+  static String? _textOrNull(XdrSCVal value) {
+    final Uint8List? bytes = value.discriminant == XdrSCValType.SCV_STRING
+        ? value.strBytes
+        : value.symBytes;
+    return bytes == null ? null : XdrUtf8.tryDecode(bytes);
+  }
+
   /// Sentinel returned by [_mapKeyToNative] for a key with no usable native
   /// map-key representation. `null` is a legitimate key result (the
   /// SCV_VOID key), so the sentinel is checked by identity, not equality.
@@ -813,13 +842,10 @@ class XdrSCVal extends XdrSCValBase {
   static Object? _mapKeyToNative(XdrSCVal key) {
     switch (key.discriminant) {
       case XdrSCValType.SCV_SYMBOL:
-        if (key.sym != null) {
-          return key.sym!;
-        }
-        break;
       case XdrSCValType.SCV_STRING:
-        if (key.str != null) {
-          return key.str!;
+        final String? text = _textOrNull(key);
+        if (text != null) {
+          return text;
         }
         break;
       case XdrSCValType.SCV_U32:
@@ -888,7 +914,10 @@ class XdrSCVal extends XdrSCValBase {
 
   static XdrSCVal fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCVal.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCVal decoded = XdrSCVal.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCVal.

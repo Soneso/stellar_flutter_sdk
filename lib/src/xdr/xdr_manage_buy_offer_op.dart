@@ -12,7 +12,6 @@ import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_json_helper.dart';
 import 'xdr_price.dart';
-import 'xdr_uint64.dart';
 
 class XdrManageBuyOfferOp {
   XdrAsset _selling;
@@ -31,9 +30,9 @@ class XdrManageBuyOfferOp {
   XdrPrice get price => this._price;
   set price(XdrPrice value) => this._price = value;
 
-  XdrUint64 _offerID;
-  XdrUint64 get offerID => this._offerID;
-  set offerID(XdrUint64 value) => this._offerID = value;
+  XdrInt64 _offerID;
+  XdrInt64 get offerID => this._offerID;
+  set offerID(XdrInt64 value) => this._offerID = value;
 
   XdrManageBuyOfferOp(
     this._selling,
@@ -51,7 +50,7 @@ class XdrManageBuyOfferOp {
     XdrAsset.encode(stream, encodedManageBuyOfferOp.buying);
     XdrInt64.encode(stream, encodedManageBuyOfferOp.amount);
     XdrPrice.encode(stream, encodedManageBuyOfferOp.price);
-    XdrUint64.encode(stream, encodedManageBuyOfferOp.offerID);
+    XdrInt64.encode(stream, encodedManageBuyOfferOp.offerID);
   }
 
   static XdrManageBuyOfferOp decode(XdrDataInputStream stream) {
@@ -59,7 +58,7 @@ class XdrManageBuyOfferOp {
     XdrAsset buying = XdrAsset.decode(stream);
     XdrInt64 amount = XdrInt64.decode(stream);
     XdrPrice price = XdrPrice.decode(stream);
-    XdrUint64 offerID = XdrUint64.decode(stream);
+    XdrInt64 offerID = XdrInt64.decode(stream);
     return XdrManageBuyOfferOp(selling, buying, amount, price, offerID);
   }
 
@@ -71,7 +70,10 @@ class XdrManageBuyOfferOp {
 
   static XdrManageBuyOfferOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrManageBuyOfferOp.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrManageBuyOfferOp decoded = XdrManageBuyOfferOp.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -91,7 +93,7 @@ class XdrManageBuyOfferOp {
     );
     XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.buyAmount');
     XdrPrice price = XdrPrice.fromTxRep(map, '$prefix.price');
-    XdrUint64 offerID = XdrUint64.fromTxRep(map, '$prefix.offerID');
+    XdrInt64 offerID = XdrInt64.fromTxRep(map, '$prefix.offerID');
     return XdrManageBuyOfferOp(selling, buying, amount, price, offerID);
   }
 
@@ -158,7 +160,7 @@ class XdrManageBuyOfferOp {
       XdrAsset.fromXdrJsonValue(jsonBuying),
       XdrInt64.fromXdrJsonValue(jsonAmount),
       XdrPrice.fromXdrJsonValue(jsonPrice),
-      XdrUint64.fromXdrJsonValue(jsonOfferID),
+      XdrInt64.fromXdrJsonValue(jsonOfferID),
     );
   }
 }

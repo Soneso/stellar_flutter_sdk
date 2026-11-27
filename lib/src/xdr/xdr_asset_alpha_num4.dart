@@ -26,7 +26,7 @@ class XdrAssetAlphaNum4 {
     XdrDataOutputStream stream,
     XdrAssetAlphaNum4 encodedAssetAlphaNum4,
   ) {
-    stream.write(encodedAssetAlphaNum4.assetCode);
+    stream.writeAssetCode(encodedAssetAlphaNum4.assetCode, 4);
     XdrAccountID.encode(stream, encodedAssetAlphaNum4.issuer);
   }
 
@@ -44,17 +44,26 @@ class XdrAssetAlphaNum4 {
 
   static XdrAssetAlphaNum4 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrAssetAlphaNum4.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrAssetAlphaNum4 decoded = XdrAssetAlphaNum4.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.assetCode: ${TxRepHelper.bytesToHex(_assetCode)}');
+    lines.add(
+      '$prefix.assetCode: ${TxRepHelper.bytesToHex(TxRepHelper.padAssetCode(_assetCode, 4, '$prefix.assetCode'))}',
+    );
     lines.add('$prefix.issuer: ${TxRepHelper.formatAccountId(_issuer)}');
   }
 
   static XdrAssetAlphaNum4 fromTxRep(Map<String, String> map, String prefix) {
-    Uint8List assetCode = TxRepHelper.hexToBytes(
-      TxRepHelper.getValue(map, '$prefix.assetCode') ?? '',
+    Uint8List assetCode = TxRepHelper.checkBytesMaxLength(
+      TxRepHelper.hexToBytes(
+        TxRepHelper.getValue(map, '$prefix.assetCode') ?? '',
+      ),
+      4,
+      '$prefix.assetCode',
     );
     XdrAccountID issuer = TxRepHelper.parseAccountId(
       TxRepHelper.getValue(map, '$prefix.issuer') ?? '',

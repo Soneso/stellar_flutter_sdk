@@ -18,7 +18,7 @@ class XdrUint256 {
   set uint256(Uint8List value) => this._uint256 = value;
 
   static void encode(XdrDataOutputStream stream, XdrUint256 encodedUint256) {
-    stream.write(encodedUint256.uint256);
+    stream.writeFixedOpaque(encodedUint256.uint256, 32);
   }
 
   static XdrUint256 decode(XdrDataInputStream stream) {
@@ -34,21 +34,28 @@ class XdrUint256 {
 
   static XdrUint256 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrUint256.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrUint256 decoded = XdrUint256.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${TxRepHelper.bytesToHex(_uint256)}');
+    lines.add(
+      '$prefix: ${TxRepHelper.bytesToHex(TxRepHelper.checkBytesExactLength(_uint256, 32, prefix))}',
+    );
   }
 
   static XdrUint256 fromTxRep(Map<String, String> map, String prefix) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
-    Uint8List bytes = TxRepHelper.hexToBytes(raw);
-    if (bytes.length != 32) {
-      throw Exception('$prefix must be 32 bytes, ${bytes.length} given');
-    }
-    return XdrUint256(bytes);
+    return XdrUint256(
+      TxRepHelper.checkBytesExactLength(
+        TxRepHelper.hexToBytes(raw),
+        32,
+        prefix,
+      ),
+    );
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.
@@ -60,7 +67,8 @@ class XdrUint256 {
       fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrUint256'));
 
   /// Returns the SEP-0051 rendering of the wrapped value.
-  Object? toXdrJsonValue() => XdrJsonHelper.hex(_uint256, type: 'XdrUint256');
+  Object? toXdrJsonValue() =>
+      XdrJsonHelper.hex(_uint256, type: 'XdrUint256', expectedLength: 32);
 
   /// Reads a XdrUint256 from the SEP-0051 rendering of its value.
   static XdrUint256 fromXdrJsonValue(Object? value) => XdrUint256(

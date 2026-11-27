@@ -4,7 +4,8 @@
 // the deploy transaction is submitted, because the code entry is already
 // settled while the freshly created contract instance may not be visible to
 // the RPC yet. Loading by contract id remains the fallback when the code
-// entry cannot be read or parsed up front.
+// entry is missing up front; code that the parser rejects fails the deploy
+// before anything is submitted.
 //
 // All RPC calls are served by a mocked Dio adapter; no network access.
 
@@ -72,8 +73,8 @@ void main() {
   /// Serves the full deploy flow. Ledger-entry requests are dispatched on the
   /// requested key type; the wasm code entry answer per request is taken from
   /// [codeEntryAnswers] in order (its last element repeats), so tests can
-  /// serve a missing or unparseable entry to the pre-deploy load and the real
-  /// one to the fallback. Every request is appended to [requestLog] as
+  /// serve a missing entry to the pre-deploy load and the real one to the
+  /// fallback. Every request is appended to [requestLog] as
   /// 'code', 'account', 'contractData', 'simulate', 'send' or 'getTx'; the
   /// submitted envelope is recorded into [capturedEnvelopes] when given.
   SorobanServer deployFlowMockServer(
@@ -237,26 +238,28 @@ void main() {
       },
     );
 
-    test(
-      'falls back to loading by contract id when the code has no parseable spec',
-      () async {
-        final keyPair = KeyPair.random();
-        final requestLog = <String>[];
-        final unparseable = Uint8List.fromList([1, 2, 3, 4]);
-        final server = deployFlowMockServer(keyPair, [
-          unparseable,
-          helloWasm,
-        ], requestLog);
+    test('throws the parser error before submitting when the code cannot be '
+        'parsed', () async {
+      final keyPair = KeyPair.random();
+      final requestLog = <String>[];
+      // The hello world module with spec entry kind 6, on every read.
+      final rejected = Uint8List.fromList(helloWasm)..[345] = 6;
+      final server = deployFlowMockServer(keyPair, [rejected], requestLog);
 
-        final client = await SorobanClient.deploy(
-          deployRequest: deployRequest(keyPair, server),
-        );
-
-        expect(client.getContractId(), createdContractId);
-        expect(client.getMethodNames(), contains('hello'));
-        expect(requestLog, contains('contractData'));
-      },
-    );
+      await expectLater(
+        SorobanClient.deploy(deployRequest: deployRequest(keyPair, server)),
+        throwsA(
+          isA<SorobanContractParserFailed>().having(
+            (e) => e.toString(),
+            'message',
+            'invalid byte code: the contractspecv0 entry at byte offset 342 '
+                'does not decode: Exception: Unknown enum value: 6',
+          ),
+        ),
+      );
+      // Only the code entry was read: nothing was simulated or sent.
+      expect(requestLog, ['code']);
+    });
 
     test('submits the V2 create-contract host function with an empty '
         'constructor vector', () async {

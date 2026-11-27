@@ -73,18 +73,6 @@ FIELD_OVERRIDES = {
 # FIELD_OVERRIDES renaming.
 
 FIELD_TYPE_OVERRIDES = {
-  # -----------------------------------------------------------------------
-  # int64 offerID fields using XdrUint64 (SDK uses unsigned for IDs).
-  # The XDR spec declares these as int64 (signed) but offer IDs are
-  # always positive, and the SDK historically uses unsigned decode.
-  # -----------------------------------------------------------------------
-  "XdrManageBuyOfferOp" => { "offerID" => "XdrUint64" },
-  "XdrManageSellOfferOp" => { "offerID" => "XdrUint64" },
-  "XdrOfferEntry" => { "offerID" => "XdrUint64" },
-  "XdrLedgerKeyOffer" => { "offerID" => "XdrUint64" },
-  "XdrClaimOfferAtom" => { "offerID" => "XdrUint64" },
-  "XdrClaimOfferAtomV0" => { "offerID" => "XdrUint64" },
-
   # uint32 field using int instead of XdrUint32
   "XdrAllowTrustOp" => { "authorize" => "int" },
 
@@ -98,20 +86,38 @@ FIELD_TYPE_OVERRIDES = {
   "XdrInnerTransactionResult" => { "ext" => "XdrTransactionResultExt" },
 }.freeze
 
-# XDR `string` fields the SDK carries as raw bytes rather than as Dart text.
+# XDR `string` fields the SDK stores as raw bytes rather than as Dart text.
 #
-# An XDR `string` holds arbitrary bytes. A field listed here is emitted as a
+# An XDR `string` holds arbitrary bytes. A field listed here stores them as a
 # Uint8List and keeps the `string` wire form -- a length prefix, the bytes, and
-# padding to a multiple of four -- so its encoding is unchanged. Beside it the
-# generator emits the named getter, which decodes the bytes as UTF-8 for a
-# caller that wants text.
+# padding to a multiple of four. Encoding, TxRep and XDR-JSON read and write
+# the stored bytes, so a value that is not UTF-8 round-trips exactly. An entry
+# takes one of two forms:
 #
-# Key: DartClassName => { "xdrFieldName" => "utf8GetterName" }
+#   "xdrFieldName" => "utf8GetterName"
+#     The field itself is a Uint8List. The named getter reads it as text.
+#   "xdrFieldName" => { bytes: "bytesAccessorName" }
+#     The field keeps its String getter, setter and constructor parameter,
+#     which read the stored bytes as text and store the UTF-8 encoding of the
+#     text they are given. The named getter and setter read and write the
+#     bytes. A struct with such a field also gets a constructor that takes the
+#     bytes.
+#
+# Text reads go through XdrUtf8.decode: every leading byte order mark is kept,
+# and bytes that are not valid UTF-8 throw a FormatException.
+#
+# Key: DartClassName => { "xdrFieldName" => "utf8GetterName" or { bytes: "bytesAccessorName" } }
 #
 # The xdrFieldName is the name from the .x file, before any FIELD_OVERRIDES
 # renaming.
 
 BYTES_BACKED_STRING_FIELDS = {
   "XdrContractExecutableExternalRef" => { "tag" => "tagString" },
-  "XdrSCVal" => { "executable_tag" => "executableTagString" },
+  "XdrInvokeContractArgs" => { "functionName" => { bytes: "functionNameBytes" } },
+  "XdrMemo" => { "text" => { bytes: "textBytes" } },
+  "XdrSCVal" => {
+    "executable_tag" => "executableTagString",
+    "str" => { bytes: "strBytes" },
+    "sym" => { bytes: "symBytes" },
+  },
 }.freeze

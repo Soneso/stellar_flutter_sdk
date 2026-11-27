@@ -90,7 +90,11 @@ class XdrStellarValueProposedMsValue {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrStellarValueProposedMsValue.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrStellarValueProposedMsValue decoded =
+        XdrStellarValueProposedMsValue.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

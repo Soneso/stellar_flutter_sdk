@@ -60,7 +60,10 @@ class XdrLedgerFootprint {
 
   static XdrLedgerFootprint fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrLedgerFootprint.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrLedgerFootprint decoded = XdrLedgerFootprint.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

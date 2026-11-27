@@ -212,7 +212,7 @@ class XdrStellarMessage {
         break;
       case XdrMessageType.PEERS:
         int peerssize = encodedStellarMessage._peers!.length;
-        stream.writeInt(peerssize);
+        stream.writeBoundedLength(peerssize, 100);
         for (int i = 0; i < peerssize; i++) {
           XdrPeerAddress.encode(stream, encodedStellarMessage._peers![i]);
         }
@@ -309,7 +309,7 @@ class XdrStellarMessage {
         decodedStellarMessage._dontHave = XdrDontHave.decode(stream);
         break;
       case XdrMessageType.PEERS:
-        int peerssize = stream.readArrayLength();
+        int peerssize = stream.readArrayLength(100);
         decodedStellarMessage._peers = List<XdrPeerAddress>.empty(
           growable: true,
         );
@@ -385,7 +385,10 @@ class XdrStellarMessage {
 
   static XdrStellarMessage fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrStellarMessage.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrStellarMessage decoded = XdrStellarMessage.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

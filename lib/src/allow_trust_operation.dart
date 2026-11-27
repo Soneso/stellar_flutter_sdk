@@ -6,9 +6,15 @@ import 'dart:typed_data';
 
 import 'operation.dart';
 import 'dart:convert';
+import 'asset_code_bytes.dart';
+import 'constants/stellar_protocol_constants.dart';
 import 'key_pair.dart';
 import 'util.dart';
 import 'xdr/xdr.dart';
+
+/// The highest `authorize` value, the authorized to maintain liabilities flag.
+final int _maxAuthorize =
+    XdrTrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG.value;
 
 /// Updates the authorized flag of an existing trustline.
 ///
@@ -178,14 +184,33 @@ class AllowTrustOperation extends Operation {
   /// - [op] The XDR AllowTrust operation
   ///
   /// Returns: A builder instance for constructing the operation
+  ///
+  /// Throws a [FormatException] for an `authorize` value outside 0 to 2, for
+  /// an asset code that holds a byte above 0x7F, and for an ALPHANUM12 code
+  /// shorter than 5 characters, since the operation writes a code of up to 4
+  /// characters as ALPHANUM4.
   static AllowTrustOperationBuilder builder(XdrAllowTrustOp op) {
+    if (op.authorize < 0 || op.authorize > _maxAuthorize) {
+      throw FormatException(
+        'Allow trust authorize value ${op.authorize} is outside 0 to '
+        '$_maxAuthorize',
+      );
+    }
     String assetCode;
     switch (op.asset.discriminant) {
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        assetCode = Util.paddedByteArrayToString(op.asset.assetCode4);
+        assetCode = readAssetCode(op.asset.assetCode4!);
         break;
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        assetCode = Util.paddedByteArrayToString(op.asset.assetCode12);
+        assetCode = readAssetCode(op.asset.assetCode12!);
+        if (assetCode.length <
+            StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MIN_LENGTH) {
+          throw FormatException(
+            'ALPHANUM12 asset code "$assetCode" is shorter than '
+            '${StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MIN_LENGTH} '
+            'characters',
+          );
+        }
         break;
       default:
         throw new Exception("Unknown asset code");
@@ -229,7 +254,11 @@ class AllowTrustOperationBuilder
   /// - [_trustor] Account ID of the trustline holder
   /// - [_assetCode] Asset code string (4 or 12 characters max)
   /// - [_authorize] Authorization flag value (0=none, 1=authorized, 2=maintain liabilities)
-  AllowTrustOperationBuilder(this._trustor, this._assetCode, this._authorize);
+  ///
+  /// Throws a [RangeError] for an [_authorize] value outside 0 to 2.
+  AllowTrustOperationBuilder(this._trustor, this._assetCode, this._authorize) {
+    RangeError.checkValueInInterval(_authorize, 0, _maxAuthorize, 'authorize');
+  }
 
   /// Builds the allow trust operation.
   ///

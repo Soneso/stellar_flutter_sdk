@@ -80,7 +80,12 @@ class XdrHashIDPreimageRevokeID {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrHashIDPreimageRevokeID.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrHashIDPreimageRevokeID decoded = XdrHashIDPreimageRevokeID.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

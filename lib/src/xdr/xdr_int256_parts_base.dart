@@ -56,7 +56,10 @@ class XdrInt256PartsBase {
 
   static XdrInt256PartsBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrInt256PartsBase.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrInt256PartsBase decoded = XdrInt256PartsBase.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

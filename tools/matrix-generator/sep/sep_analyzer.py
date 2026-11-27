@@ -1956,7 +1956,7 @@ class SEPAnalyzer:
         sep_declaration_map = {
             'sep_meta_key': '_parseSupportedSeps',  # Looks for "sep" key in meta
             'comma_separated_list': '_parseSupportedSeps',  # Splits by comma
-            'multiple_sep_entries': '_parseSupportedSeps'  # Could handle multiple entries
+            'multiple_sep_entries': '_appendSepValue'  # Joins the values of repeated "sep" entries
         }
         meta_entry_format_map = {
             'sep_number_format': '_parseSupportedSeps',  # Parses SEP numbers
@@ -2021,14 +2021,14 @@ class SEPAnalyzer:
             'contractmetav0_section': 'metaEntries',  # Proves contractmetav0 was parsed (stores meta entries)
             'xdr_binary_encoding': 'decode'  # XDR decode method available
         }
-        # _parseContractSpec checks the discriminant of all six entry types.
+        # _parseContractSpec decodes every entry with XdrSCSpecEntry.decode, which reads all six entry types.
         entry_types_map = {
-            'function_specs': 'specEntries',  # SC_SPEC_ENTRY_FUNCTION_V0 checked in _parseContractSpec
-            'struct_specs': 'specEntries',  # SC_SPEC_ENTRY_UDT_STRUCT_V0 checked in _parseContractSpec
-            'union_specs': 'specEntries',  # SC_SPEC_ENTRY_UDT_UNION_V0 checked in _parseContractSpec
-            'enum_specs': 'specEntries',  # SC_SPEC_ENTRY_UDT_ENUM_V0 checked in _parseContractSpec
-            'error_enum_specs': 'specEntries',  # SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0 checked in _parseContractSpec
-            'event_specs': 'specEntries'  # SC_SPEC_ENTRY_EVENT_V0 checked in _parseContractSpec
+            'function_specs': 'specEntries',  # SC_SPEC_ENTRY_FUNCTION_V0
+            'struct_specs': 'specEntries',  # SC_SPEC_ENTRY_UDT_STRUCT_V0
+            'union_specs': 'specEntries',  # SC_SPEC_ENTRY_UDT_UNION_V0
+            'enum_specs': 'specEntries',  # SC_SPEC_ENTRY_UDT_ENUM_V0
+            'error_enum_specs': 'specEntries',  # SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0
+            'event_specs': 'specEntries'  # SC_SPEC_ENTRY_EVENT_V0
         }
         type_system_primitive_map = {
             'boolean_type': 'XdrSCSpecTypeDef',  # Supports boolean via XDR

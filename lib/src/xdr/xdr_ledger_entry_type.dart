@@ -76,7 +76,10 @@ class XdrLedgerEntryType {
 
   static XdrLedgerEntryType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrLedgerEntryType.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrLedgerEntryType decoded = XdrLedgerEntryType.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

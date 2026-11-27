@@ -72,13 +72,11 @@ class XdrSCPStatementPrepare {
     XdrHash quorumSetHash = XdrHash.decode(stream);
     XdrSCPBallot ballot = XdrSCPBallot.decode(stream);
     XdrSCPBallot? prepared;
-    int preparedPresent = stream.readInt();
-    if (preparedPresent != 0) {
+    if (stream.readOptionalPresence()) {
       prepared = XdrSCPBallot.decode(stream);
     }
     XdrSCPBallot? preparedPrime;
-    int preparedPrimePresent = stream.readInt();
-    if (preparedPrimePresent != 0) {
+    if (stream.readOptionalPresence()) {
       preparedPrime = XdrSCPBallot.decode(stream);
     }
     XdrUint32 nC = XdrUint32.decode(stream);
@@ -103,7 +101,10 @@ class XdrSCPStatementPrepare {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCPStatementPrepare.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCPStatementPrepare decoded = XdrSCPStatementPrepare.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

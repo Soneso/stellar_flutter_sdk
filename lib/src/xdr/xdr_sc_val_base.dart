@@ -89,13 +89,33 @@ class XdrSCValBase {
 
   XdrSCBytes? get bytes => this._bytes;
 
-  String? _str;
+  Uint8List? _str;
 
-  String? get str => this._str;
+  /// The text [strBytes] spells, read as UTF-8, or null when this arm is unset.
+  ///
+  /// Every leading byte order mark is kept. Throws a FormatException when the
+  /// bytes are not valid UTF-8.
+  String? get str {
+    final Uint8List? bytes = this._str;
+    return bytes == null ? null : XdrUtf8.decode(bytes);
+  }
 
-  String? _sym;
+  /// The bytes of [str] as they are encoded, or null when this arm is unset.
+  Uint8List? get strBytes => this._str;
 
-  String? get sym => this._sym;
+  Uint8List? _sym;
+
+  /// The text [symBytes] spells, read as UTF-8, or null when this arm is unset.
+  ///
+  /// Every leading byte order mark is kept. Throws a FormatException when the
+  /// bytes are not valid UTF-8.
+  String? get sym {
+    final Uint8List? bytes = this._sym;
+    return bytes == null ? null : XdrUtf8.decode(bytes);
+  }
+
+  /// The bytes of [sym] as they are encoded, or null when this arm is unset.
+  Uint8List? get symBytes => this._sym;
 
   List<XdrSCVal>? _vec;
 
@@ -123,10 +143,11 @@ class XdrSCValBase {
 
   /// The text [executableTag] spells, read as UTF-8, or null when this arm is unset.
   ///
-  /// Throws a FormatException when the bytes are not valid UTF-8.
+  /// Every leading byte order mark is kept. Throws a FormatException when the
+  /// bytes are not valid UTF-8.
   String? get executableTagString {
     final Uint8List? bytes = _executableTag;
-    return bytes == null ? null : utf8.decode(bytes);
+    return bytes == null ? null : XdrUtf8.decode(bytes);
   }
 
   XdrSCValBase(this._type);
@@ -157,9 +178,17 @@ class XdrSCValBase {
 
   set bytes(XdrSCBytes? value) => this._bytes = value;
 
-  set str(String? value) => this._str = value;
+  /// Stores the UTF-8 encoding of [value], or unsets the arm when it is null.
+  set str(String? value) =>
+      this._str = value == null ? null : XdrUtf8.encode(value);
 
-  set sym(String? value) => this._sym = value;
+  set strBytes(Uint8List? value) => this._str = value;
+
+  /// Stores the UTF-8 encoding of [value], or unsets the arm when it is null.
+  set sym(String? value) =>
+      this._sym = value == null ? null : XdrUtf8.encode(value);
+
+  set symBytes(Uint8List? value) => this._sym = value;
 
   set vec(List<XdrSCVal>? value) => this._vec = value;
 
@@ -218,10 +247,10 @@ class XdrSCValBase {
         XdrSCBytes.encode(stream, encodedSCVal._bytes!);
         break;
       case XdrSCValType.SCV_STRING:
-        stream.writeString(encodedSCVal._str!);
+        stream.writeStringBytes(encodedSCVal._str!);
         break;
       case XdrSCValType.SCV_SYMBOL:
-        stream.writeString(encodedSCVal._sym!);
+        stream.writeStringBytes(encodedSCVal._sym!, 32);
         break;
       case XdrSCValType.SCV_VEC:
         if (encodedSCVal._vec == null) {
@@ -318,14 +347,13 @@ class XdrSCValBase {
           decoded._bytes = XdrSCBytes.decode(stream);
           break;
         case XdrSCValType.SCV_STRING:
-          decoded._str = stream.readString();
+          decoded._str = stream.readStringBytes();
           break;
         case XdrSCValType.SCV_SYMBOL:
-          decoded._sym = stream.readString();
+          decoded._sym = stream.readStringBytes(32);
           break;
         case XdrSCValType.SCV_VEC:
-          int vecPresent = stream.readInt();
-          if (vecPresent != 0) {
+          if (stream.readOptionalPresence()) {
             int vecLen = stream.readArrayLength();
             decoded._vec = List<XdrSCVal>.empty(growable: true);
             for (int veci = 0; veci < vecLen; veci++) {
@@ -334,8 +362,7 @@ class XdrSCValBase {
           }
           break;
         case XdrSCValType.SCV_MAP:
-          int mapPresent = stream.readInt();
-          if (mapPresent != 0) {
+          if (stream.readOptionalPresence()) {
             int mapLen = stream.readArrayLength();
             decoded._map = List<XdrSCMapEntry>.empty(growable: true);
             for (int mapi = 0; mapi < mapLen; mapi++) {
@@ -372,7 +399,10 @@ class XdrSCValBase {
 
   static XdrSCValBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSCValBase.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSCValBase decoded = XdrSCValBase.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -420,10 +450,10 @@ class XdrSCValBase {
         _bytes!.toTxRep('$prefix.bytes', lines);
         break;
       case XdrSCValType.SCV_STRING:
-        lines.add('$prefix.str: ${TxRepHelper.escapeString(_str!)}');
+        lines.add('$prefix.str: ${TxRepHelper.escapeBytes(_str!)}');
         break;
       case XdrSCValType.SCV_SYMBOL:
-        lines.add('$prefix.sym: ${TxRepHelper.escapeString(_sym!)}');
+        lines.add('$prefix.sym: ${TxRepHelper.escapeBytes(_sym!)}');
         break;
       case XdrSCValType.SCV_VEC:
         if (_vec != null) {
@@ -517,13 +547,17 @@ class XdrSCValBase {
         result._bytes = XdrSCBytes.fromTxRep(map, '$prefix.bytes');
         break;
       case XdrSCValType.SCV_STRING:
-        result._str = TxRepHelper.unescapeString(
+        result._str = TxRepHelper.unescapeBytes(
           TxRepHelper.getValue(map, '$prefix.str') ?? '',
         );
         break;
       case XdrSCValType.SCV_SYMBOL:
-        result._sym = TxRepHelper.unescapeString(
-          TxRepHelper.getValue(map, '$prefix.sym') ?? '',
+        result._sym = TxRepHelper.checkBytesMaxLength(
+          TxRepHelper.unescapeBytes(
+            TxRepHelper.getValue(map, '$prefix.sym') ?? '',
+          ),
+          32,
+          '$prefix.sym',
         );
         break;
       case XdrSCValType.SCV_VEC:
@@ -618,7 +652,7 @@ class XdrSCValBase {
         return <String, Object?>{'bytes': _bytes!.toXdrJsonValue()};
       case 14:
         return <String, Object?>{
-          'string': XdrJsonHelper.escapedString(
+          'string': XdrJsonHelper.escapedBytes(
             _str!,
             type: 'XdrSCVal',
             key: 'string',
@@ -626,10 +660,11 @@ class XdrSCValBase {
         };
       case 15:
         return <String, Object?>{
-          'symbol': XdrJsonHelper.escapedString(
+          'symbol': XdrJsonHelper.escapedBytes(
             _sym!,
             type: 'XdrSCVal',
             key: 'symbol',
+            maxBytes: 32,
           ),
         };
       case 16:
@@ -765,7 +800,7 @@ class XdrSCValBase {
         return arm12;
       case 'string':
         final T arm13 = constructor(XdrSCValType.SCV_STRING);
-        arm13.str = XdrJsonHelper.readEscapedString(
+        arm13.strBytes = XdrJsonHelper.readEscapedBytes(
           arm.value,
           type: 'XdrSCVal',
           key: 'string',
@@ -773,10 +808,11 @@ class XdrSCValBase {
         return arm13;
       case 'symbol':
         final T arm14 = constructor(XdrSCValType.SCV_SYMBOL);
-        arm14.sym = XdrJsonHelper.readEscapedString(
+        arm14.symBytes = XdrJsonHelper.readEscapedBytes(
           arm.value,
           type: 'XdrSCVal',
           key: 'symbol',
+          maxLength: 32,
         );
         return arm14;
       case 'vec':

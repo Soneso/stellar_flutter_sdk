@@ -38,7 +38,10 @@ class XdrLedgerKeyAccount {
 
   static XdrLedgerKeyAccount fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrLedgerKeyAccount.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrLedgerKeyAccount decoded = XdrLedgerKeyAccount.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

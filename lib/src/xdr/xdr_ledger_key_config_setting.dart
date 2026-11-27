@@ -43,7 +43,12 @@ class XdrLedgerKeyConfigSetting {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrLedgerKeyConfigSetting.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrLedgerKeyConfigSetting decoded = XdrLedgerKeyConfigSetting.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

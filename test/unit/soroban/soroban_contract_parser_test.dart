@@ -2,6 +2,7 @@
 // These tests validate contract metadata parsing, info extraction, and helper methods
 // without making any network calls
 
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -458,468 +459,518 @@ void main() {
   });
 
   group('SorobanContractParser - Error Handling', () {
-    test('parseContractByteCode with null environment meta throws', () {
-      final invalidByteCode = Uint8List.fromList([0x00, 0x61, 0x73, 0x6D]);
+    final env20 = _envMeta(20);
+    final funcTest = _function('test');
+    final env = _custom('contractenvmetav0', env20);
+    final spec = _custom('contractspecv0', funcTest);
+    List<int> meta(List<int> content) => _custom('contractmetav0', content);
+    // The same sections as bare markers, without wasm framing, fail at the
+    // header.
+    final markerEnv = 'contractenvmetav0'.codeUnits + env20;
+    final markerSpec = 'contractspecv0'.codeUnits + funcTest;
+    List<int> markerMeta(List<int> content) =>
+        'contractmetav0'.codeUnits + content;
+    const noHeader =
+        'invalid byte code: the wasm magic at byte offset 0 is 636f6e74, '
+        'expected 0061736d.';
 
+    for (final (name, framed, unframed, metaEntries) in [
+      (
+        'the environment meta and the spec',
+        [env, spec],
+        [markerEnv, markerSpec],
+        <String, String>{},
+      ),
+      (
+        'meta before the environment meta',
+        [meta(_kv('testKey', 'testValue')), env, spec],
+        [markerMeta(_kv('testKey', 'testValue')), markerEnv, markerSpec],
+        {'testKey': 'testValue'},
+      ),
+      (
+        'meta between the environment meta and the spec',
+        [env, meta(_kv('key2', 'value2')), spec],
+        [markerEnv, markerMeta(_kv('key2', 'value2')), markerSpec],
+        {'key2': 'value2'},
+      ),
+      (
+        'meta after the spec',
+        [env, spec, meta(_kv('key3', 'value3'))],
+        [markerEnv, markerSpec, markerMeta(_kv('key3', 'value3'))],
+        {'key3': 'value3'},
+      ),
+    ]) {
+      test('reads $name from their sections', () {
+        final result = _parse(_wasm(framed));
+        expect(result.envProtocolVersion, 20);
+        expect(result.specEntries.single.functionV0!.name, 'test');
+        expect(result.metaEntries, metaEntries);
+        final markerOnly = Uint8List.fromList([for (final p in unframed) ...p]);
+        expect(() => _parse(markerOnly), _fails(noHeader));
+      });
+    }
+
+    final invalid = 'invalid'.codeUnits;
+    for (final (name, framed, message) in [
+      (
+        'a module without a spec section',
+        [env],
+        'invalid byte code: spec entries not found.',
+      ),
+      (
+        'malformed environment meta',
+        [
+          _custom('contractenvmetav0', [0, 0, 0, ...invalid]),
+        ],
+        'invalid byte code: the contractenvmetav0 entry at byte offset 345 '
+            'does not decode: Exception: Unknown enum value: 105',
+      ),
+      (
+        'a malformed spec entry after a valid one',
+        [
+          env,
+          _custom('contractspecv0', [...funcTest, 0, 0, 0, ...invalid]),
+        ],
+        'invalid byte code: the contractspecv0 entry at byte offset 398 '
+            'does not decode: Exception: Unknown enum value: 105',
+      ),
+      (
+        'an unsupported spec entry kind',
+        [
+          env,
+          _custom('contractspecv0', [...funcTest, 0, 0, 0, 0xff]),
+        ],
+        'invalid byte code: the contractspecv0 entry at byte offset 398 '
+            'does not decode: Exception: Unknown enum value: 255',
+      ),
+      (
+        'a malformed meta entry after a valid one',
+        [
+          env,
+          spec,
+          meta([..._kv('key', 'value'), 0, 0, ...invalid]),
+        ],
+        'invalid byte code: the contractmetav0 entry at byte offset 439 '
+            'does not decode: Exception: Unknown enum value: 26990',
+      ),
+      (
+        'an unsupported meta kind',
+        [
+          env,
+          spec,
+          meta([0, 0, 0, 0xff]),
+        ],
+        'invalid byte code: the contractmetav0 entry at byte offset 415 '
+            'does not decode: Exception: Unknown enum value: 255',
+      ),
+    ]) {
+      test('rejects $name', () {
+        expect(() => _parse(_wasm(framed)), _fails(message));
+      });
+    }
+  });
+
+  group('SorobanContractParser section bounds', () {
+    final helloSpec = _decodeAll(_specContent, XdrSCSpecEntry.decode);
+    final helloMeta = {
+      for (final e in _decodeAll(_metaContent, XdrSCMetaEntry.decode))
+        e.v0!.key: e.v0!.val,
+    };
+    final other = _function('other');
+    final env99 = _envMeta(99);
+    final kv = _kv('k', 'v');
+    final spec = _custom('contractspecv0', _specContent);
+    final env = _custom('contractenvmetav0', _envMetaContent);
+    final meta = _custom('contractmetav0', _metaContent);
+    Uint8List before(List<int> section) => _wasm([section, spec, env, meta]);
+    Uint8List after(List<int> section) => _wasm([env, meta, section]);
+
+    test('reads the hello world module as its sections hold it', () {
+      final info = _parse(_helloWorld);
+      final envMeta = _decodeAll(_envMetaContent, XdrSCEnvMetaEntry.decode);
+      expect(_xdrOf(info.specEntries), _xdrOf(helloSpec));
+      expect(info.specEntries.single.functionV0!.name, 'hello');
       expect(
-        () => SorobanContractParser.parseContractByteCode(invalidByteCode),
-        throwsA(isA<SorobanContractParserFailed>()),
+        info.envProtocolVersion,
+        envMeta.single.interfaceVersion!.protocol.uint32,
       );
+      expect(info.metaEntries, helloMeta);
     });
 
-    test('parseContractByteCode with null spec entries throws', () {
-      final xdrOutputStream = XdrDataOutputStream();
-      final envMeta = XdrSCEnvMetaEntry(
-        XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
-      );
-      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
-        XdrUint32(20),
-        XdrUint32(0),
-      );
-      XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
-
-      final envMetaBytes = xdrOutputStream.bytes;
-      final envMetaString = String.fromCharCodes(envMetaBytes);
-
-      final byteCode = 'contractenvmetav0$envMetaString';
-      final invalidByteCode = Uint8List.fromList(byteCode.codeUnits);
-
-      expect(
-        () => SorobanContractParser.parseContractByteCode(invalidByteCode),
-        throwsA(isA<SorobanContractParserFailed>()),
-      );
+    test('reads a spec section followed by another custom section', () {
+      final name = _custom('name', const [1, 2, 3]);
+      final info = _parse(_wasm([spec, name, env, meta]));
+      expect(_xdrOf(info.specEntries), _xdrOf(helloSpec));
     });
 
-    test('_parseEnvironmentMeta with malformed bytes throws', () {
-      final invalidBytesString = 'contractenvmetav0\x00\x00\x00invalid';
+    test('decodes every entry of a section up to the section end', () {
+      final specContent = _specContent + other;
+      final info = _parse(
+        _wasm([
+          _custom('contractspecv0', specContent),
+          _custom('contractenvmetav0', _envMetaContent + env99),
+          _custom('contractmetav0', _metaContent + kv),
+        ]),
+      );
+      final expected = _decodeAll(specContent, XdrSCSpecEntry.decode);
+      expect(expected, hasLength(2));
+      expect(_xdrOf(info.specEntries), _xdrOf(expected));
+      expect(info.envProtocolVersion, 20);
+      expect(info.metaEntries, {...helloMeta, 'k': 'v'});
+    });
 
-      expect(
-        () => SorobanContractParser.parseContractByteCode(
-          Uint8List.fromList(invalidBytesString.codeUnits),
+    test('keeps a leading byte order mark in a doc and in a meta value', () {
+      final bom = String.fromCharCode(0xFEFF);
+      final bomSpec = _xdr(
+        (s) => XdrSCSpecEntry.encode(
+          s,
+          XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0)
+            ..functionV0 = XdrSCSpecFunctionV0('${bom}doc', 'other', [], []),
         ),
-        throwsA(isA<SorobanContractParserFailed>()),
       );
+      final bomKv = _kv('k', '${bom}v');
+      expect(bomSpec.sublist(4, 11), [0, 0, 0, 6, 0xef, 0xbb, 0xbf]);
+      expect(bomKv.sublist(12, 19), [0, 0, 0, 4, 0xef, 0xbb, 0xbf]);
+      final info = _parse(
+        _wasm([
+          _custom('contractspecv0', _specContent + bomSpec),
+          env,
+          _custom('contractmetav0', _metaContent + bomKv),
+        ]),
+      );
+      expect(info.specEntries.last.functionV0!.doc, '${bom}doc');
+      expect(info.metaEntries['k'], '${bom}v');
     });
 
-    test('_parseEnvironmentMeta falls back to contractspecv0 boundary', () {
-      final xdrOutputStream = XdrDataOutputStream();
-      final envMeta = XdrSCEnvMetaEntry(
-        XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
+    test('uses the first spec and environment meta section and every '
+        'meta section', () {
+      final info = _parse(
+        _wasm([
+          spec,
+          _custom('contractspecv0', other),
+          env,
+          _custom('contractenvmetav0', env99),
+          meta,
+          _custom('contractmetav0', kv + _kv('rsver', '2')),
+        ]),
       );
-      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
-        XdrUint32(20),
-        XdrUint32(0),
-      );
-      XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
-
-      final funcEntry = XdrSCSpecEntry(
-        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
-      );
-      funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'test', [], []);
-
-      final funcOutputStream = XdrDataOutputStream();
-      XdrSCSpecEntry.encode(funcOutputStream, funcEntry);
-
-      final envMetaBytes = xdrOutputStream.bytes;
-      final funcBytes = funcOutputStream.bytes;
-      final envMetaString = String.fromCharCodes(envMetaBytes);
-      final funcString = String.fromCharCodes(funcBytes);
-
-      final byteCode =
-          'contractenvmetav0${envMetaString}contractspecv0$funcString';
-      final validByteCode = Uint8List.fromList(byteCode.codeUnits);
-
-      // Should parse successfully with contractspecv0 boundary
-      final result = SorobanContractParser.parseContractByteCode(validByteCode);
-
-      expect(result.envProtocolVersion, equals(20));
-      expect(result.specEntries.length, equals(1));
+      expect(_xdrOf(info.specEntries), _xdrOf(helloSpec));
+      expect(info.envProtocolVersion, 20);
+      // The second meta section is read after the first, and a later entry
+      // replaces an earlier one with the same key.
+      expect(info.metaEntries.keys, [...helloMeta.keys, 'k']);
+      expect(info.metaEntries, {...helloMeta, 'rsver': '2', 'k': 'v'});
     });
 
-    test('_parseEnvironmentMeta extracts to end when no boundary found', () {
-      final xdrOutputStream = XdrDataOutputStream();
-      final envMeta = XdrSCEnvMetaEntry(
-        XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
-      );
-      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
-        XdrUint32(20),
-        XdrUint32(0),
-      );
-      XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
+    for (final (name, metaSections) in [
+      ('one meta section', [_kv('sep', '41') + _kv('sep', '40,46')]),
+      ('two meta sections', [_kv('sep', '41'), _kv('sep', '40,46')]),
+    ]) {
+      test('joins the values of repeated sep entries in $name', () {
+        final metas = [
+          for (final m in metaSections) _custom('contractmetav0', m),
+        ];
+        final info = _parse(_wasm([spec, env, ...metas]));
+        expect(info.metaEntries['sep'], '41,40,46');
+        expect(info.supportedSeps, ['41', '40', '46']);
+      });
+    }
 
-      final envMetaBytes = xdrOutputStream.bytes;
-      final envMetaString = String.fromCharCodes(envMetaBytes);
-
-      final byteCode = 'contractenvmetav0$envMetaString';
-      final validByteCode = Uint8List.fromList(byteCode.codeUnits);
-
-      expect(
-        () => SorobanContractParser.parseContractByteCode(validByteCode),
-        throwsA(isA<SorobanContractParserFailed>()),
-      );
+    test('never starts the spec at marker bytes inside a data segment', () {
+      // One active data segment for memory 0 at offset 0.
+      final segment = 'contractspecv0'.codeUnits + other;
+      final data = [1, 0, 0x41, 0, 0x0b, ..._leb(segment.length), ...segment];
+      final info = _parse(before([11, ..._leb(data.length), ...data]));
+      expect(_xdrOf(info.specEntries), _xdrOf(helloSpec));
     });
 
-    test('_parseContractSpec with no boundaries extracts to end', () {
-      final xdrOutputStream = XdrDataOutputStream();
-      final envMeta = XdrSCEnvMetaEntry(
-        XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
-      );
-      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
-        XdrUint32(20),
-        XdrUint32(0),
-      );
-      XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
-
-      final funcEntry = XdrSCSpecEntry(
-        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
-      );
-      funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'test', [], []);
-
-      final funcOutputStream = XdrDataOutputStream();
-      XdrSCSpecEntry.encode(funcOutputStream, funcEntry);
-
-      final envMetaBytes = xdrOutputStream.bytes;
-      final funcBytes = funcOutputStream.bytes;
-      final envMetaString = String.fromCharCodes(envMetaBytes);
-      final funcString = String.fromCharCodes(funcBytes);
-
-      final byteCode =
-          'contractenvmetav0${envMetaString}contractspecv0$funcString';
-      final validByteCode = Uint8List.fromList(byteCode.codeUnits);
-
-      final result = SorobanContractParser.parseContractByteCode(validByteCode);
-
-      expect(result.envProtocolVersion, equals(20));
-      expect(result.specEntries.length, equals(1));
+    test('accepts padded LEB128 sizes and name lengths', () {
+      // A custom section with an empty name whose length is 0 in five bytes,
+      // the spec section size 67 and the meta name length 14 in five bytes.
+      final emptyName = [0, 5, 0x80, 0x80, 0x80, 0x80, 0];
+      final paddedSpec = [0, 0xc3, 0x80, 0x80, 0x80, 0, 14]
+        ..addAll('contractspecv0'.codeUnits + _specContent);
+      final paddedMeta = [0, 115, 0x8e, 0x80, 0x80, 0x80, 0]
+        ..addAll('contractmetav0'.codeUnits + _metaContent);
+      final info = _parse(_wasm([emptyName, paddedSpec, env, paddedMeta]));
+      expect(_xdrOf(info.specEntries), _xdrOf(helloSpec));
+      expect(info.metaEntries, helloMeta);
     });
 
-    test('_parseContractSpec stops on malformed entry', () {
-      final xdrOutputStream = XdrDataOutputStream();
-      final envMeta = XdrSCEnvMetaEntry(
-        XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
-      );
-      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
-        XdrUint32(20),
-        XdrUint32(0),
-      );
-      XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
-
-      final funcEntry = XdrSCSpecEntry(
-        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
-      );
-      funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'test', [], []);
-
-      final funcOutputStream = XdrDataOutputStream();
-      XdrSCSpecEntry.encode(funcOutputStream, funcEntry);
-
-      final envMetaBytes = xdrOutputStream.bytes;
-      final funcBytes = funcOutputStream.bytes;
-      final envMetaString = String.fromCharCodes(envMetaBytes);
-      final funcString = String.fromCharCodes(funcBytes);
-      final malformedString = '\x00\x00\x00invalid';
-
-      final byteCode =
-          'contractenvmetav0${envMetaString}contractspecv0$funcString$malformedString';
-      final validByteCode = Uint8List.fromList(byteCode.codeUnits);
-
-      final result = SorobanContractParser.parseContractByteCode(validByteCode);
-
-      expect(result.specEntries.length, equals(1));
-    });
-
-    test('_parseContractSpec skips unsupported entry kinds', () {
-      final xdrOutputStream = XdrDataOutputStream();
-      final envMeta = XdrSCEnvMetaEntry(
-        XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
-      );
-      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
-        XdrUint32(20),
-        XdrUint32(0),
-      );
-      XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
-
-      final funcEntry = XdrSCSpecEntry(
-        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
-      );
-      funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'test', [], []);
-
-      final funcOutputStream = XdrDataOutputStream();
-      XdrSCSpecEntry.encode(funcOutputStream, funcEntry);
-
-      final envMetaBytes = xdrOutputStream.bytes;
-      final funcBytes = funcOutputStream.bytes;
-      final envMetaString = String.fromCharCodes(envMetaBytes);
-      final funcString = String.fromCharCodes(funcBytes);
-
-      final byteCode =
-          'contractenvmetav0${envMetaString}contractspecv0${funcString}\x00\x00\x00\xFF';
-      final validByteCode = Uint8List.fromList(byteCode.codeUnits);
-
-      // Parser should succeed but stop at unsupported entry
-      final result = SorobanContractParser.parseContractByteCode(validByteCode);
-
-      expect(result.envProtocolVersion, equals(20));
-      expect(result.specEntries.length, equals(1));
-    });
-
-    test('_parseMeta with contractenvmetav0 boundary', () {
-      final xdrOutputStream = XdrDataOutputStream();
-      final envMeta = XdrSCEnvMetaEntry(
-        XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
-      );
-      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
-        XdrUint32(20),
-        XdrUint32(0),
-      );
-      XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
-
-      final funcEntry = XdrSCSpecEntry(
-        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
-      );
-      funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'test', [], []);
-
-      final metaEntry = XdrSCMetaEntry(XdrSCMetaKind.SC_META_V0);
-      metaEntry.v0 = XdrSCMetaV0('testKey', 'testValue');
-
-      final funcOutputStream = XdrDataOutputStream();
-      final metaOutputStream = XdrDataOutputStream();
-      XdrSCSpecEntry.encode(funcOutputStream, funcEntry);
-      XdrSCMetaEntry.encode(metaOutputStream, metaEntry);
-
-      final envMetaBytes = xdrOutputStream.bytes;
-      final funcBytes = funcOutputStream.bytes;
-      final metaBytes = metaOutputStream.bytes;
-      final envMetaString = String.fromCharCodes(envMetaBytes);
-      final funcString = String.fromCharCodes(funcBytes);
-      final metaString = String.fromCharCodes(metaBytes);
-
-      final byteCode =
-          'contractmetav0${metaString}contractenvmetav0${envMetaString}contractspecv0$funcString';
-      final validByteCode = Uint8List.fromList(byteCode.codeUnits);
-
-      final result = SorobanContractParser.parseContractByteCode(validByteCode);
-
-      expect(result.metaEntries['testKey'], equals('testValue'));
-    });
-
-    test('_parseMeta with contractspecv0 boundary', () {
-      final xdrOutputStream = XdrDataOutputStream();
-      final envMeta = XdrSCEnvMetaEntry(
-        XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
-      );
-      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
-        XdrUint32(20),
-        XdrUint32(0),
-      );
-      XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
-
-      final funcEntry = XdrSCSpecEntry(
-        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
-      );
-      funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'test', [], []);
-
-      final metaEntry = XdrSCMetaEntry(XdrSCMetaKind.SC_META_V0);
-      metaEntry.v0 = XdrSCMetaV0('key2', 'value2');
-
-      final funcOutputStream = XdrDataOutputStream();
-      final metaOutputStream = XdrDataOutputStream();
-      XdrSCSpecEntry.encode(funcOutputStream, funcEntry);
-      XdrSCMetaEntry.encode(metaOutputStream, metaEntry);
-
-      final envMetaBytes = xdrOutputStream.bytes;
-      final funcBytes = funcOutputStream.bytes;
-      final metaBytes = metaOutputStream.bytes;
-      final envMetaString = String.fromCharCodes(envMetaBytes);
-      final funcString = String.fromCharCodes(funcBytes);
-      final metaString = String.fromCharCodes(metaBytes);
-
-      final byteCode =
-          'contractenvmetav0${envMetaString}contractmetav0${metaString}contractspecv0$funcString';
-      final validByteCode = Uint8List.fromList(byteCode.codeUnits);
-
-      final result = SorobanContractParser.parseContractByteCode(validByteCode);
-
-      expect(result.metaEntries['key2'], equals('value2'));
-    });
-
-    test('_parseMeta extracts to end when no boundary found', () {
-      final xdrOutputStream = XdrDataOutputStream();
-      final envMeta = XdrSCEnvMetaEntry(
-        XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
-      );
-      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
-        XdrUint32(20),
-        XdrUint32(0),
-      );
-      XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
-
-      final funcEntry = XdrSCSpecEntry(
-        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
-      );
-      funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'test', [], []);
-
-      final metaEntry = XdrSCMetaEntry(XdrSCMetaKind.SC_META_V0);
-      metaEntry.v0 = XdrSCMetaV0('key3', 'value3');
-
-      final funcOutputStream = XdrDataOutputStream();
-      final metaOutputStream = XdrDataOutputStream();
-      XdrSCSpecEntry.encode(funcOutputStream, funcEntry);
-      XdrSCMetaEntry.encode(metaOutputStream, metaEntry);
-
-      final envMetaBytes = xdrOutputStream.bytes;
-      final funcBytes = funcOutputStream.bytes;
-      final metaBytes = metaOutputStream.bytes;
-      final envMetaString = String.fromCharCodes(envMetaBytes);
-      final funcString = String.fromCharCodes(funcBytes);
-      final metaString = String.fromCharCodes(metaBytes);
-
-      final byteCode =
-          'contractenvmetav0${envMetaString}contractspecv0${funcString}contractmetav0$metaString';
-      final validByteCode = Uint8List.fromList(byteCode.codeUnits);
-
-      final result = SorobanContractParser.parseContractByteCode(validByteCode);
-
-      expect(result.metaEntries['key3'], equals('value3'));
-    });
-
-    test('_parseMeta with no meta entries returns empty map', () {
-      final xdrOutputStream = XdrDataOutputStream();
-      final envMeta = XdrSCEnvMetaEntry(
-        XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
-      );
-      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
-        XdrUint32(20),
-        XdrUint32(0),
-      );
-      XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
-
-      final funcEntry = XdrSCSpecEntry(
-        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
-      );
-      funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'test', [], []);
-
-      final funcOutputStream = XdrDataOutputStream();
-      XdrSCSpecEntry.encode(funcOutputStream, funcEntry);
-
-      final envMetaBytes = xdrOutputStream.bytes;
-      final funcBytes = funcOutputStream.bytes;
-      final envMetaString = String.fromCharCodes(envMetaBytes);
-      final funcString = String.fromCharCodes(funcBytes);
-
-      final byteCode =
-          'contractenvmetav0${envMetaString}contractspecv0$funcString';
-      final validByteCode = Uint8List.fromList(byteCode.codeUnits);
-
-      final result = SorobanContractParser.parseContractByteCode(validByteCode);
-
-      expect(result.metaEntries, isEmpty);
-    });
-
-    test('_parseMeta stops on malformed entry', () {
-      final xdrOutputStream = XdrDataOutputStream();
-      final envMeta = XdrSCEnvMetaEntry(
-        XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
-      );
-      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
-        XdrUint32(20),
-        XdrUint32(0),
-      );
-      XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
-
-      final funcEntry = XdrSCSpecEntry(
-        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
-      );
-      funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'test', [], []);
-
-      final metaEntry = XdrSCMetaEntry(XdrSCMetaKind.SC_META_V0);
-      metaEntry.v0 = XdrSCMetaV0('key', 'value');
-
-      final funcOutputStream = XdrDataOutputStream();
-      final metaOutputStream = XdrDataOutputStream();
-      XdrSCSpecEntry.encode(funcOutputStream, funcEntry);
-      XdrSCMetaEntry.encode(metaOutputStream, metaEntry);
-
-      final envMetaBytes = xdrOutputStream.bytes;
-      final funcBytes = funcOutputStream.bytes;
-      final metaBytes = metaOutputStream.bytes;
-      final envMetaString = String.fromCharCodes(envMetaBytes);
-      final funcString = String.fromCharCodes(funcBytes);
-      final metaString = String.fromCharCodes(metaBytes);
-      final malformedString = '\x00\x00invalid';
-
-      final byteCode =
-          'contractenvmetav0${envMetaString}contractspecv0${funcString}contractmetav0$metaString$malformedString';
-      final validByteCode = Uint8List.fromList(byteCode.codeUnits);
-
-      final result = SorobanContractParser.parseContractByteCode(validByteCode);
-
-      expect(result.metaEntries.length, equals(1));
-    });
-
-    test('_parseMeta skips unsupported meta kinds', () {
-      final xdrOutputStream = XdrDataOutputStream();
-      final envMeta = XdrSCEnvMetaEntry(
-        XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
-      );
-      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
-        XdrUint32(20),
-        XdrUint32(0),
-      );
-      XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
-
-      final funcEntry = XdrSCSpecEntry(
-        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
-      );
-      funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'test', [], []);
-
-      final funcOutputStream = XdrDataOutputStream();
-      XdrSCSpecEntry.encode(funcOutputStream, funcEntry);
-
-      final envMetaBytes = xdrOutputStream.bytes;
-      final funcBytes = funcOutputStream.bytes;
-      final envMetaString = String.fromCharCodes(envMetaBytes);
-      final funcString = String.fromCharCodes(funcBytes);
-
-      final byteCode =
-          'contractenvmetav0${envMetaString}contractspecv0${funcString}contractmetav0\x00\x00\x00\xFF';
-      final validByteCode = Uint8List.fromList(byteCode.codeUnits);
-
-      final result = SorobanContractParser.parseContractByteCode(validByteCode);
-
-      expect(result.metaEntries, isEmpty);
-    });
-
-    test('_extractStringBetween with start not found returns null', () {
-      final xdrOutputStream = XdrDataOutputStream();
-      final envMeta = XdrSCEnvMetaEntry(
-        XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
-      );
-      envMeta.interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
-        XdrUint32(20),
-        XdrUint32(0),
-      );
-      XdrSCEnvMetaEntry.encode(xdrOutputStream, envMeta);
-
-      final funcEntry = XdrSCSpecEntry(
-        XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
-      );
-      funcEntry.functionV0 = XdrSCSpecFunctionV0('', 'test', [], []);
-
-      final funcOutputStream = XdrDataOutputStream();
-      XdrSCSpecEntry.encode(funcOutputStream, funcEntry);
-
-      final envMetaBytes = xdrOutputStream.bytes;
-      final funcBytes = funcOutputStream.bytes;
-      final envMetaString = String.fromCharCodes(envMetaBytes);
-      final funcString = String.fromCharCodes(funcBytes);
-
-      final fullByteCode =
-          'contractenvmetav0${envMetaString}contractspecv0$funcString';
-      final validByteCode = Uint8List.fromList(fullByteCode.codeUnits);
-
-      final result = SorobanContractParser.parseContractByteCode(validByteCode);
-
-      expect(result, isNotNull);
-    });
+    // Each entry error names the module offset of the entry; the hello world
+    // spec content starts at 342 and its one entry ends at 394.
+    Matcher entryAt(String section, int offset, String cause) => _fails(
+      startsWith(
+        'invalid byte code: the $section entry at byte offset $offset '
+        'does not decode: $cause',
+      ),
+    );
+    Matcher framing(String detail) => _fails('invalid byte code: $detail');
+    Uint8List withSpec(List<int> content) =>
+        _wasm([_custom('contractspecv0', content), env, meta]);
+    final ffDoc = [0, 0, 0, 0, 0, 0, 0, 1, 0xff, 0, 0, 0]
+      ..addAll(_specContent.sublist(8));
+    final ffValue = [0, 0, 0, 0, 0, 0, 0, 1, 0x6b, 0, 0, 0, 0, 0, 0, 1]
+      ..addAll([0xff, 0, 0, 0]);
+    final rangeError = 'RangeError: XDR read of 4 bytes exceeds the';
+    for (final (name, bytes, matcher) in [
+      (
+        'a spec entry whose doc holds the byte ff',
+        withSpec([..._specContent, ...ffDoc]),
+        entryAt('contractspecv0', 394, 'FormatException: '),
+      ),
+      (
+        'a meta value holding the byte ff in a second meta section',
+        _wasm([spec, env, meta, _custom('contractmetav0', kv + ffValue)]),
+        entryAt('contractmetav0', 576, 'FormatException: '),
+      ),
+      (
+        'an unknown spec entry kind',
+        withSpec([..._specContent, 0, 0, 0, 6]),
+        entryAt('contractspecv0', 394, 'Exception: Unknown enum value: 6'),
+      ),
+      (
+        'bytes after the last spec entry',
+        withSpec([..._specContent, 0, 0]),
+        entryAt('contractspecv0', 394, '$rangeError 2 remaining bytes'),
+      ),
+      (
+        'bytes after the last environment meta entry',
+        _wasm([
+          spec,
+          _custom('contractenvmetav0', [..._envMetaContent, 0, 0, 0, 0, 0]),
+          meta,
+        ]),
+        entryAt('contractenvmetav0', 426, '$rangeError 1 remaining bytes'),
+      ),
+      (
+        'bytes after the last meta entry',
+        _wasm([
+          spec,
+          env,
+          _custom('contractmetav0', [..._metaContent, 0, 0, 0, 0, 0, 0, 0, 9]),
+        ]),
+        entryAt(
+          'contractmetav0',
+          539,
+          'RangeError: XDR byte count 9 exceeds the 0 remaining bytes',
+        ),
+      ),
+      (
+        'a meta entry split across two meta sections',
+        _wasm([
+          spec,
+          env,
+          _custom('contractmetav0', _metaContent + kv.sublist(0, 8)),
+          _custom('contractmetav0', kv.sublist(8)),
+        ]),
+        entryAt(
+          'contractmetav0',
+          539,
+          'RangeError: XDR byte count 1 exceeds the 0 remaining bytes',
+        ),
+      ),
+      (
+        'an empty first environment meta section before a valid one',
+        _wasm([spec, _custom('contractenvmetav0', const []), env, meta]),
+        _fails('invalid byte code: environment meta not found.'),
+      ),
+      (
+        'a section size past the end before the spec section',
+        before([11, 0xe8, 0x07]),
+        framing(
+          'the section with id 11 at byte offset 325 declares 1000 bytes, '
+          'but 214 bytes remain.',
+        ),
+      ),
+      (
+        'a name length cut by its section before the spec section',
+        before([0, 1, 0x8e]),
+        framing(
+          'the name length of the custom section at byte offset 325 ends at '
+          'byte offset 328 before its last byte.',
+        ),
+      ),
+      (
+        'a spec section whose size runs past the end',
+        after(_custom('contractspecv0', _specContent)..[1] = 68),
+        framing(
+          'the section with id 0 at byte offset 470 declares 68 bytes, '
+          'but 67 bytes remain.',
+        ),
+      ),
+      (
+        'a section size cut by the end of the module',
+        after(const [0, 0xc3]),
+        framing(
+          'the size of the section at byte offset 470 ends at byte offset '
+          '472 before its last byte.',
+        ),
+      ),
+      (
+        'a section size past the end after the contract sections',
+        Uint8List.fromList([..._helloWorld, 11, 0xe8, 0x07]),
+        framing(
+          'the section with id 11 at byte offset 539 declares 1000 bytes, '
+          'but 0 bytes remain.',
+        ),
+      ),
+      (
+        'a wrong wasm magic',
+        Uint8List.fromList(_helloWorld)..[3] = 0x6e,
+        framing(
+          'the wasm magic at byte offset 0 is 0061736e, expected 0061736d.',
+        ),
+      ),
+      (
+        'a wrong wasm version',
+        Uint8List.fromList(_helloWorld)..[4] = 2,
+        framing(
+          'the wasm version at byte offset 4 is 02000000, expected 01000000.',
+        ),
+      ),
+      (
+        'fewer bytes than the wasm header',
+        _helloWorld.sublist(0, 7),
+        framing(
+          'the 7 bytes at byte offset 0 are shorter than the 8-byte wasm '
+          'header.',
+        ),
+      ),
+      (
+        'a fifth LEB128 byte beyond the u32 range',
+        before([11, 0xff, 0xff, 0xff, 0xff, 0x1f]),
+        framing(
+          'the size of the section at byte offset 325 exceeds the u32 range.',
+        ),
+      ),
+      (
+        'a six-byte LEB128',
+        before([11, 0x80, 0x80, 0x80, 0x80, 0x80, 0]),
+        framing(
+          'the size of the section at byte offset 325 is longer than 5 bytes.',
+        ),
+      ),
+      (
+        'the largest u32 size',
+        before([11, 0xff, 0xff, 0xff, 0xff, 0x0f]),
+        framing(
+          'the section with id 11 at byte offset 325 declares 4294967295 '
+          'bytes, but 214 bytes remain.',
+        ),
+      ),
+      (
+        'a custom section name past its section end',
+        before([0, 3, 14, 0x63, 0x6f]),
+        framing(
+          'the custom section at byte offset 325 declares a 14-byte name, '
+          'but 2 bytes of the section remain.',
+        ),
+      ),
+    ]) {
+      test('rejects $name', () {
+        expect(() => _parse(bytes), matcher);
+      });
+    }
   });
 }
+
+// test/wasm/soroban_hello_world_contract.wasm, embedded because browser tests
+// cannot read a file fixture.
+final _helloWorld = base64Decode(
+  'AGFzbQEAAAABDwNgAn5+AX5gAX4BfmAAAAIHAQF2AWcAAAMDAgECBQMBABAGGQN/AUGAgMAA'
+  'C38AQYCAwAALfwBBgIDAAAsHMQUGbWVtb3J5AgAFaGVsbG8AAQFfAAIKX19kYXRhX2VuZAMB'
+  'C19faGVhcF9iYXNlAwIKyAECwgEBAn8jgICAgABBIGsiASSAgICAAAJAAkAgAKdB/wFxIgJB'
+  'DkYNACACQcoARw0BCyABIAA3AwggAUKO6PHYugI3AwBBACECA0ACQCACQRBHDQBBACECAkAD'
+  'QCACQRBGDQEgAUEQaiACaiABIAJqKQMANwMAIAJBCGohAgwACwsgAUEQaq1CIIZCBIRChICA'
+  'gCAQgICAgAAhACABQSBqJICAgIAAIAAPCyABQRBqIAJqQgI3AwAgAkEIaiECDAALCwAACwIA'
+  'CwBDDmNvbnRyYWN0c3BlY3YwAAAAAAAAAAAAAAAFaGVsbG8AAAAAAAABAAAAAAAAAAJ0bwAA'
+  'AAAAEQAAAAEAAAPqAAAAEQAeEWNvbnRyYWN0ZW52bWV0YXYwAAAAAAAAABQAAAAAAG8OY29u'
+  'dHJhY3RtZXRhdjAAAAAAAAAABXJzdmVyAAAAAAAABjEuNzQuMQAAAAAAAAAAAAhyc3Nka3Zl'
+  'cgAAAC8yMC4wLjAjODIyY2U2Y2MzZTQ2MWNjYzkyNTI3NWI0NzJkNzdiNmNhMzViMmNkOQA=',
+);
+
+// From the module's section table: the header and the non-custom sections
+// end at offset 325, followed by the contents of contractspecv0,
+// contractenvmetav0 and contractmetav0.
+final _code = _helloWorld.sublist(0, 325);
+final _specContent = _helloWorld.sublist(342, 394);
+final _envMetaContent = _helloWorld.sublist(414, 426);
+final _metaContent = _helloWorld.sublist(443, 539);
+
+SorobanContractInfo _parse(Uint8List byteCode) =>
+    SorobanContractParser.parseContractByteCode(byteCode);
+
+Matcher _fails(Object message) => throwsA(
+  isA<SorobanContractParserFailed>().having(
+    (e) => e.toString(),
+    'message',
+    message,
+  ),
+);
+
+List<int> _leb(int value) {
+  final bytes = <int>[];
+  for (; value >= 0x80; value >>= 7) {
+    bytes.add((value & 0x7f) | 0x80);
+  }
+  return bytes..add(value);
+}
+
+List<int> _custom(String name, List<int> content) {
+  final payload = [..._leb(name.length), ...name.codeUnits, ...content];
+  return [0, ..._leb(payload.length), ...payload];
+}
+
+/// The hello world module's header and non-custom sections, then [sections].
+Uint8List _wasm(List<List<int>> sections) =>
+    Uint8List.fromList([..._code, for (final s in sections) ...s]);
+
+List<int> _xdr(void Function(XdrDataOutputStream stream) write) {
+  final stream = XdrDataOutputStream();
+  write(stream);
+  return stream.bytes;
+}
+
+List<int> _envMeta(int protocol) => _xdr(
+  (s) => XdrSCEnvMetaEntry.encode(
+    s,
+    XdrSCEnvMetaEntry(XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION)
+      ..interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion(
+        XdrUint32(protocol),
+        XdrUint32(0),
+      ),
+  ),
+);
+
+List<int> _function(String name) => _xdr(
+  (s) => XdrSCSpecEntry.encode(
+    s,
+    XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0)
+      ..functionV0 = XdrSCSpecFunctionV0('', name, [], []),
+  ),
+);
+
+List<int> _kv(String key, String value) => _xdr(
+  (s) => XdrSCMetaEntry.encode(
+    s,
+    XdrSCMetaEntry(XdrSCMetaKind.SC_META_V0)..v0 = XdrSCMetaV0(key, value),
+  ),
+);
+
+/// Decodes [content] entry by entry with the XDR type alone.
+List<T> _decodeAll<T>(
+  List<int> content,
+  T Function(XdrDataInputStream stream) decode,
+) {
+  final stream = XdrDataInputStream(Uint8List.fromList(content));
+  final entries = <T>[];
+  while (stream.offset! < content.length) {
+    entries.add(decode(stream));
+  }
+  return entries;
+}
+
+List<String> _xdrOf(List<XdrSCSpecEntry> entries) => [
+  for (final e in entries) e.toBase64EncodedXdrString(),
+];

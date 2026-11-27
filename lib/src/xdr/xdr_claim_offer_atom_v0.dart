@@ -11,16 +11,15 @@ import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_json_helper.dart';
 import 'xdr_uint256.dart';
-import 'xdr_uint64.dart';
 
 class XdrClaimOfferAtomV0 {
   XdrUint256 _sellerEd25519;
   XdrUint256 get sellerEd25519 => this._sellerEd25519;
   set sellerEd25519(XdrUint256 value) => this._sellerEd25519 = value;
 
-  XdrUint64 _offerID;
-  XdrUint64 get offerID => this._offerID;
-  set offerID(XdrUint64 value) => this._offerID = value;
+  XdrInt64 _offerID;
+  XdrInt64 get offerID => this._offerID;
+  set offerID(XdrInt64 value) => this._offerID = value;
 
   XdrAsset _assetSold;
   XdrAsset get assetSold => this._assetSold;
@@ -52,7 +51,7 @@ class XdrClaimOfferAtomV0 {
     XdrClaimOfferAtomV0 encodedClaimOfferAtomV0,
   ) {
     XdrUint256.encode(stream, encodedClaimOfferAtomV0.sellerEd25519);
-    XdrUint64.encode(stream, encodedClaimOfferAtomV0.offerID);
+    XdrInt64.encode(stream, encodedClaimOfferAtomV0.offerID);
     XdrAsset.encode(stream, encodedClaimOfferAtomV0.assetSold);
     XdrInt64.encode(stream, encodedClaimOfferAtomV0.amountSold);
     XdrAsset.encode(stream, encodedClaimOfferAtomV0.assetBought);
@@ -61,7 +60,7 @@ class XdrClaimOfferAtomV0 {
 
   static XdrClaimOfferAtomV0 decode(XdrDataInputStream stream) {
     XdrUint256 sellerEd25519 = XdrUint256.decode(stream);
-    XdrUint64 offerID = XdrUint64.decode(stream);
+    XdrInt64 offerID = XdrInt64.decode(stream);
     XdrAsset assetSold = XdrAsset.decode(stream);
     XdrInt64 amountSold = XdrInt64.decode(stream);
     XdrAsset assetBought = XdrAsset.decode(stream);
@@ -84,7 +83,10 @@ class XdrClaimOfferAtomV0 {
 
   static XdrClaimOfferAtomV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrClaimOfferAtomV0.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrClaimOfferAtomV0 decoded = XdrClaimOfferAtomV0.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.
@@ -154,7 +156,7 @@ class XdrClaimOfferAtomV0 {
     );
     return XdrClaimOfferAtomV0(
       XdrUint256.fromXdrJsonValue(jsonSellerEd25519),
-      XdrUint64.fromXdrJsonValue(jsonOfferID),
+      XdrInt64.fromXdrJsonValue(jsonOfferID),
       XdrAsset.fromXdrJsonValue(jsonAssetSold),
       XdrInt64.fromXdrJsonValue(jsonAmountSold),
       XdrAsset.fromXdrJsonValue(jsonAssetBought),

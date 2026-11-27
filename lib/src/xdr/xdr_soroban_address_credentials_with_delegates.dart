@@ -76,9 +76,11 @@ class XdrSorobanAddressCredentialsWithDelegates {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSorobanAddressCredentialsWithDelegates.decode(
-      XdrDataInputStream(bytes),
-    );
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSorobanAddressCredentialsWithDelegates decoded =
+        XdrSorobanAddressCredentialsWithDelegates.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

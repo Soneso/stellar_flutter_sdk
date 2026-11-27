@@ -58,6 +58,9 @@ class CreatePassiveSellOfferOperation extends Operation {
   Asset _buying;
   String _amount;
   String _price;
+  // A price read from XDR, which [price] holds in decimal form. It encodes
+  // as sent, because [Price.fromString] returns lowest terms.
+  Price? _exactPrice;
 
   /// Creates a CreatePassiveSellOffer operation.
   ///
@@ -91,7 +94,7 @@ class CreatePassiveSellOfferOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     var amount = new XdrInt64(Util.decimalStringToStroops(this.amount));
-    var price = Price.fromString(this.price);
+    Price price = _exactPrice ?? Price.fromString(this.price);
     XdrOperationBody body = new XdrOperationBody(
       XdrOperationType.CREATE_PASSIVE_SELL_OFFER,
     );
@@ -116,13 +119,14 @@ class CreatePassiveSellOfferOperation extends Operation {
   ) {
     int n = op.price.n.int32;
     int d = op.price.d.int32;
+    Price price = Price(n, d);
 
     return CreatePassiveSellOfferOperationBuilder(
       Asset.fromXdr(op.selling),
       Asset.fromXdr(op.buying),
       Util.stroopsToDecimalString(op.amount.int64),
-      Price(n, d).toDecimalString(),
-    );
+      price.toDecimalString(),
+    ).._exactPrice = price;
   }
 }
 
@@ -146,6 +150,8 @@ class CreatePassiveSellOfferOperationBuilder
   Asset _buying;
   String _amount;
   String _price;
+  // A price read from XDR, handed to the built operation.
+  Price? _exactPrice;
 
   /// Creates a CreatePassiveSellOffer operation builder.
   ///
@@ -167,6 +173,7 @@ class CreatePassiveSellOfferOperationBuilder
   CreatePassiveSellOfferOperation build() {
     CreatePassiveSellOfferOperation operation =
         new CreatePassiveSellOfferOperation(_selling, _buying, _amount, _price);
+    operation._exactPrice = _exactPrice;
     return applySourceAccount(operation);
   }
 }

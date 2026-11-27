@@ -21,12 +21,12 @@ class XdrEncryptedBody {
     XdrEncryptedBody encodedEncryptedBody,
   ) {
     int encryptedBodySize = encodedEncryptedBody.encryptedBody.length;
-    stream.writeInt(encryptedBodySize);
+    stream.writeBoundedLength(encryptedBodySize, 64000);
     stream.write(encodedEncryptedBody.encryptedBody);
   }
 
   static XdrEncryptedBody decode(XdrDataInputStream stream) {
-    int encryptedBodySize = stream.readInt();
+    int encryptedBodySize = stream.readBoundedLength(64000);
     return XdrEncryptedBody(stream.readBytes(encryptedBodySize));
   }
 
@@ -38,7 +38,10 @@ class XdrEncryptedBody {
 
   static XdrEncryptedBody fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrEncryptedBody.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrEncryptedBody decoded = XdrEncryptedBody.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

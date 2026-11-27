@@ -64,7 +64,12 @@ class XdrExtendFootprintTTLResult {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrExtendFootprintTTLResult.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrExtendFootprintTTLResult decoded = XdrExtendFootprintTTLResult.decode(
+      stream,
+    );
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

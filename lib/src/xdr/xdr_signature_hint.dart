@@ -21,7 +21,7 @@ class XdrSignatureHint {
     XdrDataOutputStream stream,
     XdrSignatureHint encodedSignatureHint,
   ) {
-    stream.write(encodedSignatureHint.signatureHint);
+    stream.writeFixedOpaque(encodedSignatureHint.signatureHint, 4);
   }
 
   static XdrSignatureHint decode(XdrDataInputStream stream) {
@@ -37,21 +37,24 @@ class XdrSignatureHint {
 
   static XdrSignatureHint fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSignatureHint.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrSignatureHint decoded = XdrSignatureHint.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${TxRepHelper.bytesToHex(_signatureHint)}');
+    lines.add(
+      '$prefix: ${TxRepHelper.bytesToHex(TxRepHelper.checkBytesExactLength(_signatureHint, 4, prefix))}',
+    );
   }
 
   static XdrSignatureHint fromTxRep(Map<String, String> map, String prefix) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
-    Uint8List bytes = TxRepHelper.hexToBytes(raw);
-    if (bytes.length != 4) {
-      throw Exception('$prefix must be 4 bytes, ${bytes.length} given');
-    }
-    return XdrSignatureHint(bytes);
+    return XdrSignatureHint(
+      TxRepHelper.checkBytesExactLength(TxRepHelper.hexToBytes(raw), 4, prefix),
+    );
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.
@@ -64,8 +67,11 @@ class XdrSignatureHint {
   );
 
   /// Returns the SEP-0051 rendering of the wrapped value.
-  Object? toXdrJsonValue() =>
-      XdrJsonHelper.hex(_signatureHint, type: 'XdrSignatureHint');
+  Object? toXdrJsonValue() => XdrJsonHelper.hex(
+    _signatureHint,
+    type: 'XdrSignatureHint',
+    expectedLength: 4,
+  );
 
   /// Reads a XdrSignatureHint from the SEP-0051 rendering of its value.
   static XdrSignatureHint fromXdrJsonValue(Object? value) => XdrSignatureHint(

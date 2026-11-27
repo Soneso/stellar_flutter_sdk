@@ -96,6 +96,11 @@ class LiquidityPoolDepositOperation extends Operation {
   /// Maximum acceptable price (A/B ratio) as decimal string.
   String maxPrice;
 
+  // Bounds read from XDR, kept as sent because [Price.fromString] returns
+  // lowest terms; each encodes while its string is its decimal form.
+  Price? _exactMinPrice;
+  Price? _exactMaxPrice;
+
   /// Creates a LiquidityPoolDepositOperation.
   ///
   /// Parameters:
@@ -132,8 +137,8 @@ class LiquidityPoolDepositOperation extends Operation {
     }
     var amountA = XdrInt64(Util.decimalStringToStroops(this.maxAmountA));
     var amountB = XdrInt64(Util.decimalStringToStroops(this.maxAmountB));
-    XdrPrice xMinPrice = Price.fromString(minPrice).toXdr();
-    XdrPrice xMaxPrice = Price.fromString(maxPrice).toXdr();
+    XdrPrice xMinPrice = _boundPrice(minPrice, _exactMinPrice).toXdr();
+    XdrPrice xMaxPrice = _boundPrice(maxPrice, _exactMaxPrice).toXdr();
 
     XdrOperationBody body = XdrOperationBody(
       XdrOperationType.LIQUIDITY_POOL_DEPOSIT,
@@ -160,22 +165,28 @@ class LiquidityPoolDepositOperation extends Operation {
     String lpId = Util.bytesToHex(op.liquidityPoolID.hash);
     String maxA = Util.stroopsToDecimalString(op.maxAmountA.int64);
     String maxB = Util.stroopsToDecimalString(op.maxAmountB.int64);
-    int n = op.minPrice.n.int32;
-    int d = op.minPrice.d.int32;
-    String minP = Price(n, d).toDecimalString();
-    n = op.maxPrice.n.int32;
-    d = op.maxPrice.d.int32;
-    String maxP = Price(n, d).toDecimalString();
+    Price minP = Price(op.minPrice.n.int32, op.minPrice.d.int32);
+    Price maxP = Price(op.maxPrice.n.int32, op.maxPrice.d.int32);
 
-    return LiquidityPoolDepositOperationBuilder(
+    var builder = LiquidityPoolDepositOperationBuilder(
       liquidityPoolId: lpId,
       maxAmountA: maxA,
       maxAmountB: maxB,
-      minPrice: minP,
-      maxPrice: maxP,
+      minPrice: minP.toDecimalString(),
+      maxPrice: maxP.toDecimalString(),
     );
+    builder._exactMinPrice = minP;
+    builder._exactMaxPrice = maxP;
+    return builder;
   }
 }
+
+/// Returns [exact] while [decimal] is its decimal form, else the fraction
+/// [Price.fromString] reads from [decimal].
+Price _boundPrice(String decimal, Price? exact) =>
+    exact != null && exact.toDecimalString() == decimal
+    ? exact
+    : Price.fromString(decimal);
 
 /// Builder for [LiquidityPoolDepositOperation].
 ///
@@ -208,6 +219,10 @@ class LiquidityPoolDepositOperationBuilder
   /// Maximum acceptable price (A/B ratio) as decimal string.
   String maxPrice;
 
+  // Bounds read from XDR, handed to the built operation.
+  Price? _exactMinPrice;
+  Price? _exactMaxPrice;
+
   /// Creates a LiquidityPoolDepositOperationBuilder.
   ///
   /// Parameters:
@@ -235,6 +250,8 @@ class LiquidityPoolDepositOperationBuilder
       minPrice: minPrice,
       maxPrice: maxPrice,
     );
+    operation._exactMinPrice = _exactMinPrice;
+    operation._exactMaxPrice = _exactMaxPrice;
     return applySourceAccount(operation);
   }
 }

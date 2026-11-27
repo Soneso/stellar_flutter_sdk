@@ -244,6 +244,54 @@ signatures[0].signature: 1234567890abcdef
           throwsA(anything),
         );
       });
+
+      test(
+        'fromTxRep reads a signature hint as 4 bytes, throws for 3 or 5',
+        () {
+          final envelope =
+              (TransactionBuilder(Account(sourceAccountId, BigInt.one))
+                      .addOperation(
+                        BumpSequenceOperationBuilder(BigInt.one).build(),
+                      )
+                      .build()
+                    ..sign(sourceKeyPair, Network.TESTNET))
+                  .toEnvelopeXdrBase64();
+          final txRep = TxRep.fromTransactionEnvelopeXdrBase64(envelope);
+          final hint = RegExp(r'signatures\[0\]\.hint: [0-9a-fA-F]{8}');
+          expect(txRep, contains(hint));
+          expect(TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep), envelope);
+          Matcher throwsText(String text) => throwsA(
+            isA<Exception>().having((e) => e.toString(), 'text', text),
+          );
+          for (final (value, length) in [('0102030405', 5), ('010203', 3)]) {
+            expect(
+              () => TxRep.transactionEnvelopeXdrBase64FromTxRep(
+                txRep.replaceFirst(hint, 'signatures[0].hint: $value'),
+              ),
+              throwsText(
+                'Exception: signatures[0].hint must be 4 bytes, $length given',
+              ),
+            );
+          }
+          expect(
+            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(
+              txRep.replaceFirst(hint, ''),
+            ),
+            throwsText('Exception: missing signatures[0].hint'),
+          );
+          final sevenDigits = XdrTransactionEnvelope.fromBase64EncodedXdrString(
+            TxRep.transactionEnvelopeXdrBase64FromTxRep(
+              txRep.replaceFirst(hint, 'signatures[0].hint: 1234567'),
+            ),
+          );
+          expect(sevenDigits.v1!.signatures[0].hint.signatureHint, [
+            0x01,
+            0x23,
+            0x45,
+            0x67,
+          ]);
+        },
+      );
     });
 
     group('Preconditions with Extra Signers', () {

@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
+import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 /// Renders [payload] behind [versionByte] as a checksummed strkey without the
@@ -144,6 +145,36 @@ Future<void> fundTestAccountAndAwaitVisibility(
     }
     await Future.delayed(pollInterval);
   }
+}
+
+/// Decodes the contract events of a transaction response, in emission order.
+List<XdrContractEvent> contractEvents(GetTransactionResponse response) {
+  final groups = response.events?.contractEventsXdr;
+  expect(groups, isNotNull);
+  return [
+    for (final group in groups!)
+      for (final encoded in group)
+        XdrContractEvent.fromBase64EncodedXdrString(encoded),
+  ];
+}
+
+/// The single transfer event of a response: its first topic is the symbol
+/// `transfer`.
+XdrContractEvent transferEvent(GetTransactionResponse response) {
+  final transfers = contractEvents(response).where((event) {
+    final topics = event.body.v0?.topics;
+    return topics != null &&
+        topics.isNotEmpty &&
+        topics.first.sym == 'transfer';
+  }).toList();
+  expect(transfers, hasLength(1));
+  return transfers.single;
+}
+
+/// The data map of an event, keyed by its symbol keys.
+Map<String, XdrSCVal> eventDataMap(XdrContractEvent event) {
+  final entries = event.body.v0!.data.map ?? const <XdrSCMapEntry>[];
+  return {for (final entry in entries) entry.key.sym!: entry.val};
 }
 
 class TestUtils {

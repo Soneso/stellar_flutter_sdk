@@ -24,9 +24,19 @@ class XdrMemo {
   XdrMemoType get type => this._type;
   set type(XdrMemoType value) => this._type = value;
 
-  String? _text;
+  Uint8List? _text;
 
-  String? get text => this._text;
+  /// The text [textBytes] spells, read as UTF-8, or null when this arm is unset.
+  ///
+  /// Every leading byte order mark is kept. Throws a FormatException when the
+  /// bytes are not valid UTF-8.
+  String? get text {
+    final Uint8List? bytes = this._text;
+    return bytes == null ? null : XdrUtf8.decode(bytes);
+  }
+
+  /// The bytes of [text] as they are encoded, or null when this arm is unset.
+  Uint8List? get textBytes => this._text;
 
   XdrUint64? _id;
 
@@ -42,7 +52,11 @@ class XdrMemo {
 
   XdrMemo(this._type);
 
-  set text(String? value) => this._text = value;
+  /// Stores the UTF-8 encoding of [value], or unsets the arm when it is null.
+  set text(String? value) =>
+      this._text = value == null ? null : XdrUtf8.encode(value);
+
+  set textBytes(Uint8List? value) => this._text = value;
 
   set id(XdrUint64? value) => this._id = value;
 
@@ -56,7 +70,7 @@ class XdrMemo {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        stream.writeString(encodedMemo._text!);
+        stream.writeStringBytes(encodedMemo._text!, 28);
         break;
       case XdrMemoType.MEMO_ID:
         XdrUint64.encode(stream, encodedMemo._id!);
@@ -78,7 +92,7 @@ class XdrMemo {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        decodedMemo._text = stream.readString();
+        decodedMemo._text = stream.readStringBytes(28);
         break;
       case XdrMemoType.MEMO_ID:
         decodedMemo._id = XdrUint64.decode(stream);
@@ -101,7 +115,10 @@ class XdrMemo {
 
   static XdrMemo fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrMemo.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrMemo decoded = XdrMemo.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -110,7 +127,7 @@ class XdrMemo {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        lines.add('$prefix.text: ${TxRepHelper.escapeString(_text!)}');
+        lines.add('$prefix.text: ${TxRepHelper.escapeBytes(_text!)}');
         break;
       case XdrMemoType.MEMO_ID:
         _id!.toTxRep('$prefix.id', lines);
@@ -133,7 +150,7 @@ class XdrMemo {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        result._text = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.text') ?? '');
+        result._text = TxRepHelper.checkBytesMaxLength(TxRepHelper.unescapeBytes(TxRepHelper.getValue(map, '$prefix.text') ?? ''), 28, '$prefix.text');
         break;
       case XdrMemoType.MEMO_ID:
         result._id = XdrUint64.fromTxRep(map, '$prefix.id');
@@ -164,7 +181,7 @@ class XdrMemo {
       case 0:
         return 'none';
       case 1:
-        return <String, Object?>{'text': XdrJsonHelper.escapedString(_text!, type: 'XdrMemo', key: 'text', maxBytes: 28)};
+        return <String, Object?>{'text': XdrJsonHelper.escapedBytes(_text!, type: 'XdrMemo', key: 'text', maxBytes: 28)};
       case 2:
         return <String, Object?>{'id': _id!.toXdrJsonValue()};
       case 3:
@@ -191,7 +208,7 @@ class XdrMemo {
     switch (arm.key) {
       case 'text':
         final XdrMemo arm0 = XdrMemo(XdrMemoType.MEMO_TEXT);
-        arm0.text = XdrJsonHelper.readEscapedString(arm.value, type: 'XdrMemo', key: 'text', maxBytes: 28);
+        arm0.textBytes = XdrJsonHelper.readEscapedBytes(arm.value, type: 'XdrMemo', key: 'text', maxLength: 28);
         return arm0;
       case 'id':
         final XdrMemo arm1 = XdrMemo(XdrMemoType.MEMO_ID);

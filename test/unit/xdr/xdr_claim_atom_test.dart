@@ -134,7 +134,7 @@ void main() {
 
       var original = XdrClaimOfferAtomV0(
         XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x99))),
-        XdrUint64(BigInt.from(1111)),
+        XdrInt64(BigInt.from(1111)),
         asset,
         XdrInt64(BigInt.from(9999)),
         XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -152,7 +152,7 @@ void main() {
         decoded.sellerEd25519.uint256,
         equals(original.sellerEd25519.uint256),
       );
-      expect(decoded.offerID.uint64, equals(original.offerID.uint64));
+      expect(decoded.offerID.int64, equals(original.offerID.int64));
       expect(
         decoded.assetSold.discriminant,
         equals(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4),

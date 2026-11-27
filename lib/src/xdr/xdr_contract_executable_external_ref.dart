@@ -22,8 +22,9 @@ class XdrContractExecutableExternalRef {
 
   /// The text [tag] spells, read as UTF-8.
   ///
-  /// Throws a FormatException when the bytes are not valid UTF-8.
-  String get tagString => utf8.decode(_tag);
+  /// Every leading byte order mark is kept. Throws a FormatException when the
+  /// bytes are not valid UTF-8.
+  String get tagString => XdrUtf8.decode(_tag);
 
   XdrContractExecutableExternalRef(this._executableOwner, this._tag);
 
@@ -54,7 +55,11 @@ class XdrContractExecutableExternalRef {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrContractExecutableExternalRef.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrContractExecutableExternalRef decoded =
+        XdrContractExecutableExternalRef.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {

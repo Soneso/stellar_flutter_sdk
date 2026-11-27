@@ -60,7 +60,8 @@ class DataInput {
     );
   }
 
-  // add xdr
+  /// Reads the zero padding to the next multiple of four bytes; throws an
+  /// [Exception] for a non-zero byte or when the input ends inside it.
   void pad() {
     int pad = 0;
     int mod = _offset! % StellarProtocolConstants.XDR_ALIGNMENT_BYTES;
@@ -71,7 +72,7 @@ class DataInput {
     while (pad-- > 0) {
       int b = readByte(false);
       if (b == -129) {
-        break;
+        throw Exception("XDR input ends inside padding at offset $_offset");
       }
       if (b != 0) {
         throw Exception("non-zero padding");
@@ -351,19 +352,58 @@ class XdrDataInputStream extends DataInput {
     return readByte();
   }
 
+  /// Reads the length prefix of an XDR array, string or opaque value whose
+  /// definition declares the maximum [maxLength]; throws a [RangeError] above
+  /// it. A negative length is left to [readBytes] and [readArrayLength].
+  int readBoundedLength(int maxLength) {
+    int length = readInt();
+    if (length > maxLength) {
+      throw RangeError(
+        "XDR length $length exceeds the declared maximum of $maxLength",
+      );
+    }
+    return length;
+  }
+
+  /// Reads an optional's presence flag: true for 1, false for 0, and an
+  /// [Exception] for any other value.
+  bool readOptionalPresence() {
+    int flag = readInt();
+    if (flag != 0 && flag != 1) {
+      throw Exception("XDR optional presence flag must be 0 or 1, got $flag");
+    }
+    return flag == 1;
+  }
+
+  /// Throws an [Exception] when bytes remain after the single value decoded
+  /// from the input.
+  void checkFullyConsumed() {
+    int remaining = fileLength! - offset!;
+    if (remaining != 0) {
+      throw Exception(
+        "$remaining of $fileLength bytes remain after the decoded XDR value",
+      );
+    }
+  }
+
   /// Reads an XDR `string` and returns its raw bytes.
   ///
   /// An XDR `string` carries arbitrary bytes, so the payload is returned
   /// unexamined; only a caller that wants text applies an encoding to it.
-  /// Throws a [RangeError] if the length prefix is negative or exceeds the
-  /// remaining bytes (see [readBytes]).
-  Uint8List readStringBytes() {
-    int length = readInt();
+  /// Throws a [RangeError] if the length prefix is negative, exceeds the
+  /// declared [maxLength] or exceeds the remaining bytes (see [readBytes]).
+  Uint8List readStringBytes([int? maxLength]) {
+    int length = maxLength == null ? readInt() : readBoundedLength(maxLength);
     return readBytes(length);
   }
 
-  String readString() {
-    return utf8.decode(readStringBytes());
+  /// Reads an XDR `string` and returns its text, as [XdrUtf8.decode] reads
+  /// the bytes: every leading byte order mark is kept.
+  ///
+  /// Throws a [FormatException] when the bytes are not valid UTF-8, and the
+  /// errors of [readStringBytes].
+  String readString([int? maxLength]) {
+    return XdrUtf8.decode(readStringBytes(maxLength));
   }
 
   /// Reads the element count of a variable-length XDR array and checks it
@@ -375,10 +415,11 @@ class XdrDataInputStream extends DataInput {
   /// remaining bytes cannot be satisfied by the input.
   ///
   /// Returns the count, between 0 and a quarter of the remaining bytes
-  /// (inclusive). Throws a [RangeError] if the count is negative, exceeds a
-  /// quarter of the remaining bytes or fewer than 4 bytes remain.
-  int readArrayLength() {
-    int count = readInt();
+  /// (inclusive). Throws a [RangeError] if the count is negative, exceeds the
+  /// declared [maxLength], exceeds a quarter of the remaining bytes or fewer
+  /// than 4 bytes remain.
+  int readArrayLength([int? maxLength]) {
+    int count = maxLength == null ? readInt() : readBoundedLength(maxLength);
     if (count < 0) {
       throw RangeError("XDR array count cannot be negative, got $count");
     }
@@ -425,18 +466,67 @@ class XdrDataInputStream extends DataInput {
 }
 
 class XdrDataOutputStream extends DataOutput {
-  /// Writes [bytes] in the XDR `string` wire form: a four-byte length,
-  /// the bytes themselves, and padding to the next multiple of four.
+  /// Writes the length prefix of an XDR array, string or opaque value whose
+  /// definition declares the maximum [maxLength]; throws a [RangeError] and
+  /// writes nothing above it.
+  void writeBoundedLength(int length, int maxLength) {
+    if (length > maxLength) {
+      throw RangeError(
+        "XDR length $length exceeds the declared maximum of $maxLength",
+      );
+    }
+    writeInt(length);
+  }
+
+  /// Writes a fixed-length XDR opaque value of [expectedLength] bytes and pads
+  /// it to the next multiple of four.
   ///
-  /// The length an XDR `string` may declare is bounded by its own four-byte
-  /// length prefix, so no further limit applies here.
-  void writeStringBytes(Uint8List bytes) {
-    writeInt(bytes.length);
+  /// Throws a [RangeError] and writes nothing when [bytes] does not hold
+  /// [expectedLength] bytes.
+  void writeFixedOpaque(Uint8List bytes, int expectedLength) {
+    if (bytes.length != expectedLength) {
+      throw RangeError(
+        'XDR fixed opaque length ${bytes.length} does not match the declared '
+        'length of $expectedLength',
+      );
+    }
     write(bytes);
   }
 
-  writeString(String s) {
-    writeStringBytes(utf8.encode(s));
+  /// Writes an XDR asset code field of [expectedLength] bytes, padding a
+  /// shorter code of 0 to [expectedLength] bytes with trailing zero bytes.
+  ///
+  /// Throws a [RangeError] and writes nothing when [bytes] holds more than
+  /// [expectedLength] bytes.
+  void writeAssetCode(Uint8List bytes, int expectedLength) {
+    if (bytes.length > expectedLength) {
+      throw RangeError(
+        'XDR asset code length ${bytes.length} exceeds the declared length '
+        'of $expectedLength',
+      );
+    }
+    if (bytes.length == expectedLength) {
+      write(bytes);
+      return;
+    }
+    final Uint8List padded = Uint8List(expectedLength);
+    padded.setAll(0, bytes);
+    write(padded);
+  }
+
+  /// Writes [bytes] in the XDR `string` wire form: a four-byte length,
+  /// the bytes themselves, and padding to the next multiple of four.
+  ///
+  /// Throws a [RangeError] when the declared [maxLength] is exceeded.
+  void writeStringBytes(Uint8List bytes, [int? maxLength]) {
+    maxLength == null
+        ? writeInt(bytes.length)
+        : writeBoundedLength(bytes.length, maxLength);
+    write(bytes);
+  }
+
+  writeString(String s, [int? maxLength]) {
+    writeStringBytes(utf8.encode(s), maxLength);
   }
 
   writeIntArray(List<int> a) {
@@ -458,5 +548,61 @@ class XdrDataOutputStream extends DataOutput {
     for (int i = 0; i < a.length; i++) {
       writeDouble(a[i]);
     }
+  }
+}
+
+/// Reads and writes the text of XDR `string` values.
+///
+/// An XDR `string` carries arbitrary bytes. The SDK reads them as UTF-8 text
+/// only where a caller asks for text, and then strictly: bytes that are not
+/// valid UTF-8 are refused rather than replaced, and every leading byte order
+/// mark is part of the text, so the text encodes back to the same bytes.
+class XdrUtf8 {
+  XdrUtf8._();
+
+  static const int _byteOrderMark = 0xFEFF;
+
+  /// Returns the text [bytes] spell in UTF-8, with every leading byte order
+  /// mark kept as U+FEFF.
+  ///
+  /// Throws a [FormatException] when [bytes] are not valid UTF-8.
+  static String decode(List<int> bytes) {
+    final String text = utf8.decode(bytes);
+    final int marks = _leadingByteOrderMarks(bytes);
+    int kept = 0;
+    while (kept < text.length && text.codeUnitAt(kept) == _byteOrderMark) {
+      kept++;
+    }
+    return marks > kept
+        ? String.fromCharCodes(List<int>.filled(marks - kept, _byteOrderMark)) +
+              text
+        : text;
+  }
+
+  /// Returns the text [bytes] spell, as [decode] reads it, or null when they
+  /// are not valid UTF-8.
+  static String? tryDecode(List<int> bytes) {
+    try {
+      return decode(bytes);
+    } on FormatException {
+      return null;
+    }
+  }
+
+  /// Returns the UTF-8 encoding of [text].
+  static Uint8List encode(String text) => utf8.encode(text);
+
+  /// The number of byte order marks (`ef bb bf`) at the start of [bytes].
+  static int _leadingByteOrderMarks(List<int> bytes) {
+    int count = 0;
+    int index = 0;
+    while (index + 2 < bytes.length &&
+        bytes[index] == 0xEF &&
+        bytes[index + 1] == 0xBB &&
+        bytes[index + 2] == 0xBF) {
+      count++;
+      index += 3;
+    }
+    return count;
   }
 }

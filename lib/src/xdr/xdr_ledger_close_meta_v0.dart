@@ -119,7 +119,10 @@ class XdrLedgerCloseMetaV0 {
 
   static XdrLedgerCloseMetaV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrLedgerCloseMetaV0.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrLedgerCloseMetaV0 decoded = XdrLedgerCloseMetaV0.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

@@ -21,12 +21,12 @@ class XdrUpgradeType {
     XdrUpgradeType encodedUpgradeType,
   ) {
     int upgradeTypeSize = encodedUpgradeType.upgradeType.length;
-    stream.writeInt(upgradeTypeSize);
+    stream.writeBoundedLength(upgradeTypeSize, 128);
     stream.write(encodedUpgradeType.upgradeType);
   }
 
   static XdrUpgradeType decode(XdrDataInputStream stream) {
-    int upgradeTypeSize = stream.readInt();
+    int upgradeTypeSize = stream.readBoundedLength(128);
     return XdrUpgradeType(stream.readBytes(upgradeTypeSize));
   }
 
@@ -38,7 +38,10 @@ class XdrUpgradeType {
 
   static XdrUpgradeType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrUpgradeType.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrUpgradeType decoded = XdrUpgradeType.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

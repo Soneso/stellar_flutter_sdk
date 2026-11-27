@@ -18,11 +18,11 @@ class XdrString64 {
   set string64(String value) => this._string64 = value;
 
   static void encode(XdrDataOutputStream stream, XdrString64 encodedString64) {
-    stream.writeString(encodedString64.string64);
+    stream.writeString(encodedString64.string64, 64);
   }
 
   static XdrString64 decode(XdrDataInputStream stream) {
-    return XdrString64(stream.readString());
+    return XdrString64(stream.readString(64));
   }
 
   String toBase64EncodedXdrString() {
@@ -33,7 +33,10 @@ class XdrString64 {
 
   static XdrString64 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrString64.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrString64 decoded = XdrString64.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
@@ -43,7 +46,13 @@ class XdrString64 {
   static XdrString64 fromTxRep(Map<String, String> map, String prefix) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
-    return XdrString64(TxRepHelper.unescapeString(raw));
+    return XdrString64(
+      TxRepHelper.checkStringMaxLength(
+        TxRepHelper.unescapeString(raw),
+        64,
+        prefix,
+      ),
+    );
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

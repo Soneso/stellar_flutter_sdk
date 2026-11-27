@@ -4,6 +4,7 @@
 
 import 'operation.dart';
 import 'assets.dart';
+import 'offer_id.dart';
 import 'price.dart';
 import 'soroban/contract_address_guard.dart';
 import 'util.dart';
@@ -68,6 +69,9 @@ class ManageSellOfferOperation extends Operation {
   String _amount;
   String _price;
   String _offerId;
+  // A price read from XDR, which [price] holds in decimal form. It encodes
+  // as sent, because [Price.fromString] returns lowest terms.
+  Price? _exactPrice;
 
   /// Creates a ManageSellOffer operation.
   ///
@@ -76,7 +80,11 @@ class ManageSellOfferOperation extends Operation {
   /// - [_buying] Asset being purchased
   /// - [_amount] Amount of selling asset to sell (0 to delete offer)
   /// - [_price] Price per unit of selling in terms of buying
-  /// - [_offerId] Offer ID (0 for new offer, existing ID to update/delete)
+  /// - [_offerId] Offer ID (0 for new offer, existing ID to update/delete),
+  ///   as decimal int64 text such as "12345"
+  ///
+  /// The constructor does not check the offer id. It is checked when the
+  /// operation is written to XDR, see [toOperationBody].
   ManageSellOfferOperation(
     this._selling,
     this._buying,
@@ -103,12 +111,16 @@ class ManageSellOfferOperation extends Operation {
   /// Converts this operation to its XDR OperationBody representation.
   ///
   /// Returns: XDR OperationBody for this manage sell offer operation.
+  ///
+  /// Throws a [FormatException] when [offerId] is not decimal int64 text.
+  /// [toXdr] throws it too, also when a transaction that holds this operation
+  /// is written to XDR.
   @override
   XdrOperationBody toOperationBody() {
     XdrInt64 amount = new XdrInt64(Util.decimalStringToStroops(this.amount));
-    Price price = Price.fromString(this.price);
-    XdrUint64 offerId = XdrUint64(
-      parseHidingSecretSeed(this.offerId, BigInt.parse),
+    Price price = _exactPrice ?? Price.fromString(this.price);
+    XdrInt64 offerId = XdrInt64(
+      parseHidingSecretSeed(this.offerId, parseOfferId),
     );
 
     XdrOperationBody body = new XdrOperationBody(
@@ -135,13 +147,14 @@ class ManageSellOfferOperation extends Operation {
   static ManageSellOfferOperationBuilder builder(XdrManageSellOfferOp op) {
     int n = op.price.n.int32.toInt();
     int d = op.price.d.int32.toInt();
+    Price price = Price(n, d);
 
     return ManageSellOfferOperationBuilder(
       Asset.fromXdr(op.selling),
       Asset.fromXdr(op.buying),
       Util.stroopsToDecimalString(op.amount.int64),
-      Price(n, d).toDecimalString(),
-    ).setOfferId(op.offerID.uint64.toString());
+      price.toDecimalString(),
+    ).setOfferId(op.offerID.int64.toString()).._exactPrice = price;
   }
 }
 
@@ -175,6 +188,8 @@ class ManageSellOfferOperationBuilder
   String _amount;
   String _price;
   String _offerId = "0";
+  // A price read from XDR, handed to the built operation.
+  Price? _exactPrice;
 
   /// Creates a ManageSellOffer operation builder.
   ///
@@ -195,7 +210,13 @@ class ManageSellOfferOperationBuilder
   /// Sets the offer ID.
   ///
   /// Parameters:
-  /// - [offerId] Offer ID (0 creates new offer, existing ID updates/deletes)
+  /// - [offerId] Offer ID (0 creates new offer, existing ID updates/deletes),
+  ///   as decimal int64 text such as "12345"
+  ///
+  /// This method does not check the offer id. The built operation checks it
+  /// when it is written to XDR: [ManageSellOfferOperation.toOperationBody] and
+  /// [ManageSellOfferOperation.toXdr] throw a [FormatException] for other text,
+  /// also when a transaction that holds the operation is written to XDR.
   ///
   /// Returns: This builder instance for method chaining
   ManageSellOfferOperationBuilder setOfferId(String offerId) {
@@ -214,6 +235,7 @@ class ManageSellOfferOperationBuilder
       _price,
       _offerId,
     );
+    operation._exactPrice = _exactPrice;
     return applySourceAccount(operation);
   }
 }

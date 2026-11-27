@@ -54,7 +54,10 @@ class XdrTransactionMetaV1 {
 
   static XdrTransactionMetaV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTransactionMetaV1.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrTransactionMetaV1 decoded = XdrTransactionMetaV1.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

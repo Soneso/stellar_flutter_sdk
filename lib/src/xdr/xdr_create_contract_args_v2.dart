@@ -80,7 +80,10 @@ class XdrCreateContractArgsV2 {
     String base64Encoded,
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrCreateContractArgsV2.decode(XdrDataInputStream(bytes));
+    XdrDataInputStream stream = XdrDataInputStream(bytes);
+    XdrCreateContractArgsV2 decoded = XdrCreateContractArgsV2.decode(stream);
+    stream.checkFullyConsumed();
+    return decoded;
   }
 
   void toTxRep(String prefix, List<String> lines) {
