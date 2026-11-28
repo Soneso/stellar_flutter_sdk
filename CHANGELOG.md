@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- A security policy (`SECURITY.md`): vulnerabilities are reported through GitHub's private vulnerability reporting, and only the latest stable release receives security fixes.
+
 ### Changed
 - The analysis options and the example's iOS configuration carry the lines Flutter writes on `flutter pub get`, so dependency setup leaves the checkout unchanged.
 
